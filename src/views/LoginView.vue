@@ -185,11 +185,10 @@ function resetProbe() {
 }
 
 function startOidc(provider: { id: string }) {
-  // ABS only accepts ?callback= URLs that are same-origin as its own serverUrl.
-  // Use the ABS external URL as the callback base so the check passes.
-  // Traefik intercepts audiobooks.*/auth/callback and relays to abs.*/auth/callback.
+  // ABS same-origin check is bypassed via "Allowed Mobile Redirect URIs" in ABS admin settings.
+  // Add this abscond URL (or '*') there so ABS accepts the cross-origin callback.
   const absBase = isProxyMode.value ? getExternalUrl() : serverUrl.value
-  const callbackUrl = `${absBase}/auth/callback`
+  const callbackUrl = `${window.location.origin}/auth/callback`
   window.location.href = `${absBase}/auth/${provider.id}?callback=${encodeURIComponent(callbackUrl)}`
 }
 
