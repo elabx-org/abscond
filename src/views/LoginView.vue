@@ -185,12 +185,11 @@ function resetProbe() {
 }
 
 function startOidc(provider: { id: string }) {
-  // ABS validates ?callback= against its own configured serverUrl (same-origin).
-  // Use the ABS external URL for both the initiation and the callback so the
-  // check passes. Traefik then intercepts audiobooks.*/auth/callback and relays
-  // to abs.*/auth/callback with the token query parameter intact.
+  // ABS "Allowed Mobile Redirect URIs" whitelist bypasses the same-origin check.
+  // Add this abscond origin to that list in ABS admin → Settings → Authentication.
+  // Navigate to ABS's OIDC endpoint; callback lands back on abscond with the token.
   const absBase = isProxyMode.value ? getExternalUrl() : serverUrl.value
-  const callbackUrl = `${absBase}/auth/callback`
+  const callbackUrl = `${window.location.origin}/auth/callback`
   window.location.href = `${absBase}/auth/${provider.id}?callback=${encodeURIComponent(callbackUrl)}`
 }
 
