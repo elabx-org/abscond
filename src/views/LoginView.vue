@@ -186,7 +186,8 @@ async function submit() {
   try {
     const result = await login(username.value, password.value)
     auth.setSession(result.user.token, result.user)
-    const baseHost = serverUrl.value || (await getBaseUrl()).replace('/api', '')
+    const raw = await getBaseUrl()
+    const baseHost = serverUrl.value || (raw.endsWith('/api') ? raw.slice(0, -4) : raw)
     connectSocket(baseHost, result.user.token)
     router.push({ name: 'home' })
   } catch (e: any) {

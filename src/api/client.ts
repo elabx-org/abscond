@@ -1,6 +1,5 @@
 import axios from 'axios'
 import { useAuthStore } from '@/stores/auth'
-import router from '@/router'
 
 export function resolveBaseUrl(absHost: string | undefined): string {
   if (!absHost) return '/api'
@@ -44,7 +43,7 @@ export async function createApiClient() {
     (err) => {
       if (err.response?.status === 401) {
         useAuthStore().logout()
-        router.push({ name: 'login' })
+        import('@/router').then(({ default: router }) => router.push({ name: 'login' }))
       }
       return Promise.reject(err)
     }
