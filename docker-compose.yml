@@ -1,0 +1,14 @@
+services:
+  abscond:
+    build: .
+    ports:
+      - "${ABSCOND_PORT:-3080}:80"
+    environment:
+      # Point this at your ABS server's internal hostname:port
+      # e.g. http://audiobookshelf:13378  OR  http://192.168.1.10:13378
+      ABS_HOST: "${ABS_HOST:-http://audiobookshelf:13378}"
+    volumes:
+      # Mount your own config.json to override absHost at runtime
+      # Leave absHost empty ("") to use the nginx proxy (recommended)
+      - ./config.json:/usr/share/nginx/html/config.json:ro
+    restart: unless-stopped
