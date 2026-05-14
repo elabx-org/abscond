@@ -1,7 +1,7 @@
 import type { NavigationGuardWithThis, RouteLocationNormalized } from 'vue-router'
 import type { useAuthStore } from '@/stores/auth'
 
-const PUBLIC_ROUTES = ['login']
+const PUBLIC_ROUTES = ['login', 'auth-callback']
 
 export function createAuthGuard(
   getStore: () => ReturnType<typeof useAuthStore>
