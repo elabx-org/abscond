@@ -40,13 +40,18 @@ onMounted(async () => {
       // PKCE mobile flow — exchange code for token via ABS /auth/openid/callback
       const verifier   = sessionStorage.getItem('oidc_verifier') ?? ''
       const savedState = sessionStorage.getItem('oidc_state')    ?? ''
+      const absBase    = sessionStorage.getItem('oidc_abs_base') ?? ''
       sessionStorage.removeItem('oidc_verifier')
       sessionStorage.removeItem('oidc_state')
+      sessionStorage.removeItem('oidc_abs_base')
 
       if (state !== savedState) throw new Error('State mismatch — possible CSRF.')
 
+      // Fetch directly to ABS (same origin where the session cookie was set) so the
+      // browser forwards the ABS session cookie that was set during /auth/openid.
+      const callbackBase = absBase || ''
       const params = new URLSearchParams({ state, code, code_verifier: verifier })
-      const res = await fetch(`/auth/openid/callback?${params}`, { credentials: 'include' })
+      const res = await fetch(`${callbackBase}/auth/openid/callback?${params}`, { credentials: 'include' })
       if (!res.ok) throw new Error(`Token exchange failed (${res.status})`)
       const data = await res.json()
 

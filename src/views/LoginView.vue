@@ -202,6 +202,7 @@ async function startOidc(provider: { id: string }) {
 
   sessionStorage.setItem('oidc_verifier', verifier)
   sessionStorage.setItem('oidc_state',    state)
+  sessionStorage.setItem('oidc_abs_base', absBase)
 
   const redirect_uri = `${window.location.origin}/auth/callback`
   const params = new URLSearchParams({
