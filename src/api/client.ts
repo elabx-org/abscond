@@ -7,7 +7,11 @@ export function resolveBaseUrl(absHost: string | undefined): string {
 }
 
 declare global {
-  interface Window { __absconfig?: { absHost?: string } }
+  interface Window { __absconfig?: { absHost?: string; absExternalUrl?: string } }
+}
+
+export function getExternalUrl(): string {
+  return window.__absconfig?.absExternalUrl ?? ''
 }
 
 async function loadConfig(): Promise<string> {

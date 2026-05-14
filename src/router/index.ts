@@ -11,6 +11,11 @@ const router = createRouter({
       component: () => import('@/views/LoginView.vue'),
     },
     {
+      path: '/auth/callback',
+      name: 'auth-callback',
+      component: () => import('@/views/AuthCallbackView.vue'),
+    },
+    {
       path: '/',
       redirect: '/home',
       component: () => import('@/components/shell/AppShell.vue'),

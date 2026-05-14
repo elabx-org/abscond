@@ -133,7 +133,7 @@ import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { fetchStatus, login } from '@/api/auth'
 import { connectSocket } from '@/api/socket'
-import { getBaseUrl } from '@/api/client'
+import { getBaseUrl, getExternalUrl } from '@/api/client'
 
 const router = useRouter()
 const auth   = useAuthStore()
@@ -173,9 +173,13 @@ function resetProbe() {
 }
 
 function startOidc(provider: { id: string }) {
-  // In proxy mode serverUrl is empty — use relative path so nginx proxies to ABS.
-  const base = isProxyMode.value ? '' : serverUrl.value
-  window.location.href = `${base}/auth/${provider.id}`
+  // Same mechanism as the ABS mobile apps: pass a ?callback= URL so ABS
+  // redirects back here with the token after the OIDC dance completes.
+  // In proxy mode use the configured external ABS URL; in direct mode use
+  // the user-entered server URL.
+  const absBase = isProxyMode.value ? getExternalUrl() : serverUrl.value
+  const callbackUrl = `${window.location.origin}/auth/callback`
+  window.location.href = `${absBase}/auth/${provider.id}?callback=${encodeURIComponent(callbackUrl)}`
 }
 
 /* ─── Login ─── */

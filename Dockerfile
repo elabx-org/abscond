@@ -12,7 +12,10 @@ RUN apk add --no-cache gettext
 
 COPY --from=builder /app/dist /usr/share/nginx/html
 COPY nginx/nginx.conf /etc/nginx/nginx.conf.template
+COPY nginx/config.json.template /etc/config.json.template
 
-# envsubst replaces ${ABS_HOST} at container start
+# envsubst replaces ${ABS_HOST} and ${ABS_EXTERNAL_URL} at container start
 CMD ["/bin/sh", "-c", \
-  "envsubst '${ABS_HOST}' < /etc/nginx/nginx.conf.template > /etc/nginx/nginx.conf && nginx -g 'daemon off;'"]
+  "envsubst '${ABS_HOST}' < /etc/nginx/nginx.conf.template > /etc/nginx/nginx.conf && \
+   envsubst '${ABS_HOST} ${ABS_EXTERNAL_URL}' < /etc/config.json.template > /usr/share/nginx/html/config.json && \
+   nginx -g 'daemon off;'"]
