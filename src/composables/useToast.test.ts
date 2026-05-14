@@ -13,12 +13,15 @@ describe('useToast', () => {
   it('auto-removes toast after duration', async () => {
     clearToasts()
     vi.useFakeTimers()
-    const { toast } = useToast()
-    toast('msg', { duration: 1000 })
-    expect(toasts.value.length).toBe(1)
-    vi.advanceTimersByTime(1200)
-    expect(toasts.value.length).toBe(0)
-    vi.useRealTimers()
+    try {
+      const { toast } = useToast()
+      toast('msg', { duration: 1000 })
+      expect(toasts.value.length).toBe(1)
+      vi.advanceTimersByTime(1200)
+      expect(toasts.value.length).toBe(0)
+    } finally {
+      vi.useRealTimers()
+    }
   })
 
   it('toastError sets type to error', () => {

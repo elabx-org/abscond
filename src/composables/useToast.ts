@@ -5,7 +5,7 @@ export interface Toast { id: number; message: string; type: 'success' | 'error' 
 export const toasts = ref<Toast[]>([])
 let nextId = 0
 
-export function clearToasts() { toasts.value = [] }
+export function clearToasts() { toasts.value = []; nextId = 0 }
 
 export function useToast() {
   function toast(message: string, opts: { duration?: number; type?: Toast['type'] } = {}) {
