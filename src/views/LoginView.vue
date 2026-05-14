@@ -133,7 +133,7 @@ import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { fetchStatus, login } from '@/api/auth'
 import { connectSocket } from '@/api/socket'
-import { getBaseUrl, getExternalUrl } from '@/api/client'
+import { getBaseUrl } from '@/api/client'
 
 const router = useRouter()
 const auth   = useAuthStore()
@@ -173,11 +173,10 @@ function resetProbe() {
 }
 
 function startOidc(provider: { id: string }) {
-  // Same mechanism as the ABS mobile apps: pass a ?callback= URL so ABS
-  // redirects back here with the token after the OIDC dance completes.
-  // In proxy mode use the configured external ABS URL; in direct mode use
-  // the user-entered server URL.
-  const absBase = isProxyMode.value ? getExternalUrl() : serverUrl.value
+  // In proxy mode, route the auth initiation through nginx (/auth/ is proxied
+  // to ABS). nginx forwards Host: abs.elabx.app, so ABS sees request + callback
+  // as same-origin and accepts the redirect. In direct mode use the server URL.
+  const absBase = isProxyMode.value ? window.location.origin : serverUrl.value
   const callbackUrl = `${window.location.origin}/auth/callback`
   window.location.href = `${absBase}/auth/${provider.id}?callback=${encodeURIComponent(callbackUrl)}`
 }
