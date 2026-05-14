@@ -94,33 +94,43 @@
               Continue with {{ p.name }}
             </v-btn>
 
-            <div class="divider-row">
-              <v-divider /><span class="divider-text">or</span><v-divider />
-            </div>
+            <p class="local-toggle" @click="showLocalAuth = !showLocalAuth">
+              {{ showLocalAuth ? 'Hide password login' : 'Use password instead' }}
+            </p>
           </template>
 
-          <!-- Local auth -->
-          <v-text-field
-            v-model="username"
-            data-testid="username"
-            label="Username"
-            autocomplete="username"
-          />
-          <v-text-field
-            v-model="password"
-            label="Password"
-            type="password"
-            autocomplete="current-password"
-            @keydown.enter="submit"
-          />
+          <!-- Local auth (always visible when no OIDC, collapsible otherwise) -->
+          <template v-if="!oidcProviders.length || showLocalAuth">
+            <div v-if="oidcProviders.length" class="divider-row">
+              <v-divider /><span class="divider-text">or</span><v-divider />
+            </div>
 
-          <v-alert v-if="loginError" type="error" variant="tonal" class="mb-4" density="compact">
+            <v-text-field
+              v-model="username"
+              data-testid="username"
+              label="Username"
+              autocomplete="username"
+            />
+            <v-text-field
+              v-model="password"
+              label="Password"
+              type="password"
+              autocomplete="current-password"
+              @keydown.enter="submit"
+            />
+
+            <v-alert v-if="loginError" type="error" variant="tonal" class="mb-4" density="compact">
+              {{ loginError }}
+            </v-alert>
+
+            <v-btn color="primary" block size="large" :loading="loggingIn" @click="submit">
+              Sign in
+            </v-btn>
+          </template>
+
+          <v-alert v-if="loginError && oidcProviders.length && !showLocalAuth" type="error" variant="tonal" class="mb-4" density="compact">
             {{ loginError }}
           </v-alert>
-
-          <v-btn color="primary" block size="large" :loading="loggingIn" @click="submit">
-            Sign in
-          </v-btn>
         </template>
       </div>
     </div>
@@ -146,6 +156,7 @@ const probeError    = ref('')
 const serverProbed  = ref(false)
 const isProxyMode   = ref(false)
 const oidcProviders = ref<{ id: string; name: string }[]>([])
+const showLocalAuth = ref(false)
 
 async function probeServer() {
   if (!serverUrl.value) return
@@ -170,6 +181,7 @@ function resetProbe() {
   serverProbed.value = false
   probeSuccess.value = false
   oidcProviders.value = []
+  showLocalAuth.value = false
 }
 
 function startOidc(provider: { id: string }) {
@@ -317,6 +329,8 @@ function goToSlide(n: number) {
 .server-url-hint.no-click { cursor:default; }
 .change-link { color:#d4a017; font-weight:600; margin-left:6px; }
 .oidc-btn { border-color:rgba(255,255,255,0.1) !important; color:rgba(255,255,255,0.7) !important; }
+.local-toggle { font-size:0.75rem; color:rgba(255,255,255,0.3); text-align:center; margin:0.75rem 0 0; cursor:pointer; }
+.local-toggle:hover { color:rgba(255,255,255,0.55); }
 .divider-row { display:flex; align-items:center; gap:10px; margin:0.75rem 0; }
 .divider-text { font-size:0.68rem; color:rgba(255,255,255,0.2); white-space:nowrap; }
 </style>
