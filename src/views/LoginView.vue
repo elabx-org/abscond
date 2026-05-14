@@ -132,7 +132,7 @@ import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { fetchStatus, login } from '@/api/auth'
 import { connectSocket } from '@/api/socket'
-import { api, getBaseUrl } from '@/api/client'
+import { getBaseUrl } from '@/api/client'
 
 const router = useRouter()
 const auth   = useAuthStore()
@@ -211,26 +211,12 @@ const slideCaptions = ['Player', 'Library', 'Book detail', 'Home', 'Search']
 
 let timer: ReturnType<typeof setInterval>
 onMounted(async () => {
-  // Proxy mode: absHost is empty in config.json, nginx proxies /api → ABS.
-  // Skip the server URL entry step and auto-probe via the proxy.
-  await getBaseUrl()
-  if (!window.__absconfig?.absHost) {
-    probing.value = true
-    try {
-      const res = await api.get('/status')
-      const status = res.data
-      if (status.isInit) {
-        probeSuccess.value = true
-        serverProbed.value = true
-        if (status.authMethods?.includes('openid')) {
-          oidcProviders.value = [{ id: 'openid', name: 'SSO' }]
-        }
-      }
-    } catch {
-      // Probe failed — fall back to manual server URL entry
-    } finally {
-      probing.value = false
-    }
+  // resolveBaseUrl returns '/api' only when absHost is empty (proxy mode).
+  // nginx already has ABS_HOST baked in — skip the server URL step entirely.
+  const base = await getBaseUrl()
+  if (base === '/api') {
+    serverProbed.value = true
+    probeSuccess.value = true
   }
   timer = setInterval(() => goToSlide((currentSlide.value + 1) % slideCaptions.length), 4000)
 })
