@@ -32,5 +32,6 @@ export default defineConfig({
     environment: 'jsdom',
     setupFiles: ['src/test-setup.ts'],
     server: { deps: { inline: ['vuetify'] } },
+    exclude: ['**/node_modules/**', '**/.worktrees/**'],
   },
 })

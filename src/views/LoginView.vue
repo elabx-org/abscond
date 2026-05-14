@@ -75,8 +75,9 @@
 
         <template v-else>
           <p class="form-heading">Sign in</p>
-          <p class="form-sub server-url-hint" @click="resetProbe">
-            {{ serverUrl }} <span class="change-link">change</span>
+          <p class="form-sub server-url-hint" :class="{ 'no-click': isProxyMode }" @click="!isProxyMode && resetProbe()">
+            {{ isProxyMode ? 'Connected via proxy' : serverUrl }}
+            <span v-if="!isProxyMode" class="change-link">change</span>
           </p>
 
           <!-- OIDC provider buttons -->
@@ -143,6 +144,7 @@ const probing       = ref(false)
 const probeSuccess  = ref(false)
 const probeError    = ref('')
 const serverProbed  = ref(false)
+const isProxyMode   = ref(false)
 const oidcProviders = ref<{ id: string; name: string }[]>([])
 
 async function probeServer() {
@@ -212,11 +214,21 @@ const slideCaptions = ['Player', 'Library', 'Book detail', 'Home', 'Search']
 let timer: ReturnType<typeof setInterval>
 onMounted(async () => {
   // resolveBaseUrl returns '/api' only when absHost is empty (proxy mode).
-  // nginx already has ABS_HOST baked in — skip the server URL step entirely.
+  // nginx proxies /status → ABS, so we can detect OIDC without knowing the host.
   const base = await getBaseUrl()
   if (base === '/api') {
+    isProxyMode.value = true
     serverProbed.value = true
     probeSuccess.value = true
+    try {
+      const res = await fetch('/status')
+      if (res.ok) {
+        const status = await res.json()
+        if (status.authMethods?.includes('openid')) {
+          oidcProviders.value = [{ id: 'openid', name: 'SSO' }]
+        }
+      }
+    } catch { /* non-critical — login form still works */ }
   }
   timer = setInterval(() => goToSlide((currentSlide.value + 1) % slideCaptions.length), 4000)
 })
@@ -297,6 +309,7 @@ function goToSlide(n: number) {
 .form-heading { font-size:1.4rem; font-weight:800; letter-spacing:-0.4px; margin-bottom:0.25rem; }
 .form-sub { font-size:0.8rem; color:rgba(255,255,255,0.35); margin-bottom:1.5rem; }
 .server-url-hint { cursor:pointer; }
+.server-url-hint.no-click { cursor:default; }
 .change-link { color:#d4a017; font-weight:600; margin-left:6px; }
 .oidc-btn { border-color:rgba(255,255,255,0.1) !important; color:rgba(255,255,255,0.7) !important; }
 .divider-row { display:flex; align-items:center; gap:10px; margin:0.75rem 0; }
