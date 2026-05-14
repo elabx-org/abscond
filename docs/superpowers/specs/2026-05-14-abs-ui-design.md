@@ -164,10 +164,32 @@ Floating pill at bottom of screen (above nav bar). Dark `#1e1e1e` bg + 1px `rgba
 
 ### 5.1 Login
 
-- Full-screen, `#0E0E0E` background.
-- ABS server URL input + username/password fields. Form inputs follow Section 3 style.
-- "Sign in" primary button in accent fill.
-- On success: store JWT + user in Pinia → redirect to Home.
+**Layout — Desktop / Tablet (≥ 640px): Split view**
+
+Two equal-width panels side by side, full viewport height.
+
+- **Left panel (hero):** Dark gradient background — `linear-gradient(135deg, #0a0a0a 0%, #1a1000 60%, #2a1800 100%)`. Centre: app logo (large, white) + tagline below. Behind the text: a subtle blurred cover-art collage (3–4 random library covers at low opacity, `filter: blur(40px)`, positioned absolutely). Bottom of panel: "Audiobookshelf client" attribution in small muted text.
+- **Right panel (form):** `#111` background. Content vertically centred. Contains the form card (see below).
+
+**Layout — Mobile (< 640px): Stacked**
+
+- Top 35%: hero area — logo + blurred cover bg, same gradient.
+- Bottom 65%: form scrolls up from below, `border-radius: 24px 24px 0 0` (sheet-style), `#111` bg.
+
+**Form card contents (both layouts):**
+
+1. **Server URL input** — placeholder `https://your-abs-server.com`. On blur: validates + fetches `/api/authorize` to discover available auth methods. Shows a subtle spinner while probing.
+2. **Auth method section** — rendered after server responds:
+   - If OIDC / social providers are configured: provider buttons first, e.g. "Continue with Google" / "Continue with [provider name]". Each button: provider icon + label, `rgba(255,255,255,0.06)` bg, `rgba(255,255,255,0.1)` border, full width.
+   - Divider: `──── or ────` in muted grey, only shown if both OIDC and local auth are available.
+   - Username + Password fields (local auth). Follow Section 3 form input style.
+3. **Sign in button** — full-width, accent fill, `border-radius: 12px`.
+4. **Error state** — red pill toast below button, not inline field errors.
+5. **"Remember server URL"** toggle — small, below sign in button.
+
+**On success:** store JWT + user object in Pinia + `localStorage` → redirect to Home.
+
+**OIDC flow:** clicking a provider button opens the provider's OAuth consent screen in the same tab. On return, ABS issues a JWT; app stores it and redirects to Home.
 
 ### 5.2 Home
 
