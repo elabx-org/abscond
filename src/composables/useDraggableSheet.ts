@@ -1,4 +1,4 @@
-import { ref } from 'vue'
+import { ref, onBeforeUnmount } from 'vue'
 
 interface SheetOptions { initial: number; min: number; max: number }
 
@@ -33,6 +33,11 @@ export function useDraggableSheet({ initial, min, max }: SheetOptions) {
     window.removeEventListener('pointermove', onPointerMove)
     window.removeEventListener('pointerup', onPointerUp)
   }
+
+  onBeforeUnmount(() => {
+    window.removeEventListener('pointermove', onPointerMove)
+    window.removeEventListener('pointerup', onPointerUp)
+  })
 
   return { heightPct, isDragging, onPointerDown }
 }
