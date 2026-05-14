@@ -53,10 +53,13 @@ export async function createApiClient() {
   return client
 }
 
+import type { AxiosInstance } from 'axios'
+
 const apiPromise = createApiClient()
-export const api = {
-  get:    (...a: any[]) => apiPromise.then(c => (c.get as any)(...a)),
-  post:   (...a: any[]) => apiPromise.then(c => (c.post as any)(...a)),
-  patch:  (...a: any[]) => apiPromise.then(c => (c.patch as any)(...a)),
-  delete: (...a: any[]) => apiPromise.then(c => (c.delete as any)(...a)),
+
+export const api: Pick<AxiosInstance, 'get' | 'post' | 'patch' | 'delete'> = {
+  get:    (url: string, config?: any) => apiPromise.then(c => c.get(url, config)),
+  post:   (url: string, data?: any, config?: any) => apiPromise.then(c => c.post(url, data, config)),
+  patch:  (url: string, data?: any, config?: any) => apiPromise.then(c => c.patch(url, data, config)),
+  delete: (url: string, config?: any) => apiPromise.then(c => c.delete(url, config)),
 }

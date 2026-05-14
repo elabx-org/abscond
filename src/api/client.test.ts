@@ -1,5 +1,5 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { resolveBaseUrl, createApiClient } from './client'
+import { describe, it, expect } from 'vitest'
+import { resolveBaseUrl } from './client'
 
 describe('resolveBaseUrl', () => {
   it('returns /api when absHost is empty (proxy mode)', () => {
