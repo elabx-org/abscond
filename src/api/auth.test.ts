@@ -2,28 +2,46 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 
 vi.mock('./client', () => ({
   api: {
-    get:  vi.fn(),
     post: vi.fn(),
   },
   resolveBaseUrl: vi.fn(),
 }))
 
+vi.mock('axios', () => ({
+  default: {
+    get: vi.fn(),
+  },
+}))
+
+import axios from 'axios'
 import { api } from './client'
 import { fetchStatus, login } from './auth'
 
-const mockPost = api.post as ReturnType<typeof vi.fn>
+const mockGet  = axios.get  as ReturnType<typeof vi.fn>
+const mockPost = api.post   as ReturnType<typeof vi.fn>
 
-beforeEach(() => { mockPost.mockReset() })
+beforeEach(() => {
+  mockGet.mockReset()
+  mockPost.mockReset()
+})
 
 describe('fetchStatus', () => {
   it('returns auth methods from /status', async () => {
-    // fetchStatus uses axios directly (not api proxy) to hit the ABS server before login
-    // It's an integration boundary — just test the shape of the return value
-    const result = await fetchStatus('https://abs.example.com').catch(() => null)
-    // fetchStatus makes a real HTTP call to the given host — in tests it will fail
-    // We just verify it doesn't throw unexpectedly; the mock import is enough to
-    // confirm the function exists and accepts the right argument
-    expect(true).toBe(true) // existence test — real integration tests would mock axios
+    mockGet.mockResolvedValueOnce({
+      data: { isInit: true, authMethods: ['local', 'openid'] },
+    })
+    const result = await fetchStatus('https://abs.example.com')
+    expect(mockGet).toHaveBeenCalledWith('https://abs.example.com/status', { timeout: 8000 })
+    expect(result.isInit).toBe(true)
+    expect(result.authMethods).toEqual(['local', 'openid'])
+  })
+
+  it('strips trailing slash from absHost', async () => {
+    mockGet.mockResolvedValueOnce({
+      data: { isInit: true, authMethods: ['local'] },
+    })
+    await fetchStatus('https://abs.example.com/')
+    expect(mockGet).toHaveBeenCalledWith('https://abs.example.com/status', { timeout: 8000 })
   })
 })
 
