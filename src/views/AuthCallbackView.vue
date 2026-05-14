@@ -11,7 +11,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { useAuthStore } from '@/stores/auth'
+import { useAuthStore, type AbsUser } from '@/stores/auth'
 import { connectSocket } from '@/api/socket'
 import { getBaseUrl } from '@/api/client'
 
@@ -20,17 +20,14 @@ const router = useRouter()
 const auth   = useAuthStore()
 const error  = ref('')
 
-function finishLogin(token: string, userData?: Record<string, unknown>) {
-  const user = userData ?? (() => {
-    const payload = JSON.parse(atob(token.split('.')[1]))
-    return {
-      id:          payload.userId ?? payload.sub ?? '',
-      username:    payload.username ?? payload.name ?? '',
-      isAdminOrUp: !!payload.isAdminOrUp,
-      token,
-    }
-  })()
-  auth.setSession(token, user)
+function userFromJwt(token: string): AbsUser {
+  const payload = JSON.parse(atob(token.split('.')[1]))
+  return {
+    id:          payload.userId ?? payload.sub ?? '',
+    username:    payload.username ?? payload.name ?? '',
+    isAdminOrUp: !!payload.isAdminOrUp,
+    token,
+  }
 }
 
 onMounted(async () => {
@@ -53,31 +50,26 @@ onMounted(async () => {
       if (!res.ok) throw new Error(`Token exchange failed (${res.status})`)
       const data = await res.json()
 
-      const accessToken = data?.user?.token ?? data?.user?.accessToken
+      const accessToken: string = data?.user?.token ?? data?.user?.accessToken
       if (!accessToken) throw new Error('No token in server response.')
 
-      finishLogin(accessToken, {
+      const user: AbsUser = {
         id:          data.user.id          ?? '',
         username:    data.user.username    ?? '',
         isAdminOrUp: data.user.isAdminOrUp ?? false,
         token:       accessToken,
-      })
+      }
+      auth.setSession(accessToken, user)
     } else if (token) {
       // Legacy web flow — ABS returned token directly
-      const payload = JSON.parse(atob(token.split('.')[1]))
-      finishLogin(token, {
-        id:          payload.userId ?? payload.sub ?? '',
-        username:    payload.username ?? payload.name ?? '',
-        isAdminOrUp: !!payload.isAdminOrUp,
-        token,
-      })
+      auth.setSession(token, userFromJwt(token))
     } else {
       throw new Error('No token received from SSO provider.')
     }
 
     const base = await getBaseUrl()
     const host = base === '/api' ? '' : base.replace(/\/api$/, '')
-    connectSocket(host, auth.token)
+    connectSocket(host, auth.token ?? '')
 
     router.push({ name: 'home' })
   } catch (e: any) {
