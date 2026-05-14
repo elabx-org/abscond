@@ -66,3 +66,11 @@ export const api: Pick<AxiosInstance, 'get' | 'post' | 'patch' | 'delete'> = {
   patch:  (url: string, data?: any, config?: any) => apiPromise.then(c => c.patch(url, data, config)),
   delete: (url: string, config?: any) => apiPromise.then(c => c.delete(url, config)),
 }
+
+let _resolvedBase: string | null = null
+getBaseUrl().then(b => { _resolvedBase = b })
+
+export function coverUrl(itemId: string, token: string): string {
+  const base = _resolvedBase ?? '/api'
+  return `${base}/items/${encodeURIComponent(itemId)}/cover?token=${encodeURIComponent(token)}`
+}
