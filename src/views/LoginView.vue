@@ -137,12 +137,6 @@ import { getBaseUrl } from '@/api/client'
 const router = useRouter()
 const auth   = useAuthStore()
 
-/* ─── Responsive ─── */
-const windowWidth = ref(window.innerWidth)
-const onResize = () => { windowWidth.value = window.innerWidth }
-onMounted(() => window.addEventListener('resize', onResize))
-onBeforeUnmount(() => window.removeEventListener('resize', onResize))
-
 /* ─── Server probe ─── */
 const serverUrl     = ref('')
 const probing       = ref(false)
@@ -157,14 +151,14 @@ async function probeServer() {
   probeError.value = ''
   try {
     const status = await fetchStatus(serverUrl.value)
-    if (!status.isInit) { probeError.value = 'Server not initialised.'; return }
+    if (!status.isInit) throw new Error('Server not initialised.')
     probeSuccess.value = true
     serverProbed.value = true
     if (status.authMethods.includes('openid')) {
       oidcProviders.value = [{ id: 'openid', name: 'SSO' }]
     }
-  } catch {
-    probeError.value = 'Could not reach server. Check the URL and try again.'
+  } catch (e: any) {
+    probeError.value = e?.message || 'Could not reach server. Check the URL and try again.'
   } finally {
     probing.value = false
   }
