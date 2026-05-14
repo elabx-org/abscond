@@ -1,4 +1,4 @@
-# abs-ui Design Specification
+# abscond Design Specification
 
 **Date:** 2026-05-14  
 **Status:** Approved — ready for implementation planning
@@ -7,7 +7,7 @@
 
 ## 1. Overview
 
-`abs-ui` is a standalone modern web client for the [Audiobookshelf](https://github.com/advplyr/audiobookshelf) server. It connects to an existing ABS instance via its public REST API and Socket.io, replacing the built-in web UI entirely — both the listener-facing features and the full admin panel.
+`abscond` is a standalone modern web client for the [Audiobookshelf](https://github.com/advplyr/audiobookshelf) server. It connects to an existing ABS instance via its public REST API and Socket.io, replacing the built-in web UI entirely — both the listener-facing features and the full admin panel.
 
 The visual design faithfully replicates [Absorb](https://github.com/pounat/absorb), a Flutter mobile app built on Material3. Every feature — including admin panel, podcast management, e-book reader, stats, and upload — uses this same design language. There are no "admin-plain" or "utility-plain" pages. The design is consistent throughout.
 
@@ -419,7 +419,7 @@ Editing chapter times: tap time chip → time picker (HH:MM:SS.ms) bottom sheet.
 - No auth required.
 - Same player UI as the main Player screen but stripped of library navigation.
 - Same dark palette, same cover bleed card.
-- ABS branding replaced with `abs-ui` logo.
+- ABS branding replaced with `abscond` logo.
 
 ### 5.18 Download Queue (Podcasts)
 
@@ -676,7 +676,7 @@ ABS server URL configured via runtime `/config.json` mounted into the container 
 
 ### Sub-path support
 
-`VITE_BASE_URL` env var sets Vite `base` for e.g. `/abs-ui/` deploys.
+`VITE_BASE_URL` env var sets Vite `base` for e.g. `/abscond/` deploys.
 
 ---
 
