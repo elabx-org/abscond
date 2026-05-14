@@ -143,7 +143,7 @@ import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { fetchStatus, login } from '@/api/auth'
 import { connectSocket } from '@/api/socket'
-import { getBaseUrl, getExternalUrl } from '@/api/client'
+import { getBaseUrl } from '@/api/client'
 
 const router = useRouter()
 const auth   = useAuthStore()
@@ -191,10 +191,11 @@ function base64url(bytes: Uint8Array): string {
 }
 
 async function startOidc(provider: { id: string }) {
-  const absBase = isProxyMode.value ? getExternalUrl() : serverUrl.value
+  // In proxy mode route through nginx: session cookie stays on this origin so
+  // the code exchange works without cross-origin cookie restrictions (iOS ITP).
+  // In standalone mode talk to the ABS server directly.
+  const absBase = isProxyMode.value ? '' : serverUrl.value
 
-  // PKCE — triggers ABS "mobile flow" which uses the Allowed Mobile Redirect URIs
-  // whitelist instead of the strict same-origin check.
   const verifier  = base64url(crypto.getRandomValues(new Uint8Array(32)))
   const hashBuf   = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(verifier))
   const challenge = base64url(new Uint8Array(hashBuf))

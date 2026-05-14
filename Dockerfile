@@ -14,8 +14,10 @@ COPY --from=builder /app/dist /usr/share/nginx/html
 COPY nginx/nginx.conf /etc/nginx/nginx.conf.template
 COPY nginx/config.json.template /etc/config.json.template
 
-# envsubst replaces ${ABS_HOST} and ${ABS_EXTERNAL_URL} at container start
+# envsubst replaces ${ABS_HOST}, ${ABS_EXTERNAL_HOST}, and ${ABS_EXTERNAL_URL} at container start
 CMD ["/bin/sh", "-c", \
-  "envsubst '${ABS_HOST}' < /etc/nginx/nginx.conf.template > /etc/nginx/nginx.conf && \
+  "ABS_EXTERNAL_HOST=$(echo \"$ABS_EXTERNAL_URL\" | sed 's|^https://||;s|^http://||' | cut -d/ -f1) && \
+   export ABS_EXTERNAL_HOST && \
+   envsubst '${ABS_HOST} ${ABS_EXTERNAL_HOST}' < /etc/nginx/nginx.conf.template > /etc/nginx/nginx.conf && \
    envsubst '${ABS_EXTERNAL_URL}' < /etc/config.json.template > /usr/share/nginx/html/config.json && \
    nginx -g 'daemon off;'"]
