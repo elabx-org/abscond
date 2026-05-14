@@ -13,9 +13,9 @@
         <v-icon size="32" color="rgba(255,255,255,0.2)">mdi-book-open-variant</v-icon>
       </div>
       <div
-        v-if="progress > 0"
+        v-if="(progress ?? 0) > 0"
         class="progress-bar"
-        :style="{ width: `${Math.round(progress * 100)}%`, background: accent }"
+        :style="{ width: `${Math.round((progress ?? 0) * 100)}%`, background: accent }"
       />
     </div>
     <p class="card-title">{{ title }}</p>
