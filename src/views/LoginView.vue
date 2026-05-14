@@ -184,12 +184,35 @@ function resetProbe() {
   showLocalAuth.value = false
 }
 
-function startOidc(provider: { id: string }) {
-  // ABS same-origin check is bypassed via "Allowed Mobile Redirect URIs" in ABS admin settings.
-  // Add this abscond URL (or '*') there so ABS accepts the cross-origin callback.
+function base64url(bytes: Uint8Array): string {
+  let s = ''
+  for (const b of bytes) s += String.fromCharCode(b)
+  return btoa(s).replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '')
+}
+
+async function startOidc(provider: { id: string }) {
   const absBase = isProxyMode.value ? getExternalUrl() : serverUrl.value
-  const callbackUrl = `${window.location.origin}/auth/callback`
-  window.location.href = `${absBase}/auth/${provider.id}?callback=${encodeURIComponent(callbackUrl)}`
+
+  // PKCE — triggers ABS "mobile flow" which uses the Allowed Mobile Redirect URIs
+  // whitelist instead of the strict same-origin check.
+  const verifier  = base64url(crypto.getRandomValues(new Uint8Array(32)))
+  const hashBuf   = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(verifier))
+  const challenge = base64url(new Uint8Array(hashBuf))
+  const state     = base64url(crypto.getRandomValues(new Uint8Array(16)))
+
+  sessionStorage.setItem('oidc_verifier', verifier)
+  sessionStorage.setItem('oidc_state',    state)
+
+  const redirect_uri = `${window.location.origin}/auth/callback`
+  const params = new URLSearchParams({
+    response_type:         'code',
+    code_challenge:        challenge,
+    code_challenge_method: 'S256',
+    redirect_uri,
+    client_id:             'Abscond',
+    state,
+  })
+  window.location.href = `${absBase}/auth/${provider.id}?${params}`
 }
 
 /* ─── Login ─── */

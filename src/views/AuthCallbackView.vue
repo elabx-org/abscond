@@ -20,31 +20,68 @@ const router = useRouter()
 const auth   = useAuthStore()
 const error  = ref('')
 
-onMounted(async () => {
-  const token = route.query.token as string | undefined
-  if (!token) {
-    error.value = 'No token received from SSO provider.'
-    return
-  }
-
-  try {
-    // Decode ABS JWT payload — ABS signs it server-side, we just need the claims.
+function finishLogin(token: string, userData?: Record<string, unknown>) {
+  const user = userData ?? (() => {
     const payload = JSON.parse(atob(token.split('.')[1]))
-    const user = {
-      id:           payload.userId ?? payload.sub ?? '',
-      username:     payload.username ?? payload.name ?? '',
-      isAdminOrUp:  !!payload.isAdminOrUp,
+    return {
+      id:          payload.userId ?? payload.sub ?? '',
+      username:    payload.username ?? payload.name ?? '',
+      isAdminOrUp: !!payload.isAdminOrUp,
       token,
     }
-    auth.setSession(token, user)
+  })()
+  auth.setSession(token, user)
+}
+
+onMounted(async () => {
+  const code  = route.query.code  as string | undefined
+  const state = route.query.state as string | undefined
+  const token = route.query.token as string | undefined
+
+  try {
+    if (code && state) {
+      // PKCE mobile flow — exchange code for token via ABS /auth/openid/callback
+      const verifier   = sessionStorage.getItem('oidc_verifier') ?? ''
+      const savedState = sessionStorage.getItem('oidc_state')    ?? ''
+      sessionStorage.removeItem('oidc_verifier')
+      sessionStorage.removeItem('oidc_state')
+
+      if (state !== savedState) throw new Error('State mismatch — possible CSRF.')
+
+      const params = new URLSearchParams({ state, code, code_verifier: verifier })
+      const res = await fetch(`/auth/openid/callback?${params}`, { credentials: 'include' })
+      if (!res.ok) throw new Error(`Token exchange failed (${res.status})`)
+      const data = await res.json()
+
+      const accessToken = data?.user?.token ?? data?.user?.accessToken
+      if (!accessToken) throw new Error('No token in server response.')
+
+      finishLogin(accessToken, {
+        id:          data.user.id          ?? '',
+        username:    data.user.username    ?? '',
+        isAdminOrUp: data.user.isAdminOrUp ?? false,
+        token:       accessToken,
+      })
+    } else if (token) {
+      // Legacy web flow — ABS returned token directly
+      const payload = JSON.parse(atob(token.split('.')[1]))
+      finishLogin(token, {
+        id:          payload.userId ?? payload.sub ?? '',
+        username:    payload.username ?? payload.name ?? '',
+        isAdminOrUp: !!payload.isAdminOrUp,
+        token,
+      })
+    } else {
+      throw new Error('No token received from SSO provider.')
+    }
 
     const base = await getBaseUrl()
     const host = base === '/api' ? '' : base.replace(/\/api$/, '')
-    connectSocket(host, token)
+    connectSocket(host, auth.token)
 
     router.push({ name: 'home' })
-  } catch {
-    error.value = 'SSO login failed. Please try again.'
+  } catch (e: any) {
+    error.value = e?.message ?? 'SSO login failed. Please try again.'
   }
 })
 </script>
