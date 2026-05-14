@@ -143,7 +143,7 @@ import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { fetchStatus, login } from '@/api/auth'
 import { connectSocket } from '@/api/socket'
-import { getBaseUrl } from '@/api/client'
+import { getBaseUrl, getExternalUrl } from '@/api/client'
 
 const router = useRouter()
 const auth   = useAuthStore()
@@ -185,11 +185,12 @@ function resetProbe() {
 }
 
 function startOidc(provider: { id: string }) {
-  // In proxy mode, route the auth initiation through nginx (/auth/ is proxied
-  // to ABS). nginx forwards Host: abs.elabx.app, so ABS sees request + callback
-  // as same-origin and accepts the redirect. In direct mode use the server URL.
-  const absBase = isProxyMode.value ? window.location.origin : serverUrl.value
-  const callbackUrl = `${window.location.origin}/auth/callback`
+  // ABS validates ?callback= against its own configured serverUrl (same-origin).
+  // Use the ABS external URL for both the initiation and the callback so the
+  // check passes. Traefik then intercepts audiobooks.*/auth/callback and relays
+  // to abs.*/auth/callback with the token query parameter intact.
+  const absBase = isProxyMode.value ? getExternalUrl() : serverUrl.value
+  const callbackUrl = `${absBase}/auth/callback`
   window.location.href = `${absBase}/auth/${provider.id}?callback=${encodeURIComponent(callbackUrl)}`
 }
 
