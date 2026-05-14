@@ -36,6 +36,8 @@ export function useColorThief(imgRef: Ref<HTMLImageElement | null>) {
   async function extract() {
     if (!imgRef.value?.complete || !imgRef.value.naturalWidth) return
     try {
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore — color-thief-ts exports field doesn't expose types; runtime works fine
       const ColorThief = (await import('color-thief-ts')).default
       const thief = new ColorThief()
       const color = thief.getColor(imgRef.value) as [number, number, number]

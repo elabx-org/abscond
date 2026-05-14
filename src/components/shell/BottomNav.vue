@@ -2,7 +2,7 @@
   <nav class="bottom-nav">
     <button
       v-for="item in navItems"
-      :key="item.name"
+      :key="item.route"
       data-testid="nav-item"
       class="nav-item"
       :class="{ active: isActive(item.route) }"
