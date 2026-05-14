@@ -10,6 +10,11 @@ export default defineConfig({
     vuetify({ autoImport: true }),
     VitePWA({
       registerType: 'autoUpdate',
+      workbox: {
+        // Don't intercept /auth/* navigations — these must reach nginx/ABS
+        // for the OIDC flow to work (service worker would return index.html).
+        navigateFallbackDenylist: [/^\/auth\//],
+      },
       manifest: {
         name: 'Abscond',
         short_name: 'Abscond',
