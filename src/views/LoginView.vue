@@ -173,7 +173,9 @@ function resetProbe() {
 }
 
 function startOidc(provider: { id: string }) {
-  window.location.href = `${serverUrl.value}/auth/${provider.id}`
+  // In proxy mode serverUrl is empty — use relative path so nginx proxies to ABS.
+  const base = isProxyMode.value ? '' : serverUrl.value
+  window.location.href = `${base}/auth/${provider.id}`
 }
 
 /* ─── Login ─── */
