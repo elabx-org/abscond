@@ -28,10 +28,19 @@ export interface PodcastEpisode {
   userEpisodeProgress?: { progress: number; currentTime: number; isFinished: boolean } | null
 }
 
+export interface PodcastSettings {
+  autoDownloadEpisodes: boolean
+  autoDownloadSchedule?: string
+  lastEpisodeCheck?: number
+  maxEpisodesToKeep: number
+  maxNewEpisodesToDownload: number
+}
+
 export interface PodcastItem extends LibraryItem {
   media: LibraryItem['media'] & {
     episodes?: PodcastEpisode[]
     numEpisodes?: number
+    settings?: PodcastSettings
     metadata: LibraryItem['media']['metadata'] & {
       feedUrl?: string | null
       language?: string | null

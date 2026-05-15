@@ -23,11 +23,52 @@
         </div>
       </div>
 
-      <!-- Refresh feed -->
+      <!-- Refresh feed + Settings toggle row -->
       <div class="ep-refresh-row">
         <button class="ep-refresh-btn" :disabled="refreshing" @click="refreshFeed">
           <v-icon size="14" :class="{ spin: refreshing }">mdi-refresh</v-icon>
           {{ refreshing ? 'Checking for new episodes…' : 'Refresh feed' }}
+        </button>
+        <button class="ep-settings-btn" @click="showSettings = !showSettings">
+          <v-icon size="14">{{ showSettings ? 'mdi-chevron-up' : 'mdi-cog-outline' }}</v-icon>
+          Settings
+        </button>
+      </div>
+
+      <!-- Podcast settings panel -->
+      <div v-if="showSettings" class="podcast-settings-panel">
+        <div class="settings-row">
+          <span class="settings-label">Auto-download new episodes</span>
+          <button class="toggle-btn" :class="{ on: settingsForm.autoDownload }" @click="settingsForm.autoDownload = !settingsForm.autoDownload">
+            <div class="toggle-knob" />
+          </button>
+        </div>
+        <div class="settings-row">
+          <span class="settings-label">Max episodes to keep</span>
+          <div class="stepper">
+            <button class="step-btn" @click="settingsForm.maxToKeep = Math.max(0, settingsForm.maxToKeep - 1)">
+              <v-icon size="14">mdi-minus</v-icon>
+            </button>
+            <span class="step-val">{{ settingsForm.maxToKeep === 0 ? '∞' : settingsForm.maxToKeep }}</span>
+            <button class="step-btn" @click="settingsForm.maxToKeep++">
+              <v-icon size="14">mdi-plus</v-icon>
+            </button>
+          </div>
+        </div>
+        <div class="settings-row">
+          <span class="settings-label">Max new eps to download</span>
+          <div class="stepper">
+            <button class="step-btn" @click="settingsForm.maxNew = Math.max(0, settingsForm.maxNew - 1)">
+              <v-icon size="14">mdi-minus</v-icon>
+            </button>
+            <span class="step-val">{{ settingsForm.maxNew === 0 ? '∞' : settingsForm.maxNew }}</span>
+            <button class="step-btn" @click="settingsForm.maxNew++">
+              <v-icon size="14">mdi-plus</v-icon>
+            </button>
+          </div>
+        </div>
+        <button class="settings-save-btn" :disabled="savingSettings" @click="saveSettings">
+          {{ savingSettings ? 'Saving…' : 'Save settings' }}
         </button>
       </div>
 
@@ -93,7 +134,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { usePlayerStore } from '@/stores/player'
@@ -104,12 +145,26 @@ import type { PodcastItem, PodcastEpisode } from '@/api/browse'
 const route  = useRoute()
 const auth   = useAuthStore()
 const player = usePlayerStore()
-const loading   = ref(false)
-const refreshing = ref(false)
+const loading        = ref(false)
+const refreshing     = ref(false)
+const showSettings   = ref(false)
+const savingSettings = ref(false)
 const item    = ref<PodcastItem | null>(null)
 const epSearch     = ref('')
 const epFilter     = ref<'all' | 'unfinished' | 'finished'>('all')
 const expandedEps  = ref(new Set<string>())
+
+const settingsForm = ref({ autoDownload: false, maxToKeep: 0, maxNew: 3 })
+
+watch(item, (v) => {
+  if (!v) return
+  const s = v.media.settings
+  settingsForm.value = {
+    autoDownload: s?.autoDownloadEpisodes ?? false,
+    maxToKeep:    s?.maxEpisodesToKeep ?? 0,
+    maxNew:       s?.maxNewEpisodesToDownload ?? 3,
+  }
+})
 
 function toggleExpand(id: string) {
   if (expandedEps.value.has(id)) expandedEps.value.delete(id)
@@ -167,6 +222,27 @@ async function refreshFeed() {
   finally { refreshing.value = false }
 }
 
+async function saveSettings() {
+  if (!item.value) return
+  savingSettings.value = true
+  try {
+    await api.patch(`/items/${item.value.id}/media`, {
+      settings: {
+        autoDownloadEpisodes:      settingsForm.value.autoDownload,
+        maxEpisodesToKeep:         settingsForm.value.maxToKeep,
+        maxNewEpisodesToDownload:  settingsForm.value.maxNew,
+      },
+    })
+    if (item.value.media.settings) {
+      item.value.media.settings.autoDownloadEpisodes     = settingsForm.value.autoDownload
+      item.value.media.settings.maxEpisodesToKeep        = settingsForm.value.maxToKeep
+      item.value.media.settings.maxNewEpisodesToDownload = settingsForm.value.maxNew
+    }
+    showSettings.value = false
+  } catch { /* ignore */ }
+  finally { savingSettings.value = false }
+}
+
 function formatDate(ts: number): string {
   return new Date(ts * 1000).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
 }
@@ -206,13 +282,44 @@ onMounted(async () => {
 .podcast-info { flex: 1; }
 .podcast-desc { font-size: 12px; color: rgba(255,255,255,0.45); margin: 0; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; }
 
-.ep-refresh-row { margin-bottom: 10px; }
-.ep-refresh-btn {
+.ep-refresh-row { display: flex; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
+.ep-refresh-btn, .ep-settings-btn {
   display: flex; align-items: center; gap: 5px; font-size: 11px; padding: 6px 12px;
   border-radius: 20px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08);
   color: rgba(255,255,255,0.5); cursor: pointer;
 }
 .ep-refresh-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.podcast-settings-panel {
+  background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 12px; padding: 14px; margin-bottom: 14px;
+}
+.settings-row { display: flex; align-items: center; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
+.settings-row:last-of-type { border-bottom: none; }
+.settings-label { font-size: 12px; color: rgba(255,255,255,0.6); }
+.toggle-btn {
+  width: 42px; height: 24px; border-radius: 12px; border: none; cursor: pointer;
+  background: rgba(255,255,255,0.1); position: relative; transition: background 0.2s;
+}
+.toggle-btn.on { background: #d4a017; }
+.toggle-knob {
+  width: 18px; height: 18px; border-radius: 50%; background: white;
+  position: absolute; top: 3px; left: 3px; transition: transform 0.2s;
+}
+.toggle-btn.on .toggle-knob { transform: translateX(18px); }
+.stepper { display: flex; align-items: center; gap: 10px; }
+.step-btn {
+  width: 26px; height: 26px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.12);
+  background: rgba(255,255,255,0.05); color: rgba(255,255,255,0.7); cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+}
+.step-val { font-size: 13px; font-weight: 700; color: rgba(255,255,255,0.85); min-width: 24px; text-align: center; }
+.settings-save-btn {
+  width: 100%; margin-top: 10px; padding: 10px; border-radius: 10px;
+  border: none; background: rgba(212,160,23,0.15); border: 1px solid rgba(212,160,23,0.3);
+  color: #d4a017; font-size: 13px; font-weight: 700; cursor: pointer;
+}
+.settings-save-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 .ep-filter-row { margin-bottom: 12px; }
 .ep-search-wrap {
   display: flex; align-items: center; gap: 8px; margin-bottom: 8px;
