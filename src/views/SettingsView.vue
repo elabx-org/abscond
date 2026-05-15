@@ -47,14 +47,30 @@
 
       <div class="settings-item">
         <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-skip-backward</v-icon>
-        <span class="item-label">Skip back interval</span>
-        <span class="item-value">{{ skipBackSecs }}s</span>
+        <span class="item-label">Skip back</span>
+        <div class="interval-chips">
+          <button
+            v-for="s in skipIntervalOptions"
+            :key="s"
+            class="interval-chip"
+            :class="{ active: skipBackSecs === s }"
+            @click="setSkipBack(s)"
+          >{{ s }}s</button>
+        </div>
       </div>
 
       <div class="settings-item">
         <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-skip-forward</v-icon>
-        <span class="item-label">Skip forward interval</span>
-        <span class="item-value">{{ skipFwdSecs }}s</span>
+        <span class="item-label">Skip forward</span>
+        <div class="interval-chips">
+          <button
+            v-for="s in skipIntervalOptions"
+            :key="s"
+            class="interval-chip"
+            :class="{ active: skipFwdSecs === s }"
+            @click="setSkipFwd(s)"
+          >{{ s }}s</button>
+        </div>
       </div>
     </section>
 
@@ -196,9 +212,21 @@ const skipFwdSecs = ref<number>(
   parseInt(localStorage.getItem('abs_skip_fwd') ?? '30')
 )
 
+const skipIntervalOptions = [10, 15, 30, 45, 60]
+
 function savePlaybackRate() {
   localStorage.setItem('abs_playback_rate', String(playbackRate.value))
   player.setRate(playbackRate.value)
+}
+
+function setSkipBack(s: number) {
+  skipBackSecs.value = s
+  localStorage.setItem('abs_skip_back', String(s))
+}
+
+function setSkipFwd(s: number) {
+  skipFwdSecs.value = s
+  localStorage.setItem('abs_skip_fwd', String(s))
 }
 
 async function doLogout() {
@@ -263,6 +291,14 @@ async function doLogout() {
   display: flex; justify-content: space-between;
   font-size: 9px; color: rgba(255,255,255,0.25); margin-top: 4px;
 }
+
+.interval-chips { display: flex; gap: 4px; }
+.interval-chip {
+  font-size: 10px; padding: 3px 8px; border-radius: 20px; cursor: pointer;
+  background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08);
+  color: rgba(255,255,255,0.45); transition: all 0.15s;
+}
+.interval-chip.active { background: rgba(212,160,23,0.15); border-color: rgba(212,160,23,0.4); color: #d4a017; }
 
 .admin-link-wrap { margin-top: 8px; }
 .admin-link {

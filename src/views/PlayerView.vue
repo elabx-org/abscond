@@ -56,8 +56,8 @@
 
         <!-- Transport controls -->
         <div class="controls-area">
-          <button class="ctrl-btn" @click="player.skipBack(30)">
-            <v-icon size="28">mdi-rewind-30</v-icon>
+          <button class="ctrl-btn" @click="player.skipBack(skipBackSecs)">
+            <v-icon size="28">{{ skipBackSecs === 10 ? 'mdi-rewind-10' : skipBackSecs === 15 ? 'mdi-rewind-15' : 'mdi-rewind-30' }}</v-icon>
           </button>
 
           <button class="play-btn" :disabled="player.isLoading" @click="player.togglePlay()">
@@ -65,8 +65,8 @@
             <v-icon v-else size="40" color="#111">mdi-play</v-icon>
           </button>
 
-          <button class="ctrl-btn" @click="player.skipForward(30)">
-            <v-icon size="28">mdi-fast-forward-30</v-icon>
+          <button class="ctrl-btn" @click="player.skipForward(skipFwdSecs)">
+            <v-icon size="28">{{ skipFwdSecs === 10 ? 'mdi-fast-forward-10' : skipFwdSecs === 15 ? 'mdi-fast-forward-15' : 'mdi-fast-forward-30' }}</v-icon>
           </button>
         </div>
 
@@ -141,10 +141,13 @@ const player = usePlayerStore()
 const auth   = useAuthStore()
 const notify = useNotificationStore()
 
-const showChapters  = ref(false)
+const showChapters   = ref(false)
 const showSleepPicker = ref(false)
-const scrubberEl    = ref<HTMLElement | null>(null)
+const scrubberEl     = ref<HTMLElement | null>(null)
 let scrubbing = false
+
+const skipBackSecs = parseInt(localStorage.getItem('abs_skip_back') ?? '30')
+const skipFwdSecs  = parseInt(localStorage.getItem('abs_skip_fwd')  ?? '30')
 
 function setSleep(mins: number | null) {
   player.setSleepTimer(mins)

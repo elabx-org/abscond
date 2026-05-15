@@ -53,6 +53,7 @@ const router = createRouter({
             { path: 'settings',  name: 'admin-settings',  component: () => import('@/views/admin/ServerSettingsView.vue') },
             { path: 'backups',   name: 'admin-backups',   component: () => import('@/views/admin/BackupsView.vue') },
             { path: 'logs',      name: 'admin-logs',      component: () => import('@/views/admin/LogsView.vue') },
+            { path: 'upload',    name: 'admin-upload',    component: () => import('@/views/admin/UploadView.vue') },
           ],
         },
       ],

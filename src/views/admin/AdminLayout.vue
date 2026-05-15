@@ -41,6 +41,7 @@ const tabs = [
   { name: 'admin-settings',  label: 'Settings',  icon: 'mdi-cog' },
   { name: 'admin-backups',   label: 'Backups',   icon: 'mdi-backup-restore' },
   { name: 'admin-logs',      label: 'Logs',      icon: 'mdi-text-box-outline' },
+  { name: 'admin-upload',    label: 'Upload',    icon: 'mdi-upload' },
 ]
 </script>
 
