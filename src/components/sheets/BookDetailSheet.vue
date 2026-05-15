@@ -231,17 +231,18 @@
               </button>
               <div v-if="chaptersExpanded" class="chapters-list">
                 <div v-if="loadingChapters" class="chapters-loading">Loading…</div>
-                <button
-                  v-else
-                  v-for="ch in chapters"
-                  :key="ch.id"
-                  class="chapter-row"
-                  :class="{ active: isCurrentChapter(ch) }"
-                  @click="seekToChapter(ch)"
-                >
-                  <span class="chapter-title">{{ ch.title }}</span>
-                  <span class="chapter-time">{{ chapterFormatTime(ch.start) }}</span>
-                </button>
+                <template v-else>
+                  <button
+                    v-for="ch in chapters"
+                    :key="ch.id"
+                    class="chapter-row"
+                    :class="{ active: isCurrentChapter(ch) }"
+                    @click="seekToChapter(ch)"
+                  >
+                    <span class="chapter-title">{{ ch.title }}</span>
+                    <span class="chapter-time">{{ chapterFormatTime(ch.start) }}</span>
+                  </button>
+                </template>
               </div>
             </div>
 
@@ -275,16 +276,17 @@
               <div v-if="historyExpanded" class="chapters-list">
                 <div v-if="loadingHistory" class="chapters-loading">Loading…</div>
                 <div v-else-if="!history.length" class="chapters-loading" style="color:rgba(255,255,255,0.25)">No sessions recorded yet</div>
-                <div
-                  v-else
-                  v-for="sess in history"
-                  :key="sess.id"
-                  class="history-row"
-                >
-                  <div class="history-date">{{ _fmtSessionDate(sess.updatedAt) }}</div>
-                  <div class="history-dur">{{ _fmtSessionDur(sess.duration) }}</div>
-                  <div v-if="sess.deviceInfo?.deviceName" class="history-device">{{ sess.deviceInfo.deviceName }}</div>
-                </div>
+                <template v-else>
+                  <div
+                    v-for="sess in history"
+                    :key="sess.id"
+                    class="history-row"
+                  >
+                    <div class="history-date">{{ _fmtSessionDate(sess.updatedAt) }}</div>
+                    <div class="history-dur">{{ _fmtSessionDur(sess.duration) }}</div>
+                    <div v-if="sess.deviceInfo?.deviceName" class="history-device">{{ sess.deviceInfo.deviceName }}</div>
+                  </div>
+                </template>
               </div>
             </div>
 
@@ -714,6 +716,7 @@ watch(() => props.show, async (v) => {
     showShare.value       = false
     shareLink.value       = null
     showEdit.value        = false
+    showActions.value      = false
     chaptersExpanded.value = false
     chapters.value         = []
     bookmarksExpanded.value = false
