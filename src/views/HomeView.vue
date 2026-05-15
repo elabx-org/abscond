@@ -188,7 +188,7 @@
       :items="sectionSheet.items"
       :token="auth.token ?? ''"
       @close="sectionSheet = null"
-      @item-click="(item) => { sectionSheet = null; openDetail(item) }"
+      @item-click="(item) => { sectionSheet = null; openShelfItem(item) }"
     />
 
     <!-- Book detail sheet -->

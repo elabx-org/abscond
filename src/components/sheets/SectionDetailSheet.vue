@@ -88,7 +88,8 @@ function getCover(item: LibraryItem) {
 }
 
 function getTitle(item: LibraryItem): string {
-  const ep = (item as unknown as Record<string, unknown>).recentEpisode as Record<string, unknown> | undefined
+  const raw = item as unknown as Record<string, unknown>
+  const ep  = (raw.episode ?? raw.recentEpisode) as Record<string, unknown> | undefined
   return (ep?.title as string) || item.media.metadata.title
 }
 
