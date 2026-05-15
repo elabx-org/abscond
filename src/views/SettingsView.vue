@@ -217,6 +217,26 @@
       </div>
     </section>
 
+    <!-- Data & Backup -->
+    <section class="settings-section">
+      <p class="section-label">Data &amp; Backup</p>
+      <div class="settings-item" @click="exportSettings">
+        <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-export-variant</v-icon>
+        <span class="item-label">Export Settings</span>
+        <span class="item-value" style="font-size:11px">JSON</span>
+      </div>
+      <div class="settings-item" @click="triggerImport">
+        <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-import</v-icon>
+        <span class="item-label">Import Settings</span>
+        <input ref="importFileRef" type="file" accept=".json" style="display:none" @change="importSettings" />
+      </div>
+      <div class="settings-item" style="cursor:default">
+        <v-icon size="18" color="rgba(255,255,255,0.3)">mdi-note-outline</v-icon>
+        <span class="item-label" style="color:rgba(255,255,255,0.35)">Notes (per-book, stored locally)</span>
+        <span class="item-value" style="font-size:11px">{{ noteCount }} books</span>
+      </div>
+    </section>
+
     <!-- Admin link -->
     <div v-if="auth.isAdmin" class="admin-link-wrap">
       <button class="admin-link" @click="router.push({ name: 'admin-libraries' })">
@@ -335,6 +355,56 @@ const appVersion = __APP_VERSION__
 
 const confirmLogout      = ref(false)
 const socketConnected    = computed(() => socketStore.connected)
+const importFileRef      = ref<HTMLInputElement | null>(null)
+
+const noteCount = computed(() => {
+  let count = 0
+  for (let i = 0; i < localStorage.length; i++) {
+    const k = localStorage.key(i)
+    if (k?.startsWith('abs_notes_')) count++
+  }
+  return count
+})
+
+function exportSettings() {
+  const data: Record<string, string> = {}
+  const skipKeys = new Set(['abs_token', 'abs_base_url'])
+  for (let i = 0; i < localStorage.length; i++) {
+    const k = localStorage.key(i)
+    if (k && k.startsWith('abs_') && !skipKeys.has(k)) {
+      data[k] = localStorage.getItem(k) ?? ''
+    }
+  }
+  const now = new Date()
+  const date = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
+  const a = document.createElement('a')
+  a.href = URL.createObjectURL(blob)
+  a.download = `abscond_backup_${date}.json`
+  a.click()
+  URL.revokeObjectURL(a.href)
+}
+
+function triggerImport() { importFileRef.value?.click() }
+
+function importSettings(evt: Event) {
+  const file = (evt.target as HTMLInputElement).files?.[0]
+  if (!file) return
+  const reader = new FileReader()
+  reader.onload = (e) => {
+    try {
+      const data = JSON.parse(e.target?.result as string) as Record<string, string>
+      const skipKeys = new Set(['abs_token', 'abs_base_url'])
+      for (const [k, v] of Object.entries(data)) {
+        if (k.startsWith('abs_') && !skipKeys.has(k)) localStorage.setItem(k, v)
+      }
+      window.location.reload()
+    } catch {
+      alert('Invalid backup file')
+    }
+  }
+  reader.readAsText(file)
+}
 const showChangePassword = ref(false)
 const currentPw          = ref('')
 const newPw              = ref('')
