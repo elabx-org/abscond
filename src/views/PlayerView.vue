@@ -9,11 +9,6 @@
 
     <!-- Player (active or recent-only) -->
     <div v-else class="player-wrap" :class="{ 'scroll-locked': anyPanelOpen }">
-      <!-- Edge book progress bar -->
-      <div v-if="player.currentItem" class="edge-progress-bar">
-        <div class="edge-progress-fill" :style="{ width: `${player.progress * 100}%` }" />
-      </div>
-
       <!-- Blurred backdrop from active item or first recent -->
       <div class="player-backdrop">
         <Transition name="backdrop">
@@ -82,27 +77,55 @@
               :key="item.id"
               class="cover-slide"
             >
-              <div class="cover-img-wrap" :class="{ 'cover-inactive': i !== currentIndex && player.currentItem }">
+              <div class="cover-card">
+                <!-- Blurred cover background -->
                 <img
                   :src="coverUrl(item.id, auth.token ?? '')"
-                  :alt="item.media.metadata.title"
-                  class="cover-img"
-                  :class="{ 'cover-active-tap': i === currentIndex }"
-                  @click="i === currentIndex ? onCoverTap() : null"
+                  class="cover-card-bg"
+                  aria-hidden="true"
                 />
-                <!-- Tap feedback on active cover -->
-                <Transition name="cover-flash">
-                  <div v-if="coverFlash && i === currentIndex" class="cover-flash-overlay">
-                    <v-icon size="56" color="rgba(255,255,255,0.85)">{{ player.isPlaying ? 'mdi-pause' : 'mdi-play' }}</v-icon>
+                <div class="cover-card-scrim" />
+
+                <!-- Edge progress strip (only on active slide) -->
+                <div
+                  v-if="i === currentIndex && player.currentItem"
+                  class="cover-card-edge"
+                  :style="{ width: `${player.progress * 100}%` }"
+                />
+
+                <div class="cover-card-inner">
+                  <!-- Stats row -->
+                  <div v-if="i === currentIndex && player.currentItem" class="card-stats-row">
+                    <span class="card-stat">{{ formatTime(speedAdjustedElapsed) }}</span>
+                    <span class="card-stat card-stat--mid">{{ progressPct }}%</span>
+                    <span class="card-stat">-{{ formatTime(speedAdjustedRemaining) }}</span>
                   </div>
-                </Transition>
-                <!-- Play overlay on non-active slides -->
-                <div v-if="!player.currentItem || i !== currentIndex" class="cover-play-overlay" @click="switchToItem(item)">
-                  <v-icon size="40" color="white">mdi-play-circle</v-icon>
-                </div>
-                <!-- "Up Next" badge for queued items not yet played -->
-                <div v-if="player.queue.some(q => q.item.id === item.id) && i !== currentIndex" class="upnext-badge">
-                  Up Next
+
+                  <!-- Streaming indicator -->
+                  <div v-if="i === currentIndex && player.currentItem && player.isPlaying" class="card-stream-row">
+                    <span class="card-stream-dot" />
+                    <span class="card-stream-label">Streaming</span>
+                  </div>
+
+                  <!-- Cover image -->
+                  <div class="cover-img-wrap" :class="{ 'cover-inactive': i !== currentIndex && player.currentItem }">
+                    <img
+                      :src="coverUrl(item.id, auth.token ?? '')"
+                      :alt="item.media.metadata.title"
+                      class="cover-img"
+                      :class="{ 'cover-active-tap': i === currentIndex }"
+                      @click="i === currentIndex ? onCoverTap() : null"
+                    />
+                    <Transition name="cover-flash">
+                      <div v-if="coverFlash && i === currentIndex" class="cover-flash-overlay">
+                        <v-icon size="56" color="rgba(255,255,255,0.85)">{{ player.isPlaying ? 'mdi-pause' : 'mdi-play' }}</v-icon>
+                      </div>
+                    </Transition>
+                    <div v-if="!player.currentItem || i !== currentIndex" class="cover-play-overlay" @click="switchToItem(item)">
+                      <v-icon size="40" color="white">mdi-play-circle</v-icon>
+                    </div>
+                    <div v-if="player.queue.some(q => q.item.id === item.id) && i !== currentIndex" class="upnext-badge">Up Next</div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -118,13 +141,6 @@
             :class="{ active: i === currentIndex }"
             @click="switchToItem(carouselItems[i])"
           />
-        </div>
-
-        <!-- Title / author / chapter -->
-        <div class="meta-area">
-          <p class="book-title">{{ displayTitle }}</p>
-          <p class="book-author">{{ displayAuthor }}</p>
-          <p v-if="player.currentChapter && player.currentItem && !isPodcast" class="chapter-title">{{ player.currentChapter.title }}</p>
         </div>
 
         <!-- Progress — only when playing -->
@@ -949,16 +965,6 @@ function queueDragEnd() {
 .player-wrap::-webkit-scrollbar { display: none; }
 .player-wrap.scroll-locked { overflow: hidden; touch-action: none; }
 
-/* Edge progress bar (thin strip at very top of player) */
-.edge-progress-bar {
-  position: absolute; top: 0; left: 0; right: 0; height: 3px;
-  background: rgba(255,255,255,0.07); z-index: 10;
-}
-.edge-progress-fill {
-  height: 100%; background: #d4a017;
-  transition: width 0.5s linear; border-radius: 0 2px 2px 0;
-}
-
 .player-backdrop { position: absolute; inset: 0; z-index: 0; }
 .backdrop-img {
   width: 100%; height: 100%; object-fit: cover;
@@ -1018,28 +1024,79 @@ function queueDragEnd() {
 
 /* ── Carousel ────────────────────────────────────────────────────────────────── */
 .cover-carousel {
-  /* break out of player-content's 20px side padding */
-  width: 100vw; margin-left: -20px;
-  overflow: hidden; margin-bottom: 12px;
+  width: calc(100% + 40px); margin-left: -20px;
+  overflow: hidden; margin-bottom: 8px;
   touch-action: pan-y; flex-shrink: 0;
 }
-.cover-track {
-  display: flex;
-}
+.cover-track { display: flex; }
 .cover-slide {
-  width: 100vw; flex-shrink: 0;
+  width: calc(100vw - 0px); flex-shrink: 0;
   display: flex; justify-content: center; align-items: center;
-  padding: 0 32px;
+  padding: 0 16px;
 }
+
+/* ── Cover card ──────────────────────────────────────────────────────────────── */
+.cover-card {
+  position: relative; width: 100%; max-width: 380px;
+  border-radius: 24px; overflow: hidden;
+  border: 1px solid rgba(255,255,255,0.08);
+  box-shadow: 0 16px 48px rgba(0,0,0,0.7);
+}
+.cover-card-bg {
+  position: absolute; inset: -20px;
+  width: calc(100% + 40px); height: calc(100% + 40px);
+  object-fit: cover;
+  filter: blur(28px) brightness(0.35) saturate(1.6);
+  pointer-events: none;
+}
+.cover-card-scrim {
+  position: absolute; inset: 0;
+  background: linear-gradient(180deg, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.4) 50%, rgba(0,0,0,0.75) 100%);
+  pointer-events: none;
+}
+.cover-card-edge {
+  position: absolute; top: 0; left: 0; z-index: 10;
+  height: 3.5px; background: #d4a017;
+  border-radius: 0 2px 2px 0;
+  transition: width 0.5s linear;
+}
+.cover-card-inner {
+  position: relative; z-index: 2;
+  padding: 12px 16px 16px;
+  display: flex; flex-direction: column; align-items: center;
+}
+
+.card-stats-row {
+  display: flex; justify-content: space-between;
+  width: 100%; margin-bottom: 4px;
+}
+.card-stat {
+  font-size: 11px; font-weight: 500;
+  color: rgba(255,255,255,0.55); font-variant-numeric: tabular-nums;
+  text-shadow: 0 1px 4px rgba(0,0,0,0.8);
+}
+.card-stat--mid { font-weight: 700; color: rgba(255,255,255,0.75); }
+
+.card-stream-row {
+  display: flex; align-items: center; gap: 5px; margin-bottom: 8px; align-self: flex-start;
+}
+.card-stream-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: rgba(100,215,100,0.85);
+  box-shadow: 0 0 6px rgba(100,215,100,0.5);
+}
+.card-stream-label { font-size: 10px; color: rgba(255,255,255,0.45); }
+
+/* Cover image inside card (75% width) */
 .cover-img-wrap {
   position: relative;
-  width: 100%; max-width: min(300px, calc(100vw - 80px));
-  aspect-ratio: 1 / 1;
+  width: 75%; aspect-ratio: 1 / 1;
   border-radius: 14px; overflow: hidden;
-  box-shadow: 0 20px 60px rgba(0,0,0,0.8);
+  box-shadow: 0 8px 28px rgba(0,0,0,0.65), 0 0 42px rgba(185,115,20,0.18);
   transition: transform 0.2s, opacity 0.2s;
+  margin-bottom: 14px;
 }
-.cover-inactive { transform: scale(0.88); opacity: 0.6; }
+.cover-inactive { transform: scale(0.88); opacity: 0.55; }
 .cover-img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .cover-active-tap { cursor: pointer; }
 .cover-flash-overlay {
@@ -1050,6 +1107,16 @@ function queueDragEnd() {
 .cover-flash-enter-active { transition: opacity 0.1s ease; }
 .cover-flash-leave-active { transition: opacity 0.5s ease; }
 .cover-flash-enter-from, .cover-flash-leave-to { opacity: 0; }
+.cover-play-overlay {
+  position: absolute; inset: 0; background: rgba(0,0,0,0.45);
+  display: flex; align-items: center; justify-content: center; cursor: pointer;
+}
+.upnext-badge {
+  position: absolute; top: 8px; left: 8px;
+  background: rgba(212,160,23,0.85); color: #111;
+  font-size: 9px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.04em; padding: 3px 7px; border-radius: 10px;
+}
 
 .barrier-banner {
   display: flex; align-items: center; gap: 8px; cursor: pointer;
@@ -1060,17 +1127,6 @@ function queueDragEnd() {
 .barrier-cta  { font-size: 11px; color: rgba(212,160,23,0.8); }
 .barrier-enter-active, .barrier-leave-active { transition: opacity 0.2s, transform 0.2s; }
 .barrier-enter-from, .barrier-leave-to { opacity: 0; transform: translateY(-6px); }
-.cover-play-overlay {
-  position: absolute; inset: 0; background: rgba(0,0,0,0.45);
-  display: flex; align-items: center; justify-content: center;
-  cursor: pointer;
-}
-.upnext-badge {
-  position: absolute; top: 8px; left: 8px;
-  background: rgba(212,160,23,0.85); color: #111;
-  font-size: 9px; font-weight: 700; text-transform: uppercase;
-  letter-spacing: 0.04em; padding: 3px 7px; border-radius: 10px;
-}
 
 /* ── Page dots ───────────────────────────────────────────────────────────────── */
 .page-dots {
@@ -1083,12 +1139,6 @@ function queueDragEnd() {
   cursor: pointer;
 }
 .page-dot.active { background: #d4a017; width: 18px; border-radius: 3px; }
-
-/* ── Meta ────────────────────────────────────────────────────────────────────── */
-.meta-area { text-align: center; width: 100%; margin-bottom: 18px; }
-.book-title  { font-size: 18px; font-weight: 700; color: rgba(255,255,255,0.95); margin: 0 0 6px; }
-.book-author { font-size: 13px; color: rgba(255,255,255,0.5); margin: 0 0 4px; }
-.chapter-title { font-size: 11px; color: rgba(255,255,255,0.35); margin: 0; }
 
 /* ── Progress ────────────────────────────────────────────────────────────────── */
 .chapter-progress-wrap {
