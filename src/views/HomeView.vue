@@ -63,7 +63,7 @@
           :cover-src="coverUrl(item.id, auth.token ?? '')"
           :progress="item.userMediaProgress?.progress ?? 0"
           :current-time="item.userMediaProgress?.currentTime ?? 0"
-          :duration="item.media.duration"
+          :duration="item.userMediaProgress?.duration ?? item.media.duration ?? 0"
           :is-playing="player.currentItem?.id === item.id && player.isPlaying"
           :is-current="player.currentItem?.id === item.id"
           @click="resumeItem(item)"
