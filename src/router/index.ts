@@ -42,6 +42,7 @@ const router = createRouter({
         { path: 'playlists',   name: 'playlists',   component: () => import('@/views/PlaylistsView.vue') },
         { path: 'browse',      name: 'browse',      component: () => import('@/views/BrowseView.vue') },
         { path: 'bookmarks',   name: 'bookmarks',   component: () => import('@/views/BookmarksView.vue') },
+        { path: 'upcoming',    name: 'upcoming',    component: () => import('@/views/UpcomingReleasesView.vue') },
         { path: 'podcast',     name: 'podcast',     component: () => import('@/views/PodcastEpisodesView.vue') },
         {
           path: 'admin',

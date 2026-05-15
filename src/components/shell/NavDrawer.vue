@@ -54,6 +54,7 @@ const mainItems = [
 ]
 const libraryItems = [
   { route: 'bookmarks',   label: 'Bookmarks',   icon: 'mdi-bookmark-outline',          iconActive: 'mdi-bookmark' },
+  { route: 'upcoming',    label: 'Upcoming',    icon: 'mdi-calendar-clock-outline',    iconActive: 'mdi-calendar-clock' },
   { route: 'collections', label: 'Collections', icon: 'mdi-bookmark-multiple-outline', iconActive: 'mdi-bookmark-multiple' },
   { route: 'playlists',   label: 'Playlists',   icon: 'mdi-playlist-music',            iconActive: 'mdi-playlist-music' },
   { route: 'stats',       label: 'Stats',       icon: 'mdi-chart-bar',                 iconActive: 'mdi-chart-bar' },
