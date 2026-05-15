@@ -206,13 +206,23 @@
           <!-- Speed picker -->
           <Transition name="panel">
             <div v-if="showSpeedPicker" class="panel-box">
-              <p class="panel-title">Playback Speed</p>
+              <div class="speed-header">
+                <button class="speed-step" @click="stepSpeed(-0.05)">−</button>
+                <div class="speed-current-wrap">
+                  <span class="speed-current">{{ player.playbackRate.toFixed(2) }}×</span>
+                </div>
+                <button class="speed-step" @click="stepSpeed(+0.05)">+</button>
+              </div>
               <div class="panel-opts">
                 <button
-                  v-for="s in SPEEDS" :key="s"
-                  class="panel-opt" :class="{ active: player.playbackRate === s }"
+                  v-for="s in speedPresets" :key="s"
+                  class="panel-opt" :class="{ active: Math.abs(player.playbackRate - s) < 0.01 }"
                   @click="setSpeed(s)"
+                  @contextmenu.prevent="removeSpeedPreset(s)"
                 >{{ s }}×</button>
+                <button class="panel-opt speed-add" :title="'Save ' + player.playbackRate.toFixed(2) + '× as preset'" @click="addSpeedPreset">
+                  <v-icon size="13">mdi-plus</v-icon>
+                </button>
               </div>
             </div>
           </Transition>
@@ -622,8 +632,34 @@ function setSleep(mins: number | null) {
 }
 function setSleepEoc() { player.setSleepTimer(null, true); showSleepPicker.value = false }
 
-const SPEEDS = [0.5, 0.6, 0.75, 0.8, 1.0, 1.1, 1.25, 1.5, 1.75, 2.0, 2.5, 3.0]
+const DEFAULT_SPEEDS = [0.75, 1.0, 1.25, 1.5, 1.75, 2.0, 2.5, 3.0]
+function _loadSpeedPresets(): number[] {
+  try {
+    const raw = localStorage.getItem('abs_speed_presets')
+    if (raw) {
+      const parsed = JSON.parse(raw) as number[]
+      if (Array.isArray(parsed) && parsed.length) return parsed
+    }
+  } catch {}
+  return [...DEFAULT_SPEEDS]
+}
+const speedPresets = ref<number[]>(_loadSpeedPresets())
 function setSpeed(rate: number) { player.setRate(rate); showSpeedPicker.value = false }
+function stepSpeed(delta: number) {
+  const next = Math.round((player.playbackRate + delta) * 20) / 20
+  player.setRate(Math.max(0.25, Math.min(3.0, next)))
+}
+function addSpeedPreset() {
+  const r = Math.round(player.playbackRate * 20) / 20
+  if (speedPresets.value.some(p => Math.abs(p - r) < 0.01)) return
+  speedPresets.value = [...speedPresets.value, r].sort((a, b) => a - b)
+  localStorage.setItem('abs_speed_presets', JSON.stringify(speedPresets.value))
+}
+function removeSpeedPreset(r: number) {
+  if (speedPresets.value.length <= 1) return
+  speedPresets.value = speedPresets.value.filter(p => Math.abs(p - r) >= 0.01)
+  localStorage.setItem('abs_speed_presets', JSON.stringify(speedPresets.value))
+}
 
 async function openBookmarkSheet() {
   if (!player.currentItem) return
@@ -922,6 +958,15 @@ function queueDragEnd() {
   font-size: 10px; font-weight: 700; color: rgba(255,255,255,0.4);
   text-transform: uppercase; letter-spacing: 0.5px; margin: 0 0 10px;
 }
+.speed-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+.speed-current-wrap { text-align: center; }
+.speed-current { font-size: 22px; font-weight: 700; color: #d4a017; font-variant-numeric: tabular-nums; }
+.speed-step {
+  width: 36px; height: 36px; border-radius: 50%; background: rgba(255,255,255,0.07);
+  border: 1px solid rgba(255,255,255,0.1); cursor: pointer; color: rgba(255,255,255,0.7);
+  font-size: 18px; font-weight: 500; display: flex; align-items: center; justify-content: center;
+}
+.speed-step:active { background: rgba(255,255,255,0.14); }
 .panel-opts { display: flex; flex-wrap: wrap; gap: 6px; }
 .panel-opt {
   font-size: 12px; padding: 5px 12px; border-radius: 20px; cursor: pointer;
@@ -930,6 +975,7 @@ function queueDragEnd() {
 }
 .panel-opt.active { background: rgba(212,160,23,0.15); border-color: rgba(212,160,23,0.4); color: #d4a017; }
 .panel-opt.cancel { color: rgba(255,255,255,0.35); }
+.speed-add { border-style: dashed; border-color: rgba(212,160,23,0.3); color: rgba(212,160,23,0.6); padding: 5px 10px; }
 .sleep-custom { margin-top: 10px; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 10px; }
 .sleep-custom-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
 .sleep-custom-label { font-size: 12px; color: rgba(255,255,255,0.5); }
