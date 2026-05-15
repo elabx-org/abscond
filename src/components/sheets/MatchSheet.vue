@@ -1,5 +1,6 @@
 <template>
   <Teleport to="body">
+    <Transition name="sheet">
     <div v-if="modelValue" class="match-sheet-overlay" @click.self="close">
       <div class="match-sheet">
         <div class="sheet-handle" />
@@ -65,8 +66,8 @@
 
             <div v-else class="candidates-list">
               <div
-                v-for="c in candidates"
-                :key="c.id ?? c.title"
+                v-for="(c, idx) in candidates"
+                :key="c.id ?? `${c.title}-${idx}`"
                 class="candidate-row"
                 :class="{ selected: selected === c }"
                 @click="selected = c"
@@ -149,6 +150,7 @@
         </template>
       </div>
     </div>
+    </Transition>
   </Teleport>
 </template>
 
@@ -246,7 +248,7 @@ async function doApply() {
   applying.value = true
   error.value    = null
   try {
-    await applyMatch(props.item.id, provider.value, searchTitle.value.trim(), searchAuthor.value.trim() || undefined)
+    await applyMatch(props.item.id, provider.value, selected.value.title, selected.value.author || undefined)
     emit('matched', props.item.id)
     close()
   } catch {
@@ -366,4 +368,8 @@ function close() {
 .diff-same { font-size: 10px; color: rgba(255,255,255,0.4); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; }
 .spin { animation: spin 0.7s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
+.sheet-enter-active, .sheet-leave-active { transition: opacity 0.25s; }
+.sheet-enter-active .match-sheet, .sheet-leave-active .match-sheet { transition: transform 0.3s ease; }
+.sheet-enter-from, .sheet-leave-to { opacity: 0; }
+.sheet-enter-from .match-sheet, .sheet-leave-to .match-sheet { transform: translateY(100%); }
 </style>
