@@ -21,7 +21,7 @@
               <span>{{ progress > 0 && progress < 1 ? 'Continue' : 'Play' }}</span>
             </button>
 
-            <button v-if="progress > 0" class="qa-action" @click="$emit('mark-finished'); $emit('close')">
+            <button class="qa-action" @click="$emit('mark-finished'); $emit('close')">
               <div class="qa-icon"><v-icon size="20" color="rgba(255,255,255,0.6)">mdi-check-circle-outline</v-icon></div>
               <span>{{ progress >= 1 ? 'Mark unfinished' : 'Mark finished' }}</span>
             </button>
@@ -46,6 +46,28 @@
               <span>Add to playlist</span>
             </button>
 
+            <!-- Add to collection -->
+            <button class="qa-action" @click="openCollectionPicker">
+              <div class="qa-icon"><v-icon size="20" color="rgba(255,255,255,0.6)">mdi-bookshelf</v-icon></div>
+              <span>Add to collection</span>
+            </button>
+
+            <!-- Inline collection picker -->
+            <div v-if="showCollectionPicker" class="collection-inline">
+              <p class="collection-inline-title">Add to collection</p>
+              <div v-if="collectionsLoading" class="collection-loading">Loading…</div>
+              <template v-else>
+                <button
+                  v-for="col in collections"
+                  :key="col.id"
+                  class="collection-row"
+                  @click="addToCollection(col.id)"
+                >{{ col.name }}</button>
+                <p v-if="!collections.length" class="collection-empty">No collections yet — create one in Collections</p>
+              </template>
+              <button class="collection-cancel" @click="showCollectionPicker = false">Cancel</button>
+            </div>
+
             <button class="qa-action" @click="$emit('view-detail'); $emit('close')">
               <div class="qa-icon"><v-icon size="20" color="rgba(255,255,255,0.6)">mdi-information-outline</v-icon></div>
               <span>Book details</span>
@@ -58,12 +80,18 @@
 </template>
 
 <script setup lang="ts">
-defineProps<{
+import { ref, watch } from 'vue'
+import { getCollections, addBookToCollection } from '@/api/collections'
+import type { Collection } from '@/api/collections'
+import { useNotificationStore } from '@/stores/notifications'
+
+const props = defineProps<{
   show: boolean
   title: string
   author: string
   coverSrc: string
   progress: number
+  itemId: string
 }>()
 
 defineEmits<{
@@ -76,6 +104,28 @@ defineEmits<{
   (e: 'add-to-playlist'): void
   (e: 'view-detail'): void
 }>()
+
+const notify               = useNotificationStore()
+const showCollectionPicker = ref(false)
+const collections          = ref<Collection[]>([])
+const collectionsLoading   = ref(false)
+
+watch(() => props.show, (v) => { if (!v) showCollectionPicker.value = false })
+
+async function openCollectionPicker() {
+  showCollectionPicker.value = true
+  if (collections.value.length) return
+  collectionsLoading.value = true
+  try { collections.value = await getCollections() }
+  catch { collections.value = [] }
+  finally { collectionsLoading.value = false }
+}
+
+async function addToCollection(collectionId: string) {
+  await addBookToCollection(collectionId, props.itemId).catch(() => {})
+  showCollectionPicker.value = false
+  notify.show(`Added to collection`, 'success')
+}
 </script>
 
 <style scoped>
@@ -114,6 +164,27 @@ defineEmits<{
   width: 36px; height: 36px; border-radius: 10px;
   background: rgba(255,255,255,0.06);
   display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+
+.collection-inline {
+  background: rgba(255,255,255,0.04); border-radius: 12px;
+  padding: 12px; margin: 4px 0 8px; display: flex; flex-direction: column; gap: 2px;
+}
+.collection-inline-title {
+  font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em;
+  color: rgba(255,255,255,0.35); margin: 0 0 8px; padding: 0 4px;
+}
+.collection-loading { font-size: 13px; color: rgba(255,255,255,0.4); padding: 4px; }
+.collection-row {
+  display: block; width: 100%; text-align: left; background: transparent; border: none;
+  color: rgba(255,255,255,0.85); font-size: 14px; padding: 10px 4px;
+  border-bottom: 1px solid rgba(255,255,255,0.04); cursor: pointer;
+}
+.collection-row:last-of-type { border-bottom: none; }
+.collection-empty { font-size: 13px; color: rgba(255,255,255,0.35); margin: 4px; }
+.collection-cancel {
+  display: block; width: 100%; text-align: center; background: transparent; border: none;
+  color: rgba(255,255,255,0.4); font-size: 13px; padding: 10px 4px 4px; cursor: pointer;
 }
 
 .sheet-enter-active, .sheet-leave-active { transition: transform 0.25s ease, opacity 0.25s; }

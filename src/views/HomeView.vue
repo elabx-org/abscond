@@ -221,6 +221,7 @@
       :author="getAuthorDisplay(quickItem) || 'Unknown'"
       :cover-src="coverUrl(quickItem.id, auth.token ?? '')"
       :progress="quickItem.userMediaProgress?.progress ?? 0"
+      :item-id="quickItem.id"
       @close="quickItem = null"
       @play="playQuick"
       @mark-finished="markFinishedQuick"
