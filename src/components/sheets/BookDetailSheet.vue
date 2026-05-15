@@ -714,7 +714,9 @@ const remainingLabel = computed(() => {
   const secs = d * (1 - p)
   const h = Math.floor(secs / 3600)
   const m = Math.floor((secs % 3600) / 60)
-  return h > 0 ? `${h}h ${m}m left` : `${m}m left`
+  if (h > 0) return `${h}h ${m}m left`
+  if (m > 0) return `${m}m left`
+  return '< 1m left'
 })
 
 function _fmtDate(ms: number): string {
@@ -1070,8 +1072,8 @@ async function doSaveMeta() {
   background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.08);
   color: rgba(255,255,255,0.55);
 }
-.chip--tag { background: rgba(212,160,23,0.08); border-color: rgba(212,160,23,0.2); color: rgba(212,160,23,0.8); }
-.chip--genre { background: rgba(212,160,23,0.07); border-color: rgba(212,160,23,0.18); color: rgba(212,160,23,0.75); }
+.chip--tag { background: rgba(212,160,23,0.12); border-color: rgba(212,160,23,0.25); color: rgba(212,160,23,0.85); }
+.chip--genre { background: transparent; border-color: rgba(212,160,23,0.35); color: rgba(212,160,23,0.7); }
 .chip--date { background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.08); color: rgba(255,255,255,0.4); }
 .chip--finished { color: rgba(34,197,94,0.7); border-color: rgba(34,197,94,0.2); background: rgba(34,197,94,0.06); }
 .chapters-section { margin: 12px 0 4px; }

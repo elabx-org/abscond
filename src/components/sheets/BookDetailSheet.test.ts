@@ -122,12 +122,54 @@ describe('BookDetailSheet — author collapse', () => {
   })
 })
 
+const multiNarratorItem: LibraryItem = {
+  ...mockItem,
+  media: {
+    ...mockItem.media,
+    metadata: {
+      ...mockItem.media.metadata,
+      narrators: ['Narrator One', 'Narrator Two'],
+    },
+  },
+}
+
+describe('BookDetailSheet — narrator collapse', () => {
+  it('shows all narrators when there is only 1', () => {
+    const wrapper = mount(BookDetailSheet, mountOpts({ item: mockItem, coverSrc: '/cover.jpg', show: true }))
+    expect(wrapper.text()).toContain('Nick Podehl')
+    const chips = wrapper.findAll('.author-more-chip')
+    const narratorMore = chips.filter(c => c.text().includes('more'))
+    expect(narratorMore.length).toBe(0)
+  })
+
+  it('shows "and 1 more" chip when there are 2 narrators', () => {
+    const wrapper = mount(BookDetailSheet, mountOpts({ item: multiNarratorItem, coverSrc: '/cover.jpg', show: true }))
+    expect(wrapper.text()).toContain('Narrator One')
+    expect(wrapper.find('.narrator-chips .author-more-chip').exists()).toBe(true)
+    expect(wrapper.find('.narrator-chips .author-more-chip').text()).toContain('and 1 more')
+  })
+
+  it('expands all narrators when chip is clicked', async () => {
+    const wrapper = mount(BookDetailSheet, mountOpts({ item: multiNarratorItem, coverSrc: '/cover.jpg', show: true }))
+    await wrapper.find('.narrator-chips .author-more-chip').trigger('click')
+    expect(wrapper.text()).toContain('Narrator Two')
+    expect(wrapper.find('.narrator-chips .author-more-chip').exists()).toBe(false)
+  })
+})
+
 describe('BookDetailSheet — remaining time', () => {
   it('shows remaining time when progress is between 0 and 1', () => {
     const item = { ...mockItem, userMediaProgress: { libraryItemId: 'li1', progress: 0.5, currentTime: 18000, duration: 36000, isFinished: false, lastUpdate: 0 } }
     const wrapper = mount(BookDetailSheet, mountOpts({ item, coverSrc: '/cover.jpg', show: true }))
     expect(wrapper.find('.progress-remaining').exists()).toBe(true)
     expect(wrapper.find('.progress-remaining').text()).toContain('left')
+  })
+
+  it('shows "< 1m left" when fewer than 60 seconds remain', () => {
+    const duration = 3600
+    const item = { ...mockItem, media: { ...mockItem.media, duration }, userMediaProgress: { libraryItemId: 'li1', progress: 0.9998, currentTime: 3599, duration, isFinished: false, lastUpdate: 0 } }
+    const wrapper = mount(BookDetailSheet, mountOpts({ item, coverSrc: '/cover.jpg', show: true }))
+    expect(wrapper.find('.progress-remaining').text()).toContain('< 1m left')
   })
 
   it('does not show remaining time when no progress', () => {
