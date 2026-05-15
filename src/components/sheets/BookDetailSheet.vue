@@ -91,6 +91,27 @@
                 <v-icon size="16">mdi-bookmark-plus-outline</v-icon>
                 Collection
               </button>
+              <button class="action-btn" @click="toggleShare">
+                <v-icon size="16">mdi-share-outline</v-icon>
+                Share
+              </button>
+            </div>
+
+            <!-- Share panel -->
+            <div v-if="showShare" class="playlist-inline">
+              <p class="playlist-inline-title">Share link</p>
+              <div v-if="shareLoading" class="pls-loading">Loading…</div>
+              <div v-else-if="shareLink" class="share-url-row">
+                <input :value="shareLink.shareUrl" class="share-url-input" readonly />
+                <button class="share-copy-btn" @click="copyShareLink">
+                  <v-icon size="16">{{ shareCopied ? 'mdi-check' : 'mdi-content-copy' }}</v-icon>
+                </button>
+              </div>
+              <p v-if="shareError" class="form-error-sm">{{ shareError }}</p>
+              <div class="share-actions">
+                <button v-if="shareLink" class="pls-cancel red" @click="doRemoveShare">Remove link</button>
+                <button class="pls-cancel" @click="showShare = false">Close</button>
+              </div>
             </div>
 
             <!-- Playlist picker -->
@@ -172,6 +193,8 @@ import { getPlaylists, addItemToPlaylist } from '@/api/playlists'
 import type { Playlist } from '@/api/playlists'
 import { getCollections, addBookToCollection } from '@/api/collections'
 import type { Collection } from '@/api/collections'
+import { createShareLink, removeShareLink } from '@/api/share'
+import type { ShareLink } from '@/api/share'
 import type { LibraryItem, Series, Author } from '@/api/types'
 
 const props = defineProps<{
@@ -201,6 +224,11 @@ const loadingPls       = ref(false)
 const showCollectionAdd = ref(false)
 const collections       = ref<Collection[]>([])
 const loadingCols       = ref(false)
+const showShare         = ref(false)
+const shareLink         = ref<ShareLink | null>(null)
+const shareLoading      = ref(false)
+const shareError        = ref('')
+const shareCopied       = ref(false)
 
 function openSeries(s: Series) {
   activeSeriesId.value   = s.id
@@ -272,7 +300,13 @@ const durationLabel = computed(() => {
 const progress = computed(() => props.item.userMediaProgress?.progress ?? 0)
 
 watch(() => props.show, (v) => {
-  if (v) { descExpanded.value = false; showPlaylistAdd.value = false; showCollectionAdd.value = false }
+  if (v) {
+    descExpanded.value = false
+    showPlaylistAdd.value = false
+    showCollectionAdd.value = false
+    showShare.value = false
+    shareLink.value = null
+  }
 })
 
 watch(showPlaylistAdd, async (v) => {
@@ -299,6 +333,32 @@ watch(showCollectionAdd, async (v) => {
 async function addToCollection(collectionId: string) {
   await addBookToCollection(collectionId, props.item.id).catch(() => {})
   showCollectionAdd.value = false
+}
+
+async function toggleShare() {
+  showShare.value = !showShare.value
+  if (showShare.value && !shareLink.value) {
+    shareLoading.value = true
+    shareError.value = ''
+    try {
+      shareLink.value = await createShareLink(props.item.id)
+    } catch (e: unknown) {
+      shareError.value = e instanceof Error ? e.message : 'Failed to create link'
+    } finally { shareLoading.value = false }
+  }
+}
+
+async function copyShareLink() {
+  if (!shareLink.value) return
+  await navigator.clipboard.writeText(shareLink.value.shareUrl).catch(() => {})
+  shareCopied.value = true
+  setTimeout(() => { shareCopied.value = false }, 2000)
+}
+
+async function doRemoveShare() {
+  await removeShareLink(props.item.id).catch(() => {})
+  shareLink.value = null
+  showShare.value = false
 }
 </script>
 
@@ -413,6 +473,21 @@ async function addToCollection(collectionId: string) {
   margin-top: 10px; width: 100%; font-size: 12px; padding: 8px;
   background: transparent; border: none; cursor: pointer; color: rgba(255,255,255,0.35);
 }
+.pls-cancel.red { color: #e05555; }
+.share-url-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.share-url-input {
+  flex: 1; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 8px; padding: 8px 10px; font-size: 11px; color: rgba(255,255,255,0.6);
+  outline: none; min-width: 0;
+}
+.share-copy-btn {
+  width: 36px; height: 36px; border-radius: 8px; background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.08); cursor: pointer; color: rgba(255,255,255,0.6);
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.share-actions { display: flex; gap: 8px; }
+.share-actions .pls-cancel { flex: 1; margin-top: 0; }
+.form-error-sm { font-size: 11px; color: #e05555; margin: 4px 0; }
 .read-btn {
   display: flex; align-items: center; justify-content: center; gap: 8px;
   width: 100%; padding: 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.15);
