@@ -4,608 +4,681 @@
 
     <!-- Account -->
     <section class="settings-section">
-      <p class="section-label">Account</p>
+      <button class="section-toggle" @click="toggle('account')">
+        <span class="section-toggle-title">Account</span>
+        <v-icon class="section-chevron" :class="{ open: isOpen('account') }" size="16" color="rgba(255,255,255,0.3)">mdi-chevron-down</v-icon>
+      </button>
 
-      <div class="settings-card">
-        <div class="account-row">
-          <div class="avatar">
-            <v-icon size="28" color="rgba(255,255,255,0.6)">mdi-account</v-icon>
+      <Transition name="sect" @enter="onEnter" @after-enter="onAfterEnter" @leave="onLeave">
+        <div v-if="isOpen('account')">
+          <div class="settings-card">
+            <div class="account-row">
+              <div class="avatar">
+                <v-icon size="28" color="rgba(255,255,255,0.6)">mdi-account</v-icon>
+              </div>
+              <div class="account-meta">
+                <p class="account-name">{{ auth.user?.username ?? '—' }}</p>
+                <p class="account-role">{{ auth.isAdmin ? 'Admin' : 'User' }}</p>
+              </div>
+            </div>
           </div>
-          <div class="account-meta">
-            <p class="account-name">{{ auth.user?.username ?? '—' }}</p>
-            <p class="account-role">{{ auth.isAdmin ? 'Admin' : 'User' }}</p>
+
+          <div class="settings-item" @click="openChangeUsername">
+            <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-account-edit-outline</v-icon>
+            <span class="item-label">Change Username</span>
+            <v-icon size="14" color="rgba(255,255,255,0.2)">mdi-chevron-right</v-icon>
+          </div>
+          <div class="settings-item" @click="showChangePassword = true">
+            <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-lock-outline</v-icon>
+            <span class="item-label">Change Password</span>
+            <v-icon size="14" color="rgba(255,255,255,0.2)">mdi-chevron-right</v-icon>
+          </div>
+
+          <div class="settings-item" @click="confirmLogout = true">
+            <v-icon size="18" color="#ef4444">mdi-logout</v-icon>
+            <span class="item-label" style="color:#ef4444">Sign out</span>
           </div>
         </div>
-      </div>
-
-      <div class="settings-item" @click="openChangeUsername">
-        <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-account-edit-outline</v-icon>
-        <span class="item-label">Change Username</span>
-        <v-icon size="14" color="rgba(255,255,255,0.2)">mdi-chevron-right</v-icon>
-      </div>
-      <div class="settings-item" @click="showChangePassword = true">
-        <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-lock-outline</v-icon>
-        <span class="item-label">Change Password</span>
-        <v-icon size="14" color="rgba(255,255,255,0.2)">mdi-chevron-right</v-icon>
-      </div>
-
-      <div class="settings-item" @click="confirmLogout = true">
-        <v-icon size="18" color="#ef4444">mdi-logout</v-icon>
-        <span class="item-label" style="color:#ef4444">Sign out</span>
-      </div>
+      </Transition>
     </section>
 
     <!-- Appearance -->
     <section class="settings-section">
-      <p class="section-label">Appearance</p>
+      <button class="section-toggle" @click="toggle('appearance')">
+        <span class="section-toggle-title">Appearance</span>
+        <v-icon class="section-chevron" :class="{ open: isOpen('appearance') }" size="16" color="rgba(255,255,255,0.3)">mdi-chevron-down</v-icon>
+      </button>
 
-      <div class="settings-item">
-        <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-theme-light-dark</v-icon>
-        <span class="item-label">Theme</span>
-        <div class="theme-chips">
-          <button
-            class="theme-chip"
-            :class="{ active: settingsStore.theme === 'dark' }"
-            @click="settingsStore.setTheme('dark')"
-          >Dark</button>
-          <button
-            class="theme-chip"
-            :class="{ active: settingsStore.theme === 'oled' }"
-            @click="settingsStore.setTheme('oled')"
-          >OLED</button>
-        </div>
-      </div>
+      <Transition name="sect" @enter="onEnter" @after-enter="onAfterEnter" @leave="onLeave">
+        <div v-if="isOpen('appearance')">
+          <div class="settings-item">
+            <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-theme-light-dark</v-icon>
+            <span class="item-label">Theme</span>
+            <div class="theme-chips">
+              <button
+                class="theme-chip"
+                :class="{ active: settingsStore.theme === 'dark' }"
+                @click="settingsStore.setTheme('dark')"
+              >Dark</button>
+              <button
+                class="theme-chip"
+                :class="{ active: settingsStore.theme === 'oled' }"
+                @click="settingsStore.setTheme('oled')"
+              >OLED</button>
+            </div>
+          </div>
 
-      <div class="settings-item" @click="toggleShowExplicit">
-        <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-alert-circle-outline</v-icon>
-        <div class="item-label-stack">
-          <span class="item-label">Show explicit badge</span>
-          <span class="item-sublabel">Show 'E' on covers marked explicit</span>
-        </div>
-        <div class="toggle-pill" :class="{ on: showExplicit }">
-          <div class="toggle-thumb" />
-        </div>
-      </div>
+          <div class="settings-item" @click="toggleShowExplicit">
+            <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-alert-circle-outline</v-icon>
+            <div class="item-label-stack">
+              <span class="item-label">Show explicit badge</span>
+              <span class="item-sublabel">Show 'E' on covers marked explicit</span>
+            </div>
+            <div class="toggle-pill" :class="{ on: showExplicit }">
+              <div class="toggle-thumb" />
+            </div>
+          </div>
 
-      <div class="settings-item" @click="toggleRectangleCovers">
-        <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-image-frame</v-icon>
-        <div class="item-label-stack">
-          <span class="item-label">Rectangle covers</span>
-          <span class="item-sublabel">Show book covers in 2:3 portrait ratio</span>
-        </div>
-        <div class="toggle-pill" :class="{ on: rectangleCovers }">
-          <div class="toggle-thumb" />
-        </div>
-      </div>
+          <div class="settings-item" @click="toggleRectangleCovers">
+            <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-image-frame</v-icon>
+            <div class="item-label-stack">
+              <span class="item-label">Rectangle covers</span>
+              <span class="item-sublabel">Show book covers in 2:3 portrait ratio</span>
+            </div>
+            <div class="toggle-pill" :class="{ on: rectangleCovers }">
+              <div class="toggle-thumb" />
+            </div>
+          </div>
 
-      <div class="settings-item" @click="toggleHideEbookOnly">
-        <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-headphones</v-icon>
-        <div class="item-label-stack">
-          <span class="item-label">Hide eBook-only titles</span>
-          <span class="item-sublabel">{{ hideEbookOnly ? 'Books with no audio files are hidden' : 'Off — all library items shown' }}</span>
+          <div class="settings-item" @click="toggleHideEbookOnly">
+            <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-headphones</v-icon>
+            <div class="item-label-stack">
+              <span class="item-label">Hide eBook-only titles</span>
+              <span class="item-sublabel">{{ hideEbookOnly ? 'Books with no audio files are hidden' : 'Off — all library items shown' }}</span>
+            </div>
+            <div class="toggle-pill" :class="{ on: hideEbookOnly }">
+              <div class="toggle-thumb" />
+            </div>
+          </div>
         </div>
-        <div class="toggle-pill" :class="{ on: hideEbookOnly }">
-          <div class="toggle-thumb" />
-        </div>
-      </div>
+      </Transition>
     </section>
 
     <!-- Playback -->
     <section class="settings-section">
-      <p class="section-label">Playback</p>
+      <button class="section-toggle" @click="toggle('playback')">
+        <span class="section-toggle-title">Playback</span>
+        <v-icon class="section-chevron" :class="{ open: isOpen('playback') }" size="16" color="rgba(255,255,255,0.3)">mdi-chevron-down</v-icon>
+      </button>
 
-      <div class="settings-item">
-        <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-speedometer</v-icon>
-        <div class="item-label-stack">
-          <span class="item-label">Default speed</span>
-          <span class="item-sublabel">Applied when starting a new book</span>
-        </div>
-        <span class="item-value">{{ playbackRate }}×</span>
-      </div>
-      <div class="speed-slider-wrap">
-        <input
-          v-model.number="playbackRate"
-          type="range" min="0.5" max="3" step="0.25"
-          class="speed-slider"
-          @change="savePlaybackRate"
-        />
-        <div class="slider-ticks">
-          <span>0.5×</span><span>1×</span><span>1.5×</span><span>2×</span><span>3×</span>
-        </div>
-      </div>
+      <Transition name="sect" @enter="onEnter" @after-enter="onAfterEnter" @leave="onLeave">
+        <div v-if="isOpen('playback')">
+          <div class="settings-item">
+            <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-speedometer</v-icon>
+            <div class="item-label-stack">
+              <span class="item-label">Default speed</span>
+              <span class="item-sublabel">Applied when starting a new book</span>
+            </div>
+            <span class="item-value">{{ playbackRate }}×</span>
+          </div>
+          <div class="speed-slider-wrap">
+            <input
+              v-model.number="playbackRate"
+              type="range" min="0.5" max="3" step="0.25"
+              class="speed-slider"
+              @change="savePlaybackRate"
+            />
+            <div class="slider-ticks">
+              <span>0.5×</span><span>1×</span><span>1.5×</span><span>2×</span><span>3×</span>
+            </div>
+          </div>
 
-      <div class="settings-item">
-        <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-speedometer-medium</v-icon>
-        <div class="item-label-stack">
-          <span class="item-label">Speed presets</span>
-          <span class="item-sublabel">Long-press a chip in the player to remove; + to add</span>
-        </div>
-        <button class="reset-presets-btn" @click="resetSpeedPresets">Reset</button>
-      </div>
-      <div class="presets-row">
-        <span v-for="s in speedPresets" :key="s" class="preset-chip">{{ s }}×</span>
-      </div>
+          <div class="settings-item">
+            <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-speedometer-medium</v-icon>
+            <div class="item-label-stack">
+              <span class="item-label">Speed presets</span>
+              <span class="item-sublabel">Long-press a chip in the player to remove; + to add</span>
+            </div>
+            <button class="reset-presets-btn" @click="resetSpeedPresets">Reset</button>
+          </div>
+          <div class="presets-row">
+            <span v-for="s in speedPresets" :key="s" class="preset-chip">{{ s }}×</span>
+          </div>
 
-      <div class="settings-item">
-        <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-skip-backward</v-icon>
-        <span class="item-label">Skip back</span>
-        <div class="interval-chips">
-          <button
-            v-for="s in skipIntervalOptions"
-            :key="s"
-            class="interval-chip"
-            :class="{ active: skipBackSecs === s }"
-            @click="setSkipBack(s)"
-          >{{ s }}s</button>
-        </div>
-      </div>
+          <div class="settings-item">
+            <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-skip-backward</v-icon>
+            <span class="item-label">Skip back</span>
+            <div class="interval-chips">
+              <button
+                v-for="s in skipIntervalOptions"
+                :key="s"
+                class="interval-chip"
+                :class="{ active: skipBackSecs === s }"
+                @click="setSkipBack(s)"
+              >{{ s }}s</button>
+            </div>
+          </div>
 
-      <div class="settings-item">
-        <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-skip-forward</v-icon>
-        <span class="item-label">Skip forward</span>
-        <div class="interval-chips">
-          <button
-            v-for="s in skipIntervalOptions"
-            :key="s"
-            class="interval-chip"
-            :class="{ active: skipFwdSecs === s }"
-            @click="setSkipFwd(s)"
-          >{{ s }}s</button>
-        </div>
-      </div>
+          <div class="settings-item">
+            <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-skip-forward</v-icon>
+            <span class="item-label">Skip forward</span>
+            <div class="interval-chips">
+              <button
+                v-for="s in skipIntervalOptions"
+                :key="s"
+                class="interval-chip"
+                :class="{ active: skipFwdSecs === s }"
+                @click="setSkipFwd(s)"
+              >{{ s }}s</button>
+            </div>
+          </div>
 
-      <div class="settings-item" @click="settingsStore.setSpeedAdjustedTime(!settingsStore.speedAdjustedTime)">
-        <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-clock-fast</v-icon>
-        <div class="item-label-stack">
-          <span class="item-label">Speed-adjusted time</span>
-          <span class="item-sublabel">Show remaining time at current playback rate</span>
-        </div>
-        <div class="toggle-pill" :class="{ on: settingsStore.speedAdjustedTime }">
-          <div class="toggle-thumb" />
-        </div>
-      </div>
+          <div class="settings-item" @click="settingsStore.setSpeedAdjustedTime(!settingsStore.speedAdjustedTime)">
+            <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-clock-fast</v-icon>
+            <div class="item-label-stack">
+              <span class="item-label">Speed-adjusted time</span>
+              <span class="item-sublabel">Show remaining time at current playback rate</span>
+            </div>
+            <div class="toggle-pill" :class="{ on: settingsStore.speedAdjustedTime }">
+              <div class="toggle-thumb" />
+            </div>
+          </div>
 
-      <div class="settings-item" @click="settingsStore.setBookAutoAdvance(!settingsStore.bookAutoAdvance)">
-        <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-book-arrow-right-outline</v-icon>
-        <div class="item-label-stack">
-          <span class="item-label">Auto-advance books</span>
-          <span class="item-sublabel">Automatically play next book in series</span>
-        </div>
-        <div class="toggle-pill" :class="{ on: settingsStore.bookAutoAdvance }">
-          <div class="toggle-thumb" />
-        </div>
-      </div>
+          <div class="settings-item" @click="settingsStore.setBookAutoAdvance(!settingsStore.bookAutoAdvance)">
+            <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-book-arrow-right-outline</v-icon>
+            <div class="item-label-stack">
+              <span class="item-label">Auto-advance books</span>
+              <span class="item-sublabel">Automatically play next book in series</span>
+            </div>
+            <div class="toggle-pill" :class="{ on: settingsStore.bookAutoAdvance }">
+              <div class="toggle-thumb" />
+            </div>
+          </div>
 
-      <div class="settings-item" @click="settingsStore.setPodcastAutoAdvance(!settingsStore.podcastAutoAdvance)">
-        <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-skip-next-circle-outline</v-icon>
-        <div class="item-label-stack">
-          <span class="item-label">Auto-advance episodes</span>
-          <span class="item-sublabel">Automatically play next podcast episode</span>
-        </div>
-        <div class="toggle-pill" :class="{ on: settingsStore.podcastAutoAdvance }">
-          <div class="toggle-thumb" />
-        </div>
-      </div>
+          <div class="settings-item" @click="settingsStore.setPodcastAutoAdvance(!settingsStore.podcastAutoAdvance)">
+            <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-skip-next-circle-outline</v-icon>
+            <div class="item-label-stack">
+              <span class="item-label">Auto-advance episodes</span>
+              <span class="item-sublabel">Automatically play next podcast episode</span>
+            </div>
+            <div class="toggle-pill" :class="{ on: settingsStore.podcastAutoAdvance }">
+              <div class="toggle-thumb" />
+            </div>
+          </div>
 
-      <div class="settings-item" @click="settingsStore.setChapterBarrierEnabled(!settingsStore.chapterBarrierEnabled)">
-        <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-book-check-outline</v-icon>
-        <div class="item-label-stack">
-          <span class="item-label">Pause at chapter end</span>
-          <span class="item-sublabel">Pause playback at each chapter boundary</span>
-        </div>
-        <div class="toggle-pill" :class="{ on: settingsStore.chapterBarrierEnabled }">
-          <div class="toggle-thumb" />
-        </div>
-      </div>
+          <div class="settings-item" @click="settingsStore.setChapterBarrierEnabled(!settingsStore.chapterBarrierEnabled)">
+            <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-book-check-outline</v-icon>
+            <div class="item-label-stack">
+              <span class="item-label">Pause at chapter end</span>
+              <span class="item-sublabel">Pause playback at each chapter boundary</span>
+            </div>
+            <div class="toggle-pill" :class="{ on: settingsStore.chapterBarrierEnabled }">
+              <div class="toggle-thumb" />
+            </div>
+          </div>
 
-      <div class="settings-item" @click="settingsStore.setAutoRewindEnabled(!settingsStore.autoRewindEnabled)">
-        <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-rewind</v-icon>
-        <div class="item-label-stack">
-          <span class="item-label">Auto-rewind on resume</span>
-          <span class="item-sublabel">Rewind up to {{ settingsStore.autoRewindMax }}s after a pause</span>
-        </div>
-        <div class="toggle-pill" :class="{ on: settingsStore.autoRewindEnabled }">
-          <div class="toggle-thumb" />
-        </div>
-      </div>
+          <div class="settings-item" @click="settingsStore.setAutoRewindEnabled(!settingsStore.autoRewindEnabled)">
+            <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-rewind</v-icon>
+            <div class="item-label-stack">
+              <span class="item-label">Auto-rewind on resume</span>
+              <span class="item-sublabel">Rewind up to {{ settingsStore.autoRewindMax }}s after a pause</span>
+            </div>
+            <div class="toggle-pill" :class="{ on: settingsStore.autoRewindEnabled }">
+              <div class="toggle-thumb" />
+            </div>
+          </div>
 
-      <div v-if="settingsStore.autoRewindEnabled" class="settings-item">
-        <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-rewind-outline</v-icon>
-        <span class="item-label">Max rewind</span>
-        <div class="interval-chips">
-          <button
-            v-for="s in rewindOptions"
-            :key="s"
-            class="interval-chip"
-            :class="{ active: settingsStore.autoRewindMax === s }"
-            @click.stop="settingsStore.setAutoRewindMax(s)"
-          >{{ s }}s</button>
-        </div>
-      </div>
+          <div v-if="settingsStore.autoRewindEnabled" class="settings-item">
+            <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-rewind-outline</v-icon>
+            <span class="item-label">Max rewind</span>
+            <div class="interval-chips">
+              <button
+                v-for="s in rewindOptions"
+                :key="s"
+                class="interval-chip"
+                :class="{ active: settingsStore.autoRewindMax === s }"
+                @click.stop="settingsStore.setAutoRewindMax(s)"
+              >{{ s }}s</button>
+            </div>
+          </div>
 
-      <div class="settings-item" @click="toggleSleepFade">
-        <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-volume-minus</v-icon>
-        <div class="item-label-stack">
-          <span class="item-label">Fade volume before sleep</span>
-          <span class="item-sublabel">Gradually lower volume before sleep timer fires</span>
-        </div>
-        <div class="toggle-pill" :class="{ on: sleepFadeEnabled }">
-          <div class="toggle-thumb" />
-        </div>
-      </div>
+          <div class="settings-item" @click="toggleSleepFade">
+            <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-volume-minus</v-icon>
+            <div class="item-label-stack">
+              <span class="item-label">Fade volume before sleep</span>
+              <span class="item-sublabel">Gradually lower volume before sleep timer fires</span>
+            </div>
+            <div class="toggle-pill" :class="{ on: sleepFadeEnabled }">
+              <div class="toggle-thumb" />
+            </div>
+          </div>
 
-      <div v-if="sleepFadeEnabled" class="settings-item">
-        <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-timer-outline</v-icon>
-        <span class="item-label">Fade duration</span>
-        <div class="interval-chips">
-          <button
-            v-for="s in sleepFadeDurationOptions"
-            :key="s"
-            class="interval-chip"
-            :class="{ active: sleepFadeSecs === s }"
-            @click.stop="setSleepFadeSecs(s)"
-          >{{ s }}s</button>
-        </div>
-      </div>
+          <div v-if="sleepFadeEnabled" class="settings-item">
+            <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-timer-outline</v-icon>
+            <span class="item-label">Fade duration</span>
+            <div class="interval-chips">
+              <button
+                v-for="s in sleepFadeDurationOptions"
+                :key="s"
+                class="interval-chip"
+                :class="{ active: sleepFadeSecs === s }"
+                @click.stop="setSleepFadeSecs(s)"
+              >{{ s }}s</button>
+            </div>
+          </div>
 
-      <div class="settings-item" @click="toggleSleepChime">
-        <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-bell-outline</v-icon>
-        <div class="item-label-stack">
-          <span class="item-label">Chime before sleep</span>
-          <span class="item-sublabel">Play a soft chime 30 seconds before sleep fires</span>
-        </div>
-        <div class="toggle-pill" :class="{ on: sleepChimeEnabled }">
-          <div class="toggle-thumb" />
-        </div>
-      </div>
+          <div class="settings-item" @click="toggleSleepChime">
+            <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-bell-outline</v-icon>
+            <div class="item-label-stack">
+              <span class="item-label">Chime before sleep</span>
+              <span class="item-sublabel">Play a soft chime 30 seconds before sleep fires</span>
+            </div>
+            <div class="toggle-pill" :class="{ on: sleepChimeEnabled }">
+              <div class="toggle-thumb" />
+            </div>
+          </div>
 
-      <div v-if="sleepChimeEnabled" class="settings-item">
-        <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-volume-medium</v-icon>
-        <span class="item-label">Chime volume</span>
-        <div style="display:flex;align-items:center;gap:8px;flex:1;justify-content:flex-end">
-          <input
-            type="range" min="0.1" max="1" step="0.05"
-            :value="sleepChimeVol"
-            class="volume-slider"
-            @input="setSleepChimeVol(parseFloat(($event.target as HTMLInputElement).value))"
-          />
-          <span class="item-value">{{ Math.round(sleepChimeVol * 100) }}%</span>
-        </div>
-      </div>
+          <div v-if="sleepChimeEnabled" class="settings-item">
+            <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-volume-medium</v-icon>
+            <span class="item-label">Chime volume</span>
+            <div style="display:flex;align-items:center;gap:8px;flex:1;justify-content:flex-end">
+              <input
+                type="range" min="0.1" max="1" step="0.05"
+                :value="sleepChimeVol"
+                class="volume-slider"
+                @input="setSleepChimeVol(parseFloat(($event.target as HTMLInputElement).value))"
+              />
+              <span class="item-value">{{ Math.round(sleepChimeVol * 100) }}%</span>
+            </div>
+          </div>
 
-      <div class="settings-item" @click="toggleSleepResetOnPause">
-        <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-pause-circle-outline</v-icon>
-        <div class="item-label-stack">
-          <span class="item-label">Pause sleep timer when paused</span>
-          <span class="item-sublabel">Stop sleep countdown while audio is paused</span>
-        </div>
-        <div class="toggle-pill" :class="{ on: sleepResetOnPause }">
-          <div class="toggle-thumb" />
-        </div>
-      </div>
+          <div class="settings-item" @click="toggleSleepResetOnPause">
+            <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-pause-circle-outline</v-icon>
+            <div class="item-label-stack">
+              <span class="item-label">Pause sleep timer when paused</span>
+              <span class="item-sublabel">Stop sleep countdown while audio is paused</span>
+            </div>
+            <div class="toggle-pill" :class="{ on: sleepResetOnPause }">
+              <div class="toggle-thumb" />
+            </div>
+          </div>
 
-      <div class="settings-item">
-        <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-vibrate</v-icon>
-        <div class="item-label-stack">
-          <span class="item-label">Shake action</span>
-          <span class="item-sublabel">What to do when you shake the device during sleep timer</span>
-        </div>
-        <div class="interval-chips">
-          <button class="interval-chip" :class="{ active: settingsStore.shakeMode === 'off' }"     @click.stop="settingsStore.setShakeMode('off')">Off</button>
-          <button class="interval-chip" :class="{ active: settingsStore.shakeMode === 'addTime' }" @click.stop="settingsStore.setShakeMode('addTime')">+{{ shakeAddMins }} min</button>
-          <button class="interval-chip" :class="{ active: settingsStore.shakeMode === 'reset' }"   @click.stop="settingsStore.setShakeMode('reset')">Reset</button>
-        </div>
-      </div>
+          <div class="settings-item">
+            <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-vibrate</v-icon>
+            <div class="item-label-stack">
+              <span class="item-label">Shake action</span>
+              <span class="item-sublabel">What to do when you shake the device during sleep timer</span>
+            </div>
+            <div class="interval-chips">
+              <button class="interval-chip" :class="{ active: settingsStore.shakeMode === 'off' }"     @click.stop="settingsStore.setShakeMode('off')">Off</button>
+              <button class="interval-chip" :class="{ active: settingsStore.shakeMode === 'addTime' }" @click.stop="settingsStore.setShakeMode('addTime')">+{{ shakeAddMins }} min</button>
+              <button class="interval-chip" :class="{ active: settingsStore.shakeMode === 'reset' }"   @click.stop="settingsStore.setShakeMode('reset')">Reset</button>
+            </div>
+          </div>
 
-      <div v-if="settingsStore.shakeMode !== 'off'" class="settings-item">
-        <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-speedometer</v-icon>
-        <span class="item-label">Shake sensitivity</span>
-        <div style="display:flex;align-items:center;gap:8px;flex:1;justify-content:flex-end">
-          <input
-            type="range" min="0" max="4" step="1"
-            :value="shakeSensitivityIndex"
-            class="volume-slider"
-            @input="setShakeSensitivity(parseInt(($event.target as HTMLInputElement).value))"
-          />
-          <span class="item-value">{{ shakeSensitivityLabel }}</span>
-        </div>
-      </div>
+          <div v-if="settingsStore.shakeMode !== 'off'" class="settings-item">
+            <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-speedometer</v-icon>
+            <span class="item-label">Shake sensitivity</span>
+            <div style="display:flex;align-items:center;gap:8px;flex:1;justify-content:flex-end">
+              <input
+                type="range" min="0" max="4" step="1"
+                :value="shakeSensitivityIndex"
+                class="volume-slider"
+                @input="setShakeSensitivity(parseInt(($event.target as HTMLInputElement).value))"
+              />
+              <span class="item-value">{{ shakeSensitivityLabel }}</span>
+            </div>
+          </div>
 
-      <div v-if="settingsStore.shakeMode === 'addTime'" class="settings-item">
-        <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-timer-plus-outline</v-icon>
-        <span class="item-label">Shake adds</span>
-        <div style="display:flex;align-items:center;gap:8px;flex:1;justify-content:flex-end">
-          <input
-            type="range" min="1" max="30" step="1"
-            :value="shakeAddMins"
-            class="volume-slider"
-            @input="setShakeAddMins(parseInt(($event.target as HTMLInputElement).value))"
-          />
-          <span class="item-value">{{ shakeAddMins }} min</span>
-        </div>
-      </div>
+          <div v-if="settingsStore.shakeMode === 'addTime'" class="settings-item">
+            <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-timer-plus-outline</v-icon>
+            <span class="item-label">Shake adds</span>
+            <div style="display:flex;align-items:center;gap:8px;flex:1;justify-content:flex-end">
+              <input
+                type="range" min="1" max="30" step="1"
+                :value="shakeAddMins"
+                class="volume-slider"
+                @input="setShakeAddMins(parseInt(($event.target as HTMLInputElement).value))"
+              />
+              <span class="item-value">{{ shakeAddMins }} min</span>
+            </div>
+          </div>
 
-      <div class="settings-item">
-        <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-rewind</v-icon>
-        <span class="item-label">Sleep rewind</span>
-        <div class="interval-chips">
-          <button
-            v-for="s in sleepRewindOptions"
-            :key="s"
-            class="interval-chip"
-            :class="{ active: sleepRewindSecs === s }"
-            @click.stop="setSleepRewind(s)"
-          >{{ s === 0 ? 'Off' : `${s}s` }}</button>
-        </div>
-      </div>
+          <div class="settings-item">
+            <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-rewind</v-icon>
+            <span class="item-label">Sleep rewind</span>
+            <div class="interval-chips">
+              <button
+                v-for="s in sleepRewindOptions"
+                :key="s"
+                class="interval-chip"
+                :class="{ active: sleepRewindSecs === s }"
+                @click.stop="setSleepRewind(s)"
+              >{{ s === 0 ? 'Off' : `${s}s` }}</button>
+            </div>
+          </div>
 
-      <!-- Auto sleep timer -->
-      <div class="settings-item" @click="toggleAutoSleep">
-        <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-weather-night</v-icon>
-        <div class="item-label-stack">
-          <span class="item-label">Auto sleep timer</span>
-          <span class="item-sublabel">Start sleep timer automatically within a time window</span>
-        </div>
-        <div class="toggle-pill" :class="{ on: autoSleepEnabled }">
-          <div class="toggle-thumb" />
-        </div>
-      </div>
+          <!-- Auto sleep timer -->
+          <div class="settings-item" @click="toggleAutoSleep">
+            <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-weather-night</v-icon>
+            <div class="item-label-stack">
+              <span class="item-label">Auto sleep timer</span>
+              <span class="item-sublabel">Start sleep timer automatically within a time window</span>
+            </div>
+            <div class="toggle-pill" :class="{ on: autoSleepEnabled }">
+              <div class="toggle-thumb" />
+            </div>
+          </div>
 
-      <template v-if="autoSleepEnabled">
-        <div class="settings-item">
-          <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-clock-start</v-icon>
-          <span class="item-label">Window start</span>
-          <div class="interval-chips">
-            <button
-              v-for="h in autoSleepHourOptions"
-              :key="h"
-              class="interval-chip"
-              :class="{ active: autoSleepStart === h }"
-              @click.stop="setAutoSleepStart(h)"
-            >{{ fmtHour(h) }}</button>
+          <template v-if="autoSleepEnabled">
+            <div class="settings-item">
+              <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-clock-start</v-icon>
+              <span class="item-label">Window start</span>
+              <div class="interval-chips">
+                <button
+                  v-for="h in autoSleepHourOptions"
+                  :key="h"
+                  class="interval-chip"
+                  :class="{ active: autoSleepStart === h }"
+                  @click.stop="setAutoSleepStart(h)"
+                >{{ fmtHour(h) }}</button>
+              </div>
+            </div>
+            <div class="settings-item">
+              <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-clock-end</v-icon>
+              <span class="item-label">Window end</span>
+              <div class="interval-chips">
+                <button
+                  v-for="h in autoSleepHourOptions"
+                  :key="h"
+                  class="interval-chip"
+                  :class="{ active: autoSleepEnd === h }"
+                  @click.stop="setAutoSleepEnd(h)"
+                >{{ fmtHour(h) }}</button>
+              </div>
+            </div>
+            <div class="settings-item">
+              <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-timer-sand</v-icon>
+              <span class="item-label">Auto sleep duration</span>
+              <div class="interval-chips">
+                <button
+                  v-for="m in autoSleepDurationOptions"
+                  :key="m"
+                  class="interval-chip"
+                  :class="{ active: autoSleepMins === m }"
+                  @click.stop="setAutoSleepMins(m)"
+                >{{ m }}m</button>
+              </div>
+            </div>
+          </template>
+
+          <div class="settings-item" @click="togglePerItemSpeed">
+            <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-speedometer</v-icon>
+            <div class="item-label-stack">
+              <span class="item-label">Remember speed per book</span>
+              <span class="item-sublabel">Restore the last speed used for each title</span>
+            </div>
+            <div class="toggle-pill" :class="{ on: perItemSpeed }">
+              <div class="toggle-thumb" />
+            </div>
+          </div>
+
+          <div class="settings-item" @click="toggleGoodreads">
+            <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-bookshelf</v-icon>
+            <div class="item-label-stack">
+              <span class="item-label">Show Goodreads button</span>
+              <span class="item-sublabel">Search Goodreads from book detail sheet</span>
+            </div>
+            <div class="toggle-pill" :class="{ on: showGoodreads }">
+              <div class="toggle-thumb" />
+            </div>
           </div>
         </div>
-        <div class="settings-item">
-          <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-clock-end</v-icon>
-          <span class="item-label">Window end</span>
-          <div class="interval-chips">
-            <button
-              v-for="h in autoSleepHourOptions"
-              :key="h"
-              class="interval-chip"
-              :class="{ active: autoSleepEnd === h }"
-              @click.stop="setAutoSleepEnd(h)"
-            >{{ fmtHour(h) }}</button>
-          </div>
-        </div>
-        <div class="settings-item">
-          <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-timer-sand</v-icon>
-          <span class="item-label">Auto sleep duration</span>
-          <div class="interval-chips">
-            <button
-              v-for="m in autoSleepDurationOptions"
-              :key="m"
-              class="interval-chip"
-              :class="{ active: autoSleepMins === m }"
-              @click.stop="setAutoSleepMins(m)"
-            >{{ m }}m</button>
-          </div>
-        </div>
-      </template>
-
-      <div class="settings-item" @click="togglePerItemSpeed">
-        <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-speedometer</v-icon>
-        <div class="item-label-stack">
-          <span class="item-label">Remember speed per book</span>
-          <span class="item-sublabel">Restore the last speed used for each title</span>
-        </div>
-        <div class="toggle-pill" :class="{ on: perItemSpeed }">
-          <div class="toggle-thumb" />
-        </div>
-      </div>
-
-      <div class="settings-item" @click="toggleGoodreads">
-        <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-bookshelf</v-icon>
-        <div class="item-label-stack">
-          <span class="item-label">Show Goodreads button</span>
-          <span class="item-sublabel">Search Goodreads from book detail sheet</span>
-        </div>
-        <div class="toggle-pill" :class="{ on: showGoodreads }">
-          <div class="toggle-thumb" />
-        </div>
-      </div>
+      </Transition>
     </section>
 
     <!-- Equalizer -->
     <section class="settings-section">
-      <p class="section-label">Equalizer</p>
+      <button class="section-toggle" @click="toggle('equalizer')">
+        <span class="section-toggle-title">Equalizer</span>
+        <v-icon class="section-chevron" :class="{ open: isOpen('equalizer') }" size="16" color="rgba(255,255,255,0.3)">mdi-chevron-down</v-icon>
+      </button>
 
-      <div class="settings-item" @click="eq.setEnabled(!eq.enabled)">
-        <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-equalizer</v-icon>
-        <div class="item-label-stack">
-          <span class="item-label">Equalizer</span>
-          <span class="item-sublabel">{{ eq.enabled ? (eq.isCustom ? 'Custom' : eq.activePreset) : 'Off' }}</span>
-        </div>
-        <div class="toggle-pill" :class="{ on: eq.enabled }">
-          <div class="toggle-thumb" />
-        </div>
-      </div>
-
-      <Transition name="expand">
-        <div v-if="eq.enabled" class="eq-panel">
-          <!-- Preset chips -->
-          <div class="eq-presets-wrap">
-            <button
-              v-for="name in Object.keys(PRESETS)"
-              :key="name"
-              class="eq-preset-chip"
-              :class="{ active: eq.activePreset === name }"
-              @click="eq.applyPreset(name)"
-            >{{ name }}</button>
-          </div>
-
-          <!-- Band sliders -->
-          <div class="eq-bands-wrap">
-            <div v-for="(band, i) in EQ_BANDS" :key="band.freq" class="eq-band">
-              <input
-                type="range"
-                :min="eq.MIN_DB" :max="eq.MAX_DB" step="0.5"
-                :value="eq.bands[i]"
-                class="eq-band-slider"
-                orient="vertical"
-                @input="eq.setBand(i, parseFloat(($event.target as HTMLInputElement).value))"
-              />
-              <span class="eq-band-db" :class="{ pos: eq.bands[i] > 0, neg: eq.bands[i] < 0 }">
-                {{ eq.bands[i] > 0 ? '+' : '' }}{{ eq.bands[i].toFixed(0) }}
-              </span>
-              <span class="eq-band-label">{{ band.label }}</span>
+      <Transition name="sect" @enter="onEnter" @after-enter="onAfterEnter" @leave="onLeave">
+        <div v-if="isOpen('equalizer')">
+          <div class="settings-item" @click="eq.setEnabled(!eq.enabled)">
+            <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-equalizer</v-icon>
+            <div class="item-label-stack">
+              <span class="item-label">Equalizer</span>
+              <span class="item-sublabel">{{ eq.enabled ? (eq.isCustom ? 'Custom' : eq.activePreset) : 'Off' }}</span>
+            </div>
+            <div class="toggle-pill" :class="{ on: eq.enabled }">
+              <div class="toggle-thumb" />
             </div>
           </div>
 
-          <!-- Bass boost + Mono row -->
-          <div class="eq-extras">
-            <div class="eq-extra-item">
-              <span class="eq-extra-label">Bass boost</span>
-              <div class="eq-bass-row">
-                <input
-                  type="range" min="0" max="1" step="0.05"
-                  :value="eq.bassBoost"
-                  class="eq-bass-slider"
-                  @input="eq.setBassBoost(parseFloat(($event.target as HTMLInputElement).value))"
-                />
-                <span class="eq-bass-val">{{ Math.round(eq.bassBoost * 100) }}%</span>
+          <Transition name="expand">
+            <div v-if="eq.enabled" class="eq-panel">
+              <!-- Preset chips -->
+              <div class="eq-presets-wrap">
+                <button
+                  v-for="name in Object.keys(PRESETS)"
+                  :key="name"
+                  class="eq-preset-chip"
+                  :class="{ active: eq.activePreset === name }"
+                  @click="eq.applyPreset(name)"
+                >{{ name }}</button>
               </div>
-            </div>
-            <div class="eq-extra-item eq-mono-item" @click="eq.setMono(!eq.mono)">
-              <span class="eq-extra-label">Mono</span>
-              <div class="toggle-pill sm" :class="{ on: eq.mono }">
-                <div class="toggle-thumb" />
-              </div>
-            </div>
-          </div>
 
-          <button class="eq-reset-btn" @click="eq.resetAll()">Reset to flat</button>
+              <!-- Band sliders -->
+              <div class="eq-bands-wrap">
+                <div v-for="(band, i) in EQ_BANDS" :key="band.freq" class="eq-band">
+                  <input
+                    type="range"
+                    :min="eq.MIN_DB" :max="eq.MAX_DB" step="0.5"
+                    :value="eq.bands[i]"
+                    class="eq-band-slider"
+                    orient="vertical"
+                    @input="eq.setBand(i, parseFloat(($event.target as HTMLInputElement).value))"
+                  />
+                  <span class="eq-band-db" :class="{ pos: eq.bands[i] > 0, neg: eq.bands[i] < 0 }">
+                    {{ eq.bands[i] > 0 ? '+' : '' }}{{ eq.bands[i].toFixed(0) }}
+                  </span>
+                  <span class="eq-band-label">{{ band.label }}</span>
+                </div>
+              </div>
+
+              <!-- Bass boost + Mono row -->
+              <div class="eq-extras">
+                <div class="eq-extra-item">
+                  <span class="eq-extra-label">Bass boost</span>
+                  <div class="eq-bass-row">
+                    <input
+                      type="range" min="0" max="1" step="0.05"
+                      :value="eq.bassBoost"
+                      class="eq-bass-slider"
+                      @input="eq.setBassBoost(parseFloat(($event.target as HTMLInputElement).value))"
+                    />
+                    <span class="eq-bass-val">{{ Math.round(eq.bassBoost * 100) }}%</span>
+                  </div>
+                </div>
+                <div class="eq-extra-item eq-mono-item" @click="eq.setMono(!eq.mono)">
+                  <span class="eq-extra-label">Mono</span>
+                  <div class="toggle-pill sm" :class="{ on: eq.mono }">
+                    <div class="toggle-thumb" />
+                  </div>
+                </div>
+              </div>
+
+              <button class="eq-reset-btn" @click="eq.resetAll()">Reset to flat</button>
+            </div>
+          </Transition>
         </div>
       </Transition>
     </section>
 
     <!-- Server -->
     <section class="settings-section">
-      <p class="section-label">Server</p>
+      <button class="section-toggle" @click="toggle('server')">
+        <span class="section-toggle-title">Server</span>
+        <v-icon class="section-chevron" :class="{ open: isOpen('server') }" size="16" color="rgba(255,255,255,0.3)">mdi-chevron-down</v-icon>
+      </button>
 
-      <div class="settings-item" @click="openEditServer">
-        <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-server</v-icon>
-        <span class="item-label">ABS Server</span>
-        <span class="item-value server-url">{{ serverUrl }}</span>
-      </div>
+      <Transition name="sect" @enter="onEnter" @after-enter="onAfterEnter" @leave="onLeave">
+        <div v-if="isOpen('server')">
+          <div class="settings-item" @click="openEditServer">
+            <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-server</v-icon>
+            <span class="item-label">ABS Server</span>
+            <span class="item-value server-url">{{ serverUrl }}</span>
+          </div>
 
-      <div class="settings-item">
-        <v-icon size="18" :color="socketConnected ? '#22c55e' : '#ef4444'">
-          {{ socketConnected ? 'mdi-circle' : 'mdi-circle-outline' }}
-        </v-icon>
-        <span class="item-label">Connection</span>
-        <span class="item-value" :style="{ color: socketConnected ? '#22c55e' : '#ef4444' }">
-          {{ socketConnected ? 'Connected' : 'Disconnected' }}
-        </span>
-      </div>
+          <div class="settings-item">
+            <v-icon size="18" :color="socketConnected ? '#22c55e' : '#ef4444'">
+              {{ socketConnected ? 'mdi-circle' : 'mdi-circle-outline' }}
+            </v-icon>
+            <span class="item-label">Connection</span>
+            <span class="item-value" :style="{ color: socketConnected ? '#22c55e' : '#ef4444' }">
+              {{ socketConnected ? 'Connected' : 'Disconnected' }}
+            </span>
+          </div>
+        </div>
+      </Transition>
     </section>
 
     <!-- Library -->
     <section class="settings-section" v-if="lib.libraries.length > 1">
-      <p class="section-label">Library</p>
-      <div
-        v-for="l in lib.libraries"
-        :key="l.id"
-        class="settings-item"
-        @click="lib.setActiveLibrary(l.id)"
-      >
-        <v-icon size="18" color="rgba(255,255,255,0.5)">
-          {{ l.mediaType === 'podcast' ? 'mdi-podcast' : 'mdi-bookshelf' }}
-        </v-icon>
-        <span class="item-label">{{ l.name }}</span>
-        <v-icon v-if="lib.activeLibraryId === l.id" size="16" color="#d4a017">mdi-check</v-icon>
-      </div>
+      <button class="section-toggle" @click="toggle('library')">
+        <span class="section-toggle-title">Library</span>
+        <v-icon class="section-chevron" :class="{ open: isOpen('library') }" size="16" color="rgba(255,255,255,0.3)">mdi-chevron-down</v-icon>
+      </button>
+
+      <Transition name="sect" @enter="onEnter" @after-enter="onAfterEnter" @leave="onLeave">
+        <div v-if="isOpen('library')">
+          <div
+            v-for="l in lib.libraries"
+            :key="l.id"
+            class="settings-item"
+            @click="lib.setActiveLibrary(l.id)"
+          >
+            <v-icon size="18" color="rgba(255,255,255,0.5)">
+              {{ l.mediaType === 'podcast' ? 'mdi-podcast' : 'mdi-bookshelf' }}
+            </v-icon>
+            <span class="item-label">{{ l.name }}</span>
+            <v-icon v-if="lib.activeLibraryId === l.id" size="16" color="#d4a017">mdi-check</v-icon>
+          </div>
+        </div>
+      </Transition>
     </section>
 
     <!-- About -->
     <section class="settings-section">
-      <p class="section-label">About</p>
+      <button class="section-toggle" @click="toggle('about')">
+        <span class="section-toggle-title">About</span>
+        <v-icon class="section-chevron" :class="{ open: isOpen('about') }" size="16" color="rgba(255,255,255,0.3)">mdi-chevron-down</v-icon>
+      </button>
 
-      <div class="settings-item">
-        <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-information-outline</v-icon>
-        <span class="item-label">Version</span>
-        <span class="item-value">{{ appVersion }}</span>
-      </div>
+      <Transition name="sect" @enter="onEnter" @after-enter="onAfterEnter" @leave="onLeave">
+        <div v-if="isOpen('about')">
+          <div class="settings-item">
+            <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-information-outline</v-icon>
+            <span class="item-label">Version</span>
+            <span class="item-value">{{ appVersion }}</span>
+          </div>
 
-      <div class="settings-item">
-        <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-github</v-icon>
-        <span class="item-label">Source code</span>
-        <v-icon size="14" color="rgba(255,255,255,0.25)">mdi-open-in-new</v-icon>
-      </div>
+          <div class="settings-item">
+            <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-github</v-icon>
+            <span class="item-label">Source code</span>
+            <v-icon size="14" color="rgba(255,255,255,0.25)">mdi-open-in-new</v-icon>
+          </div>
+        </div>
+      </Transition>
     </section>
 
     <!-- Navigate -->
     <section class="settings-section">
-      <p class="section-label">More</p>
-      <div class="settings-item" @click="router.push({ name: 'stats' })">
-        <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-chart-bar</v-icon>
-        <span class="item-label">Listening Stats</span>
-        <v-icon size="14" color="rgba(255,255,255,0.2)">mdi-chevron-right</v-icon>
-      </div>
-      <div class="settings-item" @click="router.push({ name: 'collections' })">
-        <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-bookmark-multiple-outline</v-icon>
-        <span class="item-label">Collections</span>
-        <v-icon size="14" color="rgba(255,255,255,0.2)">mdi-chevron-right</v-icon>
-      </div>
-      <div class="settings-item" @click="router.push({ name: 'playlists' })">
-        <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-playlist-music</v-icon>
-        <span class="item-label">Playlists</span>
-        <v-icon size="14" color="rgba(255,255,255,0.2)">mdi-chevron-right</v-icon>
-      </div>
-      <div class="settings-item" @click="router.push({ name: 'browse' })">
-        <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-compass-outline</v-icon>
-        <span class="item-label">Browse</span>
-        <v-icon size="14" color="rgba(255,255,255,0.2)">mdi-chevron-right</v-icon>
-      </div>
-      <div class="settings-item" @click="router.push({ name: 'bookmarks' })">
-        <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-bookmark-outline</v-icon>
-        <span class="item-label">Bookmarks</span>
-        <v-icon size="14" color="rgba(255,255,255,0.2)">mdi-chevron-right</v-icon>
-      </div>
+      <button class="section-toggle" @click="toggle('more')">
+        <span class="section-toggle-title">More</span>
+        <v-icon class="section-chevron" :class="{ open: isOpen('more') }" size="16" color="rgba(255,255,255,0.3)">mdi-chevron-down</v-icon>
+      </button>
+
+      <Transition name="sect" @enter="onEnter" @after-enter="onAfterEnter" @leave="onLeave">
+        <div v-if="isOpen('more')">
+          <div class="settings-item" @click="router.push({ name: 'stats' })">
+            <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-chart-bar</v-icon>
+            <span class="item-label">Listening Stats</span>
+            <v-icon size="14" color="rgba(255,255,255,0.2)">mdi-chevron-right</v-icon>
+          </div>
+          <div class="settings-item" @click="router.push({ name: 'collections' })">
+            <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-bookmark-multiple-outline</v-icon>
+            <span class="item-label">Collections</span>
+            <v-icon size="14" color="rgba(255,255,255,0.2)">mdi-chevron-right</v-icon>
+          </div>
+          <div class="settings-item" @click="router.push({ name: 'playlists' })">
+            <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-playlist-music</v-icon>
+            <span class="item-label">Playlists</span>
+            <v-icon size="14" color="rgba(255,255,255,0.2)">mdi-chevron-right</v-icon>
+          </div>
+          <div class="settings-item" @click="router.push({ name: 'browse' })">
+            <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-compass-outline</v-icon>
+            <span class="item-label">Browse</span>
+            <v-icon size="14" color="rgba(255,255,255,0.2)">mdi-chevron-right</v-icon>
+          </div>
+          <div class="settings-item" @click="router.push({ name: 'bookmarks' })">
+            <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-bookmark-outline</v-icon>
+            <span class="item-label">Bookmarks</span>
+            <v-icon size="14" color="rgba(255,255,255,0.2)">mdi-chevron-right</v-icon>
+          </div>
+        </div>
+      </Transition>
     </section>
 
     <!-- Abscond -->
     <section class="settings-section">
-      <p class="section-label">Abscond</p>
+      <button class="section-toggle" @click="toggle('abscond')">
+        <span class="section-toggle-title">Abscond</span>
+        <v-icon class="section-chevron" :class="{ open: isOpen('abscond') }" size="16" color="rgba(255,255,255,0.3)">mdi-chevron-down</v-icon>
+      </button>
 
-      <div class="settings-item" @click="showClearCacheConfirm = true">
-        <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-cached</v-icon>
-        <div class="item-label-stack">
-          <span class="item-label">Clear App Cache</span>
-          <span class="item-sublabel">Clears cached assets and reloads the app</span>
+      <Transition name="sect" @enter="onEnter" @after-enter="onAfterEnter" @leave="onLeave">
+        <div v-if="isOpen('abscond')">
+          <div class="settings-item" @click="showClearCacheConfirm = true">
+            <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-cached</v-icon>
+            <div class="item-label-stack">
+              <span class="item-label">Clear App Cache</span>
+              <span class="item-sublabel">Clears cached assets and reloads the app</span>
+            </div>
+            <v-icon size="14" color="rgba(255,255,255,0.2)">mdi-chevron-right</v-icon>
+          </div>
         </div>
-        <v-icon size="14" color="rgba(255,255,255,0.2)">mdi-chevron-right</v-icon>
-      </div>
+      </Transition>
     </section>
 
     <!-- Data & Backup -->
     <section class="settings-section">
-      <p class="section-label">Data &amp; Backup</p>
-      <div class="settings-item" @click="exportSettings">
-        <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-export-variant</v-icon>
-        <span class="item-label">Export Settings</span>
-        <span class="item-value" style="font-size:11px">JSON</span>
-      </div>
-      <div class="settings-item" @click="triggerImport">
-        <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-import</v-icon>
-        <span class="item-label">Import Settings</span>
-        <input ref="importFileRef" type="file" accept=".json" style="display:none" @change="importSettings" />
-      </div>
-      <div class="settings-item" style="cursor:default">
-        <v-icon size="18" color="rgba(255,255,255,0.3)">mdi-note-outline</v-icon>
-        <span class="item-label" style="color:rgba(255,255,255,0.35)">Notes (per-book, stored locally)</span>
-        <span class="item-value" style="font-size:11px">{{ noteCount }} books</span>
-      </div>
+      <button class="section-toggle" @click="toggle('data')">
+        <span class="section-toggle-title">Data &amp; Backup</span>
+        <v-icon class="section-chevron" :class="{ open: isOpen('data') }" size="16" color="rgba(255,255,255,0.3)">mdi-chevron-down</v-icon>
+      </button>
+
+      <Transition name="sect" @enter="onEnter" @after-enter="onAfterEnter" @leave="onLeave">
+        <div v-if="isOpen('data')">
+          <div class="settings-item" @click="exportSettings">
+            <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-export-variant</v-icon>
+            <span class="item-label">Export Settings</span>
+            <span class="item-value" style="font-size:11px">JSON</span>
+          </div>
+          <div class="settings-item" @click="triggerImport">
+            <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-import</v-icon>
+            <span class="item-label">Import Settings</span>
+            <input ref="importFileRef" type="file" accept=".json" style="display:none" @change="importSettings" />
+          </div>
+          <div class="settings-item" style="cursor:default">
+            <v-icon size="18" color="rgba(255,255,255,0.3)">mdi-note-outline</v-icon>
+            <span class="item-label" style="color:rgba(255,255,255,0.35)">Notes (per-book, stored locally)</span>
+            <span class="item-value" style="font-size:11px">{{ noteCount }} books</span>
+          </div>
+        </div>
+      </Transition>
     </section>
 
     <!-- Admin link -->
@@ -743,6 +816,34 @@ const eq = useEqualizerStore()
 
 declare const __APP_VERSION__: string
 const appVersion = __APP_VERSION__
+
+// Collapsible sections
+const expandedSections = ref(new Set<string>())
+function toggle(id: string) {
+  const s = expandedSections.value
+  s.has(id) ? s.delete(id) : s.add(id)
+  expandedSections.value = new Set(s)
+}
+function isOpen(id: string) { return expandedSections.value.has(id) }
+
+// Height-animated enter/leave hooks
+function onEnter(el: Element) {
+  const h = el as HTMLElement
+  h.style.height = '0'
+  h.style.overflow = 'hidden'
+  requestAnimationFrame(() => { h.style.height = h.scrollHeight + 'px' })
+}
+function onAfterEnter(el: Element) {
+  const h = el as HTMLElement
+  h.style.height = 'auto'
+  h.style.overflow = ''
+}
+function onLeave(el: Element) {
+  const h = el as HTMLElement
+  h.style.height = h.scrollHeight + 'px'
+  h.style.overflow = 'hidden'
+  requestAnimationFrame(() => { h.style.height = '0' })
+}
 
 const showExplicit = ref(localStorage.getItem('abs_show_explicit') !== 'false')
 function toggleShowExplicit() {
@@ -1039,11 +1140,21 @@ async function doLogout() {
 .screen-title { font-size: 18px; font-weight: 700; color: rgba(255,255,255,0.9); margin: 0 0 20px; }
 
 .settings-section { margin-bottom: 24px; }
-.section-label {
-  font-size: 10px; font-weight: 600; color: rgba(255,255,255,0.3);
-  text-transform: uppercase; letter-spacing: 0.5px;
-  margin: 0 0 8px; padding: 0 4px;
+
+.section-toggle {
+  width: 100%; display: flex; align-items: center; justify-content: space-between;
+  padding: 11px 4px; background: transparent; border: none; cursor: pointer;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  margin-bottom: 0;
 }
+.section-toggle-title {
+  font-size: 11px; font-weight: 700; letter-spacing: 0.8px;
+  text-transform: uppercase; color: rgba(255,255,255,0.5);
+}
+.section-chevron { transition: transform 0.22s ease; flex-shrink: 0; }
+.section-chevron.open { transform: rotate(180deg); }
+.sect-enter-active, .sect-leave-active { transition: height 0.25s ease, opacity 0.2s ease; }
+.sect-enter-from, .sect-leave-to { opacity: 0; }
 
 .settings-card {
   background: #111; border-radius: 12px;
