@@ -73,10 +73,20 @@
             <p class="accent-value">{{ totalBooksFinished }}</p>
             <p class="accent-label">Books finished</p>
           </div>
+          <div v-if="episodesFinished > 0" class="accent-card accent-card--purple">
+            <v-icon size="18" color="#a855f7">mdi-podcast</v-icon>
+            <p class="accent-value">{{ episodesFinished }}</p>
+            <p class="accent-label">Episodes finished</p>
+          </div>
           <div class="accent-card accent-card--teal accent-card--tap" @click="showYearSheet = true">
             <v-icon size="18" color="#14b8a6">mdi-bookshelf</v-icon>
             <p class="accent-value">{{ booksThisYear }}</p>
             <p class="accent-label">This year</p>
+          </div>
+          <div v-if="episodesThisYear > 0" class="accent-card accent-card--indigo">
+            <v-icon size="18" color="#6366f1">mdi-podcast</v-icon>
+            <p class="accent-value">{{ episodesThisYear }}</p>
+            <p class="accent-label">Episodes this year</p>
           </div>
           <div class="accent-card accent-card--blue">
             <v-icon size="18" color="#3b82f6">mdi-calendar-check-outline</v-icon>
@@ -415,6 +425,21 @@ const totalBooksFinished = computed(() =>
   ?? userStats.value?.totalBooksFinished
   ?? 0
 )
+
+const episodesFinished = computed(() =>
+  userStats.value?.podcastListeningStats?.completedEpisodes ?? 0
+)
+
+const episodesThisYear = computed(() => {
+  const year = new Date().getFullYear()
+  const seen = new Set<string>()
+  for (const s of sessions.value) {
+    if (!s.episodeId) continue
+    if (new Date(s.updatedAt).getFullYear() !== year) continue
+    seen.add(s.episodeId)
+  }
+  return seen.size
+})
 
 const currentStreak = computed(() => {
   const map = _dayMap.value
@@ -756,6 +781,7 @@ onMounted(async () => {
 .accent-card--teal   { border-color: rgba(20,184,166,0.15); background: rgba(20,184,166,0.05); }
 .accent-card--blue   { border-color: rgba(59,130,246,0.15); background: rgba(59,130,246,0.05); }
 .accent-card--purple { border-color: rgba(168,85,247,0.15); background: rgba(168,85,247,0.05); }
+.accent-card--indigo { border-color: rgba(99,102,241,0.15); background: rgba(99,102,241,0.05); }
 .accent-card--tap { cursor: pointer; transition: opacity 0.15s; }
 .accent-card--tap:active { opacity: 0.7; }
 
