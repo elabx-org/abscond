@@ -26,7 +26,10 @@ export async function searchCandidates(
 ): Promise<MatchCandidate[]> {
   try {
     const res = await api.get('/search/books', { params: { title, author, provider } })
-    return res.data ?? []
+    return (res.data ?? []).map((item: any) => ({
+      ...item,
+      coverUrl: item.coverUrl ?? item.cover ?? undefined,
+    }))
   } catch (err) {
     if (axios.isAxiosError(err) && err.response?.status === 404) return []
     throw err
