@@ -88,11 +88,12 @@
           </button>
           <button
             class="util-btn"
-            :class="{ active: player.sleepMinsLeft !== null }"
+            :class="{ active: player.sleepMinsLeft !== null || player.sleepEndOfChapter }"
             @click="showSleepPicker = !showSleepPicker"
           >
             <v-icon size="18">mdi-timer-outline</v-icon>
             <span v-if="player.sleepMinsLeft" class="util-badge">{{ player.sleepMinsLeft }}m</span>
+            <span v-else-if="player.sleepEndOfChapter" class="util-badge">ch</span>
           </button>
           <button class="util-btn" @click="showChapters = !showChapters">
             <v-icon size="18">mdi-format-list-bulleted</v-icon>
@@ -114,6 +115,11 @@
                 :class="{ active: player.sleepMinsLeft === m }"
                 @click="setSleep(m)"
               >{{ m }}m</button>
+              <button
+                class="sleep-opt"
+                :class="{ active: player.sleepEndOfChapter }"
+                @click="setSleepEoc"
+              >End of Ch.</button>
               <button class="sleep-opt cancel" @click="setSleep(null)">Off</button>
             </div>
           </div>
@@ -162,6 +168,11 @@ const skipFwdSecs  = parseInt(localStorage.getItem('abs_skip_fwd')  ?? '30')
 
 function setSleep(mins: number | null) {
   player.setSleepTimer(mins)
+  showSleepPicker.value = false
+}
+
+function setSleepEoc() {
+  player.setSleepTimer(null, true)
   showSleepPicker.value = false
 }
 

@@ -65,22 +65,31 @@
                 </button>
                 <h3 class="col-sheet-title">{{ selectedCol.name }}</h3>
                 <p v-if="selectedCol.description" class="col-sheet-desc">{{ selectedCol.description }}</p>
+                <button class="del-col-btn" @click="confirmDelete(selectedCol)">
+                  <v-icon size="14">mdi-delete-outline</v-icon>
+                  Delete collection
+                </button>
               </div>
               <div v-if="!selectedCol.books.length" class="empty-state">
                 <v-icon size="32" color="rgba(255,255,255,0.15)">mdi-book-open-blank-variant</v-icon>
                 <p>No books in this collection</p>
               </div>
-              <div v-else class="col-book-grid">
-                <PortraitCard
+              <div v-else class="col-book-list">
+                <div
                   v-for="b in selectedCol.books"
                   :key="b.id"
-                  :item-id="b.id"
-                  :title="b.media.metadata.title"
-                  :author="(b.media.metadata.authors ?? []).map(a => a.name).join(', ') || 'Unknown'"
-                  :cover-src="coverUrl(b.id, auth.token ?? '')"
-                  :progress="b.userMediaProgress?.progress ?? 0"
+                  class="col-book-row"
                   @click="openBook(b)"
-                />
+                >
+                  <img :src="coverUrl(b.id, auth.token ?? '')" class="col-book-thumb" />
+                  <div class="col-book-info">
+                    <p class="col-book-title">{{ b.media.metadata.title }}</p>
+                    <p class="col-book-author">{{ (b.media.metadata.authors ?? []).map(a => a.name).join(', ') || 'Unknown' }}</p>
+                  </div>
+                  <button class="col-book-del" @click.stop="removeBook(b.id)">
+                    <v-icon size="14">mdi-close</v-icon>
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -107,6 +116,23 @@
       </Transition>
     </Teleport>
 
+    <!-- Delete confirm sheet -->
+    <Teleport to="body">
+      <Transition name="sheet">
+        <div v-if="deleteTarget" class="sheet-backdrop" @click.self="deleteTarget = null">
+          <div class="create-sheet">
+            <div class="drag-handle-area"><div class="drag-handle" /></div>
+            <div class="create-content">
+              <h3 class="create-title">Delete Collection</h3>
+              <p style="font-size:13px;color:rgba(255,255,255,0.6);margin:0 0 20px">Delete <strong style="color:rgba(255,255,255,0.9)">{{ deleteTarget.name }}</strong>?</p>
+              <button class="del-confirm-btn" :disabled="deleting" @click="doDelete">{{ deleting ? 'Deleting…' : 'Delete' }}</button>
+              <button class="cancel-btn" @click="deleteTarget = null">Cancel</button>
+            </div>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
+
     <!-- Book detail sheet when tapped from collection -->
     <BookDetailSheet
       v-if="detailItem"
@@ -120,7 +146,7 @@
 
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
-import { getCollections, createCollection } from '@/api/collections'
+import { getCollections, createCollection, deleteCollection, removeBookFromCollection } from '@/api/collections'
 import { coverUrl } from '@/api/client'
 import { useAuthStore } from '@/stores/auth'
 import { useLibraryStore } from '@/stores/library'
@@ -140,10 +166,35 @@ const newName     = ref('')
 const newDesc     = ref('')
 const saving      = ref(false)
 const detailItem  = ref<LibraryItem | null>(null)
+const deleteTarget = ref<Collection | null>(null)
+const deleting     = ref(false)
 
 function openBook(item: LibraryItem) {
   selectedCol.value = null
   detailItem.value  = item
+}
+
+function confirmDelete(col: Collection) {
+  selectedCol.value = null
+  deleteTarget.value = col
+}
+
+async function doDelete() {
+  if (!deleteTarget.value) return
+  deleting.value = true
+  try {
+    await deleteCollection(deleteTarget.value.id)
+    collections.value = collections.value.filter(c => c.id !== deleteTarget.value!.id)
+    deleteTarget.value = null
+  } finally { deleting.value = false }
+}
+
+async function removeBook(bookId: string) {
+  if (!selectedCol.value) return
+  try {
+    await removeBookFromCollection(selectedCol.value.id, bookId)
+    selectedCol.value.books = selectedCol.value.books.filter(b => b.id !== bookId)
+  } catch { /* ignore */ }
 }
 
 async function doCreate() {
@@ -258,4 +309,16 @@ onMounted(async () => {
 
 .sheet-enter-active, .sheet-leave-active { transition: opacity 0.25s; }
 .sheet-enter-from, .sheet-leave-to { opacity: 0; }
+
+.del-col-btn { display: flex; align-items: center; gap: 5px; font-size: 11px; color: rgba(220,80,80,0.7); background: transparent; border: none; cursor: pointer; padding: 0; margin-top: 6px; }
+.col-book-list { display: flex; flex-direction: column; }
+.col-book-row { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.05); cursor: pointer; }
+.col-book-thumb { width: 44px; height: 44px; border-radius: 6px; object-fit: cover; flex-shrink: 0; }
+.col-book-info { flex: 1; min-width: 0; }
+.col-book-title { font-size: 13px; font-weight: 600; color: rgba(255,255,255,0.9); margin: 0 0 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.col-book-author { font-size: 11px; color: rgba(255,255,255,0.4); margin: 0; }
+.col-book-del { background: transparent; border: none; cursor: pointer; color: rgba(255,255,255,0.3); padding: 4px; flex-shrink: 0; }
+.del-confirm-btn { width: 100%; padding: 14px; border-radius: 12px; border: none; cursor: pointer; background: #c0392b; color: white; font-size: 15px; font-weight: 700; margin-bottom: 10px; }
+.del-confirm-btn:disabled { opacity: 0.5; }
+.cancel-btn { width: 100%; padding: 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); background: transparent; color: rgba(255,255,255,0.6); font-size: 14px; cursor: pointer; }
 </style>

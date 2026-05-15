@@ -14,7 +14,8 @@ export const usePlayerStore = defineStore('player', () => {
   const playbackRate  = ref<number>(parseFloat(localStorage.getItem('abs_playback_rate') ?? '1'))
   const isLoading     = ref(false)
   const error         = ref<string | null>(null)
-  const sleepMinsLeft = ref<number | null>(null)
+  const sleepMinsLeft      = ref<number | null>(null)
+  const sleepEndOfChapter  = ref(false)
 
   let audio: HTMLAudioElement | null = null
   let syncTimer: ReturnType<typeof setInterval> | null = null
@@ -89,6 +90,13 @@ export const usePlayerStore = defineStore('player', () => {
   function _onTimeUpdate() {
     if (!audio || !session.value) return
     currentTime.value = trackStartOffset + audio.currentTime
+    if (sleepEndOfChapter.value) {
+      const ch = currentChapter.value
+      if (ch && currentTime.value >= ch.end - 0.5) {
+        audio.pause()
+        sleepEndOfChapter.value = false
+      }
+    }
   }
 
   function _onTrackEnded() {
@@ -199,8 +207,14 @@ export const usePlayerStore = defineStore('player', () => {
     if (audio) audio.playbackRate = rate
   }
 
-  function setSleepTimer(mins: number | null) {
+  function setSleepTimer(mins: number | null, endOfChapter = false) {
     if (sleepTimer) { clearTimeout(sleepTimer); sleepTimer = null }
+    sleepEndOfChapter.value = false
+    if (endOfChapter) {
+      sleepEndOfChapter.value = true
+      sleepMinsLeft.value     = null
+      return
+    }
     sleepMinsLeft.value = mins
     if (mins && mins > 0) {
       sleepTimer = setTimeout(() => {
@@ -227,7 +241,7 @@ export const usePlayerStore = defineStore('player', () => {
 
   return {
     currentItem, session, isPlaying, currentTime, duration,
-    playbackRate, isLoading, error, sleepMinsLeft,
+    playbackRate, isLoading, error, sleepMinsLeft, sleepEndOfChapter,
     currentChapter, currentTrackIndex, progress,
     play, togglePlay, seek, skipBack, skipForward, setRate, setSleepTimer, stop,
   }
