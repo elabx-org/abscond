@@ -474,6 +474,17 @@ export const usePlayerStore = defineStore('player', () => {
     }
   }
 
+  function _onVisibilityChange() {
+    if (document.hidden && session.value) _doSync()
+  }
+
+  function _onPageHide() {
+    if (session.value) _doSync()
+  }
+
+  document.addEventListener('visibilitychange', _onVisibilityChange)
+  window.addEventListener('pagehide', _onPageHide)
+
   async function stop() {
     if (seekSyncTimer) { clearTimeout(seekSyncTimer); seekSyncTimer = null }
     _stopSync()
