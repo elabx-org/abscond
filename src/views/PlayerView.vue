@@ -24,8 +24,47 @@
 
       <div class="player-content">
 
-        <!-- Recent-only header -->
-        <div v-if="!player.currentItem" class="recently-played-label">Recently Played</div>
+        <!-- Screen title bar (mobile) -->
+        <div class="player-topbar">
+          <div class="player-wordmark">
+            ABSCOND
+            <v-icon
+              size="13"
+              :color="socket.connected ? 'rgba(100,215,100,0.85)' : 'rgba(255,255,255,0.2)'"
+              style="margin-left:4px"
+            >mdi-cloud-outline</v-icon>
+          </div>
+          <div class="player-topbar-actions">
+            <button
+              v-if="player.currentItem"
+              class="topbar-action-btn"
+              title="Stop playback"
+              @click="player.stop()"
+            >
+              <v-icon size="16">mdi-stop</v-icon>
+            </button>
+            <button
+              class="topbar-action-btn"
+              :class="{ active: showQueue }"
+              title="Queue"
+              @click="showQueue = !showQueue; showChapters = false; showSleepPicker = false; showSpeedPicker = false"
+            >
+              <v-icon size="16">mdi-playlist-play</v-icon>
+              <span v-if="player.queue.length" class="topbar-queue-badge">{{ player.queue.length }}</span>
+            </button>
+          </div>
+        </div>
+
+        <div v-if="player.currentItem || player.recentItems.length" class="player-screen-title">
+          {{ player.currentItem ? 'Absconding' : 'Recently Played' }}
+        </div>
+
+        <!-- Book title + author (small, below screen title) -->
+        <div v-if="displayItem || showMore" class="player-meta-header">
+          <span class="pmh-title">{{ displayTitle }}</span>
+          <span class="pmh-sep">·</span>
+          <span class="pmh-author">{{ displayAuthor }}</span>
+        </div>
 
         <!-- Swipeable cover carousel -->
         <div
@@ -471,6 +510,7 @@ import { computed, ref, watch, nextTick } from 'vue'
 import { usePlayerStore } from '@/stores/player'
 import { useAuthStore } from '@/stores/auth'
 import { useSettingsStore } from '@/stores/settings'
+import { useSocketStore } from '@/stores/socket'
 import { coverUrl, api } from '@/api/client'
 import { createBookmark, getBookmarks, deleteBookmark } from '@/api/bookmarks'
 import type { Bookmark } from '@/api/bookmarks'
@@ -488,6 +528,8 @@ const auth     = useAuthStore()
 const settings = useSettingsStore()
 const notify = useNotificationStore()
 const eq = useEqualizerStore()
+const socket = useSocketStore()
+const showMore = ref(false)
 
 const showChapters     = ref(false)
 const chapterSearch    = ref('')
@@ -935,10 +977,43 @@ function queueDragEnd() {
   padding: 20px 20px 48px;
 }
 
-.recently-played-label {
-  font-size: 11px; font-weight: 700; color: rgba(255,255,255,0.4);
-  text-transform: uppercase; letter-spacing: 0.6px;
-  margin-bottom: 16px; align-self: flex-start;
+/* ── Top bar ─────────────────────────────────────────────────────────────────── */
+.player-topbar {
+  display: flex; align-items: center; justify-content: space-between;
+  width: 100%; margin-bottom: 4px; padding: 0 2px;
+}
+.player-wordmark {
+  font-size: 9px; font-weight: 300; letter-spacing: 4px;
+  color: rgba(255,255,255,0.3); text-transform: uppercase;
+  display: flex; align-items: center;
+}
+.player-topbar-actions { display: flex; align-items: center; gap: 4px; }
+.topbar-action-btn {
+  display: flex; align-items: center; justify-content: center; position: relative;
+  background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.09);
+  border-radius: 8px; padding: 5px 8px; cursor: pointer;
+  color: rgba(255,255,255,0.5); gap: 3px; font-size: 11px;
+}
+.topbar-action-btn.active { background: rgba(212,160,23,0.15); border-color: rgba(212,160,23,0.3); color: #d4a017; }
+.topbar-queue-badge {
+  font-size: 9px; font-weight: 700; color: rgba(255,255,255,0.6);
+}
+.player-screen-title {
+  font-size: 22px; font-weight: 700; letter-spacing: -0.5px;
+  color: rgba(255,255,255,0.92); width: 100%; margin-bottom: 2px;
+}
+.player-meta-header {
+  display: flex; align-items: center; gap: 5px;
+  width: 100%; margin-bottom: 10px; overflow: hidden;
+}
+.pmh-title {
+  font-size: 12px; font-weight: 600; color: rgba(255,255,255,0.6);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 55%;
+}
+.pmh-sep { font-size: 10px; color: rgba(255,255,255,0.2); flex-shrink: 0; }
+.pmh-author {
+  font-size: 12px; color: rgba(255,255,255,0.4);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
 
 /* ── Carousel ────────────────────────────────────────────────────────────────── */
