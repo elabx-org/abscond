@@ -37,7 +37,15 @@
                 @click.stop="openAuthor(a)"
               >{{ a.name }}</button>
             </div>
-            <p v-if="narratorNames" class="sheet-narrator">Read by {{ narratorNames }}</p>
+            <div v-if="(item.media.metadata.narrators ?? []).length" class="narrator-chips">
+              <span class="narrator-by">Read by</span>
+              <button
+                v-for="n in (item.media.metadata.narrators ?? [])"
+                :key="n"
+                class="author-chip"
+                @click.stop="openNarrator(n)"
+              >{{ n }}</button>
+            </div>
 
             <!-- Progress bar -->
             <div v-if="progress > 0 && progress < 1" class="sheet-progress-wrap">
@@ -232,6 +240,13 @@
     @close="activeAuthorId = ''"
     @open-book="onSubSheetBook"
   />
+  <NarratorDetailSheet
+    v-if="activeNarratorName"
+    :show="!!activeNarratorName"
+    :narrator-name="activeNarratorName"
+    @close="activeNarratorName = ''"
+    @open-book="onSubSheetBook"
+  />
 </template>
 
 <script setup lang="ts">
@@ -243,6 +258,7 @@ import { usePlayerStore } from '@/stores/player'
 import { useAuthStore } from '@/stores/auth'
 import SeriesDetailSheet from '@/components/sheets/SeriesDetailSheet.vue'
 import AuthorDetailSheet from '@/components/sheets/AuthorDetailSheet.vue'
+import NarratorDetailSheet from '@/components/sheets/NarratorDetailSheet.vue'
 import { getDirectDownloadUrl } from '@/api/downloads'
 import { getBaseUrl, api } from '@/api/client'
 import { getPlaylists, addItemToPlaylist } from '@/api/playlists'
@@ -275,6 +291,7 @@ const activeSeriesId   = ref('')
 const activeSeriesName = ref('')
 const activeAuthorId   = ref('')
 const activeAuthorName = ref('')
+const activeNarratorName = ref('')
 const showPlaylistAdd  = ref(false)
 const playlists        = ref<Playlist[]>([])
 const loadingPls       = ref(false)
@@ -339,6 +356,10 @@ function openSeries(s: Series) {
   activeSeriesName.value = s.name
 }
 
+function openNarrator(name: string) {
+  activeNarratorName.value = name
+}
+
 function openAuthor(a: Author) {
   activeAuthorId.value   = a.id
   activeAuthorName.value = a.name
@@ -382,10 +403,6 @@ async function onPlayPress() {
   await player.play(props.item)
   router.push({ name: 'player' })
 }
-
-const narratorNames = computed(() =>
-  (props.item.media.metadata.narrators ?? []).join(', ')
-)
 
 const allSeries = computed(() => props.item.media.metadata.series ?? [])
 
@@ -571,9 +588,8 @@ async function doSaveMeta() {
   font-size: 12px; color: rgba(212,160,23,0.85); background: transparent;
   border: none; cursor: pointer; padding: 2px 0; text-decoration: underline; text-underline-offset: 2px;
 }
-.sheet-narrator {
-  font-size: 11px; color: rgba(255,255,255,0.35); text-align: center; margin: 0 0 12px;
-}
+.narrator-chips { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 4px; margin: 0 0 10px; }
+.narrator-by { font-size: 11px; color: rgba(255,255,255,0.3); }
 .sheet-progress-wrap {
   display: flex; align-items: center; gap: 8px; margin: 8px 0;
 }

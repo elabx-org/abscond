@@ -272,15 +272,17 @@ import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { useLibraryStore } from '@/stores/library'
 import { usePlayerStore } from '@/stores/player'
+import { useSocketStore } from '@/stores/socket'
 import { updatePassword, updateUsername } from '@/api/auth'
 
 const router  = useRouter()
 const auth    = useAuthStore()
 const lib     = useLibraryStore()
 const player  = usePlayerStore()
+const socketStore = useSocketStore()
 
 const confirmLogout      = ref(false)
-const socketConnected    = ref(false)
+const socketConnected    = computed(() => socketStore.connected)
 const showChangePassword = ref(false)
 const currentPw          = ref('')
 const newPw              = ref('')
