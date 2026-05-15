@@ -21,7 +21,7 @@ describe('items API', () => {
       data: { libraryItems: [{ id: 'li1', libraryId: 'lib1', mediaType: 'book', media: { metadata: { title: 'Dune', authors: [], narrators: [], series: [], genres: [] } }, addedAt: 0, updatedAt: 0 }] },
     })
     const result = await getItemsInProgress()
-    expect(api.get).toHaveBeenCalledWith('/me/items-in-progress')
+    expect(api.get).toHaveBeenCalledWith('/me/items-in-progress', { params: { limit: 25, include: 'progress' } })
     expect(result).toHaveLength(1)
     expect(result[0].media.metadata.title).toBe('Dune')
   })

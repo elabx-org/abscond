@@ -2,6 +2,7 @@ import { config } from '@vue/test-utils'
 import { createVuetify } from 'vuetify'
 import * as components from 'vuetify/components'
 import * as directives from 'vuetify/directives'
+import { createPinia } from 'pinia'
 
 // jsdom does not implement ResizeObserver — polyfill it for Vuetify
 global.ResizeObserver = class ResizeObserver {
@@ -11,4 +12,4 @@ global.ResizeObserver = class ResizeObserver {
 }
 
 const vuetify = createVuetify({ components, directives })
-config.global.plugins = [vuetify]
+config.global.plugins = [vuetify, createPinia()]
