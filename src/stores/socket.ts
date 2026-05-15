@@ -74,6 +74,22 @@ export const useSocketStore = defineStore('socket', () => {
         }
       } else {
         ps.recentlyFinished = ps.recentlyFinished.filter((i: { id: unknown }) => i.id !== itemId)
+        // Add to inProgress if item has started and isn't there yet
+        const hasProgress = (prog.progress as number ?? 0) > 0
+        if (hasProgress && !ps.inProgress.some((i: { id: unknown }) => i.id === itemId)) {
+          const ls = useLibraryStore()
+          let src: { id: unknown; userMediaProgress?: unknown; media: unknown } | undefined =
+            ps.recentlyAdded.find((i: { id: unknown }) => i.id === itemId) as typeof src
+          if (!src) {
+            for (const libId of ls.libraries.map(l => l.id)) {
+              src = ls.itemsFor(libId).find(i => i.id === itemId) as typeof src
+              if (src) break
+            }
+          }
+          if (src) {
+            ps.inProgress = [{ ...src, userMediaProgress: prog }, ...ps.inProgress] as typeof ps.inProgress
+          }
+        }
       }
     }))
 
