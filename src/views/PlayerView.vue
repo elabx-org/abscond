@@ -218,6 +218,9 @@
             <button class="util-btn" @click="openBookmarkSheet">
               <v-icon size="18">mdi-bookmark-plus-outline</v-icon>
             </button>
+            <button class="util-btn" @click="showNotes = true">
+              <v-icon size="18">mdi-note-text-outline</v-icon>
+            </button>
             <button class="util-btn" :class="{ active: eq.enabled }" @click="showEq = true">
               <v-icon size="18">mdi-equalizer</v-icon>
             </button>
@@ -394,6 +397,13 @@
       @close="showItemDetail = false"
     />
     <EqualizerSheet v-model="showEq" accent="#d4a017" />
+    <NotesSheet
+      v-if="player.currentItem"
+      v-model="showNotes"
+      :item-id="player.currentItem.id"
+      :item-title="displayTitle"
+      accent="#d4a017"
+    />
 
     <!-- Bookmark sheet -->
     <v-bottom-sheet v-model="showBookmarkSheet" :scrim="true">
@@ -456,6 +466,7 @@ import { useNotificationStore } from '@/stores/notifications'
 import BookDetailSheet from '@/components/sheets/BookDetailSheet.vue'
 import PodcastDetailSheet from '@/components/sheets/PodcastDetailSheet.vue'
 import EqualizerSheet from '@/components/sheets/EqualizerSheet.vue'
+import NotesSheet from '@/components/sheets/NotesSheet.vue'
 import { useEqualizerStore } from '@/stores/equalizer'
 import type { LibraryItem } from '@/api/types'
 
@@ -476,6 +487,7 @@ const queueListEl      = ref<HTMLElement | null>(null)
 const chaptersListEl   = ref<HTMLElement | null>(null)
 const showItemDetail   = ref(false)
 const showEq           = ref(false)
+const showNotes        = ref(false)
 const showBookmarkSheet = ref(false)
 const showAddBookmark  = ref(false)
 const newBookmarkTitle = ref('')

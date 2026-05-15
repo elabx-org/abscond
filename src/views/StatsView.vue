@@ -73,7 +73,7 @@
             <p class="accent-value">{{ totalBooksFinished }}</p>
             <p class="accent-label">Books finished</p>
           </div>
-          <div class="accent-card accent-card--teal">
+          <div class="accent-card accent-card--teal accent-card--tap" @click="showYearSheet = true">
             <v-icon size="18" color="#14b8a6">mdi-bookshelf</v-icon>
             <p class="accent-value">{{ booksThisYear }}</p>
             <p class="accent-label">This year</p>
@@ -260,6 +260,34 @@
       </button>
     </div>
   </v-bottom-sheet>
+
+  <!-- This Year books sheet -->
+  <v-bottom-sheet v-model="showYearSheet" :scrim="true">
+    <div class="year-sheet">
+      <div class="sheet-handle" />
+      <div class="year-sheet-header">
+        <p class="year-sheet-title">{{ new Date().getFullYear() }} — {{ booksThisYear }} {{ booksThisYear === 1 ? 'book' : 'books' }}</p>
+      </div>
+      <div class="year-books-list">
+        <div
+          v-for="item in booksThisYearList"
+          :key="item.id"
+          class="year-book-row"
+          @click="openYearBook(item.id)"
+        >
+          <img :src="coverUrl(item.id, auth.token ?? '')" class="year-book-cover" />
+          <div class="year-book-meta">
+            <p class="year-book-title">{{ item.title }}</p>
+            <p class="year-book-author">{{ item.author }}</p>
+          </div>
+        </div>
+        <div v-if="!booksThisYearList.length" class="year-empty">
+          <v-icon size="32" color="rgba(255,255,255,0.1)">mdi-bookshelf</v-icon>
+          <p>No listening sessions this year yet</p>
+        </div>
+      </div>
+    </div>
+  </v-bottom-sheet>
 </template>
 
 <script setup lang="ts">
@@ -277,6 +305,7 @@ const auth   = useAuthStore()
 const player = usePlayerStore()
 const router = useRouter()
 const loading     = ref(true)
+const showYearSheet = ref(false)
 
 const ptr = ref({ pulling: false, refreshing: false, startY: 0 })
 
@@ -406,6 +435,24 @@ const booksThisYear = computed(() => {
     const d = new Date(s.updatedAt)
     return d.getFullYear() === year
   }).reduce((set, s) => { set.add(s.libraryItemId); return set }, new Set<string>()).size
+})
+
+interface YearBookEntry { id: string; title: string; author: string }
+const booksThisYearList = computed<YearBookEntry[]>(() => {
+  const year = new Date().getFullYear()
+  const seen = new Map<string, YearBookEntry>()
+  for (const s of sessions.value) {
+    const d = new Date(s.updatedAt)
+    if (d.getFullYear() !== year) continue
+    if (!seen.has(s.libraryItemId)) {
+      seen.set(s.libraryItemId, {
+        id: s.libraryItemId,
+        title: s.displayTitle || s.mediaMetadata?.title || 'Unknown',
+        author: s.displayAuthor || s.mediaMetadata?.authorName || '',
+      })
+    }
+  }
+  return [...seen.values()]
 })
 
 const activeDays = computed(() => {
@@ -582,6 +629,17 @@ async function jumpToSession(s: ListeningSession) {
   } catch {}
 }
 
+async function openYearBook(libraryItemId: string) {
+  try {
+    const res = await api.get(`/items/${libraryItemId}`)
+    if (res.data) {
+      await player.play(res.data)
+      showYearSheet.value = false
+      router.push({ name: 'player' })
+    }
+  } catch {}
+}
+
 async function loadMore() {
   if (loadingMore.value || sessions.value.length >= sessionTotal.value) return
   loadingMore.value = true
@@ -698,6 +756,8 @@ onMounted(async () => {
 .accent-card--teal   { border-color: rgba(20,184,166,0.15); background: rgba(20,184,166,0.05); }
 .accent-card--blue   { border-color: rgba(59,130,246,0.15); background: rgba(59,130,246,0.05); }
 .accent-card--purple { border-color: rgba(168,85,247,0.15); background: rgba(168,85,247,0.05); }
+.accent-card--tap { cursor: pointer; transition: opacity 0.15s; }
+.accent-card--tap:active { opacity: 0.7; }
 
 .section { margin-bottom: 24px; }
 .section-label {
@@ -842,4 +902,21 @@ onMounted(async () => {
   cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;
 }
 .session-row { cursor: pointer; }
+
+/* Year books sheet */
+.year-sheet { background: #1a1a1a; border-radius: 20px 20px 0 0; padding: 12px 0 40px; max-height: 70vh; overflow-y: auto; }
+.year-sheet-header { padding: 4px 20px 14px; border-bottom: 1px solid rgba(255,255,255,0.06); }
+.year-sheet-title { font-size: 15px; font-weight: 700; color: rgba(255,255,255,0.9); margin: 0; }
+.year-books-list { display: flex; flex-direction: column; }
+.year-book-row {
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px 20px; border-bottom: 1px solid rgba(255,255,255,0.04);
+  cursor: pointer;
+}
+.year-book-row:last-child { border-bottom: none; }
+.year-book-cover { width: 48px; height: 48px; border-radius: 8px; object-fit: cover; flex-shrink: 0; background: #111; }
+.year-book-meta { flex: 1; min-width: 0; }
+.year-book-title { font-size: 13px; font-weight: 600; color: rgba(255,255,255,0.85); margin: 0 0 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.year-book-author { font-size: 11px; color: rgba(255,255,255,0.4); margin: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.year-empty { display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 40px 20px; color: rgba(255,255,255,0.25); font-size: 12px; }
 </style>
