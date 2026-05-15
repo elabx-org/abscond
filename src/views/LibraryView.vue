@@ -158,10 +158,8 @@
       />
     </div>
 
-    <!-- Load more -->
-    <div v-if="hasMore && !lib.loading" class="load-more-wrap">
-      <button class="load-more-btn" @click="loadMore">Load more</button>
-    </div>
+    <!-- Infinite scroll sentinel -->
+    <div ref="sentinelEl" class="scroll-sentinel" />
     </template>
 
     <!-- Series view -->
@@ -351,7 +349,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from 'vue'
+import { computed, onMounted, onBeforeUnmount, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useLibraryStore } from '@/stores/library'
 import { useAuthStore } from '@/stores/auth'
@@ -555,8 +553,6 @@ function toggleDir() {
   localStorage.setItem('abs_lib_sort_desc', String(sortDesc.value))
 }
 
-function loadMore() { page.value++ }
-
 async function init() {
   if (!lib.libraries.length) await lib.fetchLibraries()
   if (lib.activeLibraryId && !items.value.length) {
@@ -662,7 +658,22 @@ async function addBatchToPlaylist(playlistId: string) {
   exitSelectMode()
 }
 
-onMounted(init)
+const sentinelEl = ref<HTMLElement | null>(null)
+let observer: IntersectionObserver | null = null
+
+onMounted(() => {
+  init()
+  observer = new IntersectionObserver((entries) => {
+    if (entries[0]?.isIntersecting && hasMore.value && !lib.loading) page.value++
+  }, { rootMargin: '200px' })
+  if (sentinelEl.value) observer.observe(sentinelEl.value)
+})
+
+onBeforeUnmount(() => { observer?.disconnect() })
+
+watch(sentinelEl, (el) => {
+  if (el && observer) observer.observe(el)
+})
 
 watch(() => lib.activeLibraryId, (id) => {
   if (id && !lib.itemsFor(id).length) lib.fetchItems(id)
@@ -721,12 +732,7 @@ watch(() => lib.activeLibraryId, (id) => {
 .lib-search-input::placeholder { color: rgba(255,255,255,0.25); }
 .lib-search-clear { background: transparent; border: none; cursor: pointer; color: rgba(255,255,255,0.3); padding: 0; }
 
-.load-more-wrap { display: flex; justify-content: center; padding: 20px 0; }
-.load-more-btn {
-  font-size: 12px; padding: 8px 20px; border-radius: 20px; cursor: pointer;
-  background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.08);
-  color: rgba(255,255,255,0.5);
-}
+.scroll-sentinel { height: 1px; }
 
 .grid {
   display: grid;
@@ -736,7 +742,7 @@ watch(() => lib.activeLibraryId, (id) => {
 
 .skeleton-card { display: flex; flex-direction: column; gap: 6px; }
 .skeleton-cover {
-  aspect-ratio: 2 / 3; border-radius: 8px;
+  aspect-ratio: 1; border-radius: 8px;
   background: linear-gradient(90deg, #1a1a1a 25%, #222 50%, #1a1a1a 75%);
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
@@ -813,8 +819,8 @@ watch(() => lib.activeLibraryId, (id) => {
 }
 
 .series-card { display: flex; flex-direction: column; gap: 5px; cursor: pointer; }
-.series-cover-wrap { position: relative; aspect-ratio: 2 / 3; border-radius: 8px; overflow: hidden; background: #1a1a1a; }
-.series-cover-wrap--circle { border-radius: 50%; aspect-ratio: 1; }
+.series-cover-wrap { position: relative; aspect-ratio: 1; border-radius: 8px; overflow: hidden; background: #1a1a1a; }
+.series-cover-wrap--circle { border-radius: 50%; }
 .series-cover { width: 100%; height: 100%; object-fit: cover; display: block; }
 .series-cover.author-img { object-position: top; }
 .series-cover-placeholder {

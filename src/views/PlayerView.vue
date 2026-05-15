@@ -36,14 +36,14 @@
               :key="item.id"
               class="cover-slide"
             >
-              <div class="cover-img-wrap" :class="{ 'cover-inactive': i !== playingIndex }">
+              <div class="cover-img-wrap" :class="{ 'cover-inactive': i !== currentIndex && player.currentItem }">
                 <img
                   :src="coverUrl(item.id, auth.token ?? '')"
                   :alt="item.media.metadata.title"
                   class="cover-img"
                 />
-                <!-- Play overlay on non-playing slides -->
-                <div v-if="i !== playingIndex" class="cover-play-overlay" @click="switchToItem(item)">
+                <!-- Play overlay on non-active slides -->
+                <div v-if="!player.currentItem || i !== currentIndex" class="cover-play-overlay" @click="switchToItem(item)">
                   <v-icon size="40" color="white">mdi-play-circle</v-icon>
                 </div>
               </div>
@@ -57,8 +57,8 @@
             v-for="(_, i) in player.recentItems"
             :key="i"
             class="page-dot"
-            :class="{ active: i === viewIndex, playing: i === playingIndex && i !== viewIndex }"
-            @click="viewIndex = i"
+            :class="{ active: i === currentIndex }"
+            @click="switchToItem(player.recentItems[i])"
           />
         </div>
 
@@ -240,7 +240,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { computed, ref } from 'vue'
 import { usePlayerStore } from '@/stores/player'
 import { useAuthStore } from '@/stores/auth'
 import { coverUrl } from '@/api/client'
@@ -263,35 +263,25 @@ const skipBackSecs = parseInt(localStorage.getItem('abs_skip_back') ?? '30')
 const skipFwdSecs  = parseInt(localStorage.getItem('abs_skip_fwd')  ?? '30')
 
 // ── Carousel / swipe ──────────────────────────────────────────────────────────
-// viewIndex tracks the visually displayed slide (swipe without starting playback).
-// It follows player.currentItem but can be overridden by a swipe gesture.
-const viewIndex = ref(0)
-
-const playingIndex = computed(() => {
+const currentIndex = computed(() => {
   if (!player.currentItem) return 0
   const idx = player.recentItems.findIndex(i => i.id === player.currentItem?.id)
   return idx >= 0 ? idx : 0
 })
 
-// Keep viewIndex in sync when playback switches externally
-watch(playingIndex, (idx) => { viewIndex.value = idx })
-
 const displayItem = computed(() =>
-  player.recentItems[viewIndex.value] ?? player.currentItem
+  player.recentItems[currentIndex.value] ?? player.currentItem
 )
 
 const backdropSrc = computed(() =>
   displayItem.value ? coverUrl(displayItem.value.id, auth.token ?? '') : ''
 )
 
-const displayAuthor = computed(() => {
-  const item = displayItem.value
-  if (!item) return ''
-  if (viewIndex.value === playingIndex.value && player.currentItem) {
-    return player.session?.displayAuthor || player.currentItem.media.metadata.authorName || 'Unknown Author'
-  }
-  return item.media.metadata.authorName || ''
-})
+const displayAuthor = computed(() =>
+  player.currentItem
+    ? (player.session?.displayAuthor || player.currentItem.media.metadata.authorName || 'Unknown Author')
+    : (displayItem.value?.media.metadata.authorName || '')
+)
 
 let swipeStartX = 0
 let swipeStartY = 0
@@ -299,7 +289,7 @@ let swipeTracking = false
 const swipeDx = ref(0)
 
 const trackStyle = computed(() => {
-  const offset = `calc(${-viewIndex.value} * 100vw + ${swipeDx.value}px)`
+  const offset = `calc(${-currentIndex.value} * 100vw + ${swipeDx.value}px)`
   return {
     transform: `translateX(${offset})`,
     transition: swipeDx.value !== 0 ? 'none' : 'transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
@@ -328,9 +318,9 @@ function onSwipeEnd(e: TouchEvent) {
   swipeDx.value = 0
   if (Math.abs(dy) > Math.abs(dx) || Math.abs(dx) < 40) return
 
-  const idx = viewIndex.value
-  if (dx < 0 && idx < player.recentItems.length - 1) viewIndex.value = idx + 1
-  else if (dx > 0 && idx > 0) viewIndex.value = idx - 1
+  const idx = currentIndex.value
+  if (dx < 0 && idx < player.recentItems.length - 1) switchToItem(player.recentItems[idx + 1])
+  else if (dx > 0 && idx > 0) switchToItem(player.recentItems[idx - 1])
 }
 
 function switchToItem(item: LibraryItem) {
@@ -501,7 +491,6 @@ function onChapterBarClick(e: MouseEvent) {
   cursor: pointer;
 }
 .page-dot.active { background: #d4a017; width: 18px; border-radius: 3px; }
-.page-dot.playing { background: rgba(212,160,23,0.45); }
 
 /* ── Meta ────────────────────────────────────────────────────────────────────── */
 .meta-area { text-align: center; width: 100%; margin-bottom: 18px; }
