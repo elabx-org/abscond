@@ -42,6 +42,7 @@ export interface ServerSettings {
   scannerFindCovers: boolean
   scannerCoverProvider: string
   scannerParseSubtitle: boolean
+  scannerScanAllFileTypes: boolean
   coverAspectRatio: number
   bookshelfView: number
   sortingIgnorePrefix: boolean
@@ -49,6 +50,11 @@ export interface ServerSettings {
   chromecastEnabled: boolean
   logLevel: number
   version: string
+  numBackupsToKeep: number
+  backupSchedule: string
+  loggerDailyLogsToKeep: number
+  loggerScannerLogsToKeep: number
+  authTokenAge: string
 }
 
 export interface AdminBackup {
@@ -165,10 +171,119 @@ export async function addPodcast(rssUrl: string, libraryId: string, folderId: st
 
 export async function checkNewPodcastEpisodes(itemId: string): Promise<number> {
   const res = await api.get(`/podcasts/${itemId}/checknew`)
-  return (res.data?.episodes as unknown[])?.length ?? 0
+  return res.data?.newEpisodesFound ?? 0
 }
 
 export async function getLibraryPodcastItems(libraryId: string): Promise<{ id: string }[]> {
   const res = await api.get(`/libraries/${libraryId}/items`, { params: { limit: 200, page: 0 } })
   return (res.data?.results ?? []).map((r: { id?: string; libraryItem?: { id: string } }) => ({ id: r.id ?? r.libraryItem?.id ?? '' }))
+}
+
+export interface ServerInfo {
+  version: string
+}
+
+export interface UserSession {
+  id: string
+  libraryItemId: string
+  episodeId?: string | null
+  displayTitle: string
+  displayAuthor: string
+  duration: number
+  updatedAt: number
+  isFinished?: boolean
+}
+
+export interface UserSessionsResult {
+  sessions: UserSession[]
+  total: number
+}
+
+export interface NotificationSettings {
+  appriseApiUrl?: string | null
+  appriseType?: string
+  maxFailedAttempts?: number
+  maxNotificationAttempts?: number
+  nextAttemptDelay?: number
+}
+
+export interface NotificationEvent {
+  id: string
+  eventName: string
+  urls: string[]
+  titleTemplate: string
+  bodyTemplate: string
+  enabled: boolean
+  type: string
+  lastFiredAt?: number | null
+  numTimesFired: number
+}
+
+export interface PodcastEpisodeFile {
+  id: string
+  index?: number
+  title: string
+  description?: string | null
+  duration: number
+  publishedAt?: number | null
+  size?: number
+  audioFile?: { duration: number; metadata?: { size?: number } }
+  downloaded?: boolean
+}
+
+export async function getServerInfo(): Promise<ServerInfo> {
+  try {
+    const res = await api.get('/server/info')
+    return { version: res.data?.version ?? '—' }
+  } catch {
+    return { version: '—' }
+  }
+}
+
+export async function getUserSessions(userId: string, page: number): Promise<UserSessionsResult> {
+  try {
+    const res = await api.get(`/users/${userId}/listening-sessions`, {
+      params: { itemsPerPage: 20, page },
+    })
+    return {
+      sessions: res.data?.sessions ?? [],
+      total:    res.data?.total    ?? 0,
+    }
+  } catch {
+    return { sessions: [], total: 0 }
+  }
+}
+
+export async function purgeCache(): Promise<void> {
+  await api.post('/cache/purge')
+}
+
+export async function getNotificationSettings(): Promise<NotificationSettings> {
+  const res = await api.get('/notificationSettings')
+  return res.data?.settings ?? res.data ?? {}
+}
+
+export async function updateNotificationSettings(data: Partial<NotificationSettings>): Promise<void> {
+  await api.patch('/notificationSettings', data)
+}
+
+export async function getNotifications(): Promise<NotificationEvent[]> {
+  const res = await api.get('/notifications')
+  return res.data?.notifications ?? []
+}
+
+export async function patchNotification(id: string, data: Partial<NotificationEvent>): Promise<void> {
+  await api.patch(`/notifications/${id}`, data)
+}
+
+export async function testNotification(id: string): Promise<void> {
+  await api.get(`/notifications/${id}/test`)
+}
+
+export async function downloadPodcastEpisode(itemId: string, episodeId: string): Promise<void> {
+  await api.post(`/podcasts/${itemId}/download-episodes`, { episodeIds: [episodeId] })
+}
+
+export async function deletePodcastEpisode(itemId: string, episodeId: string): Promise<void> {
+  await api.delete(`/podcasts/${itemId}/episodes/${episodeId}`, { params: { hard: 0 } })
 }
