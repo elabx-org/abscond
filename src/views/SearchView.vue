@@ -167,6 +167,13 @@
       @close="activeAuthor = null"
       @open-book="openDetail"
     />
+    <NarratorDetailSheet
+      v-if="activeNarrator"
+      :show="!!activeNarrator"
+      :narrator-name="activeNarrator"
+      @close="activeNarrator = ''"
+      @open-book="openDetail"
+    />
   </div>
 </template>
 
@@ -180,6 +187,7 @@ import BookDetailSheet from '@/components/sheets/BookDetailSheet.vue'
 import PodcastDetailSheet from '@/components/sheets/PodcastDetailSheet.vue'
 import SeriesDetailSheet from '@/components/sheets/SeriesDetailSheet.vue'
 import AuthorDetailSheet from '@/components/sheets/AuthorDetailSheet.vue'
+import NarratorDetailSheet from '@/components/sheets/NarratorDetailSheet.vue'
 import type { LibraryItem, SearchResult } from '@/api/types'
 
 const lib     = useLibraryStore()
@@ -189,8 +197,9 @@ const results = ref<SearchResult | null>(null)
 const loading = ref(false)
 const recents = ref<string[]>(JSON.parse(localStorage.getItem('abs_recent_searches') ?? '[]'))
 const selectedItem = ref<LibraryItem | null>(null)
-const activeSeries = ref<{ id: string; name: string; books: LibraryItem[] } | null>(null)
-const activeAuthor = ref<{ id: string; name: string; numBooks: number } | null>(null)
+const activeSeries   = ref<{ id: string; name: string; books: LibraryItem[] } | null>(null)
+const activeAuthor   = ref<{ id: string; name: string; numBooks: number } | null>(null)
+const activeNarrator = ref('')
 const inputEl = ref<HTMLInputElement | null>(null)
 
 let debounceTimer: ReturnType<typeof setTimeout> | null = null
@@ -257,8 +266,7 @@ function openAuthor(a: { id: string; name: string; numBooks: number }) {
 }
 
 function browseNarrator(name: string) {
-  query.value = name
-  doSearch()
+  activeNarrator.value = name
 }
 
 onMounted(() => {
