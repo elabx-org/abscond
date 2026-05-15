@@ -7,6 +7,15 @@
       </button>
     </div>
 
+    <!-- Search -->
+    <div v-if="!loading && collections.length" class="col-search-wrap">
+      <v-icon size="14" color="rgba(255,255,255,0.3)">mdi-magnify</v-icon>
+      <input v-model="colSearch" class="col-search" placeholder="Search collections…" />
+      <button v-if="colSearch" class="col-search-clear" @click="colSearch = ''">
+        <v-icon size="12">mdi-close</v-icon>
+      </button>
+    </div>
+
     <!-- Loading -->
     <div v-if="loading" class="grid">
       <div v-for="n in 6" :key="n" class="col-skeleton">
@@ -22,10 +31,15 @@
       <button class="create-btn" @click="showCreate = true">Create one</button>
     </div>
 
+    <!-- No search match -->
+    <div v-else-if="!filteredCollections.length && colSearch" class="empty-state" style="padding: 30px 0">
+      <p>No collections match "{{ colSearch }}"</p>
+    </div>
+
     <!-- Grid -->
     <div v-else class="grid">
       <div
-        v-for="col in collections"
+        v-for="col in filteredCollections"
         :key="col.id"
         class="col-card"
         @click="selectedCol = col"
@@ -145,7 +159,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { onMounted, ref, computed } from 'vue'
 import { getCollections, createCollection, deleteCollection, removeBookFromCollection } from '@/api/collections'
 import { coverUrl } from '@/api/client'
 import { useAuthStore } from '@/stores/auth'
@@ -168,6 +182,13 @@ const saving      = ref(false)
 const detailItem  = ref<LibraryItem | null>(null)
 const deleteTarget = ref<Collection | null>(null)
 const deleting     = ref(false)
+const colSearch    = ref('')
+
+const filteredCollections = computed(() => {
+  const q = colSearch.value.trim().toLowerCase()
+  if (!q) return collections.value
+  return collections.value.filter(c => c.name.toLowerCase().includes(q))
+})
 
 function openBook(item: LibraryItem) {
   selectedCol.value = null
@@ -255,6 +276,15 @@ onMounted(async () => {
 .collage-img { width: 100%; height: 100%; object-fit: cover; }
 .col-name { font-size: 12px; font-weight: 700; color: rgba(255,255,255,0.85); margin: 0; }
 .col-count { font-size: 10px; color: rgba(255,255,255,0.35); margin: 0; }
+
+.col-search-wrap {
+  display: flex; align-items: center; gap: 8px; margin-bottom: 14px;
+  background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 10px; padding: 8px 12px;
+}
+.col-search { flex: 1; background: transparent; border: none; outline: none; font-size: 13px; color: rgba(255,255,255,0.85); }
+.col-search::placeholder { color: rgba(255,255,255,0.3); }
+.col-search-clear { background: transparent; border: none; cursor: pointer; color: rgba(255,255,255,0.4); padding: 0; }
 
 .empty-state {
   display: flex; flex-direction: column; align-items: center;

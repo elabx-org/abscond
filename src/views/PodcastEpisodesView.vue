@@ -59,10 +59,16 @@
               <div v-if="(ep.userEpisodeProgress?.progress ?? 0) > 0 && !ep.userEpisodeProgress?.isFinished" class="ep-progress-track">
                 <div class="ep-progress-fill" :style="{ width: `${(ep.userEpisodeProgress?.progress ?? 0) * 100}%` }" />
               </div>
+              <div v-if="ep.description && expandedEps.has(ep.id)" class="ep-desc">{{ ep.description }}</div>
             </div>
             <button class="ep-play-btn" @click="playEpisode(ep)">
               <v-icon size="22" :color="isPlayingEp(ep.id) ? '#d4a017' : 'rgba(255,255,255,0.7)'">
                 {{ isPlayingEp(ep.id) && player.isPlaying ? 'mdi-pause-circle' : 'mdi-play-circle' }}
+              </v-icon>
+            </button>
+            <button v-if="ep.description" class="ep-expand-btn" @click.stop="toggleExpand(ep.id)">
+              <v-icon size="14" :color="expandedEps.has(ep.id) ? '#d4a017' : 'rgba(255,255,255,0.2)'">
+                {{ expandedEps.has(ep.id) ? 'mdi-chevron-up' : 'mdi-chevron-down' }}
               </v-icon>
             </button>
             <button class="ep-mark-btn" @click.stop="toggleFinished(ep)" :title="ep.userEpisodeProgress?.isFinished ? 'Mark unplayed' : 'Mark played'">
@@ -92,8 +98,14 @@ const auth   = useAuthStore()
 const player = usePlayerStore()
 const loading = ref(false)
 const item    = ref<PodcastItem | null>(null)
-const epSearch = ref('')
-const epFilter = ref<'all' | 'unfinished' | 'finished'>('all')
+const epSearch     = ref('')
+const epFilter     = ref<'all' | 'unfinished' | 'finished'>('all')
+const expandedEps  = ref(new Set<string>())
+
+function toggleExpand(id: string) {
+  if (expandedEps.value.has(id)) expandedEps.value.delete(id)
+  else expandedEps.value.add(id)
+}
 
 const sortedEpisodes = computed<PodcastEpisode[]>(() => {
   const eps = item.value?.media?.episodes ?? []
@@ -200,6 +212,8 @@ onMounted(async () => {
 .ep-progress-fill { height: 100%; background: #d4a017; border-radius: 1px; }
 .ep-play-btn { background: transparent; border: none; cursor: pointer; padding: 4px; flex-shrink: 0; }
 .ep-mark-btn { background: transparent; border: none; cursor: pointer; padding: 4px; flex-shrink: 0; }
+.ep-expand-btn { background: transparent; border: none; cursor: pointer; padding: 4px; flex-shrink: 0; }
+.ep-desc { font-size: 11px; color: rgba(255,255,255,0.4); line-height: 1.5; margin-top: 6px; display: -webkit-box; -webkit-line-clamp: 6; -webkit-box-orient: vertical; overflow: hidden; }
 .ep-played-badge { color: #22c55e; }
 .ep-row.finished .ep-title { color: rgba(255,255,255,0.45); }
 .ep-empty { font-size: 12px; color: rgba(255,255,255,0.25); padding: 20px 0; text-align: center; }

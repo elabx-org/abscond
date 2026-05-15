@@ -6,8 +6,17 @@ import { useProgressStore } from '@/stores/progress'
 import { useLibraryStore } from '@/stores/library'
 import { useNotificationStore } from '@/stores/notifications'
 
+export interface ScanProgress {
+  found: number
+  added: number
+  updated: number
+  removed: number
+  pct: number
+}
+
 export const useSocketStore = defineStore('socket', () => {
-  const connected = ref(false)
+  const connected    = ref(false)
+  const scanProgress = ref<Record<string, ScanProgress>>({})
   const cleanups: Array<() => void> = []
 
   async function connect(token: string) {
@@ -55,11 +64,37 @@ export const useSocketStore = defineStore('socket', () => {
       }
     }))
 
+    cleanups.push(onSocketEvent('scan_start', (data: unknown) => {
+      if (!data || typeof data !== 'object') return
+      const d = data as Record<string, unknown>
+      const libId = d.libraryId as string
+      if (libId) scanProgress.value[libId] = { found: 0, added: 0, updated: 0, removed: 0, pct: 0 }
+    }))
+
+    cleanups.push(onSocketEvent('scan_progress', (data: unknown) => {
+      if (!data || typeof data !== 'object') return
+      const d = data as Record<string, unknown>
+      const libId = d.libraryId as string
+      const p = d.progress as Record<string, unknown> | undefined
+      if (!libId || !p) return
+      const total = (p.totalChunks as number) || 1
+      const done  = (p.completedChunks as number) || 0
+      scanProgress.value[libId] = {
+        found:   (p.libraryFilesFound as number) || 0,
+        added:   (p.libraryItemsAdded as number) || 0,
+        updated: (p.libraryItemsUpdated as number) || 0,
+        removed: (p.libraryItemsRemoved as number) || 0,
+        pct:     Math.round((done / total) * 100),
+      }
+    }))
+
     cleanups.push(onSocketEvent('library_scan_complete', (data: unknown) => {
       const ls = useLibraryStore()
       const ns = useNotificationStore()
       if (ls.activeLibraryId) ls.fetchItems(ls.activeLibraryId)
       const d = data as Record<string, unknown> | undefined
+      const libId = d?.libraryId as string | undefined
+      if (libId) delete scanProgress.value[libId]
       const count = d?.totalAdded as number | undefined
       ns.show(count ? `Library scan complete — ${count} new item${count !== 1 ? 's' : ''}` : 'Library scan complete', 'success')
     }))
@@ -95,5 +130,5 @@ export const useSocketStore = defineStore('socket', () => {
     connected.value = false
   }
 
-  return { connected, connect, disconnect }
+  return { connected, scanProgress, connect, disconnect }
 })

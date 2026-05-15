@@ -46,7 +46,16 @@
             <span class="folder-path">{{ f.fullPath }}</span>
           </div>
         </div>
-        <p v-if="lib.lastScan" class="last-scan">Last scan {{ formatDate(lib.lastScan) }}</p>
+        <!-- Real-time scan progress -->
+        <div v-if="socket.scanProgress[lib.id]" class="scan-progress-wrap">
+          <div class="scan-progress-bar" :style="{ width: `${socket.scanProgress[lib.id].pct}%` }" />
+          <p class="scan-progress-label">
+            Scanning {{ socket.scanProgress[lib.id].pct }}%
+            <span v-if="socket.scanProgress[lib.id].found > 0">· {{ socket.scanProgress[lib.id].found }} found</span>
+            <span v-if="socket.scanProgress[lib.id].added > 0"> · {{ socket.scanProgress[lib.id].added }} new</span>
+          </p>
+        </div>
+        <p v-else-if="lib.lastScan" class="last-scan">Last scan {{ formatDate(lib.lastScan) }}</p>
       </div>
     </div>
 
@@ -128,6 +137,9 @@
 import { onMounted, ref } from 'vue'
 import { getAdminLibraries, scanLibrary, getPodcastFeed, addPodcast, createLibrary } from '@/api/admin'
 import type { AdminLibrary, PodcastFeedInfo } from '@/api/admin'
+import { useSocketStore } from '@/stores/socket'
+
+const socket = useSocketStore()
 
 const loading    = ref(true)
 const libraries  = ref<AdminLibrary[]>([])
@@ -255,6 +267,9 @@ onMounted(async () => {
 .folder-row { display: flex; align-items: center; gap: 6px; }
 .folder-path { font-size: 11px; color: rgba(255,255,255,0.4); font-family: monospace; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .last-scan { font-size: 10px; color: rgba(255,255,255,0.25); margin: 0; }
+.scan-progress-wrap { margin-top: 8px; }
+.scan-progress-bar { height: 3px; background: #d4a017; border-radius: 2px; transition: width 0.4s ease; }
+.scan-progress-label { font-size: 10px; color: rgba(255,255,255,0.4); margin: 4px 0 0; }
 
 /* Sheet */
 .sheet-backdrop { position: fixed; inset: 0; z-index: 300; background: rgba(0,0,0,0.55); }
