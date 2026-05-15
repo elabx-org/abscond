@@ -163,14 +163,19 @@
               <span class="util-label">{{ player.playbackRate }}×</span>
             </button>
             <button
-              class="util-btn"
+              class="util-btn sleep-btn"
               :class="{ active: player.sleepMinsLeft !== null || player.sleepEndOfChapter }"
               @click="showSleepPicker = !showSleepPicker; showSpeedPicker = false; showChapters = false; showQueue = false"
             >
-              <v-icon size="18">mdi-timer-outline</v-icon>
-              <span v-if="player.sleepSecsLeft !== null && player.sleepSecsLeft < 60" class="util-badge">{{ player.sleepSecsLeft }}s</span>
-              <span v-else-if="player.sleepMinsLeft" class="util-badge">{{ player.sleepMinsLeft }}m</span>
-              <span v-else-if="player.sleepEndOfChapter" class="util-badge">ch</span>
+              <!-- Fill bar depletes as timer counts down -->
+              <div
+                v-if="player.sleepMinsLeft !== null"
+                class="sleep-fill"
+                :style="{ width: `${sleepFillPct}%` }"
+              />
+              <v-icon size="18" style="position:relative;z-index:1">mdi-timer-outline</v-icon>
+              <span v-if="player.sleepMinsLeft !== null" class="util-badge sleep-countdown" style="position:relative;z-index:1">{{ sleepCountdownLabel }}</span>
+              <span v-else-if="player.sleepEndOfChapter" class="util-badge" style="position:relative;z-index:1">ch</span>
             </button>
             <button class="util-btn" :class="{ active: showChapters }" @click="showChapters = !showChapters; showQueue = false; showSleepPicker = false; showSpeedPicker = false">
               <v-icon size="18">mdi-format-list-bulleted</v-icon>
@@ -422,11 +427,11 @@ const chapterMarkers = computed(() => {
 
 // ── Speed-adjusted time display ───────────────────────────────────────────────
 const speedAdjustedElapsed = computed(() => {
-  const rate = player.playbackRate || 1
+  const rate = settings.speedAdjustedTime ? (player.playbackRate || 1) : 1
   return player.currentTime / rate
 })
 const speedAdjustedRemaining = computed(() => {
-  const rate = player.playbackRate || 1
+  const rate = settings.speedAdjustedTime ? (player.playbackRate || 1) : 1
   return (player.duration - player.currentTime) / rate
 })
 const progressPct = computed(() =>
@@ -434,6 +439,19 @@ const progressPct = computed(() =>
     ? ((player.currentTime / player.duration) * 100).toFixed(1)
     : '0.0'
 )
+
+// ── Sleep timer fill progress ─────────────────────────────────────────────────
+const sleepFillPct = computed(() => {
+  if (!player.sleepTotalSecs || !player.sleepSecsLeft) return 0
+  return (player.sleepSecsLeft / player.sleepTotalSecs) * 100
+})
+const sleepCountdownLabel = computed(() => {
+  const secs = player.sleepSecsLeft
+  if (secs === null) return ''
+  const m = Math.floor(secs / 60)
+  const s = secs % 60
+  return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`
+})
 
 // ── Controls ──────────────────────────────────────────────────────────────────
 function setSleep(mins: number | null) { player.setSleepTimer(mins); showSleepPicker.value = false }
@@ -661,6 +679,14 @@ function onChapterBarClick(e: MouseEvent) {
 .util-label { font-size: 12px; font-weight: 600; }
 .util-btn.active { background: rgba(212,160,23,0.15); border-color: rgba(212,160,23,0.35); color: #d4a017; }
 .util-badge { font-size: 9px; }
+
+.sleep-btn { overflow: hidden; position: relative; }
+.sleep-fill {
+  position: absolute; left: 0; top: 0; bottom: 0;
+  background: rgba(212,160,23,0.18); transition: width 1s linear;
+  border-radius: inherit;
+}
+.sleep-countdown { font-size: 10px; font-weight: 700; font-variant-numeric: tabular-nums; }
 
 /* ── Panels ──────────────────────────────────────────────────────────────────── */
 .panel-box {

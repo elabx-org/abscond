@@ -27,6 +27,7 @@ export const usePlayerStore = defineStore('player', () => {
   const error         = ref<string | null>(null)
   const sleepMinsLeft      = ref<number | null>(null)
   const sleepSecsLeft      = ref<number | null>(null)
+  const sleepTotalSecs     = ref<number | null>(null)
   const sleepEndOfChapter  = ref(false)
   const queue              = ref<LibraryItem[]>([])
   const volume             = ref<number>(parseFloat(localStorage.getItem('abs_volume') ?? '1'))
@@ -293,14 +294,16 @@ export const usePlayerStore = defineStore('player', () => {
       sleepSecsLeft.value     = null
       return
     }
-    sleepMinsLeft.value = mins
-    sleepSecsLeft.value = mins !== null ? mins * 60 : null
+    sleepMinsLeft.value  = mins
+    sleepSecsLeft.value  = mins !== null ? mins * 60 : null
+    sleepTotalSecs.value = mins !== null ? mins * 60 : null
     if (mins && mins > 0) {
       sleepTimer = setTimeout(() => {
         _clearSleepTimers()
         audio?.pause()
-        sleepMinsLeft.value = null
-        sleepSecsLeft.value = null
+        sleepMinsLeft.value  = null
+        sleepSecsLeft.value  = null
+        sleepTotalSecs.value = null
         useNotificationStore().show('Sleep timer — playback paused', 'info')
       }, mins * 60 * 1000)
       // Countdown tick every second
@@ -325,15 +328,16 @@ export const usePlayerStore = defineStore('player', () => {
     isPlaying.value   = false
     currentTime.value = 0
     duration.value    = 0
-    sleepMinsLeft.value = null
-    sleepSecsLeft.value = null
+    sleepMinsLeft.value  = null
+    sleepSecsLeft.value  = null
+    sleepTotalSecs.value = null
     timeListenedAccum = 0
     try { localStorage.removeItem('abs_last_item') } catch {}
   }
 
   return {
     currentItem, session, isPlaying, currentTime, duration, queue, recentItems,
-    playbackRate, volume, isLoading, error, sleepMinsLeft, sleepSecsLeft, sleepEndOfChapter,
+    playbackRate, volume, isLoading, error, sleepMinsLeft, sleepSecsLeft, sleepTotalSecs, sleepEndOfChapter,
     currentChapter, currentTrackIndex, progress,
     play, togglePlay, seek, skipBack, skipForward, setRate, setVolume, setSleepTimer, stop,
     addToQueue: (item: LibraryItem) => { queue.value.push(item) },

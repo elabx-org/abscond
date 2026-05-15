@@ -83,6 +83,17 @@
           >{{ s }}s</button>
         </div>
       </div>
+
+      <div class="settings-item" @click="settingsStore.setSpeedAdjustedTime(!settingsStore.speedAdjustedTime)">
+        <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-clock-fast</v-icon>
+        <div class="item-label-stack">
+          <span class="item-label">Speed-adjusted time</span>
+          <span class="item-sublabel">Show remaining time at current playback rate</span>
+        </div>
+        <div class="toggle-pill" :class="{ on: settingsStore.speedAdjustedTime }">
+          <div class="toggle-thumb" />
+        </div>
+      </div>
     </section>
 
     <!-- Server -->
@@ -451,6 +462,22 @@ async function doLogout() {
   color: rgba(255,255,255,0.45); transition: all 0.15s;
 }
 .interval-chip.active { background: rgba(212,160,23,0.15); border-color: rgba(212,160,23,0.4); color: #d4a017; }
+
+.item-label-stack { flex: 1; display: flex; flex-direction: column; gap: 1px; }
+.item-sublabel { font-size: 10px; color: rgba(255,255,255,0.3); }
+
+.toggle-pill {
+  width: 40px; height: 22px; border-radius: 11px; flex-shrink: 0;
+  background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.12);
+  position: relative; transition: background 0.2s;
+}
+.toggle-pill.on { background: rgba(212,160,23,0.5); border-color: rgba(212,160,23,0.6); }
+.toggle-thumb {
+  position: absolute; top: 2px; left: 2px;
+  width: 16px; height: 16px; border-radius: 50%; background: rgba(255,255,255,0.7);
+  transition: transform 0.2s, background 0.2s;
+}
+.toggle-pill.on .toggle-thumb { transform: translateX(18px); background: #fff; }
 
 .admin-link-wrap { margin-top: 8px; }
 .admin-link {
