@@ -284,3 +284,154 @@ export async function downloadPodcastEpisode(itemId: string, episodeId: string):
 export async function deletePodcastEpisode(itemId: string, episodeId: string): Promise<void> {
   await api.delete(`/podcasts/${itemId}/episodes/${episodeId}`, { params: { hard: 0 } })
 }
+
+// ─── API Keys ─────────────────────────────────────────────────────────────────
+export interface ApiKey {
+  id: string
+  name: string
+  description?: string | null
+  expiresAt?: string | null
+  lastUsedAt?: string | null
+  isActive: boolean
+  userId: string
+  createdByUserId?: string | null
+  createdAt: string
+  user?: { id: string; username: string; type: string }
+}
+
+export async function getApiKeys(): Promise<ApiKey[]> {
+  const res = await api.get('/api-keys')
+  return res.data.apiKeys ?? []
+}
+
+export async function createApiKey(data: { name: string; userId: string; expiresIn?: number }): Promise<ApiKey> {
+  const res = await api.post('/api-keys', data)
+  return res.data.apiKey ?? res.data
+}
+
+export async function deleteApiKey(id: string): Promise<void> {
+  await api.delete(`/api-keys/${id}`)
+}
+
+// ─── Email Settings ────────────────────────────────────────────────────────────
+export interface EmailSettings {
+  id: string
+  host: string | null
+  port: number
+  secure: boolean
+  rejectUnauthorized: boolean
+  user: string | null
+  pass: string | null
+  testAddress: string | null
+  fromAddress: string | null
+  ereaderDevices: Array<{ name: string; email: string }>
+}
+
+export async function getEmailSettings(): Promise<EmailSettings> {
+  const res = await api.get('/emails/settings')
+  return res.data.settings ?? res.data
+}
+
+export async function updateEmailSettings(data: Partial<Omit<EmailSettings, 'id' | 'ereaderDevices'>>): Promise<EmailSettings> {
+  const res = await api.patch('/emails/settings', data)
+  return res.data.settings ?? res.data
+}
+
+export async function sendTestEmail(): Promise<void> {
+  await api.post('/emails/test', {})
+}
+
+// ─── Global Sessions ───────────────────────────────────────────────────────────
+export interface GlobalSession {
+  id: string
+  libraryItemId: string
+  episodeId?: string | null
+  displayTitle: string
+  displayAuthor: string
+  duration: number
+  currentTime: number
+  timeListening: number
+  updatedAt: number
+  createdAt: number
+  userId: string
+  user?: { id: string; username: string }
+}
+
+export interface GlobalSessionsResult {
+  sessions: GlobalSession[]
+  total: number
+}
+
+export async function getAllSessions(params: { page?: number; itemsPerPage?: number }): Promise<GlobalSessionsResult> {
+  const res = await api.get('/sessions', { params: { itemsPerPage: params.itemsPerPage ?? 20, page: params.page ?? 0, desc: 1 } })
+  return { sessions: res.data.sessions ?? [], total: res.data.total ?? 0 }
+}
+
+export async function deleteSession(id: string): Promise<void> {
+  await api.delete(`/sessions/${id}`)
+}
+
+// ─── RSS Feeds ─────────────────────────────────────────────────────────────────
+export interface RssFeed {
+  id: string
+  slug: string
+  userId: string
+  entityType: string
+  entityId: string
+  coverPath: string | null
+  meta: {
+    title: string
+    description?: string | null
+    author?: string | null
+    imageUrl?: string | null
+    feedUrl: string
+    link?: string | null
+    explicit?: boolean
+    preventIndexing?: boolean
+  }
+  createdAt: number
+  updatedAt: number
+}
+
+export async function getRssFeeds(): Promise<RssFeed[]> {
+  const res = await api.get('/feeds')
+  return res.data.feeds ?? []
+}
+
+export async function closeRssFeed(id: string): Promise<void> {
+  await api.post(`/feeds/${id}/close`, {})
+}
+
+// ─── Auth Settings ─────────────────────────────────────────────────────────────
+export interface AuthSettings {
+  authLoginCustomMessage: string | null
+  authActiveAuthMethods: string[]
+  authOpenIDIssuerURL: string | null
+  authOpenIDAuthorizationURL: string | null
+  authOpenIDTokenURL: string | null
+  authOpenIDUserInfoURL: string | null
+  authOpenIDJwksURL: string | null
+  authOpenIDLogoutURL: string | null
+  authOpenIDClientID: string | null
+  authOpenIDClientSecret: string | null
+  authOpenIDTokenSigningAlgorithm: string
+  authOpenIDButtonText: string | null
+  authOpenIDAutoLaunch: boolean
+  authOpenIDAutoRegister: boolean
+  authOpenIDMatchExistingBy: string | null
+  authOpenIDSubfolderForRedirectURLs: boolean
+}
+
+export async function getAuthSettings(): Promise<AuthSettings> {
+  const res = await api.get('/auth-settings')
+  return res.data
+}
+
+export async function updateAuthSettings(data: Partial<AuthSettings>): Promise<void> {
+  await api.patch('/auth-settings', data)
+}
+
+// ─── Item Metadata Quick Match ─────────────────────────────────────────────────
+export async function quickMatchLibrary(libraryId: string): Promise<void> {
+  await api.get(`/libraries/${libraryId}/matchall`)
+}

@@ -23,8 +23,8 @@
             <span v-if="u.lastSeen" class="seen">seen {{ timeAgo(u.lastSeen) }}</span>
           </p>
         </div>
-        <button v-if="u.type !== 'root'" class="edit-btn" @click="router.push({ name: 'admin-user-detail', params: { id: u.id } })">
-          <v-icon size="16">mdi-chevron-right</v-icon>
+        <button v-if="u.type !== 'root'" class="edit-btn" @click="router.push({ name: 'admin-user-detail', params: { id: u.id } })" title="Edit user">
+          <v-icon size="16">mdi-pencil-outline</v-icon>
         </button>
         <button v-if="u.type !== 'root'" class="del-btn" @click="confirmDelete(u)">
           <v-icon size="16">mdi-delete-outline</v-icon>

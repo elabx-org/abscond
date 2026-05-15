@@ -46,6 +46,12 @@ const tabs = [
   { name: 'admin-notifications',  label: 'Notifications',  icon: 'mdi-bell-outline' },
   { name: 'admin-logs',           label: 'Logs',           icon: 'mdi-text-box-outline' },
   { name: 'admin-upload',         label: 'Upload',         icon: 'mdi-upload' },
+  { name: 'admin-api-keys',  label: 'API Keys',  icon: 'mdi-key-outline' },
+  { name: 'admin-sessions',  label: 'Sessions',  icon: 'mdi-headphones' },
+  { name: 'admin-email',     label: 'Email',     icon: 'mdi-email-outline' },
+  { name: 'admin-metadata',  label: 'Metadata',  icon: 'mdi-tag-search-outline' },
+  { name: 'admin-feeds',     label: 'RSS Feeds', icon: 'mdi-rss' },
+  { name: 'admin-auth',      label: 'Auth',      icon: 'mdi-shield-lock-outline' },
 ]
 </script>
 
