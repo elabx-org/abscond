@@ -127,6 +127,46 @@
         </div>
       </section>
 
+      <!-- Year heatmap -->
+      <section v-if="userStats" class="section">
+        <div class="chart-section-header">
+          <p class="section-label" style="margin: 0">Year activity</p>
+          <span class="chart-total">{{ yearHours.toFixed(1) }}h this year</span>
+        </div>
+        <div class="heatmap-outer">
+          <div class="heatmap-scroll">
+            <div class="heatmap-months" :style="{ width: `${52 * 11}px` }">
+              <span
+                v-for="ml in heatmapMonthLabels"
+                :key="ml.weekIdx"
+                class="heatmap-month-label"
+                :style="{ left: `${ml.weekIdx * 11}px` }"
+              >{{ ml.label }}</span>
+            </div>
+            <div class="heatmap-grid">
+              <div v-for="(week, wi) in heatmapWeeks" :key="wi" class="heatmap-week">
+                <div
+                  v-for="(cell, di) in week"
+                  :key="di"
+                  class="heatmap-cell"
+                  :class="[`hm-l${cell.level}`, { 'hm-empty': cell.empty }]"
+                  :title="cell.empty ? '' : `${cell.date}: ${cell.hours.toFixed(1)}h`"
+                />
+              </div>
+            </div>
+          </div>
+          <div class="heatmap-legend">
+            <span class="heatmap-legend-label">Less</span>
+            <div class="heatmap-cell hm-l0" />
+            <div class="heatmap-cell hm-l1" />
+            <div class="heatmap-cell hm-l2" />
+            <div class="heatmap-cell hm-l3" />
+            <div class="heatmap-cell hm-l4" />
+            <span class="heatmap-legend-label">More</span>
+          </div>
+        </div>
+      </section>
+
       <!-- Most listened -->
       <section v-if="topItems.length" class="section">
         <p class="section-label">Most Listened</p>
@@ -285,6 +325,63 @@ const dailyAverageLabel = computed(() => {
   const h = Math.floor(avg / 3600)
   const m = Math.floor((avg % 3600) / 60)
   return h > 0 ? `${h}h${m}m` : `${m}m`
+})
+
+const yearHours = computed(() => {
+  const map = _dayMap.value
+  const year = new Date().getFullYear()
+  let total = 0
+  for (const [key, secs] of Object.entries(map)) {
+    if (key.startsWith(String(year))) total += (secs as number) ?? 0
+  }
+  return total / 3600
+})
+
+interface HeatmapCell { date: string; hours: number; level: number; empty: boolean }
+
+const heatmapWeeks = computed<HeatmapCell[][]>(() => {
+  const map = _dayMap.value
+  const today = new Date(); today.setHours(0, 0, 0, 0)
+  const todayDow = today.getDay()
+  const startDate = new Date(today)
+  startDate.setDate(startDate.getDate() - todayDow - 51 * 7)
+
+  const weeks: HeatmapCell[][] = []
+  for (let w = 0; w < 52; w++) {
+    const week: HeatmapCell[] = []
+    for (let d = 0; d < 7; d++) {
+      const date = new Date(startDate)
+      date.setDate(date.getDate() + w * 7 + d)
+      if (date > today) {
+        week.push({ date: '', hours: 0, level: 0, empty: true })
+      } else {
+        const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
+        const secs = (map[key] as number) ?? 0
+        const hours = secs / 3600
+        const level = hours <= 0 ? 0 : hours < 0.5 ? 1 : hours < 1.5 ? 2 : hours < 3 ? 3 : 4
+        week.push({ date: key, hours, level, empty: false })
+      }
+    }
+    weeks.push(week)
+  }
+  return weeks
+})
+
+const heatmapMonthLabels = computed(() => {
+  const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
+  const today = new Date(); today.setHours(0, 0, 0, 0)
+  const todayDow = today.getDay()
+  const startDate = new Date(today)
+  startDate.setDate(startDate.getDate() - todayDow - 51 * 7)
+  const labels: Array<{ weekIdx: number; label: string }> = []
+  let lastMonth = -1
+  for (let w = 0; w < 52; w++) {
+    const d = new Date(startDate)
+    d.setDate(d.getDate() + w * 7)
+    const m = d.getMonth()
+    if (m !== lastMonth) { labels.push({ weekIdx: w, label: MONTHS[m] }); lastMonth = m }
+  }
+  return labels
 })
 
 const DAY_ABBR = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa']
@@ -535,6 +632,32 @@ onMounted(async () => {
 .session-total-count { font-size: 10px; color: rgba(255,255,255,0.25); }
 
 .session-sentinel { height: 1px; }
+
+.heatmap-outer {
+  background: #111; border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.06);
+  padding: 12px 14px 10px;
+}
+.heatmap-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.heatmap-months { position: relative; height: 14px; margin-bottom: 4px; }
+.heatmap-month-label {
+  position: absolute; font-size: 8px; color: rgba(255,255,255,0.28);
+  top: 0; white-space: nowrap; line-height: 1;
+}
+.heatmap-grid { display: flex; gap: 2px; }
+.heatmap-week { display: flex; flex-direction: column; gap: 2px; }
+.heatmap-cell { width: 9px; height: 9px; border-radius: 1px; flex-shrink: 0; }
+.hm-empty { background: transparent; }
+.hm-l0 { background: rgba(255,255,255,0.06); }
+.hm-l1 { background: rgba(212,160,23,0.22); }
+.hm-l2 { background: rgba(212,160,23,0.45); }
+.hm-l3 { background: rgba(212,160,23,0.7); }
+.hm-l4 { background: #d4a017; }
+.heatmap-legend {
+  display: flex; align-items: center; gap: 4px; margin-top: 8px;
+  justify-content: flex-end;
+}
+.heatmap-legend-label { font-size: 9px; color: rgba(255,255,255,0.25); }
 
 .top-items {
   background: #111; border-radius: 12px;
