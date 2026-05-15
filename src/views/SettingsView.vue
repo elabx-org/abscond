@@ -238,6 +238,19 @@
       </div>
 
       <div class="settings-item">
+        <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-vibrate</v-icon>
+        <div class="item-label-stack">
+          <span class="item-label">Shake action</span>
+          <span class="item-sublabel">What to do when you shake the device during sleep timer</span>
+        </div>
+        <div class="interval-chips">
+          <button class="interval-chip" :class="{ active: settingsStore.shakeMode === 'off' }"     @click.stop="settingsStore.setShakeMode('off')">Off</button>
+          <button class="interval-chip" :class="{ active: settingsStore.shakeMode === 'addTime' }" @click.stop="settingsStore.setShakeMode('addTime')">+5 min</button>
+          <button class="interval-chip" :class="{ active: settingsStore.shakeMode === 'reset' }"   @click.stop="settingsStore.setShakeMode('reset')">Reset</button>
+        </div>
+      </div>
+
+      <div class="settings-item">
         <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-rewind</v-icon>
         <span class="item-label">Sleep rewind</span>
         <div class="interval-chips">

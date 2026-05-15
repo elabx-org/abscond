@@ -48,6 +48,9 @@ export const usePlayerStore = defineStore('player', () => {
   let sleepTimer: ReturnType<typeof setTimeout> | null = null
   let sleepCountdown: ReturnType<typeof setInterval> | null = null
   let sleepFadeStartVol = 1
+  let _shakeLastAt = 0
+  const SHAKE_THRESHOLD = 15   // m/s² magnitude
+  const SHAKE_COOLDOWN  = 3000 // ms between triggers
   let chimePlayed = false
   let syncedAt = 0
   let _lastChapterIdx = -1
@@ -456,6 +459,7 @@ export const usePlayerStore = defineStore('player', () => {
     if (sleepCountdown){ clearInterval(sleepCountdown); sleepCountdown = null }
     if (gainNode) gainNode.gain.value = volume.value
     chimePlayed = false
+    _stopShakeDetection()
   }
 
   function _startSleepCountdown() {
@@ -506,7 +510,43 @@ export const usePlayerStore = defineStore('player', () => {
         useNotificationStore().show('Sleep timer — playback paused', 'info')
       }, mins * 60 * 1000)
       _startSleepCountdown()
+      _startShakeDetection()
     }
+  }
+
+  function _onShake(e: DeviceMotionEvent) {
+    const a = e.accelerationIncludingGravity
+    if (!a) return
+    const mag = Math.sqrt((a.x ?? 0) ** 2 + (a.y ?? 0) ** 2 + (a.z ?? 0) ** 2)
+    const now = Date.now()
+    if (mag < SHAKE_THRESHOLD || now - _shakeLastAt < SHAKE_COOLDOWN) return
+    _shakeLastAt = now
+    const mode = localStorage.getItem('abs_shake_mode') ?? 'off'
+    if (mode === 'addTime' && sleepMinsLeft.value !== null) {
+      setSleepTimer(sleepMinsLeft.value + 5)
+      useNotificationStore().show('+5 min added', 'success')
+    } else if (mode === 'reset' && sleepTotalSecs.value !== null) {
+      setSleepTimer(Math.round(sleepTotalSecs.value / 60))
+      useNotificationStore().show('Sleep timer reset', 'info')
+    }
+  }
+
+  function _startShakeDetection() {
+    const mode = localStorage.getItem('abs_shake_mode') ?? 'off'
+    if (mode === 'off') return
+    // iOS requires permission
+    const dme = DeviceMotionEvent as unknown as { requestPermission?: () => Promise<string> }
+    if (typeof dme.requestPermission === 'function') {
+      dme.requestPermission().then((state: string) => {
+        if (state === 'granted') window.addEventListener('devicemotion', _onShake)
+      }).catch(() => {})
+    } else {
+      window.addEventListener('devicemotion', _onShake)
+    }
+  }
+
+  function _stopShakeDetection() {
+    window.removeEventListener('devicemotion', _onShake)
   }
 
   function _onVisibilityChange() {
