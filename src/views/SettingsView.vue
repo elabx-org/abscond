@@ -41,7 +41,10 @@
 
       <div class="settings-item">
         <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-speedometer</v-icon>
-        <span class="item-label">Default speed</span>
+        <div class="item-label-stack">
+          <span class="item-label">Default speed</span>
+          <span class="item-sublabel">Applied when starting a new book</span>
+        </div>
         <span class="item-value">{{ playbackRate }}×</span>
       </div>
       <div class="speed-slider-wrap">
@@ -699,9 +702,7 @@ function doSaveServer() {
   router.push({ name: 'login' })
 }
 
-const playbackRate = ref<number>(
-  parseFloat(localStorage.getItem('abs_playback_rate') ?? '1')
-)
+const playbackRate = ref<number>(settingsStore.defaultSpeed)
 const skipBackSecs = computed({
   get: () => settingsStore.skipBackSecs,
   set: (v: number) => settingsStore.setSkipBack(v),
@@ -778,7 +779,7 @@ function toggleGoodreads() {
 }
 
 function savePlaybackRate() {
-  localStorage.setItem('abs_playback_rate', String(playbackRate.value))
+  settingsStore.setDefaultSpeed(playbackRate.value)
   player.setRate(playbackRate.value)
 }
 

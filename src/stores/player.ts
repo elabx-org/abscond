@@ -300,6 +300,13 @@ export const usePlayerStore = defineStore('player', () => {
       recentItems.value = recent.slice(0, 10)
       _saveRecentItems(recentItems.value)
 
+      // Apply default speed for new items (different from what was just playing)
+      const defSpeed = useSettingsStore().defaultSpeed
+      if (defSpeed !== 1) {
+        playbackRate.value = defSpeed
+        localStorage.setItem('abs_playback_rate', String(defSpeed))
+      }
+
       audio = new Audio()
       audio.playbackRate = playbackRate.value
       _attachListeners()

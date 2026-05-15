@@ -9,6 +9,7 @@ export const useSettingsStore = defineStore('settings', () => {
   const bookAutoAdvance     = ref<boolean>(localStorage.getItem('abs_book_auto_advance') !== 'false')
   const autoRewindEnabled   = ref<boolean>(localStorage.getItem('abs_auto_rewind') !== 'false')
   const autoRewindMax       = ref<number>(parseInt(localStorage.getItem('abs_auto_rewind_max') ?? '30'))
+  const defaultSpeed        = ref<number>(parseFloat(localStorage.getItem('abs_default_speed') ?? '1'))
 
   function setSkipBack(s: number) {
     skipBackSecs.value = s
@@ -45,5 +46,10 @@ export const useSettingsStore = defineStore('settings', () => {
     localStorage.setItem('abs_auto_rewind_max', String(secs))
   }
 
-  return { skipBackSecs, skipFwdSecs, speedAdjustedTime, podcastAutoAdvance, bookAutoAdvance, autoRewindEnabled, autoRewindMax, setSkipBack, setSkipFwd, setSpeedAdjustedTime, setPodcastAutoAdvance, setBookAutoAdvance, setAutoRewindEnabled, setAutoRewindMax }
+  function setDefaultSpeed(rate: number) {
+    defaultSpeed.value = rate
+    localStorage.setItem('abs_default_speed', String(rate))
+  }
+
+  return { skipBackSecs, skipFwdSecs, speedAdjustedTime, podcastAutoAdvance, bookAutoAdvance, autoRewindEnabled, autoRewindMax, defaultSpeed, setSkipBack, setSkipFwd, setSpeedAdjustedTime, setPodcastAutoAdvance, setBookAutoAdvance, setAutoRewindEnabled, setAutoRewindMax, setDefaultSpeed }
 })
