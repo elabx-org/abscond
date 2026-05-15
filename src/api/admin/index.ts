@@ -99,3 +99,27 @@ export async function getServerLogs(): Promise<string[]> {
     return res.data.logs ?? []
   } catch { return [] }
 }
+
+export interface PodcastFeedInfo {
+  title: string
+  description?: string
+  imageUrl?: string
+  author?: string
+  episodes?: Array<{ title: string; pubDate?: string }>
+}
+
+export async function getPodcastFeed(feedUrl: string): Promise<PodcastFeedInfo> {
+  const res = await api.post('/podcasts/feed', { feedUrl })
+  const p = res.data.podcast ?? res.data
+  return {
+    title:       p.metadata?.title ?? p.title ?? feedUrl,
+    description: p.metadata?.description ?? p.description,
+    imageUrl:    p.metadata?.imageUrl ?? p.imageUrl,
+    author:      p.metadata?.author ?? p.author,
+    episodes:    p.episodes ?? [],
+  }
+}
+
+export async function addPodcast(rssUrl: string, libraryId: string, folderId: string): Promise<void> {
+  await api.post('/podcasts', { rssUrl, libraryId, folderId, autoDownloadEpisodes: true })
+}

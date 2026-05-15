@@ -21,10 +21,20 @@
             <p class="lib-name">{{ lib.name }}</p>
             <p class="lib-type">{{ lib.mediaType }} · {{ lib.stats?.totalItems ?? '?' }} items</p>
           </div>
-          <button class="scan-btn" :class="{ scanning: scanningId === lib.id }" @click="scan(lib.id)">
-            <v-icon size="16">{{ scanningId === lib.id ? 'mdi-loading' : 'mdi-magnify-scan' }}</v-icon>
-            <span>{{ scanningId === lib.id ? 'Scanning…' : 'Scan' }}</span>
-          </button>
+          <div class="lib-actions">
+            <button
+              v-if="lib.mediaType === 'podcast'"
+              class="add-podcast-btn"
+              @click="openAddPodcast(lib)"
+            >
+              <v-icon size="14">mdi-rss</v-icon>
+              <span>Add</span>
+            </button>
+            <button class="scan-btn" :class="{ scanning: scanningId === lib.id }" @click="scan(lib.id)">
+              <v-icon size="16">{{ scanningId === lib.id ? 'mdi-loading' : 'mdi-magnify-scan' }}</v-icon>
+              <span>{{ scanningId === lib.id ? 'Scanning…' : 'Scan' }}</span>
+            </button>
+          </div>
         </div>
         <div class="folder-list">
           <div v-for="f in lib.folders" :key="f.id" class="folder-row">
@@ -35,17 +45,71 @@
         <p v-if="lib.lastScan" class="last-scan">Last scan {{ formatDate(lib.lastScan) }}</p>
       </div>
     </div>
+
+    <!-- Add Podcast sheet -->
+    <Teleport to="body">
+      <Transition name="sheet">
+        <div v-if="podcastTarget" class="sheet-backdrop" @click.self="closeAddPodcast">
+          <div class="create-sheet">
+            <div class="drag-handle-area"><div class="drag-handle" /></div>
+            <div class="create-content">
+              <h3 class="create-title">Add Podcast via RSS</h3>
+              <p class="create-subtitle">Library: <strong>{{ podcastTarget.name }}</strong></p>
+
+              <!-- Step 1: URL input -->
+              <template v-if="!feedInfo">
+                <input
+                  v-model="rssUrl"
+                  class="form-input"
+                  placeholder="https://feeds.example.com/podcast.rss"
+                  type="url"
+                />
+                <p v-if="feedError" class="form-error">{{ feedError }}</p>
+                <button class="save-btn" :disabled="!rssUrl.trim() || feedLoading" @click="previewFeed">
+                  {{ feedLoading ? 'Loading feed…' : 'Preview Feed' }}
+                </button>
+              </template>
+
+              <!-- Step 2: Confirm -->
+              <template v-else>
+                <div class="feed-preview">
+                  <img v-if="feedInfo.imageUrl" :src="feedInfo.imageUrl" class="feed-cover" />
+                  <div class="feed-meta">
+                    <p class="feed-title">{{ feedInfo.title }}</p>
+                    <p v-if="feedInfo.author" class="feed-author">{{ feedInfo.author }}</p>
+                    <p class="feed-episodes">{{ feedInfo.episodes?.length ?? 0 }} episodes</p>
+                  </div>
+                </div>
+                <p v-if="addError" class="form-error">{{ addError }}</p>
+                <button class="save-btn" :disabled="adding" @click="confirmAdd">
+                  {{ adding ? 'Adding…' : 'Add Podcast' }}
+                </button>
+                <button class="cancel-btn" @click="feedInfo = null; rssUrl = ''">Back</button>
+              </template>
+            </div>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
   </div>
 </template>
 
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
-import { getAdminLibraries, scanLibrary } from '@/api/admin'
-import type { AdminLibrary } from '@/api/admin'
+import { getAdminLibraries, scanLibrary, getPodcastFeed, addPodcast } from '@/api/admin'
+import type { AdminLibrary, PodcastFeedInfo } from '@/api/admin'
 
 const loading    = ref(true)
 const libraries  = ref<AdminLibrary[]>([])
 const scanningId = ref<string | null>(null)
+
+const podcastTarget = ref<AdminLibrary | null>(null)
+const rssUrl        = ref('')
+const feedLoading   = ref(false)
+const feedError     = ref('')
+const feedInfo      = ref<PodcastFeedInfo | null>(null)
+const adding        = ref(false)
+const addError      = ref('')
 
 async function scan(id: string) {
   scanningId.value = id
@@ -55,6 +119,45 @@ async function scan(id: string) {
 
 function formatDate(ts: number) {
   return new Date(ts).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })
+}
+
+function openAddPodcast(lib: AdminLibrary) {
+  podcastTarget.value = lib
+  rssUrl.value        = ''
+  feedInfo.value      = null
+  feedError.value     = ''
+  addError.value      = ''
+}
+
+function closeAddPodcast() {
+  podcastTarget.value = null
+}
+
+async function previewFeed() {
+  feedError.value   = ''
+  feedLoading.value = true
+  try {
+    feedInfo.value = await getPodcastFeed(rssUrl.value.trim())
+  } catch (e: unknown) {
+    feedError.value = (e instanceof Error ? e.message : null) ?? 'Could not load feed'
+  } finally {
+    feedLoading.value = false
+  }
+}
+
+async function confirmAdd() {
+  if (!podcastTarget.value) return
+  addError.value = ''
+  adding.value   = true
+  const folderId = podcastTarget.value.folders[0]?.id ?? ''
+  try {
+    await addPodcast(rssUrl.value.trim(), podcastTarget.value.id, folderId)
+    closeAddPodcast()
+  } catch (e: unknown) {
+    addError.value = (e instanceof Error ? e.message : null) ?? 'Failed to add podcast'
+  } finally {
+    adding.value = false
+  }
 }
 
 onMounted(async () => {
@@ -81,15 +184,43 @@ onMounted(async () => {
 .lib-info { flex: 1; }
 .lib-name { font-size: 14px; font-weight: 700; color: rgba(255,255,255,0.9); margin: 0 0 2px; }
 .lib-type { font-size: 11px; color: rgba(255,255,255,0.4); margin: 0; text-transform: capitalize; }
+.lib-actions { display: flex; gap: 6px; }
 .scan-btn {
   display: flex; align-items: center; gap: 5px; font-size: 11px; padding: 5px 10px;
   border-radius: 8px; background: rgba(212,160,23,0.12); border: 1px solid rgba(212,160,23,0.25);
   color: #d4a017; cursor: pointer; flex-shrink: 0;
 }
 .scan-btn.scanning { opacity: 0.6; cursor: not-allowed; }
+.add-podcast-btn {
+  display: flex; align-items: center; gap: 5px; font-size: 11px; padding: 5px 10px;
+  border-radius: 8px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
+  color: rgba(255,255,255,0.6); cursor: pointer; flex-shrink: 0;
+}
 
 .folder-list { display: flex; flex-direction: column; gap: 4px; margin-bottom: 8px; }
 .folder-row { display: flex; align-items: center; gap: 6px; }
 .folder-path { font-size: 11px; color: rgba(255,255,255,0.4); font-family: monospace; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .last-scan { font-size: 10px; color: rgba(255,255,255,0.25); margin: 0; }
+
+/* Sheet */
+.sheet-backdrop { position: fixed; inset: 0; z-index: 300; background: rgba(0,0,0,0.55); }
+.create-sheet { position: absolute; bottom: 0; left: 0; right: 0; border-radius: 24px 24px 0 0; border-top: 1px solid rgba(255,255,255,0.08); background: #111; overflow: hidden; }
+.drag-handle-area { padding: 10px 0 4px; }
+.drag-handle { width: 40px; height: 4px; border-radius: 2px; background: rgba(255,255,255,0.25); margin: 0 auto; }
+.create-content { padding: 8px 20px 48px; }
+.create-title { font-size: 16px; font-weight: 700; color: rgba(255,255,255,0.9); margin: 0 0 4px; }
+.create-subtitle { font-size: 12px; color: rgba(255,255,255,0.4); margin: 0 0 16px; }
+.form-input { width: 100%; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 10px 12px; font-size: 13px; color: rgba(255,255,255,0.9); outline: none; margin-bottom: 10px; box-sizing: border-box; }
+.form-error { font-size: 12px; color: #ef4444; margin: 0 0 10px; }
+.save-btn { width: 100%; padding: 14px; border-radius: 12px; border: none; cursor: pointer; background: #d4a017; color: white; font-size: 15px; font-weight: 700; margin-bottom: 10px; }
+.save-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.cancel-btn { width: 100%; padding: 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); background: transparent; color: rgba(255,255,255,0.6); font-size: 14px; cursor: pointer; }
+.feed-preview { display: flex; gap: 12px; margin-bottom: 16px; padding: 12px; background: rgba(255,255,255,0.04); border-radius: 10px; border: 1px solid rgba(255,255,255,0.07); }
+.feed-cover { width: 64px; height: 64px; border-radius: 8px; object-fit: cover; flex-shrink: 0; }
+.feed-meta { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+.feed-title { font-size: 14px; font-weight: 700; color: rgba(255,255,255,0.9); margin: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.feed-author { font-size: 12px; color: rgba(255,255,255,0.5); margin: 0; }
+.feed-episodes { font-size: 11px; color: rgba(255,255,255,0.35); margin: 0; }
+.sheet-enter-active, .sheet-leave-active { transition: opacity 0.25s; }
+.sheet-enter-from, .sheet-leave-to { opacity: 0; }
 </style>
