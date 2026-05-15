@@ -320,6 +320,17 @@ export const usePlayerStore = defineStore('player', () => {
 
   async function play(item: LibraryItem, episodeId?: string) {
     await stop()
+
+    // Persist item immediately after stop() clears the old one — before the API call.
+    // This ensures currentItem and abs_last_item survive even if startPlaySession fails
+    // (e.g. ABS mid-redeploy), so the user's Now Playing doesn't disappear on a network hiccup.
+    currentItem.value = item
+    try { localStorage.setItem('abs_last_item', JSON.stringify(item)) } catch {}
+    const recent = recentItems.value.filter(r => r.id !== item.id)
+    recent.unshift(item)
+    recentItems.value = recent.slice(0, 10)
+    _saveRecentItems(recentItems.value)
+
     isLoading.value = true
     error.value = null
     _lastChapterIdx = -1
@@ -327,16 +338,8 @@ export const usePlayerStore = defineStore('player', () => {
     try {
       const s = await startPlaySession(item.id, episodeId)
       session.value     = s
-      currentItem.value = item
       duration.value    = s.duration
       currentTime.value = s.currentTime
-
-      // Persist and update recent history
-      try { localStorage.setItem('abs_last_item', JSON.stringify(item)) } catch {}
-      const recent = recentItems.value.filter(r => r.id !== item.id)
-      recent.unshift(item)
-      recentItems.value = recent.slice(0, 10)
-      _saveRecentItems(recentItems.value)
 
       // Apply default speed for new items (different from what was just playing)
       const defSpeed = useSettingsStore().defaultSpeed
