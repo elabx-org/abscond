@@ -26,6 +26,7 @@
         <!-- Swipeable cover carousel -->
         <div
           class="cover-carousel"
+          ref="carouselRef"
           @touchstart.passive="onSwipeStart"
           @touchmove.passive="onSwipeMove"
           @touchend.passive="onSwipeEnd"
@@ -531,7 +532,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch, nextTick } from 'vue'
+import { computed, ref, watch, nextTick, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { usePlayerStore } from '@/stores/player'
 import { useAuthStore } from '@/stores/auth'
@@ -688,8 +689,23 @@ let swipeStartY = 0
 let swipeTracking = false
 const swipeDx = ref(0)
 
+const carouselRef = ref<HTMLElement | null>(null)
+const slideWidthPx = ref(window.innerWidth)
+
+let _ro: ResizeObserver | null = null
+onMounted(() => {
+  if (carouselRef.value) {
+    slideWidthPx.value = carouselRef.value.clientWidth
+    _ro = new ResizeObserver(() => {
+      slideWidthPx.value = carouselRef.value?.clientWidth ?? window.innerWidth
+    })
+    _ro.observe(carouselRef.value)
+  }
+})
+onUnmounted(() => { _ro?.disconnect() })
+
 const trackStyle = computed(() => {
-  const offset = `calc(${-currentIndex.value} * 100vw + ${swipeDx.value}px)`
+  const offset = `calc(${-currentIndex.value} * ${slideWidthPx.value}px + ${swipeDx.value}px)`
   return {
     transform: `translateX(${offset})`,
     transition: swipeDx.value !== 0 ? 'none' : 'transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
