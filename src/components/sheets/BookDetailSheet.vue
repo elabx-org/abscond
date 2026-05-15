@@ -263,6 +263,29 @@
               <button class="pls-cancel" @click="showCollectionAdd = false">Cancel</button>
             </div>
 
+            <!-- Chapters -->
+            <div v-if="item.media.numChapters && item.media.numChapters > 0" class="chapters-section">
+              <button class="chapters-toggle" @click="toggleChapters">
+                <v-icon size="15" color="rgba(255,255,255,0.5)">mdi-format-list-numbered</v-icon>
+                <span class="chapters-toggle-label">Chapters ({{ item.media.numChapters }})</span>
+                <v-icon size="16" color="rgba(255,255,255,0.3)">{{ chaptersExpanded ? 'mdi-chevron-up' : 'mdi-chevron-down' }}</v-icon>
+              </button>
+              <div v-if="chaptersExpanded" class="chapters-list">
+                <div v-if="loadingChapters" class="chapters-loading">Loading…</div>
+                <button
+                  v-else
+                  v-for="ch in chapters"
+                  :key="ch.id"
+                  class="chapter-row"
+                  :class="{ active: isCurrentChapter(ch) }"
+                  @click="seekToChapter(ch)"
+                >
+                  <span class="chapter-title">{{ ch.title }}</span>
+                  <span class="chapter-time">{{ chapterFormatTime(ch.start) }}</span>
+                </button>
+              </div>
+            </div>
+
             <!-- Description -->
             <div v-if="item.media.metadata.description" class="sheet-desc-wrap">
               <p class="sheet-desc" :class="{ expanded: descExpanded }">
@@ -324,7 +347,7 @@ import type { Collection } from '@/api/collections'
 import { createShareLink, removeShareLink } from '@/api/share'
 import { matchItem } from '@/api/items'
 import type { ShareLink } from '@/api/share'
-import type { LibraryItem, Series, Author } from '@/api/types'
+import type { LibraryItem, Series, Author, Chapter } from '@/api/types'
 
 const props = defineProps<{
   item: LibraryItem
@@ -372,6 +395,47 @@ const deleting          = ref(false)
 const scanning          = ref(false)
 const markingFinished   = ref(false)
 const removingProgress  = ref(false)
+const chaptersExpanded  = ref(false)
+const loadingChapters   = ref(false)
+const chapters          = ref<Chapter[]>([])
+
+function isCurrentChapter(ch: Chapter): boolean {
+  return player.currentItem?.id === props.item.id && player.currentChapter?.id === ch.id
+}
+
+function chapterFormatTime(secs: number): string {
+  const h = Math.floor(secs / 3600)
+  const m = Math.floor((secs % 3600) / 60)
+  const s = Math.floor(secs % 60)
+  return h > 0
+    ? `${h}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`
+    : `${m}:${String(s).padStart(2, '0')}`
+}
+
+async function toggleChapters() {
+  chaptersExpanded.value = !chaptersExpanded.value
+  if (!chaptersExpanded.value || chapters.value.length > 0) return
+  const sessionChs = player.currentItem?.id === props.item.id ? (player.session?.chapters ?? []) : []
+  if (sessionChs.length > 0) { chapters.value = sessionChs; return }
+  loadingChapters.value = true
+  try {
+    const res = await api.get(`/items/${props.item.id}`, { params: { expanded: 1 } })
+    chapters.value = res.data?.media?.chapters ?? []
+  } catch {}
+  finally { loadingChapters.value = false }
+}
+
+async function seekToChapter(ch: Chapter) {
+  if (player.currentItem?.id !== props.item.id) {
+    emit('close')
+    await player.play(props.item)
+    await new Promise<void>(r => setTimeout(r, 600))
+    player.seek(ch.start)
+    router.push({ name: 'player' })
+  } else {
+    player.seek(ch.start)
+  }
+}
 
 async function markFinished() {
   markingFinished.value = true
@@ -544,13 +608,15 @@ async function setRating(stars: number) {
 
 watch(() => props.show, (v) => {
   if (v) {
-    descExpanded.value = false
-    userRating.value = props.item.userMediaProgress?.rating ?? 0
+    descExpanded.value    = false
+    userRating.value      = props.item.userMediaProgress?.rating ?? 0
     showPlaylistAdd.value = false
     showCollectionAdd.value = false
-    showShare.value = false
-    shareLink.value = null
-    showEdit.value  = false
+    showShare.value       = false
+    shareLink.value       = null
+    showEdit.value        = false
+    chaptersExpanded.value = false
+    chapters.value         = []
   }
 })
 
@@ -834,6 +900,25 @@ async function doSaveMeta() {
   color: rgba(255,255,255,0.55);
 }
 .chip--tag { background: rgba(212,160,23,0.08); border-color: rgba(212,160,23,0.2); color: rgba(212,160,23,0.8); }
+.chapters-section { margin: 12px 0 4px; }
+.chapters-toggle {
+  display: flex; align-items: center; gap: 8px; width: 100%;
+  background: transparent; border: none; cursor: pointer;
+  padding: 10px 0; color: rgba(255,255,255,0.7); text-align: left;
+  border-top: 1px solid rgba(255,255,255,0.05);
+}
+.chapters-toggle-label { flex: 1; font-size: 13px; font-weight: 600; }
+.chapters-list { padding: 4px 0 8px; }
+.chapters-loading { font-size: 12px; color: rgba(255,255,255,0.3); padding: 8px 0; }
+.chapter-row {
+  display: flex; align-items: center; gap: 10px; width: 100%;
+  background: transparent; border: none; cursor: pointer; padding: 9px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.04); text-align: left;
+}
+.chapter-row.active .chapter-title { color: #d4a017; }
+.chapter-title { flex: 1; font-size: 12px; color: rgba(255,255,255,0.8); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.chapter-time { font-size: 11px; color: rgba(255,255,255,0.35); flex-shrink: 0; font-variant-numeric: tabular-nums; }
+
 .sheet-desc-wrap { margin: 4px 0 16px; }
 .sheet-desc {
   font-size: 12px; line-height: 1.6; color: rgba(255,255,255,0.6);
