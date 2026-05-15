@@ -464,6 +464,7 @@ const showEdit          = ref(false)
 const editSaving        = ref(false)
 const editError         = ref('')
 const editMeta          = ref({ title: '', subtitle: '', authorNames: '', narratorNames: '', publishedYear: '', publisher: '', genres: '', tags: '', description: '' })
+const showMatch         = ref(false)
 const showDeleteConfirm = ref(false)
 const deleting          = ref(false)
 const scanning          = ref(false)
@@ -577,19 +578,19 @@ async function doScan() {
   } finally { scanning.value = false }
 }
 
-const showMatch         = ref(false)
-
 async function onMatched(itemId: string) {
   try {
     const updated = await getItem(itemId)
-    editMeta.value.title         = updated.media.metadata.title ?? ''
-    editMeta.value.subtitle      = updated.media.metadata.subtitle ?? ''
-    editMeta.value.authorNames   = updated.media.metadata.authorName ?? ''
-    editMeta.value.narratorNames = updated.media.metadata.narratorName ?? ''
-    editMeta.value.publishedYear = updated.media.metadata.publishedYear ?? ''
-    editMeta.value.publisher     = updated.media.metadata.publisher ?? ''
-    editMeta.value.genres        = updated.media.metadata.genres?.join(', ') ?? ''
-    editMeta.value.description   = updated.media.metadata.description ?? ''
+    const m = updated.media.metadata
+    editMeta.value.title         = m.title ?? ''
+    editMeta.value.subtitle      = m.subtitle ?? ''
+    editMeta.value.authorNames   = m.authors?.length ? m.authors.map(a => a.name).join(', ') : (m.authorName ?? '')
+    editMeta.value.narratorNames = m.narrators?.length ? m.narrators.join(', ') : (m.narratorName ?? '')
+    editMeta.value.publishedYear = m.publishedYear ?? ''
+    editMeta.value.publisher     = m.publisher ?? ''
+    editMeta.value.genres        = m.genres?.join(', ') ?? ''
+    editMeta.value.description   = m.description ?? ''
+    editMeta.value.tags          = (updated.tags ?? []).join(', ')
   } catch { /* keep existing values on fetch failure */ }
 }
 
