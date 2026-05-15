@@ -261,6 +261,9 @@
         <button class="batch-cancel" @click="exitSelectMode">
           <v-icon size="18">mdi-close</v-icon>
         </button>
+        <button class="batch-select-all" @click="selectAll">
+          {{ selectedIds.size === filteredItems.length ? 'None' : 'All' }}
+        </button>
         <span class="batch-count">{{ selectedIds.size }} selected</span>
         <button class="batch-action" @click="showPlaylistPicker = true; loadPlaylists()">
           <v-icon size="16">mdi-playlist-plus</v-icon>
@@ -639,7 +642,17 @@ function onCardClick(item: LibraryItem) {
 }
 
 function onLongPress(item: LibraryItem) {
-  quickItem.value = item
+  if (selectMode.value) {
+    // Already in select mode — toggle this item
+    if (selectedIds.value.has(item.id)) selectedIds.value.delete(item.id)
+    else selectedIds.value.add(item.id)
+    if (selectedIds.value.size === 0) exitSelectMode()
+  } else {
+    // Enter select mode with this item pre-selected
+    selectMode.value = true
+    selectedIds.value.add(item.id)
+    if (navigator.vibrate) navigator.vibrate(30)
+  }
 }
 
 async function playQuick() {
@@ -681,6 +694,15 @@ async function openPlaylistForQuick() {
 function exitSelectMode() {
   selectMode.value = false
   selectedIds.value.clear()
+}
+
+function selectAll() {
+  if (selectedIds.value.size === filteredItems.value.length) {
+    selectedIds.value.clear()
+    exitSelectMode()
+  } else {
+    for (const item of filteredItems.value) selectedIds.value.add(item.id)
+  }
 }
 
 async function batchMarkFinished() {
@@ -847,6 +869,7 @@ watch(() => lib.activeLibraryId, (id) => {
   padding: 10px 12px; display: flex; align-items: center; gap: 10px;
 }
 .batch-cancel { background: transparent; border: none; cursor: pointer; color: rgba(255,255,255,0.6); padding: 6px; }
+.batch-select-all { background: transparent; border: 1px solid rgba(255,255,255,0.15); border-radius: 6px; cursor: pointer; color: rgba(255,255,255,0.6); font-size: 11px; padding: 4px 8px; }
 .batch-count { font-size: 13px; font-weight: 600; color: rgba(255,255,255,0.8); flex: 1; }
 .batch-action {
   display: flex; align-items: center; gap: 5px; font-size: 11px; padding: 6px 10px;
