@@ -185,6 +185,7 @@
 
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue'
+import { useRouter } from 'vue-router'
 import { useProgressStore } from '@/stores/progress'
 import { useLibraryStore } from '@/stores/library'
 import { useAuthStore } from '@/stores/auth'
@@ -199,6 +200,7 @@ import type { LibraryItem } from '@/api/types'
 import { getAuthorDisplay } from '@/utils/metadata'
 
 const progress = useProgressStore()
+const router   = useRouter()
 const lib      = useLibraryStore()
 const auth     = useAuthStore()
 const player   = usePlayerStore()
@@ -271,6 +273,7 @@ async function playQuick() {
   if (!quickItem.value) return
   const item = quickItem.value; quickItem.value = null
   await player.play(item)
+  router.push({ name: 'player' })
 }
 
 async function markFinishedQuick() {
