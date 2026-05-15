@@ -189,7 +189,7 @@
               <v-icon size="18">mdi-playlist-play</v-icon>
               <span v-if="player.queue.length" class="util-badge">{{ player.queue.length }}</span>
             </button>
-            <button class="util-btn" @click="addBookmark">
+            <button class="util-btn" @click="openBookmarkSheet">
               <v-icon size="18">mdi-bookmark-plus-outline</v-icon>
             </button>
             <button class="util-btn" :class="{ active: eq.enabled }" @click="showEq = true">
@@ -339,6 +339,53 @@
       @close="showItemDetail = false"
     />
     <EqualizerSheet v-model="showEq" accent="#d4a017" />
+
+    <!-- Bookmark sheet -->
+    <v-bottom-sheet v-model="showBookmarkSheet" :scrim="true">
+      <div class="bm-sheet-content">
+        <div class="sheet-handle" />
+        <div class="bm-sheet-header">
+          <p class="bm-sheet-title">Bookmarks</p>
+          <button class="bm-sheet-add-btn" @click="showAddBookmark = true">
+            <v-icon size="16" color="#d4a017">mdi-plus</v-icon>
+            Add
+          </button>
+        </div>
+
+        <!-- Add bookmark form -->
+        <Transition name="expand-bm">
+          <div v-if="showAddBookmark" class="bm-add-form">
+            <div class="bm-add-time">{{ formatTime(player.currentTime) }}</div>
+            <input
+              v-model="newBookmarkTitle"
+              class="bm-add-input"
+              placeholder="Bookmark name…"
+              @keydown.enter="saveNewBookmark"
+            />
+            <div class="bm-add-actions">
+              <button class="bm-cancel" @click="showAddBookmark = false">Cancel</button>
+              <button class="bm-save" @click="saveNewBookmark" :disabled="!newBookmarkTitle.trim()">Save</button>
+            </div>
+          </div>
+        </Transition>
+
+        <!-- Bookmark list -->
+        <div v-if="itemBookmarks.length" class="bm-list">
+          <div v-for="bm in itemBookmarks" :key="bm.time" class="bm-row" @click="jumpToBookmark(bm.time)">
+            <v-icon size="14" color="rgba(212,160,23,0.7)">mdi-bookmark</v-icon>
+            <span class="bm-row-title">{{ bm.title }}</span>
+            <span class="bm-row-time">{{ formatTime(bm.time) }}</span>
+            <button class="bm-row-del" @click.stop="removeItemBookmark(bm.time)">
+              <v-icon size="13" color="rgba(255,255,255,0.2)">mdi-close</v-icon>
+            </button>
+          </div>
+        </div>
+        <div v-else-if="!showAddBookmark" class="bm-empty">
+          <v-icon size="28" color="rgba(255,255,255,0.1)">mdi-bookmark-outline</v-icon>
+          <p>No bookmarks for this item</p>
+        </div>
+      </div>
+    </v-bottom-sheet>
   </div>
 </template>
 
@@ -348,7 +395,8 @@ import { usePlayerStore } from '@/stores/player'
 import { useAuthStore } from '@/stores/auth'
 import { useSettingsStore } from '@/stores/settings'
 import { coverUrl } from '@/api/client'
-import { createBookmark } from '@/api/bookmarks'
+import { createBookmark, getBookmarks, deleteBookmark } from '@/api/bookmarks'
+import type { Bookmark } from '@/api/bookmarks'
 import { useNotificationStore } from '@/stores/notifications'
 import BookDetailSheet from '@/components/sheets/BookDetailSheet.vue'
 import PodcastDetailSheet from '@/components/sheets/PodcastDetailSheet.vue'
@@ -372,6 +420,10 @@ const queueDragOver    = ref(-1)
 const queueListEl      = ref<HTMLElement | null>(null)
 const showItemDetail   = ref(false)
 const showEq           = ref(false)
+const showBookmarkSheet = ref(false)
+const showAddBookmark  = ref(false)
+const newBookmarkTitle = ref('')
+const itemBookmarks    = ref<Bookmark[]>([])
 const sleepCustomMins  = ref(parseInt(localStorage.getItem('abs_sleep_custom') ?? '45'))
 const sleepCustomActive = ref(false)
 const scrubberEl      = ref<HTMLElement | null>(null)
@@ -567,13 +619,33 @@ function setSleepEoc() { player.setSleepTimer(null, true); showSleepPicker.value
 const SPEEDS = [0.5, 0.6, 0.75, 0.8, 1.0, 1.1, 1.25, 1.5, 1.75, 2.0, 2.5, 3.0]
 function setSpeed(rate: number) { player.setRate(rate); showSpeedPicker.value = false }
 
-async function addBookmark() {
+async function openBookmarkSheet() {
   if (!player.currentItem) return
-  const title = player.currentChapter?.title ?? formatTime(player.currentTime)
+  showBookmarkSheet.value = true
+  showAddBookmark.value = false
+  newBookmarkTitle.value = player.currentChapter?.title ?? formatTime(player.currentTime)
+  itemBookmarks.value = await getBookmarks(player.currentItem.id)
+}
+
+async function saveNewBookmark() {
+  if (!player.currentItem || !newBookmarkTitle.value.trim()) return
   try {
-    await createBookmark(player.currentItem.id, Math.floor(player.currentTime), title)
+    const bm = await createBookmark(player.currentItem.id, Math.floor(player.currentTime), newBookmarkTitle.value.trim())
+    itemBookmarks.value = [...itemBookmarks.value, bm].sort((a, b) => a.time - b.time)
+    showAddBookmark.value = false
     notify.show('Bookmark added', 'success')
   } catch { notify.show('Failed to add bookmark', 'error') }
+}
+
+function jumpToBookmark(time: number) {
+  player.seek(time)
+  showBookmarkSheet.value = false
+}
+
+async function removeItemBookmark(time: number) {
+  if (!player.currentItem) return
+  await deleteBookmark(player.currentItem.id, time).catch(() => {})
+  itemBookmarks.value = itemBookmarks.value.filter(b => b.time !== time)
 }
 
 function formatTime(secs: number): string {
@@ -924,4 +996,56 @@ function queueDragEnd() {
 .backdrop-enter-active { transition: opacity 0.5s ease; position: absolute; inset: 0; }
 .backdrop-leave-active { transition: opacity 0.5s ease; position: absolute; inset: 0; }
 .backdrop-enter-from, .backdrop-leave-to { opacity: 0; }
+
+/* Bookmark sheet */
+.bm-sheet-content {
+  background: #1a1a1a; border-radius: 20px 20px 0 0;
+  padding: 12px 16px 40px; max-height: 70vh; overflow-y: auto;
+}
+.bm-sheet-header { display: flex; align-items: center; margin-bottom: 12px; }
+.bm-sheet-title { flex: 1; font-size: 15px; font-weight: 700; color: rgba(255,255,255,0.9); margin: 0; }
+.bm-sheet-add-btn {
+  display: flex; align-items: center; gap: 4px;
+  background: rgba(212,160,23,0.12); border: 1px solid rgba(212,160,23,0.25);
+  border-radius: 8px; padding: 5px 10px; cursor: pointer;
+  font-size: 12px; font-weight: 600; color: #d4a017;
+}
+.bm-add-form {
+  background: rgba(255,255,255,0.04); border-radius: 12px;
+  padding: 12px; margin-bottom: 12px;
+}
+.bm-add-time {
+  font-size: 11px; font-weight: 700; color: #d4a017;
+  font-variant-numeric: tabular-nums; margin-bottom: 8px;
+}
+.bm-add-input {
+  width: 100%; background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.1); border-radius: 8px;
+  padding: 8px 10px; font-size: 13px; color: rgba(255,255,255,0.9);
+  outline: none; box-sizing: border-box;
+}
+.bm-add-input:focus { border-color: rgba(212,160,23,0.5); }
+.bm-add-actions { display: flex; gap: 8px; margin-top: 10px; }
+.bm-cancel, .bm-save {
+  flex: 1; padding: 8px; border: none; border-radius: 8px;
+  font-size: 13px; font-weight: 600; cursor: pointer;
+}
+.bm-cancel { background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.6); }
+.bm-save { background: #d4a017; color: #111; }
+.bm-save:disabled { opacity: 0.4; cursor: default; }
+
+.bm-list { display: flex; flex-direction: column; }
+.bm-row {
+  display: flex; align-items: center; gap: 8px;
+  padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.05);
+  cursor: pointer;
+}
+.bm-row:last-child { border-bottom: none; }
+.bm-row-title { flex: 1; font-size: 12px; color: rgba(255,255,255,0.7); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.bm-row-time { font-size: 11px; font-weight: 600; color: #d4a017; font-variant-numeric: tabular-nums; flex-shrink: 0; }
+.bm-row-del { background: transparent; border: none; cursor: pointer; padding: 4px; flex-shrink: 0; }
+.bm-empty { text-align: center; padding: 24px 0; color: rgba(255,255,255,0.3); font-size: 12px; display: flex; flex-direction: column; align-items: center; gap: 8px; }
+
+.expand-bm-enter-active, .expand-bm-leave-active { transition: max-height 0.2s ease, opacity 0.2s; overflow: hidden; max-height: 200px; }
+.expand-bm-enter-from, .expand-bm-leave-to { max-height: 0; opacity: 0; }
 </style>
