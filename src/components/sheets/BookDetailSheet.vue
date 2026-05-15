@@ -77,11 +77,32 @@
               <span v-for="g in (item.media.metadata.genres ?? []).slice(0, 4)" :key="g" class="chip">{{ g }}</span>
             </div>
 
-            <!-- Download button -->
-            <button class="download-btn" @click="onDownload">
-              <v-icon size="16">mdi-download-outline</v-icon>
-              Download
-            </button>
+            <!-- Action row -->
+            <div class="action-row">
+              <button class="action-btn" @click="onDownload">
+                <v-icon size="16">mdi-download-outline</v-icon>
+                Download
+              </button>
+              <button class="action-btn" @click="showPlaylistAdd = true">
+                <v-icon size="16">mdi-playlist-plus</v-icon>
+                Playlist
+              </button>
+            </div>
+
+            <!-- Playlist picker -->
+            <div v-if="showPlaylistAdd" class="playlist-inline">
+              <p class="playlist-inline-title">Add to playlist</p>
+              <div v-if="loadingPls" class="pls-loading">Loading…</div>
+              <div v-else class="pls-list">
+                <button v-for="pl in playlists" :key="pl.id" class="pls-row" @click="addToPlaylist(pl.id)">
+                  <v-icon size="14" color="rgba(255,255,255,0.5)">mdi-playlist-music</v-icon>
+                  <span>{{ pl.name }}</span>
+                  <span class="pls-count">{{ pl.items.length }}</span>
+                </button>
+                <p v-if="!playlists.length" class="pls-empty">No playlists — create one in the Playlists tab</p>
+              </div>
+              <button class="pls-cancel" @click="showPlaylistAdd = false">Cancel</button>
+            </div>
 
             <!-- Description -->
             <div v-if="item.media.metadata.description" class="sheet-desc-wrap">
@@ -128,6 +149,8 @@ import SeriesDetailSheet from '@/components/sheets/SeriesDetailSheet.vue'
 import AuthorDetailSheet from '@/components/sheets/AuthorDetailSheet.vue'
 import { getDirectDownloadUrl } from '@/api/downloads'
 import { getBaseUrl } from '@/api/client'
+import { getPlaylists, addItemToPlaylist } from '@/api/playlists'
+import type { Playlist } from '@/api/playlists'
 import type { LibraryItem, Series, Author } from '@/api/types'
 
 const props = defineProps<{
@@ -151,6 +174,9 @@ const activeSeriesId   = ref('')
 const activeSeriesName = ref('')
 const activeAuthorId   = ref('')
 const activeAuthorName = ref('')
+const showPlaylistAdd = ref(false)
+const playlists       = ref<Playlist[]>([])
+const loadingPls      = ref(false)
 
 function openSeries(s: Series) {
   activeSeriesId.value   = s.id
@@ -221,7 +247,22 @@ const durationLabel = computed(() => {
 
 const progress = computed(() => props.item.userMediaProgress?.progress ?? 0)
 
-watch(() => props.show, (v) => { if (v) descExpanded.value = false })
+watch(() => props.show, (v) => {
+  if (v) { descExpanded.value = false; showPlaylistAdd.value = false }
+})
+
+watch(showPlaylistAdd, async (v) => {
+  if (!v || playlists.value.length) return
+  loadingPls.value = true
+  try { playlists.value = await getPlaylists() }
+  catch { playlists.value = [] }
+  finally { loadingPls.value = false }
+})
+
+async function addToPlaylist(playlistId: string) {
+  await addItemToPlaylist(playlistId, props.item.id).catch(() => {})
+  showPlaylistAdd.value = false
+}
 </script>
 
 <style scoped>
@@ -307,10 +348,33 @@ watch(() => props.show, (v) => { if (v) descExpanded.value = false })
   border: 1px solid rgba(255,255,255,0.08); border-radius: 20px;
   padding: 3px 10px; cursor: pointer;
 }
-.download-btn {
-  display: flex; align-items: center; justify-content: center; gap: 6px;
-  font-size: 12px; color: rgba(255,255,255,0.5); background: transparent;
-  border: none; cursor: pointer; padding: 6px 0; margin-bottom: 8px;
+.action-row {
+  display: flex; gap: 8px; margin: 4px 0 12px;
+}
+.action-btn {
+  flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px;
+  font-size: 11px; color: rgba(255,255,255,0.5); background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.08); border-radius: 10px;
+  cursor: pointer; padding: 8px 4px;
+}
+.playlist-inline {
+  background: rgba(255,255,255,0.04); border-radius: 10px;
+  padding: 12px; margin-bottom: 12px; border: 1px solid rgba(255,255,255,0.07);
+}
+.playlist-inline-title { font-size: 11px; font-weight: 600; color: rgba(255,255,255,0.4); margin: 0 0 8px; text-transform: uppercase; letter-spacing: 0.5px; }
+.pls-loading { font-size: 12px; color: rgba(255,255,255,0.3); padding: 8px 0; }
+.pls-list { display: flex; flex-direction: column; }
+.pls-row {
+  display: flex; align-items: center; gap: 8px; padding: 9px 4px;
+  border-bottom: 1px solid rgba(255,255,255,0.05); background: transparent;
+  border-left: none; border-right: none; border-top: none;
+  cursor: pointer; color: rgba(255,255,255,0.75); font-size: 13px; text-align: left;
+}
+.pls-count { font-size: 11px; color: rgba(255,255,255,0.3); margin-left: auto; }
+.pls-empty { font-size: 11px; color: rgba(255,255,255,0.25); padding: 8px 0; text-align: center; }
+.pls-cancel {
+  margin-top: 10px; width: 100%; font-size: 12px; padding: 8px;
+  background: transparent; border: none; cursor: pointer; color: rgba(255,255,255,0.35);
 }
 .read-btn {
   display: flex; align-items: center; justify-content: center; gap: 8px;
