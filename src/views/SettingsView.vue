@@ -649,6 +649,11 @@
             </div>
             <v-icon size="14" color="rgba(255,255,255,0.2)">mdi-chevron-right</v-icon>
           </div>
+          <div v-if="serverVersion" class="settings-item settings-item--info">
+            <v-icon size="18" color="rgba(255,255,255,0.3)">mdi-server-outline</v-icon>
+            <span class="item-label">Server version</span>
+            <span class="item-value-badge">{{ serverVersion }}</span>
+          </div>
         </div>
       </Transition>
     </section>
@@ -676,6 +681,42 @@
             <v-icon size="18" color="rgba(255,255,255,0.3)">mdi-note-outline</v-icon>
             <span class="item-label" style="color:rgba(255,255,255,0.35)">Notes (per-book, stored locally)</span>
             <span class="item-value" style="font-size:11px">{{ noteCount }} books</span>
+          </div>
+        </div>
+      </Transition>
+    </section>
+
+    <!-- Downloads (admin only) -->
+    <section v-if="auth.isAdmin" class="settings-section">
+      <button class="section-toggle" @click="toggle('downloads')">
+        <span class="section-toggle-title">Downloads</span>
+        <v-icon class="section-chevron" :class="{ open: isOpen('downloads') }" size="16" color="rgba(255,255,255,0.3)">mdi-chevron-down</v-icon>
+      </button>
+
+      <Transition name="sect" @enter="onEnter" @after-enter="onAfterEnter" @leave="onLeave">
+        <div v-if="isOpen('downloads')">
+          <div v-if="downloadsLoading" class="settings-item">
+            <span class="item-label" style="color:rgba(255,255,255,0.3)">Loading…</span>
+          </div>
+          <div v-else-if="!downloads.length" class="settings-item">
+            <v-icon size="18" color="rgba(255,255,255,0.2)">mdi-download-off</v-icon>
+            <span class="item-label" style="color:rgba(255,255,255,0.4)">No active downloads</span>
+          </div>
+          <div v-else>
+            <div v-for="d in downloads" :key="d.id" class="settings-item">
+              <v-icon size="18" color="rgba(212,160,23,0.6)">mdi-download</v-icon>
+              <div class="item-label-stack">
+                <span class="item-label">{{ d.filename }}</span>
+                <span class="item-sublabel">{{ formatDownloadSize(d.size) }}</span>
+              </div>
+              <button class="dl-delete-btn" @click="doDeleteDownload(d.id)">
+                <v-icon size="14">mdi-close</v-icon>
+              </button>
+            </div>
+          </div>
+          <div class="settings-item" style="cursor:pointer" @click="loadDownloads">
+            <v-icon size="18" color="rgba(255,255,255,0.3)">mdi-refresh</v-icon>
+            <span class="item-label">Refresh</span>
           </div>
         </div>
       </Transition>
@@ -796,7 +837,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { useLibraryStore } from '@/stores/library'
@@ -805,6 +846,8 @@ import { useEqualizerStore, EQ_BANDS, PRESETS } from '@/stores/equalizer'
 import { useSocketStore } from '@/stores/socket'
 import { useSettingsStore } from '@/stores/settings'
 import { updatePassword, updateUsername } from '@/api/auth'
+import { getServerInfo } from '@/api/admin/index'
+import { getDownloads, deleteDownload, type DownloadedItem } from '@/api/downloads'
 
 const router    = useRouter()
 const auth      = useAuthStore()
@@ -862,6 +905,10 @@ function toggleHideEbookOnly() {
   hideEbookOnly.value = !hideEbookOnly.value
   localStorage.setItem('abs_lib_hide_ebook', String(hideEbookOnly.value))
 }
+
+const serverVersion    = ref<string | null>(null)
+const downloads        = ref<DownloadedItem[]>([])
+const downloadsLoading = ref(false)
 
 const confirmLogout         = ref(false)
 const showClearCacheConfirm = ref(false)
@@ -1132,6 +1179,29 @@ async function doLogout() {
   auth.logout()
   router.push({ name: 'login' })
 }
+
+onMounted(async () => {
+  getServerInfo().then(info => { serverVersion.value = info.version !== '—' ? info.version : null })
+})
+
+async function loadDownloads() {
+  downloadsLoading.value = true
+  try { downloads.value = await getDownloads() } catch { /* ignore */ }
+  finally { downloadsLoading.value = false }
+}
+
+function formatDownloadSize(bytes: number) {
+  if (!bytes) return ''
+  if (bytes > 1e9) return `${(bytes / 1e9).toFixed(1)} GB`
+  return `${(bytes / 1e6).toFixed(0)} MB`
+}
+
+async function doDeleteDownload(id: string) {
+  try {
+    await deleteDownload(id)
+    downloads.value = downloads.value.filter(d => d.id !== id)
+  } catch { /* ignore */ }
+}
 </script>
 
 <style scoped>
@@ -1332,4 +1402,15 @@ async function doLogout() {
 .eq-reset-btn:hover { background: rgba(255,255,255,0.08); }
 
 .volume-slider { width: 100px; accent-color: #d4a017; cursor: pointer; }
+
+.settings-item--info { cursor: default; }
+.item-value-badge {
+  font-size: 11px; padding: 3px 8px; border-radius: 8px;
+  background: rgba(212,160,23,0.12); color: #d4a017; font-weight: 600; flex-shrink: 0;
+}
+.dl-delete-btn {
+  width: 24px; height: 24px; border-radius: 50%; background: rgba(239,68,68,0.1);
+  border: none; cursor: pointer; color: rgba(239,68,68,0.6); flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+}
 </style>
