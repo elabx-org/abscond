@@ -15,15 +15,15 @@ export async function getBookmarks(itemId: string): Promise<Bookmark[]> {
 }
 
 export async function createBookmark(itemId: string, time: number, title: string): Promise<Bookmark> {
-  const res = await api.post(`/me/item/${itemId}/bookmark`, { time, title })
+  const res = await api.post(`/me/item/${itemId}/bookmarks`, { time, title })
   return res.data
 }
 
 export async function updateBookmark(itemId: string, time: number, title: string): Promise<Bookmark> {
-  const res = await api.post(`/me/item/${itemId}/bookmark`, { time, title })
+  const res = await api.patch(`/me/item/${itemId}/bookmarks/${time}`, { title })
   return res.data
 }
 
 export async function deleteBookmark(itemId: string, time: number): Promise<void> {
-  await api.delete(`/me/item/${itemId}/bookmark/${time}`)
+  await api.delete(`/me/item/${itemId}/bookmarks/${time}`)
 }

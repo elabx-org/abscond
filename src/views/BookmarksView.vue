@@ -332,8 +332,8 @@ async function load() {
   if (!lib.activeLibraryId) return
   loading.value = true
   try {
-    const res = await api.get('/me/bookmarks')
-    const allBookmarks: Array<Bookmark & { libraryItemId: string }> = res.data ?? []
+    const res = await api.get('/me')
+    const allBookmarks: Array<Bookmark & { libraryItemId: string }> = res.data?.bookmarks ?? []
 
     const byItem: Record<string, Array<Bookmark & { libraryItemId: string }>> = {}
     for (const bm of allBookmarks) {
