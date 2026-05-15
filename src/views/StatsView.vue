@@ -7,23 +7,30 @@
     </div>
 
     <template v-else>
-      <!-- Summary cards -->
-      <div class="stat-cards">
-        <div class="stat-card">
-          <p class="stat-value">{{ totalHours }}<span class="stat-unit">h</span></p>
-          <p class="stat-label">Total listening</p>
+      <!-- Hero stat -->
+      <div class="hero-stat">
+        <p class="hero-value">{{ totalHoursDecimal }}<span class="hero-unit">h</span></p>
+        <p class="hero-label">Total listening time</p>
+      </div>
+
+      <!-- Period + streak cards -->
+      <div class="period-cards">
+        <div class="period-card">
+          <p class="period-value">{{ thisWeekHours.toFixed(1) }}<span class="period-unit">h</span></p>
+          <p class="period-label">This week</p>
         </div>
-        <div class="stat-card">
-          <p class="stat-value">{{ totalBooksFinished }}</p>
-          <p class="stat-label">Books finished</p>
+        <div class="period-card">
+          <p class="period-value">{{ thisMonthHours.toFixed(1) }}<span class="period-unit">h</span></p>
+          <p class="period-label">This month</p>
         </div>
-        <div class="stat-card" v-if="libStats">
-          <p class="stat-value">{{ libStats.totalItems }}</p>
-          <p class="stat-label">Library items</p>
+        <div class="period-card">
+          <p class="period-value">{{ longestStreak }}</p>
+          <p class="period-label">Best streak</p>
+          <p class="period-sublabel">days</p>
         </div>
-        <div class="stat-card" v-if="libStats">
-          <p class="stat-value">{{ libStats.numAuthors }}</p>
-          <p class="stat-label">Authors</p>
+        <div class="period-card">
+          <p class="period-value">{{ totalBooksFinished }}</p>
+          <p class="period-label">Finished</p>
         </div>
       </div>
 
@@ -120,9 +127,54 @@ const libStats     = ref<LibraryStats | null>(null)
 const sessions     = ref<ListeningSession[]>([])
 const sessionTotal = ref(0)
 
-const totalHours = computed(() => {
+const totalHoursDecimal = computed(() => {
   const secs = userStats.value?.totalTime ?? userStats.value?.totalListeningTime ?? 0
-  return Math.round(secs / 3600)
+  return (secs / 3600).toFixed(1)
+})
+
+const _dayMap = computed(() =>
+  userStats.value?.days ?? userStats.value?.booksListeningStats?.days ?? {}
+)
+
+const thisWeekHours = computed(() => {
+  const map = _dayMap.value
+  let total = 0
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(Date.now() - i * 86400000)
+    const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+    total += (map[key] ?? 0) / 3600
+  }
+  return total
+})
+
+const thisMonthHours = computed(() => {
+  const map = _dayMap.value
+  let total = 0
+  for (let i = 0; i < 30; i++) {
+    const d = new Date(Date.now() - i * 86400000)
+    const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+    total += (map[key] ?? 0) / 3600
+  }
+  return total
+})
+
+const longestStreak = computed(() => {
+  const map = _dayMap.value
+  const keys = Object.keys(map).sort()
+  if (!keys.length) return 0
+  let longest = 0, current = 0
+  let prevDate: Date | null = null
+  for (const key of keys) {
+    if ((map[key] ?? 0) <= 0) { current = 0; prevDate = null; continue }
+    const d = new Date(key)
+    if (prevDate) {
+      const diffDays = Math.round((d.getTime() - prevDate.getTime()) / 86400000)
+      if (diffDays === 1) { current++ } else { current = 1 }
+    } else { current = 1 }
+    prevDate = d
+    if (current > longest) longest = current
+  }
+  return longest
 })
 
 const totalBooksFinished = computed(() =>
@@ -236,6 +288,29 @@ onMounted(async () => {
   background-size: 200% 100%; animation: shimmer 1.5s infinite;
 }
 @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
+.hero-stat {
+  text-align: center; padding: 24px 0 20px; margin-bottom: 4px;
+}
+.hero-value {
+  font-size: 56px; font-weight: 800; color: #d4a017; margin: 0; line-height: 1;
+}
+.hero-unit { font-size: 28px; }
+.hero-label {
+  font-size: 12px; color: rgba(255,255,255,0.4); margin: 6px 0 0; text-transform: uppercase; letter-spacing: 0.5px;
+}
+
+.period-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 24px; }
+.period-card {
+  background: #111; border-radius: 12px; border: 1px solid rgba(255,255,255,0.06);
+  padding: 14px 16px; display: flex; flex-direction: column;
+}
+.period-value {
+  font-size: 26px; font-weight: 700; color: rgba(255,255,255,0.9); margin: 0 0 2px; line-height: 1;
+}
+.period-unit { font-size: 14px; color: rgba(255,255,255,0.6); }
+.period-label { font-size: 11px; color: rgba(255,255,255,0.4); margin: 0; }
+.period-sublabel { font-size: 10px; color: rgba(255,255,255,0.25); margin: 0; }
 
 .stat-cards { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 24px; }
 .stat-card {
