@@ -44,20 +44,21 @@
       </div>
       <div class="h-scroll">
         <template v-if="loadingProgress">
-          <div v-for="n in 4" :key="n" class="h-card-skeleton">
-            <div class="skeleton-cover" /><div class="skeleton-line short" />
+          <div v-for="n in 4" :key="n" class="h-card-skeleton h-card-skeleton--lg">
+            <div class="skeleton-cover skeleton-cover--lg" /><div class="skeleton-line short" /><div class="skeleton-line" style="width:60%" />
           </div>
         </template>
         <PortraitCard
           v-else
           v-for="item in progress.inProgress"
           :key="item.id"
-          class="h-card"
+          class="h-card h-card--lg"
           :item-id="item.id"
           :title="item.media.metadata.title"
           :author="getAuthorDisplay(item) || 'Unknown'"
           :cover-src="coverUrl(item.id, auth.token ?? '')"
           :progress="item.userMediaProgress?.progress ?? 0"
+          :duration="item.media.duration"
           @click="openDetail(item)"
           @long-press="openQuick(item)"
         />
@@ -434,8 +435,11 @@ watch(() => lib.activeLibraryId, async (id) => {
 .h-scroll { display: flex; gap: 10px; overflow-x: auto; scrollbar-width: none; padding-bottom: 4px; }
 .h-scroll::-webkit-scrollbar { display: none; }
 .h-card { width: 120px; flex-shrink: 0; }
+.h-card--lg { width: 150px; }
 .h-card-skeleton { width: 120px; flex-shrink: 0; display: flex; flex-direction: column; gap: 6px; }
+.h-card-skeleton--lg { width: 150px; }
 .skeleton-cover { width: 120px; height: 120px; border-radius: 8px; background: linear-gradient(90deg, #1a1a1a 25%, #222 50%, #1a1a1a 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; }
+.skeleton-cover--lg { width: 150px; height: 150px; }
 .skeleton-line { height: 10px; border-radius: 4px; background: #1a1a1a; animation: shimmer 1.5s infinite; }
 .skeleton-line.short { width: 70%; }
 @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }

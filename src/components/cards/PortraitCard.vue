@@ -35,11 +35,12 @@
     </div>
     <p class="card-title">{{ title }}</p>
     <p class="card-author">{{ author }}</p>
+    <p v-if="progressLabel" class="card-progress-label">{{ progressLabel }}</p>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { useColorThief } from '@/composables/useColorThief'
 
 const props = defineProps<{
@@ -48,9 +49,21 @@ const props = defineProps<{
   author: string
   coverSrc: string
   progress?: number
+  duration?: number
   selected?: boolean
   selectMode?: boolean
 }>()
+
+const progressLabel = computed(() => {
+  const p = props.progress ?? 0
+  if (!props.duration || p <= 0 || p >= 1) return ''
+  const pct = Math.round(p * 100)
+  const remaining = props.duration * (1 - p)
+  const h = Math.floor(remaining / 3600)
+  const m = Math.floor((remaining % 3600) / 60)
+  const timeStr = h > 0 ? `${h}h ${m}m` : `${m}m`
+  return `${pct}% · ${timeStr} left`
+})
 
 const emit = defineEmits<{
   click: [itemId: string]
@@ -99,4 +112,5 @@ function cancelLongPress() {
 .check-enter-from, .check-leave-to { opacity: 0; }
 .card-title { font-size: 11px; font-weight: 700; color: rgba(255,255,255,0.9); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.3; margin: 0; }
 .card-author { font-size: 10px; color: rgba(255,255,255,0.4); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin: 0; }
+.card-progress-label { font-size: 9px; color: rgba(255,255,255,0.5); margin: 1px 0 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 </style>
