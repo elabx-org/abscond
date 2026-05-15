@@ -1,6 +1,7 @@
 import { createVuetify, type ThemeDefinition } from 'vuetify'
 import 'vuetify/styles'
 import '@mdi/font/css/materialdesignicons.css'
+import '@/styles/global.css'
 
 export const abscondTheme: ThemeDefinition = {
   dark: true,
