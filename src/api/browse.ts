@@ -86,3 +86,23 @@ export async function getLibraryAuthors(libraryId: string): Promise<AuthorDetail
   const res = await api.get(`/libraries/${libraryId}/authors`, { params: { limit: 500 } })
   return res.data.authors ?? []
 }
+
+export interface PersonalizedShelf {
+  id: string
+  label: string
+  type: string
+  entities: LibraryItem[]
+}
+
+export async function getPersonalizedShelves(libraryId: string): Promise<PersonalizedShelf[]> {
+  try {
+    const res = await api.get(`/libraries/${libraryId}/personalized`, {
+      params: { minified: 1, include: 'numEpisodesIncomplete' },
+    })
+    const data = res.data
+    if (Array.isArray(data)) return data
+    if (data?.shelves) return data.shelves
+    if (data?.results) return data.results
+  } catch {}
+  return []
+}

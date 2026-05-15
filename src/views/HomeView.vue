@@ -150,6 +150,27 @@
       </div>
     </section>
 
+    <!-- Dynamic personalized sections (series, newest episodes, etc.) -->
+    <section v-for="shelf in extraShelves" :key="shelf.id" class="section">
+      <div class="section-header">
+        <v-icon size="16" color="rgba(255,255,255,0.35)">{{ shelfIcon(shelf.id, shelf.type) }}</v-icon>
+        <span class="section-label">{{ shelf.label }}</span>
+      </div>
+      <div class="h-scroll">
+        <PortraitCard
+          v-for="item in shelf.entities"
+          :key="item.id"
+          class="h-card"
+          :item-id="item.id"
+          :title="getShelfItemTitle(item)"
+          :author="getShelfItemAuthor(item)"
+          :cover-src="coverUrl(item.id, auth.token ?? '')"
+          :progress="item.userMediaProgress?.progress ?? 0"
+          @click="openDetail(item)"
+        />
+      </div>
+    </section>
+
     <!-- Book detail sheet -->
     <BookDetailSheet
       v-if="selectedItem && selectedItem.mediaType !== 'podcast'"
@@ -211,7 +232,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from 'vue'
+import { onMounted, ref, computed, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useProgressStore } from '@/stores/progress'
 import { useLibraryStore } from '@/stores/library'
@@ -219,6 +240,8 @@ import { useAuthStore } from '@/stores/auth'
 import { usePlayerStore } from '@/stores/player'
 import { useNotificationStore } from '@/stores/notifications'
 import { coverUrl, api } from '@/api/client'
+import { getPersonalizedShelves } from '@/api/browse'
+import type { PersonalizedShelf } from '@/api/browse'
 import PortraitCard from '@/components/cards/PortraitCard.vue'
 import ContinueListeningCard from '@/components/cards/ContinueListeningCard.vue'
 import BookDetailSheet from '@/components/sheets/BookDetailSheet.vue'
@@ -242,6 +265,31 @@ const loadingProgress    = ref(false)
 const loadingRecent      = ref(false)
 const loadingFinished    = ref(false)
 const loadingDiscover    = ref(false)
+const allShelves         = ref<PersonalizedShelf[]>([])
+
+const BUILT_IN_SHELF_IDS = new Set(['continue-listening', 'recently-added', 'listen-again', 'downloaded-books'])
+const extraShelves = computed(() => allShelves.value.filter(s => !BUILT_IN_SHELF_IDS.has(s.id) && s.entities?.length > 0))
+
+function shelfIcon(id: string, type: string): string {
+  if (id.includes('series'))   return 'mdi-bookshelf'
+  if (id.includes('author'))   return 'mdi-account-music-outline'
+  if (id.includes('episode') || type === 'episode') return 'mdi-rss'
+  if (id.includes('recommend')) return 'mdi-star-outline'
+  return 'mdi-view-grid-outline'
+}
+
+function getShelfItemTitle(item: LibraryItem): string {
+  const ep = (item as unknown as Record<string, unknown>).recentEpisode as Record<string, unknown> | undefined
+  return (ep?.title as string) || item.media.metadata.title
+}
+
+function getShelfItemAuthor(item: LibraryItem): string {
+  return getAuthorDisplay(item) || 'Unknown'
+}
+
+async function fetchExtraShelves(libraryId: string) {
+  allShelves.value = await getPersonalizedShelves(libraryId)
+}
 const showPlaylistPicker = ref(false)
 const playlists          = ref<Playlist[]>([])
 const loadingPlaylists   = ref(false)
@@ -269,6 +317,7 @@ async function onTouchEnd() {
       progress.fetchRecentlyAdded(lib.activeLibraryId),
       progress.fetchRecentlyFinished(lib.activeLibraryId),
       progress.fetchDiscover(lib.activeLibraryId),
+      fetchExtraShelves(lib.activeLibraryId),
     ])
   } finally {
     ptr.value.refreshing = false
@@ -390,6 +439,9 @@ onMounted(async () => {
     lib.activeLibraryId
       ? progress.fetchDiscover(lib.activeLibraryId).finally(() => { loadingDiscover.value = false })
       : Promise.resolve().then(() => { loadingDiscover.value = false }),
+    lib.activeLibraryId
+      ? fetchExtraShelves(lib.activeLibraryId)
+      : Promise.resolve(),
   ])
 })
 
@@ -402,6 +454,7 @@ watch(() => lib.activeLibraryId, async (id) => {
     progress.fetchRecentlyAdded(id).finally(() => { loadingRecent.value = false }),
     progress.fetchRecentlyFinished(id).finally(() => { loadingFinished.value = false }),
     progress.fetchDiscover(id).finally(() => { loadingDiscover.value = false }),
+    fetchExtraShelves(id),
   ])
 })
 </script>
