@@ -169,6 +169,43 @@
 
     <!-- Infinite scroll sentinel -->
     <div ref="sentinelEl" class="scroll-sentinel" />
+
+    <!-- Cross-tab search results when query is active -->
+    <template v-if="searchQuery.trim().length >= 2">
+      <div v-if="searchMatchedSeries.length" class="search-group">
+        <p class="search-group-label">Series</p>
+        <div class="search-group-rows">
+          <div
+            v-for="s in searchMatchedSeries"
+            :key="s.id"
+            class="search-row"
+            @click="activeSeries = s; viewMode = 'series'"
+          >
+            <div class="search-row-icon"><v-icon size="16" color="rgba(255,255,255,0.4)">mdi-book-open-page-variant</v-icon></div>
+            <div class="search-row-meta">
+              <p class="search-row-title">{{ s.name }}</p>
+              <p class="search-row-sub">{{ (s as Record<string, unknown>).numBooks ?? 0 }} books</p>
+            </div>
+            <v-icon size="14" color="rgba(255,255,255,0.2)">mdi-chevron-right</v-icon>
+          </div>
+        </div>
+      </div>
+      <div v-if="searchMatchedAuthors.length" class="search-group">
+        <p class="search-group-label">Authors</p>
+        <div class="search-group-rows">
+          <div
+            v-for="a in searchMatchedAuthors"
+            :key="a.id"
+            class="search-row"
+            @click="activeAuthor = a"
+          >
+            <div class="search-row-icon"><v-icon size="16" color="rgba(255,255,255,0.4)">mdi-account-outline</v-icon></div>
+            <p class="search-row-title">{{ a.name }}</p>
+            <v-icon size="14" color="rgba(255,255,255,0.2)">mdi-chevron-right</v-icon>
+          </div>
+        </div>
+      </div>
+    </template>
     </template>
 
     <!-- Series view -->
@@ -496,6 +533,18 @@ const filteredAuthors = computed(() => {
 const filteredNarrators = computed(() => {
   const q = narratorSearch.value.toLowerCase()
   return q ? narratorsList.value.filter(n => n.toLowerCase().includes(q)) : narratorsList.value
+})
+
+const searchMatchedSeries = computed(() => {
+  const q = searchQuery.value.trim().toLowerCase()
+  if (q.length < 2) return []
+  return seriesList.value.filter(s => s.name.toLowerCase().includes(q)).slice(0, 5)
+})
+
+const searchMatchedAuthors = computed(() => {
+  const q = searchQuery.value.trim().toLowerCase()
+  if (q.length < 2) return []
+  return authorsList.value.filter(a => a.name.toLowerCase().includes(q)).slice(0, 5)
 })
 
 function authorImageUrl(authorId: string): string {
@@ -835,6 +884,26 @@ watch(() => lib.activeLibraryId, (id) => {
   authorsList.value    = []
   narratorsList.value  = []
 })
+
+watch(searchQuery, (q) => {
+  // Lazy-load series+authors for cross-tab search results
+  if (q.trim().length >= 2 && lib.activeLibraryId) {
+    if (!seriesList.value.length && !loadingSeries.value) {
+      loadingSeries.value = true
+      getLibrarySeriesList(lib.activeLibraryId)
+        .then(r => { seriesList.value = r })
+        .catch(() => {})
+        .finally(() => { loadingSeries.value = false })
+    }
+    if (!authorsList.value.length && !loadingAuthors.value) {
+      loadingAuthors.value = true
+      getLibraryAuthors(lib.activeLibraryId)
+        .then(r => { authorsList.value = r })
+        .catch(() => {})
+        .finally(() => { loadingAuthors.value = false })
+    }
+  }
+})
 </script>
 
 <style scoped>
@@ -894,6 +963,28 @@ watch(() => lib.activeLibraryId, (id) => {
 .lib-search-clear { background: transparent; border: none; cursor: pointer; color: rgba(255,255,255,0.3); padding: 0; }
 
 .scroll-sentinel { height: 1px; }
+
+.search-group { margin-top: 16px; }
+.search-group-label {
+  font-size: 10px; font-weight: 600; color: rgba(255,255,255,0.3);
+  text-transform: uppercase; letter-spacing: 0.5px; margin: 0 0 8px;
+}
+.search-group-rows {
+  background: #111; border-radius: 10px; border: 1px solid rgba(255,255,255,0.06);
+}
+.search-row {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 12px; border-bottom: 1px solid rgba(255,255,255,0.04);
+  cursor: pointer;
+}
+.search-row:last-child { border-bottom: none; }
+.search-row-icon { flex-shrink: 0; }
+.search-row-meta { flex: 1; min-width: 0; }
+.search-row-title {
+  font-size: 13px; font-weight: 600; color: rgba(255,255,255,0.85);
+  margin: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.search-row-sub { font-size: 10px; color: rgba(255,255,255,0.3); margin: 0; }
 
 .grid {
   display: grid;
