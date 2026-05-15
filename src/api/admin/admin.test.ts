@@ -10,6 +10,7 @@ import {
   testNotification,
   downloadPodcastEpisode,
   deletePodcastEpisode,
+  checkNewPodcastEpisodes,
 } from './index'
 
 vi.mock('@/api/client', () => ({
@@ -97,5 +98,30 @@ describe('deletePodcastEpisode', () => {
     vi.mocked(api.delete).mockResolvedValueOnce({ data: {} })
     await deletePodcastEpisode('item1', 'ep1')
     expect(api.delete).toHaveBeenCalledWith('/podcasts/item1/episodes/ep1', { params: { hard: 0 } })
+  })
+})
+
+describe('updateNotificationSettings', () => {
+  it('PATCHes notification settings', async () => {
+    vi.mocked(api.patch).mockResolvedValueOnce({ data: {} })
+    await updateNotificationSettings({ appriseApiUrl: 'http://new' })
+    expect(api.patch).toHaveBeenCalledWith('/notificationSettings', { appriseApiUrl: 'http://new' })
+  })
+})
+
+describe('patchNotification', () => {
+  it('PATCHes a notification event', async () => {
+    vi.mocked(api.patch).mockResolvedValueOnce({ data: {} })
+    await patchNotification('n1', { enabled: false })
+    expect(api.patch).toHaveBeenCalledWith('/notifications/n1', { enabled: false })
+  })
+})
+
+describe('checkNewPodcastEpisodes', () => {
+  it('GETs checknew endpoint and returns count', async () => {
+    vi.mocked(api.get).mockResolvedValueOnce({ data: { newEpisodesFound: 3 } })
+    const count = await checkNewPodcastEpisodes('pod1')
+    expect(api.get).toHaveBeenCalledWith('/podcasts/pod1/checknew')
+    expect(count).toBe(3)
   })
 })
