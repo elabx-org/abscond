@@ -179,7 +179,7 @@
               <span v-if="player.sleepMinsLeft !== null" class="util-badge sleep-countdown" style="position:relative;z-index:1">{{ sleepCountdownLabel }}</span>
               <span v-else-if="player.sleepEndOfChapter" class="util-badge" style="position:relative;z-index:1">ch</span>
             </button>
-            <button class="util-btn" :class="{ active: showChapters }" @click="showChapters = !showChapters; showQueue = false; showSleepPicker = false; showSpeedPicker = false">
+            <button class="util-btn" :class="{ active: showChapters }" @click="showChapters = !showChapters; if (!showChapters) chapterSearch = ''; showQueue = false; showSleepPicker = false; showSpeedPicker = false">
               <v-icon size="18">mdi-format-list-bulleted</v-icon>
             </button>
             <button class="util-btn" :class="{ active: showQueue || player.queue.length > 0 }" @click="showQueue = !showQueue; showChapters = false; showSleepPicker = false; showSpeedPicker = false">
@@ -271,10 +271,20 @@
           <!-- Chapters panel -->
           <Transition name="panel">
             <div v-if="showChapters && chapters.length" class="panel-box chapters-panel">
-              <p class="panel-title">Chapters</p>
+              <div class="chapters-panel-header">
+                <span class="panel-title" style="margin:0">Chapters</span>
+                <span class="chapters-count">{{ filteredChapters.length }}/{{ chapters.length }}</span>
+              </div>
+              <div v-if="chapters.length > 8" class="chapter-search-wrap">
+                <v-icon size="13" color="rgba(255,255,255,0.3)">mdi-magnify</v-icon>
+                <input v-model="chapterSearch" class="chapter-search-input" placeholder="Search chapters…" />
+                <button v-if="chapterSearch" class="chapter-search-clear" @click="chapterSearch = ''">
+                  <v-icon size="11">mdi-close</v-icon>
+                </button>
+              </div>
               <div class="chapters-list">
                 <div
-                  v-for="ch in chapters" :key="ch.id"
+                  v-for="ch in filteredChapters" :key="ch.id"
                   class="chapter-item" :class="{ active: player.currentChapter?.id === ch.id }"
                   @click="player.seek(ch.start)"
                 >
@@ -284,6 +294,7 @@
                   <span class="chapter-item-name">{{ ch.title }}</span>
                   <span class="chapter-item-time">{{ formatTime(ch.start) }}</span>
                 </div>
+                <p v-if="!filteredChapters.length" class="chapters-no-match">No chapters match</p>
               </div>
             </div>
           </Transition>
@@ -337,6 +348,7 @@ const notify = useNotificationStore()
 const eq = useEqualizerStore()
 
 const showChapters     = ref(false)
+const chapterSearch    = ref('')
 const showSleepPicker  = ref(false)
 const showSpeedPicker  = ref(false)
 const showQueue        = ref(false)
@@ -451,6 +463,11 @@ function switchToItem(item: LibraryItem) {
 
 // ── Chapters / progress ───────────────────────────────────────────────────────
 const chapters = computed(() => player.session?.chapters ?? [])
+const filteredChapters = computed(() => {
+  const q = chapterSearch.value.trim().toLowerCase()
+  if (!q) return chapters.value
+  return chapters.value.filter(ch => ch.title.toLowerCase().includes(q))
+})
 
 const prevChapter = computed(() => {
   const chs = chapters.value
@@ -804,8 +821,22 @@ function onChapterBarClick(e: MouseEvent) {
 .queue-item-del { background: transparent; border: none; cursor: pointer; padding: 4px; flex-shrink: 0; }
 
 /* Chapters panel */
-.chapters-panel { padding: 14px 0; }
-.chapters-list { max-height: 260px; overflow-y: auto; scrollbar-width: none; }
+.chapters-panel { padding: 14px 0 0; }
+.chapters-panel-header { display: flex; align-items: center; justify-content: space-between; padding: 0 16px 10px; }
+.chapters-count { font-size: 11px; color: rgba(255,255,255,0.25); }
+.chapter-search-wrap {
+  display: flex; align-items: center; gap: 8px;
+  margin: 0 16px 8px; padding: 6px 10px;
+  background: rgba(255,255,255,0.06); border-radius: 8px;
+}
+.chapter-search-input {
+  flex: 1; background: transparent; border: none; outline: none;
+  font-size: 12px; color: rgba(255,255,255,0.8);
+}
+.chapter-search-input::placeholder { color: rgba(255,255,255,0.25); }
+.chapter-search-clear { background: transparent; border: none; cursor: pointer; padding: 0; display: flex; align-items: center; color: rgba(255,255,255,0.3); }
+.chapters-no-match { font-size: 12px; color: rgba(255,255,255,0.25); padding: 12px 16px; }
+.chapters-list { max-height: 240px; overflow-y: auto; scrollbar-width: none; }
 .chapter-item {
   display: flex; align-items: center; gap: 10px;
   padding: 10px 16px; cursor: pointer; border-bottom: 1px solid rgba(255,255,255,0.04);
