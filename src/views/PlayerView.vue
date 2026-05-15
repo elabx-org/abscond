@@ -8,7 +8,7 @@
     </div>
 
     <!-- Player (active or recent-only) -->
-    <div v-else class="player-wrap">
+    <div v-else class="player-wrap" :class="{ 'scroll-locked': anyPanelOpen }">
       <!-- Edge book progress bar -->
       <div v-if="player.currentItem" class="edge-progress-bar">
         <div class="edge-progress-fill" :style="{ width: `${player.progress * 100}%` }" />
@@ -234,7 +234,7 @@
 
           <!-- Speed picker -->
           <Transition name="panel">
-            <div v-if="showSpeedPicker" class="panel-box">
+            <div v-if="showSpeedPicker" class="panel-box" @touchmove.stop>
               <div class="speed-header">
                 <button class="speed-step" @click="stepSpeed(-0.05)">−</button>
                 <div class="speed-current-wrap">
@@ -258,7 +258,7 @@
 
           <!-- Sleep picker -->
           <Transition name="panel">
-            <div v-if="showSleepPicker" class="panel-box">
+            <div v-if="showSleepPicker" class="panel-box" @touchmove.stop>
               <p class="panel-title">Sleep Timer</p>
               <div class="panel-opts">
                 <button v-for="m in [5, 10, 15, 20, 30, 45, 60]" :key="m"
@@ -298,7 +298,7 @@
 
           <!-- Queue panel -->
           <Transition name="panel">
-            <div v-if="showQueue" class="panel-box queue-panel">
+            <div v-if="showQueue" class="panel-box queue-panel" @touchmove.stop>
               <div class="queue-header">
                 <span class="panel-title" style="margin:0">Up Next</span>
                 <span class="queue-count">{{ player.queue.length }} items</span>
@@ -337,7 +337,7 @@
 
           <!-- Chapters panel -->
           <Transition name="panel">
-            <div v-if="showChapters" class="panel-box chapters-panel">
+            <div v-if="showChapters" class="panel-box chapters-panel" @touchmove.stop>
               <div class="chapters-panel-header">
                 <span class="panel-title" style="margin:0">Chapters</span>
                 <span class="chapters-count">{{ filteredChapters.length }}/{{ chapters.length }}</span>
@@ -906,6 +906,7 @@ function queueDragEnd() {
 /* ── Player wrap ─────────────────────────────────────────────────────────────── */
 .player-wrap { flex: 1; position: relative; overflow-x: hidden; overflow-y: auto; min-height: 100vh; scrollbar-width: none; }
 .player-wrap::-webkit-scrollbar { display: none; }
+.player-wrap.scroll-locked { overflow: hidden; touch-action: none; }
 
 /* Edge progress bar (thin strip at very top of player) */
 .edge-progress-bar {
@@ -929,7 +930,7 @@ function queueDragEnd() {
 }
 
 .player-content {
-  position: relative; z-index: 1;
+  position: relative;
   display: flex; flex-direction: column; align-items: center;
   padding: 20px 20px 48px;
 }
@@ -1048,7 +1049,7 @@ function queueDragEnd() {
   background: rgba(0,0,0,0.5); pointer-events: none; border-radius: 1px;
 }
 
-.time-row { display: flex; justify-content: space-between; align-items: center; margin-top: 2px; margin-bottom: 8px; }
+.time-row { display: flex; justify-content: space-between; align-items: center; margin-top: 2px; margin-bottom: 8px; width: 100%; }
 .time-label { font-size: 11px; color: rgba(255,255,255,0.4); }
 .time-label--tap { cursor: pointer; user-select: none; }
 .time-label--tap:active { color: rgba(255,255,255,0.7); }
@@ -1127,7 +1128,8 @@ function queueDragEnd() {
   padding: 14px 16px calc(16px + env(safe-area-inset-bottom, 0px));
   box-shadow: 0 -8px 32px rgba(0,0,0,0.6);
   max-height: 65vh; overflow-y: auto; scrollbar-width: none;
-  overscroll-behavior: contain;
+  overscroll-behavior: contain; -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;
 }
 .panel-box::-webkit-scrollbar { display: none; }
 @media (min-width: 768px) and (max-width: 1279px) {

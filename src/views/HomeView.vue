@@ -134,10 +134,11 @@
 
     <!-- Discover -->
     <section v-if="(progress.discover.length || loadingDiscover) && !isSectionHidden('discover')" class="section" :style="{ order: getSectionOrder('discover') }">
-      <div class="section-header">
+      <div class="section-header clickable" @click="sectionSheet = { title: 'Discover', icon: 'mdi-shuffle-variant', items: progress.discover }">
         <v-icon size="16" color="rgba(255,255,255,0.35)">mdi-shuffle-variant</v-icon>
         <span class="section-label">Discover</span>
-        <button class="refresh-btn" :disabled="loadingDiscover" @click="refreshDiscover">
+        <v-icon size="12" color="rgba(255,255,255,0.2)">mdi-chevron-right</v-icon>
+        <button class="refresh-btn" :disabled="loadingDiscover" @click.stop="refreshDiscover">
           <v-icon size="14" :class="{ spin: loadingDiscover }">mdi-refresh</v-icon>
         </button>
       </div>
@@ -350,7 +351,7 @@ const allSections = computed<HomeSection[]>(() => {
   return result
 })
 
-const BUILT_IN_SHELF_IDS = new Set(['continue-listening', 'recently-added', 'downloaded-books'])
+const BUILT_IN_SHELF_IDS = new Set(['continue-listening', 'recently-added', 'downloaded-books', 'discover'])
 
 const rectangleCovers = ref(localStorage.getItem('abs_lib_rect') === 'true')
 const hideEbookOnly = ref(localStorage.getItem('abs_lib_hide_ebook') === 'true')
