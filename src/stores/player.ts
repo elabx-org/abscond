@@ -34,6 +34,7 @@ export const usePlayerStore = defineStore('player', () => {
   let audio: HTMLAudioElement | null = null
   let syncTimer: ReturnType<typeof setInterval> | null = null
   let sleepTimer: ReturnType<typeof setTimeout> | null = null
+  let sleepCountdown: ReturnType<typeof setInterval> | null = null
   let syncedAt = 0
   let timeListenedAccum = 0
   let trackStartOffset = 0
@@ -242,8 +243,13 @@ export const usePlayerStore = defineStore('player', () => {
     if (audio) audio.volume = volume.value
   }
 
+  function _clearSleepTimers() {
+    if (sleepTimer)    { clearTimeout(sleepTimer);    sleepTimer    = null }
+    if (sleepCountdown){ clearInterval(sleepCountdown); sleepCountdown = null }
+  }
+
   function setSleepTimer(mins: number | null, endOfChapter = false) {
-    if (sleepTimer) { clearTimeout(sleepTimer); sleepTimer = null }
+    _clearSleepTimers()
     sleepEndOfChapter.value = false
     if (endOfChapter) {
       sleepEndOfChapter.value = true
@@ -253,16 +259,23 @@ export const usePlayerStore = defineStore('player', () => {
     sleepMinsLeft.value = mins
     if (mins && mins > 0) {
       sleepTimer = setTimeout(() => {
+        _clearSleepTimers()
         audio?.pause()
         sleepMinsLeft.value = null
         useNotificationStore().show('Sleep timer — playback paused', 'info')
       }, mins * 60 * 1000)
+      // Countdown tick every minute
+      sleepCountdown = setInterval(() => {
+        if (sleepMinsLeft.value !== null && sleepMinsLeft.value > 1) {
+          sleepMinsLeft.value--
+        }
+      }, 60_000)
     }
   }
 
   async function stop() {
     _stopSync()
-    if (sleepTimer) { clearTimeout(sleepTimer); sleepTimer = null }
+    _clearSleepTimers()
     if (session.value) { await _doSync(); await closeSession(session.value.id).catch(() => {}) }
     audio?.pause()
     audio = null
