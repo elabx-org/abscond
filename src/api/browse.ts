@@ -54,7 +54,7 @@ export async function getSeriesBooks(libraryId: string, seriesId: string): Promi
   const [seriesRes, itemsRes] = await Promise.all([
     api.get(`/series/${seriesId}`),
     api.get(`/libraries/${libraryId}/items`, {
-      params: { filter: `series.${btoa(seriesId)}`, limit: 500, include: 'progress' },
+      params: { filter: `series.${btoa(seriesId)}`, limit: 500, include: 'progress', collapseseries: 0 },
     }),
   ])
   return {
