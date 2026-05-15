@@ -89,6 +89,9 @@
 
           <!-- Overall scrubber -->
           <div class="scrubber-wrap" ref="scrubberEl" @pointerdown="startScrub" @pointermove="moveScrub" @pointerup="endScrub">
+            <div v-if="isScrubbing" class="scrub-tooltip" :style="{ left: `${scrubTooltipPct}%` }">
+              {{ formatTime(scrubTooltipSecs) }}
+            </div>
             <div class="scrubber-track">
               <div class="scrubber-fill" :style="{ width: `${player.progress * 100}%` }" />
               <div
@@ -358,6 +361,10 @@ const sleepCustomMins  = ref(parseInt(localStorage.getItem('abs_sleep_custom') ?
 const sleepCustomActive = ref(false)
 const scrubberEl      = ref<HTMLElement | null>(null)
 let scrubbing = false
+const isScrubbing      = ref(false)
+const scrubTooltipFrac = ref(0)
+const scrubTooltipPct  = computed(() => scrubTooltipFrac.value * 100)
+const scrubTooltipSecs = computed(() => scrubTooltipFrac.value * player.duration)
 
 const skipBackSecs = computed(() => settings.skipBackSecs)
 const skipFwdSecs  = computed(() => settings.skipFwdSecs)
@@ -571,15 +578,19 @@ function scrubFraction(e: PointerEvent): number {
 
 function startScrub(e: PointerEvent) {
   scrubbing = true
+  isScrubbing.value = true
+  scrubTooltipFrac.value = scrubFraction(e)
   ;(e.target as HTMLElement).setPointerCapture(e.pointerId)
 }
 function moveScrub(e: PointerEvent) {
   if (!scrubbing) return
+  scrubTooltipFrac.value = scrubFraction(e)
   player.seek(scrubFraction(e) * player.duration)
 }
 function endScrub(e: PointerEvent) {
   if (!scrubbing) return
   scrubbing = false
+  isScrubbing.value = false
   player.seek(scrubFraction(e) * player.duration)
 }
 
@@ -702,7 +713,20 @@ function onChapterBarClick(e: MouseEvent) {
 }
 .chapter-progress-bar { height: 100%; background: #d4a017; border-radius: 1px; transition: width 0.5s linear; }
 
-.scrubber-wrap { width: 100%; padding: 8px 0; cursor: pointer; touch-action: none; user-select: none; }
+.scrubber-wrap { width: 100%; padding: 8px 0; cursor: pointer; touch-action: none; user-select: none; position: relative; }
+.scrub-tooltip {
+  position: absolute; bottom: calc(100% - 2px);
+  transform: translateX(-50%);
+  background: rgba(20,20,20,0.92); color: rgba(255,255,255,0.9);
+  font-size: 11px; font-weight: 700; padding: 3px 8px;
+  border-radius: 6px; white-space: nowrap; pointer-events: none;
+  border: 1px solid rgba(212,160,23,0.4); letter-spacing: 0.3px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+}
+.scrub-tooltip::after {
+  content: ''; position: absolute; top: 100%; left: 50%; transform: translateX(-50%);
+  border: 4px solid transparent; border-top-color: rgba(20,20,20,0.92);
+}
 .scrubber-track { height: 4px; background: rgba(255,255,255,0.1); border-radius: 2px; position: relative; }
 .scrubber-fill  { height: 100%; background: #d4a017; border-radius: 2px; }
 .scrubber-thumb {
