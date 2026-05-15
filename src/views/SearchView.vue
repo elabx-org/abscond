@@ -134,6 +134,28 @@
           </button>
         </div>
       </div>
+
+      <!-- Episodes (podcast library only) -->
+      <div v-if="isPodcastLib && (episodeResults.length || epCacheLoading)" class="result-group">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+          <p class="group-label" style="margin:0">Episodes</p>
+          <v-icon v-if="epCacheLoading" size="12" color="rgba(255,255,255,0.3)" class="spin">mdi-loading</v-icon>
+        </div>
+        <div
+          v-for="r in episodeResults"
+          :key="r.episode.id"
+          class="result-row"
+          @click="activeEpisode = r"
+        >
+          <img :src="coverUrl(r.item.id, auth.token ?? '')" class="result-cover" :alt="r.item.media.metadata.title" />
+          <div class="result-meta">
+            <p class="result-title">{{ r.episode.title }}</p>
+            <p class="result-sub">{{ r.item.media.metadata.title }}</p>
+          </div>
+          <v-icon size="14" color="rgba(255,255,255,0.2)">mdi-chevron-right</v-icon>
+        </div>
+        <p v-if="epCacheLoading && !episodeResults.length" class="ep-search-hint">Searching episodes…</p>
+      </div>
     </div>
 
     <!-- Detail sheets -->
@@ -174,13 +196,21 @@
       @close="activeNarrator = ''"
       @open-book="openDetail"
     />
+    <EpisodeDetailSheet
+      v-if="activeEpisode"
+      :show="!!activeEpisode"
+      :item="activeEpisode.item"
+      :episode="activeEpisode.episode"
+      :cover-src="coverUrl(activeEpisode.item.id, auth.token ?? '')"
+      @close="activeEpisode = null"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed, ref, onMounted } from 'vue'
 import { searchLibrary } from '@/api/search'
-import { coverUrl } from '@/api/client'
+import { coverUrl, api } from '@/api/client'
 import { useLibraryStore } from '@/stores/library'
 import { useAuthStore } from '@/stores/auth'
 import BookDetailSheet from '@/components/sheets/BookDetailSheet.vue'
@@ -188,7 +218,9 @@ import PodcastDetailSheet from '@/components/sheets/PodcastDetailSheet.vue'
 import SeriesDetailSheet from '@/components/sheets/SeriesDetailSheet.vue'
 import AuthorDetailSheet from '@/components/sheets/AuthorDetailSheet.vue'
 import NarratorDetailSheet from '@/components/sheets/NarratorDetailSheet.vue'
+import EpisodeDetailSheet from '@/components/sheets/EpisodeDetailSheet.vue'
 import type { LibraryItem, SearchResult } from '@/api/types'
+import type { PodcastEpisode } from '@/api/browse'
 import { getAuthorDisplay } from '@/utils/metadata'
 
 const lib     = useLibraryStore()
@@ -203,7 +235,18 @@ const activeAuthor   = ref<{ id: string; name: string; numBooks: number } | null
 const activeNarrator = ref('')
 const inputEl = ref<HTMLInputElement | null>(null)
 
+interface EpResult { episode: PodcastEpisode; item: LibraryItem }
+const epCache          = ref<EpResult[]>([])
+const epCacheLoading   = ref(false)
+const epCacheLibId     = ref<string | null>(null)
+const activeEpisode    = ref<EpResult | null>(null)
+
 let debounceTimer: ReturnType<typeof setTimeout> | null = null
+
+const activeLibrary = computed(() =>
+  lib.libraries.find(l => l.id === lib.activeLibraryId) ?? null
+)
+const isPodcastLib = computed(() => activeLibrary.value?.mediaType === 'podcast')
 
 const bookResults = computed(() =>
   (results.value?.book ?? []).map(r => r.libraryItem)
@@ -215,13 +258,49 @@ const seriesResults = computed(() => results.value?.series ?? [])
 const authorResults = computed(() => results.value?.authors ?? [])
 const narratorResults = computed(() => results.value?.narrators ?? [])
 
+const episodeResults = computed<EpResult[]>(() => {
+  const q = query.value.trim().toLowerCase()
+  if (!q || !isPodcastLib.value) return []
+  return epCache.value.filter(r => r.episode.title.toLowerCase().includes(q)).slice(0, 20)
+})
+
 const isEmpty = computed(() =>
   !bookResults.value.length &&
   !podcastResults.value.length &&
   !seriesResults.value.length &&
   !authorResults.value.length &&
-  !narratorResults.value.length
+  !narratorResults.value.length &&
+  !episodeResults.value.length &&
+  !epCacheLoading.value
 )
+
+async function loadEpisodeCache() {
+  const libId = lib.activeLibraryId
+  if (!libId || !isPodcastLib.value) return
+  if (epCacheLibId.value === libId || epCacheLoading.value) return
+  epCacheLoading.value = true
+  epCacheLibId.value   = libId
+  epCache.value        = []
+  try {
+    const res = await api.get(`/libraries/${libId}/items`, { params: { limit: 200, page: 0 } })
+    const shows: LibraryItem[] = res.data?.results ?? []
+    const BATCH = 8
+    for (let i = 0; i < shows.length; i += BATCH) {
+      const batch = shows.slice(i, i + BATCH)
+      await Promise.all(batch.map(async (show) => {
+        try {
+          const detail = await api.get(`/items/${show.id}`, { params: { expanded: 1, include: 'progress' } })
+          const eps: PodcastEpisode[] = detail.data?.media?.episodes ?? []
+          for (const ep of eps) {
+            epCache.value.push({ episode: ep, item: show })
+          }
+        } catch {}
+      }))
+    }
+  } finally {
+    epCacheLoading.value = false
+  }
+}
 
 function onInput() {
   if (debounceTimer) clearTimeout(debounceTimer)
@@ -242,6 +321,7 @@ async function doSearch() {
   } finally {
     loading.value = false
   }
+  loadEpisodeCache()
 }
 
 function clearSearch() {
@@ -367,4 +447,10 @@ onMounted(() => {
   color: rgba(255,255,255,0.7); cursor: pointer;
 }
 .narrator-chip:hover { background: rgba(255,255,255,0.1); }
+
+.ep-search-hint {
+  font-size: 11px; color: rgba(255,255,255,0.25); text-align: center; padding: 8px 0; margin: 0;
+}
+@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+.spin { animation: spin 1s linear infinite; display: inline-block; }
 </style>
