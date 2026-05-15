@@ -71,7 +71,10 @@
         <button class="sort-chip" :class="{ active: sortField === 'publishedYear' }" @click="setSort('publishedYear')">
           <v-icon size="12">mdi-calendar-outline</v-icon> Year
         </button>
-        <button class="sort-chip sort-chip--dir" @click="toggleDir">
+        <button class="sort-chip" :class="{ active: sortField === 'random' }" @click="setSort('random')">
+          <v-icon size="12">mdi-shuffle-variant</v-icon> Shuffle
+        </button>
+        <button class="sort-chip sort-chip--dir" v-if="sortField !== 'random'" @click="toggleDir">
           <v-icon size="14">{{ sortDesc ? 'mdi-sort-descending' : 'mdi-sort-ascending' }}</v-icon>
         </button>
       </div>
@@ -604,9 +607,10 @@ const loadingPlaylists     = ref(false)
 const showCollectionPicker = ref(false)
 const collections          = ref<Collection[]>([])
 const loadingCollections   = ref(false)
-const sortField      = ref<'title' | 'author' | 'addedAt' | 'duration' | 'progress' | 'lastPlayed' | 'publishedYear'>(
-  (localStorage.getItem('abs_lib_sort') as 'title' | 'author' | 'addedAt' | 'duration' | 'progress' | 'lastPlayed' | 'publishedYear') ?? 'title'
+const sortField      = ref<'title' | 'author' | 'addedAt' | 'duration' | 'progress' | 'lastPlayed' | 'publishedYear' | 'random'>(
+  (localStorage.getItem('abs_lib_sort') as 'title' | 'author' | 'addedAt' | 'duration' | 'progress' | 'lastPlayed' | 'publishedYear' | 'random') ?? 'title'
 )
+const shuffleSeed = ref(parseInt(localStorage.getItem('abs_lib_shuffle_seed') ?? '0') || Date.now())
 const progressFilter = ref<'all' | 'in-progress' | 'finished' | 'not-started' | 'in-series'>('all')
 
 const progressFilters = [
@@ -688,6 +692,15 @@ const filteredItems = computed(() => {
 })
 
 const sortedItems = computed(() => {
+  if (sortField.value === 'random') {
+    const seed = shuffleSeed.value
+    const arr  = [...filteredItems.value]
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.abs(Math.sin(seed + i) * 10000)) % (i + 1)
+      ;[arr[i], arr[j]] = [arr[j], arr[i]]
+    }
+    return arr.slice(0, page.value * pageSize)
+  }
   const arr = [...filteredItems.value]
   arr.sort((a, b) => {
     let va: string | number, vb: string | number
@@ -722,13 +735,21 @@ const sortedItems = computed(() => {
 
 const hasMore = computed(() => filteredItems.value.length > page.value * pageSize)
 
-function setSort(field: 'title' | 'author' | 'addedAt' | 'duration' | 'progress' | 'lastPlayed' | 'publishedYear') {
-  if (sortField.value === field) { sortDesc.value = !sortDesc.value } else {
+function setSort(field: 'title' | 'author' | 'addedAt' | 'duration' | 'progress' | 'lastPlayed' | 'publishedYear' | 'random') {
+  if (field === 'random') {
+    sortField.value  = 'random'
+    shuffleSeed.value = Date.now()
+    localStorage.setItem('abs_lib_sort', 'random')
+    localStorage.setItem('abs_lib_shuffle_seed', String(shuffleSeed.value))
+  } else if (sortField.value === field) {
+    sortDesc.value = !sortDesc.value
+    localStorage.setItem('abs_lib_sort_desc', String(sortDesc.value))
+  } else {
     sortField.value = field; sortDesc.value = false
+    localStorage.setItem('abs_lib_sort', sortField.value)
+    localStorage.setItem('abs_lib_sort_desc', 'false')
   }
   page.value = 1
-  localStorage.setItem('abs_lib_sort', sortField.value)
-  localStorage.setItem('abs_lib_sort_desc', String(sortDesc.value))
 }
 
 function toggleDir() {
