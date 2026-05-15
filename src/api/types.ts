@@ -67,3 +67,104 @@ export interface LibraryItemsResponse {
 export interface ItemsInProgressResponse {
   libraryItems: LibraryItem[]
 }
+
+export interface AudioTrack {
+  index: number
+  startOffset: number
+  duration: number
+  title: string
+  contentUrl: string
+  mimeType: string
+}
+
+export interface Chapter {
+  id: number
+  start: number
+  end: number
+  title: string
+}
+
+export interface PlaybackSession {
+  id: string
+  userId: string
+  libraryItemId: string
+  mediaType: 'book' | 'podcast'
+  displayTitle: string
+  displayAuthor: string
+  duration: number
+  currentTime: number
+  startTime: number
+  playMethod: number
+  audioTracks: AudioTrack[]
+  chapters: Chapter[]
+  coverPath?: string | null
+}
+
+export interface SyncSessionBody {
+  currentTime: number
+  duration: number
+  timeListened: number
+}
+
+export interface SearchResult {
+  book?: { libraryItem: LibraryItem }[]
+  podcast?: { libraryItem: LibraryItem }[]
+  series?: { id: string; name: string; books: LibraryItem[] }[]
+  authors?: { id: string; name: string; numBooks: number }[]
+  tags?: string[]
+  genres?: string[]
+  narrators?: string[]
+}
+
+export interface UserStats {
+  totalListeningTime: number
+  totalBooksFinished: number
+  totalPodcastsFinished: number
+  booksListeningStats: { totalTime: number }
+}
+
+export interface UserListeningStat {
+  id: string
+  displayTitle: string
+  duration: number
+  currentTime: number
+  startedAt: number
+  updatedAt: number
+  coverPath?: string | null
+  libraryItemId: string
+}
+
+export interface ListeningSession {
+  id: string
+  displayTitle: string
+  displayAuthor: string
+  duration: number
+  startedAt: number
+  updatedAt: number
+  deviceInfo?: { clientName?: string; deviceName?: string } | null
+  libraryItemId: string
+}
+
+export interface ListeningSessionsResponse {
+  sessions: ListeningSession[]
+  total: number
+  page: number
+  itemsPerPage: number
+}
+
+export interface UserProfile {
+  id: string
+  username: string
+  email?: string | null
+  type: string
+  isAdminOrUp: boolean
+  token: string
+  mediaProgress?: MediaProgress[]
+}
+
+export interface Bookmark {
+  libraryItemId: string
+  title: string
+  time: number
+  createdAt: number
+}

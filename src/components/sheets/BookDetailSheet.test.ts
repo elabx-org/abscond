@@ -1,5 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { mount } from '@vue/test-utils'
+import { createPinia, setActivePinia } from 'pinia'
+import { createRouter, createMemoryHistory } from 'vue-router'
 import BookDetailSheet from './BookDetailSheet.vue'
 import type { LibraryItem } from '@/api/types'
 
@@ -24,10 +26,18 @@ const mockItem: LibraryItem = {
   updatedAt: 0,
 }
 
-const mountOpts = (props: object) => ({
-  props,
-  global: { stubs: { Teleport: true } },
-})
+const router = createRouter({ history: createMemoryHistory(), routes: [{ path: '/', component: { template: '<div />' } }] })
+
+const mountOpts = (props: object) => {
+  setActivePinia(createPinia())
+  return {
+    props,
+    global: {
+      stubs: { Teleport: true },
+      plugins: [createPinia(), router],
+    },
+  }
+}
 
 describe('BookDetailSheet', () => {
   it('renders title and author', () => {

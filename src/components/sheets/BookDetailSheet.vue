@@ -59,10 +59,10 @@
               </button>
             </div>
 
-            <!-- Play button placeholder -->
-            <button class="play-btn" :style="{ background: accent }">
-              <v-icon size="20" color="white">mdi-play</v-icon>
-              Play
+            <!-- Play button -->
+            <button class="play-btn" :style="{ background: accent }" @click="onPlayPress">
+              <v-icon size="20" color="white">{{ isThisPlaying ? 'mdi-pause' : 'mdi-play' }}</v-icon>
+              {{ isThisPlaying ? 'Pause' : 'Play' }}
             </button>
           </div>
         </div>
@@ -73,8 +73,10 @@
 
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
+import { useRouter } from 'vue-router'
 import { useDraggableSheet } from '@/composables/useDraggableSheet'
 import { useColorThief } from '@/composables/useColorThief'
+import { usePlayerStore } from '@/stores/player'
 import type { LibraryItem } from '@/api/types'
 
 const props = defineProps<{
@@ -85,10 +87,26 @@ const props = defineProps<{
 
 const emit = defineEmits<{ close: [] }>()
 
-const sheet = useDraggableSheet({ initial: 85, min: 30, max: 95 })
+const router = useRouter()
+const player = usePlayerStore()
+const sheet  = useDraggableSheet({ initial: 85, min: 30, max: 95 })
 
 const coverImgRef = ref<HTMLImageElement | null>(null)
 const { accent } = useColorThief(coverImgRef)
+
+const isThisPlaying = computed(() =>
+  player.isPlaying && player.currentItem?.id === props.item.id
+)
+
+async function onPlayPress() {
+  if (isThisPlaying.value) {
+    player.togglePlay()
+    return
+  }
+  emit('close')
+  await player.play(props.item)
+  router.push({ name: 'player' })
+}
 
 const descExpanded = ref(false)
 

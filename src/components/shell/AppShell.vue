@@ -1,7 +1,10 @@
 <template>
   <div class="app-shell" :class="shellClass">
     <!-- Mobile bottom nav -->
-    <BottomNav v-if="isMobile" :is-playing="false" />
+    <BottomNav v-if="isMobile" :is-playing="player.isPlaying" />
+
+    <!-- Mini player (mobile) -->
+    <MiniPlayer v-if="isMobile" />
 
     <!-- Tablet side rail -->
     <SideRail v-else-if="isTablet" />
@@ -18,9 +21,13 @@
 
 <script setup lang="ts">
 import { computed, ref, onMounted, onBeforeUnmount } from 'vue'
-import BottomNav from './BottomNav.vue'
-import SideRail  from './SideRail.vue'
-import NavDrawer from './NavDrawer.vue'
+import BottomNav  from './BottomNav.vue'
+import SideRail   from './SideRail.vue'
+import NavDrawer  from './NavDrawer.vue'
+import MiniPlayer from './MiniPlayer.vue'
+import { usePlayerStore } from '@/stores/player'
+
+const player = usePlayerStore()
 
 const width = ref(window.innerWidth)
 const onResize = () => { width.value = window.innerWidth }
@@ -38,7 +45,10 @@ const shellClass = computed(() => ({
 }))
 
 const contentStyle = computed(() => {
-  if (isMobile.value)  return { paddingBottom: '56px' }
+  if (isMobile.value) {
+    const pb = player.currentItem ? '116px' : '56px'
+    return { paddingBottom: pb }
+  }
   if (isTablet.value)  return { paddingLeft: '72px' }
   return { paddingLeft: '200px' }
 })

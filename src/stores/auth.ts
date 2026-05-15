@@ -31,13 +31,18 @@ export const useAuthStore = defineStore('auth', () => {
     token.value = newToken
     user.value = newUser
     localStorage.setItem(STORAGE_KEY, JSON.stringify({ token: newToken, user: newUser }))
+    localStorage.setItem('abs_token', newToken)
   }
 
   function logout() {
     token.value = null
     user.value = null
     localStorage.removeItem(STORAGE_KEY)
+    localStorage.removeItem('abs_token')
   }
+
+  // Sync token for player on store init
+  if (stored.token) localStorage.setItem('abs_token', stored.token)
 
   return { token, user, isLoggedIn, isAdmin, setSession, logout }
 })

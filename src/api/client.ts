@@ -68,7 +68,10 @@ export const api: Pick<AxiosInstance, 'get' | 'post' | 'patch' | 'delete'> = {
 }
 
 let _resolvedBase: string | null = null
-getBaseUrl().then(b => { _resolvedBase = b })
+getBaseUrl().then(b => {
+  _resolvedBase = b
+  localStorage.setItem('abs_base_url', b)
+})
 
 export function coverUrl(itemId: string, token: string): string {
   const base = _resolvedBase ?? '/api'
