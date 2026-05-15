@@ -44,15 +44,12 @@
       </div>
       <div class="h-scroll">
         <template v-if="loadingProgress">
-          <div v-for="n in 4" :key="n" class="h-card-skeleton h-card-skeleton--lg">
-            <div class="skeleton-cover skeleton-cover--lg" /><div class="skeleton-line short" /><div class="skeleton-line" style="width:60%" />
-          </div>
+          <div v-for="n in 3" :key="n" class="wide-card-skeleton" />
         </template>
-        <PortraitCard
+        <WideCard
           v-else
           v-for="item in progress.inProgress"
           :key="item.id"
-          class="h-card h-card--lg"
           :item-id="item.id"
           :title="item.media.metadata.title"
           :author="getAuthorDisplay(item) || 'Unknown'"
@@ -221,6 +218,7 @@ import { usePlayerStore } from '@/stores/player'
 import { useNotificationStore } from '@/stores/notifications'
 import { coverUrl, api } from '@/api/client'
 import PortraitCard from '@/components/cards/PortraitCard.vue'
+import WideCard from '@/components/cards/WideCard.vue'
 import BookDetailSheet from '@/components/sheets/BookDetailSheet.vue'
 import PodcastDetailSheet from '@/components/sheets/PodcastDetailSheet.vue'
 import QuickActionsSheet from '@/components/sheets/QuickActionsSheet.vue'
@@ -435,13 +433,11 @@ watch(() => lib.activeLibraryId, async (id) => {
 .h-scroll { display: flex; gap: 10px; overflow-x: auto; scrollbar-width: none; padding-bottom: 4px; }
 .h-scroll::-webkit-scrollbar { display: none; }
 .h-card { width: 120px; flex-shrink: 0; }
-.h-card--lg { width: 150px; }
 .h-card-skeleton { width: 120px; flex-shrink: 0; display: flex; flex-direction: column; gap: 6px; }
-.h-card-skeleton--lg { width: 150px; }
 .skeleton-cover { width: 120px; height: 120px; border-radius: 8px; background: linear-gradient(90deg, #1a1a1a 25%, #222 50%, #1a1a1a 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; }
-.skeleton-cover--lg { width: 150px; height: 150px; }
 .skeleton-line { height: 10px; border-radius: 4px; background: #1a1a1a; animation: shimmer 1.5s infinite; }
 .skeleton-line.short { width: 70%; }
+.wide-card-skeleton { width: 300px; height: 110px; flex-shrink: 0; border-radius: 14px; background: linear-gradient(90deg, #1a1a1a 25%, #222 50%, #1a1a1a 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; }
 @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
 .empty-row { font-size: 12px; color: rgba(255,255,255,0.25); padding: 8px 0; }
 

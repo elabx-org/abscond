@@ -110,8 +110,12 @@ function isEpPlaying(epId: string) {
   return player.isPlaying && player.currentItem?.id === props.item.id && activeEpisodeId.value === epId
 }
 
+function isEpCurrent(epId: string) {
+  return player.currentItem?.id === props.item.id && activeEpisodeId.value === epId
+}
+
 async function playEpisode(ep: PodcastEpisode) {
-  if (isEpPlaying(ep.id)) { player.togglePlay(); return }
+  if (isEpCurrent(ep.id)) { player.togglePlay(); return }
   await player.play(props.item, ep.id)
   router.push({ name: 'player' })
 }
