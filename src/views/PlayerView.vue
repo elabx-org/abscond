@@ -187,6 +187,9 @@
             <button class="util-btn" @click="addBookmark">
               <v-icon size="18">mdi-bookmark-plus-outline</v-icon>
             </button>
+            <button class="util-btn" @click="showItemDetail = true">
+              <v-icon size="18">mdi-information-outline</v-icon>
+            </button>
           </div>
 
           <!-- Speed picker -->
@@ -272,6 +275,22 @@
 
       </div>
     </div>
+
+    <!-- Book / podcast detail sheet from player -->
+    <BookDetailSheet
+      v-if="showItemDetail && player.currentItem && player.currentItem.mediaType !== 'podcast'"
+      :item="player.currentItem"
+      :cover-src="player.currentItem ? coverUrl(player.currentItem.id, auth.token ?? '') : ''"
+      :show="showItemDetail"
+      @close="showItemDetail = false"
+    />
+    <PodcastDetailSheet
+      v-if="showItemDetail && player.currentItem && player.currentItem.mediaType === 'podcast'"
+      :item="player.currentItem"
+      :cover-src="player.currentItem ? coverUrl(player.currentItem.id, auth.token ?? '') : ''"
+      :show="showItemDetail"
+      @close="showItemDetail = false"
+    />
   </div>
 </template>
 
@@ -283,6 +302,8 @@ import { useSettingsStore } from '@/stores/settings'
 import { coverUrl } from '@/api/client'
 import { createBookmark } from '@/api/bookmarks'
 import { useNotificationStore } from '@/stores/notifications'
+import BookDetailSheet from '@/components/sheets/BookDetailSheet.vue'
+import PodcastDetailSheet from '@/components/sheets/PodcastDetailSheet.vue'
 import type { LibraryItem } from '@/api/types'
 
 const player   = usePlayerStore()
@@ -294,6 +315,7 @@ const showChapters    = ref(false)
 const showSleepPicker = ref(false)
 const showSpeedPicker = ref(false)
 const showQueue       = ref(false)
+const showItemDetail  = ref(false)
 const scrubberEl      = ref<HTMLElement | null>(null)
 let scrubbing = false
 
