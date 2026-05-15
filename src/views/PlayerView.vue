@@ -86,6 +86,12 @@
           <div class="scrubber-wrap" ref="scrubberEl" @pointerdown="startScrub" @pointermove="moveScrub" @pointerup="endScrub">
             <div class="scrubber-track">
               <div class="scrubber-fill" :style="{ width: `${player.progress * 100}%` }" />
+              <div
+                v-for="(pct, i) in chapterMarkers"
+                :key="i"
+                class="chapter-tick"
+                :style="{ left: `${pct}%` }"
+              />
               <div class="scrubber-thumb" :style="{ left: `${player.progress * 100}%` }" />
             </div>
           </div>
@@ -399,6 +405,13 @@ const chapterProgressPct = computed(() => {
   return Math.min(((player.currentTime - ch.start) / chapterDuration.value) * 100, 100)
 })
 
+const chapterMarkers = computed(() => {
+  if (!player.duration || chapters.value.length < 2) return []
+  return chapters.value
+    .slice(1)
+    .map(ch => (ch.start / player.duration) * 100)
+})
+
 // ── Controls ──────────────────────────────────────────────────────────────────
 function setSleep(mins: number | null) { player.setSleepTimer(mins); showSleepPicker.value = false }
 function setSleepEoc() { player.setSleepTimer(null, true); showSleepPicker.value = false }
@@ -560,6 +573,11 @@ function onChapterBarClick(e: MouseEvent) {
   position: absolute; top: 50%; transform: translate(-50%, -50%);
   width: 14px; height: 14px; border-radius: 50%; background: #d4a017;
   box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+}
+.chapter-tick {
+  position: absolute; top: -1px; bottom: -1px;
+  width: 2px; transform: translateX(-50%);
+  background: rgba(0,0,0,0.5); pointer-events: none; border-radius: 1px;
 }
 
 .time-row { display: flex; justify-content: space-between; margin-top: 2px; margin-bottom: 8px; }
