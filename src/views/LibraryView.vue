@@ -17,7 +17,10 @@
 
     <!-- Header -->
     <div class="view-header">
-      <h2 class="screen-title">Library</h2>
+      <div>
+        <h2 class="screen-title">{{ activeLibrary?.name ?? 'Library' }}</h2>
+        <p v-if="!lib.loading && items.length" class="lib-count">{{ filteredItems.length.toLocaleString() }} items</p>
+      </div>
       <button class="header-search-btn" @click="router.push({ name: 'search' })">
         <v-icon size="20" color="rgba(255,255,255,0.6)">mdi-magnify</v-icon>
       </button>
@@ -675,8 +678,9 @@ watch(() => lib.activeLibraryId, (id) => {
 .spin { animation: spin 0.8s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
-.view-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+.view-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 12px; }
 .screen-title { font-size: 18px; font-weight: 700; color: rgba(255,255,255,0.9); margin: 0; }
+.lib-count { font-size: 10px; color: rgba(255,255,255,0.3); margin: 2px 0 0; }
 .header-search-btn { background: transparent; border: none; cursor: pointer; padding: 4px; border-radius: 8px; display: flex; align-items: center; justify-content: center; }
 .lib-chips { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
 .lib-chip {

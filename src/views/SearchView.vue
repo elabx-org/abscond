@@ -347,9 +347,8 @@ onMounted(() => {
   width: 48px; height: 48px; object-fit: cover;
   border-radius: 6px; flex-shrink: 0; background: #141414;
 }
-.series-icon, .author-icon {
-  display: flex; align-items: center; justify-content: center;
-}
+.series-icon { display: flex; align-items: center; justify-content: center; }
+.author-icon { display: flex; align-items: center; justify-content: center; border-radius: 50%; background: rgba(212,160,23,0.1); }
 .result-meta { flex: 1; min-width: 0; }
 .result-title {
   font-size: 13px; font-weight: 600; color: rgba(255,255,255,0.85);
