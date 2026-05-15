@@ -583,8 +583,8 @@ function onMoreAction(actionId: string) {
     case 'remove':
       if (player.currentItem) {
         const removedId = player.currentItem.id
-        player.recentItems = player.recentItems.filter((r: LibraryItem) => r.id !== removedId)
         player.stop()
+        player.removeFromRecent(removedId)
       }
       break
     case 'car':

@@ -78,9 +78,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 
-defineProps<{
+const props = defineProps<{
   modelValue: boolean
 }>()
 
@@ -89,9 +89,11 @@ const emit = defineEmits<{
   action: [id: string]
 }>()
 
-const editing   = ref(false)
-const iconsOnly = ref(false)
-const moreInGrid = ref(false)
+const editing    = ref(false)
+const iconsOnly  = ref(localStorage.getItem('abs_player_icons_only')  === 'true')
+const moreInGrid = ref(localStorage.getItem('abs_player_more_in_grid') === 'true')
+
+watch(() => props.modelValue, (v) => { if (!v) editing.value = false })
 
 function saveLayout() {
   localStorage.setItem('abs_player_icons_only', String(iconsOnly.value))

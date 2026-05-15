@@ -592,6 +592,10 @@ export const usePlayerStore = defineStore('player', () => {
     addToFrontOfQueue: (item: LibraryItem, episodeId?: string) => { queue.value.unshift({ item, episodeId }) },
     clearQueue: () => { queue.value = [] },
     removeFromQueue: (idx: number) => { queue.value.splice(idx, 1) },
+    removeFromRecent: (id: string) => {
+      recentItems.value = recentItems.value.filter(r => r.id !== id)
+      _saveRecentItems(recentItems.value)
+    },
     reorderQueue: (from: number, to: number) => {
       if (from === to || from < 0 || to < 0 || from >= queue.value.length || to >= queue.value.length) return
       const [entry] = queue.value.splice(from, 1)
