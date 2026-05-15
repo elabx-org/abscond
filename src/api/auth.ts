@@ -39,3 +39,13 @@ export async function refreshToken(): Promise<string> {
   const res = await api.post('/auth/refresh')
   return res.data.token
 }
+
+/** Update current user's username */
+export async function updateUsername(userId: string, username: string): Promise<void> {
+  await api.patch(`/users/${userId}`, { username })
+}
+
+/** Update current user's password */
+export async function updatePassword(userId: string, password: string, newPassword: string): Promise<void> {
+  await api.patch(`/users/${userId}`, { password, newPassword })
+}

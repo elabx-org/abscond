@@ -18,6 +18,12 @@
         </div>
       </div>
 
+      <div class="settings-item" @click="showChangePassword = true">
+        <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-lock-outline</v-icon>
+        <span class="item-label">Change Password</span>
+        <v-icon size="14" color="rgba(255,255,255,0.2)">mdi-chevron-right</v-icon>
+      </div>
+
       <div class="settings-item" @click="confirmLogout = true">
         <v-icon size="18" color="#ef4444">mdi-logout</v-icon>
         <span class="item-label" style="color:#ef4444">Sign out</span>
@@ -168,6 +174,28 @@
       </button>
     </div>
 
+    <!-- Change password sheet -->
+    <Teleport to="body">
+      <Transition name="fade">
+        <div v-if="showChangePassword" class="confirm-backdrop" @click.self="showChangePassword = false">
+          <div class="confirm-sheet">
+            <p class="confirm-title">Change Password</p>
+            <input v-model="currentPw" type="password" class="form-input" placeholder="Current password" autocomplete="current-password" />
+            <input v-model="newPw" type="password" class="form-input" placeholder="New password" autocomplete="new-password" />
+            <input v-model="newPw2" type="password" class="form-input" placeholder="Confirm new password" autocomplete="new-password" />
+            <p v-if="pwError" class="form-error">{{ pwError }}</p>
+            <p v-if="pwSuccess" class="form-success">Password changed successfully</p>
+            <div class="confirm-btns">
+              <button class="confirm-cancel" @click="showChangePassword = false">Cancel</button>
+              <button class="confirm-logout" style="background:rgba(212,160,23,0.12);color:#d4a017" :disabled="changingPw || !canChangePw" @click="doChangePassword">
+                {{ changingPw ? 'Saving…' : 'Save' }}
+              </button>
+            </div>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
+
     <!-- Logout confirmation -->
     <Teleport to="body">
       <Transition name="fade">
@@ -187,19 +215,44 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { useLibraryStore } from '@/stores/library'
 import { usePlayerStore } from '@/stores/player'
+import { updatePassword } from '@/api/auth'
 
 const router  = useRouter()
 const auth    = useAuthStore()
 const lib     = useLibraryStore()
 const player  = usePlayerStore()
 
-const confirmLogout  = ref(false)
-const socketConnected = ref(false)
+const confirmLogout      = ref(false)
+const socketConnected    = ref(false)
+const showChangePassword = ref(false)
+const currentPw          = ref('')
+const newPw              = ref('')
+const newPw2             = ref('')
+const pwError            = ref('')
+const pwSuccess          = ref(false)
+const changingPw         = ref(false)
+const canChangePw        = computed(() => currentPw.value && newPw.value && newPw.value === newPw2.value)
+
+async function doChangePassword() {
+  pwError.value   = ''
+  pwSuccess.value = false
+  if (!auth.user?.id) return
+  if (newPw.value !== newPw2.value) { pwError.value = 'Passwords do not match'; return }
+  changingPw.value = true
+  try {
+    await updatePassword(auth.user.id, currentPw.value, newPw.value)
+    pwSuccess.value = true
+    currentPw.value = ''
+    newPw.value     = ''
+    newPw2.value    = ''
+  } catch { pwError.value = 'Failed to change password. Check your current password.' }
+  finally { changingPw.value = false }
+}
 const serverUrl = localStorage.getItem('abs_base_url') ?? '/api'
 
 const playbackRate = ref<number>(
@@ -335,4 +388,11 @@ async function doLogout() {
 
 .fade-enter-active, .fade-leave-active { transition: opacity 0.2s; }
 .fade-enter-from, .fade-leave-to { opacity: 0; }
+.form-input {
+  width: 100%; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 8px; padding: 10px 12px; font-size: 13px; color: rgba(255,255,255,0.9);
+  outline: none; margin-bottom: 10px; box-sizing: border-box;
+}
+.form-error { font-size: 12px; color: #ef4444; margin: 0 0 10px; }
+.form-success { font-size: 12px; color: #22c55e; margin: 0 0 10px; }
 </style>

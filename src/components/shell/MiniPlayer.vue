@@ -25,8 +25,8 @@
         <button class="mini-ctrl" @click.stop="player.togglePlay()">
           <v-icon size="22" color="white">{{ player.isPlaying ? 'mdi-pause' : 'mdi-play' }}</v-icon>
         </button>
-        <button class="mini-ctrl" @click.stop="player.skipForward(30)">
-          <v-icon size="20" color="rgba(255,255,255,0.7)">mdi-fast-forward-30</v-icon>
+        <button class="mini-ctrl" @click.stop="player.skipForward(skipFwdSecs)">
+          <v-icon size="20" color="rgba(255,255,255,0.7)">{{ skipFwdSecs === 10 ? 'mdi-fast-forward-10' : skipFwdSecs === 15 ? 'mdi-fast-forward-15' : 'mdi-fast-forward-30' }}</v-icon>
         </button>
         <button class="mini-ctrl" @click.stop="player.stop()">
           <v-icon size="18" color="rgba(255,255,255,0.4)">mdi-close</v-icon>
@@ -48,9 +48,10 @@ import { usePlayerStore } from '@/stores/player'
 import { useAuthStore } from '@/stores/auth'
 import { coverUrl } from '@/api/client'
 
-const player = usePlayerStore()
-const auth   = useAuthStore()
-const router = useRouter()
+const player     = usePlayerStore()
+const auth       = useAuthStore()
+const router     = useRouter()
+const skipFwdSecs = parseInt(localStorage.getItem('abs_skip_fwd') ?? '30')
 
 const coverSrc = computed(() =>
   player.currentItem ? coverUrl(player.currentItem.id, auth.token ?? '') : ''
