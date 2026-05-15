@@ -189,6 +189,9 @@
             <button class="util-btn" @click="addBookmark">
               <v-icon size="18">mdi-bookmark-plus-outline</v-icon>
             </button>
+            <button class="util-btn" :class="{ active: eq.enabled }" @click="showEq = true">
+              <v-icon size="18">mdi-equalizer</v-icon>
+            </button>
             <button class="util-btn" @click="showItemDetail = true">
               <v-icon size="18">mdi-information-outline</v-icon>
             </button>
@@ -293,6 +296,7 @@
       :show="showItemDetail"
       @close="showItemDetail = false"
     />
+    <EqualizerSheet v-model="showEq" accent="#d4a017" />
   </div>
 </template>
 
@@ -306,18 +310,22 @@ import { createBookmark } from '@/api/bookmarks'
 import { useNotificationStore } from '@/stores/notifications'
 import BookDetailSheet from '@/components/sheets/BookDetailSheet.vue'
 import PodcastDetailSheet from '@/components/sheets/PodcastDetailSheet.vue'
+import EqualizerSheet from '@/components/sheets/EqualizerSheet.vue'
+import { useEqualizerStore } from '@/stores/equalizer'
 import type { LibraryItem } from '@/api/types'
 
 const player   = usePlayerStore()
 const auth     = useAuthStore()
 const settings = useSettingsStore()
 const notify = useNotificationStore()
+const eq = useEqualizerStore()
 
 const showChapters    = ref(false)
 const showSleepPicker = ref(false)
 const showSpeedPicker = ref(false)
 const showQueue       = ref(false)
 const showItemDetail  = ref(false)
+const showEq          = ref(false)
 const scrubberEl      = ref<HTMLElement | null>(null)
 let scrubbing = false
 

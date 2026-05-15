@@ -111,6 +111,10 @@
 
             <!-- Action row -->
             <div class="action-row">
+              <button class="action-btn" @click="showNotes = true">
+                <v-icon size="16">mdi-note-text-outline</v-icon>
+                Notes
+              </button>
               <button class="action-btn" @click="onDownload">
                 <v-icon size="16">mdi-download-outline</v-icon>
                 Download
@@ -345,6 +349,13 @@
     @close="activeNarratorName = ''"
     @open-book="onSubSheetBook"
   />
+  <NotesSheet
+    v-if="showNotes"
+    v-model="showNotes"
+    :item-id="item.id"
+    :item-title="item.media.metadata.title"
+    :accent="accentHex"
+  />
 </template>
 
 <script setup lang="ts">
@@ -358,6 +369,7 @@ import { useAuthStore } from '@/stores/auth'
 import SeriesDetailSheet from '@/components/sheets/SeriesDetailSheet.vue'
 import AuthorDetailSheet from '@/components/sheets/AuthorDetailSheet.vue'
 import NarratorDetailSheet from '@/components/sheets/NarratorDetailSheet.vue'
+import NotesSheet from '@/components/sheets/NotesSheet.vue'
 import { getDirectDownloadUrl } from '@/api/downloads'
 import { getBaseUrl, api } from '@/api/client'
 import { getPlaylists, addItemToPlaylist } from '@/api/playlists'
@@ -392,8 +404,14 @@ const sheet  = useDraggableSheet({ initial: 85, min: 30, max: 95 })
 
 const coverImgRef = ref<HTMLImageElement | null>(null)
 const { accent } = useColorThief(coverImgRef)
+const accentHex = computed(() => {
+  const a = accent.value
+  if (!a || a === 'transparent') return '#7c9ef0'
+  return a
+})
 
 const descExpanded    = ref(false)
+const showNotes       = ref(false)
 const activeSeriesId   = ref('')
 const activeSeriesName = ref('')
 const activeAuthorId   = ref('')

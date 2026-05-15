@@ -4,6 +4,7 @@ import { startPlaySession, syncSession, closeSession } from '@/api/player'
 import { getPodcastItem } from '@/api/browse'
 import { useNotificationStore } from '@/stores/notifications'
 import { useSettingsStore } from '@/stores/settings'
+import { useEqualizerStore } from '@/stores/equalizer'
 import type { LibraryItem, PlaybackSession, AudioTrack, Chapter } from '@/api/types'
 
 const SYNC_INTERVAL_MS = 15_000
@@ -49,15 +50,19 @@ export const usePlayerStore = defineStore('player', () => {
 
   function _ensureAudioGraph() {
     if (!audio) return
+    const eq = useEqualizerStore()
     if (!audioCtx) {
       audioCtx = new AudioContext()
       gainNode = audioCtx.createGain()
+      const { output: eqOut } = eq.buildChain(audioCtx)
+      eqOut.connect(gainNode)
       gainNode.connect(audioCtx.destination)
     }
     gainNode!.gain.value = volume.value
     try {
       const src = audioCtx.createMediaElementSource(audio)
-      src.connect(gainNode!)
+      const { input: eqIn } = eq.buildChain(audioCtx)
+      src.connect(eqIn)
     } catch {
       // MediaElementAudioSourceNode already created for this element — safe to ignore
     }
