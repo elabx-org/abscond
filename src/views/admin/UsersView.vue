@@ -23,8 +23,8 @@
             <span v-if="u.lastSeen" class="seen">seen {{ timeAgo(u.lastSeen) }}</span>
           </p>
         </div>
-        <button v-if="u.type !== 'root'" class="edit-btn" @click="openEdit(u)">
-          <v-icon size="16">mdi-pencil-outline</v-icon>
+        <button v-if="u.type !== 'root'" class="edit-btn" @click="router.push({ name: 'admin-user-detail', params: { id: u.id } })">
+          <v-icon size="16">mdi-chevron-right</v-icon>
         </button>
         <button v-if="u.type !== 'root'" class="del-btn" @click="confirmDelete(u)">
           <v-icon size="16">mdi-delete-outline</v-icon>
@@ -139,9 +139,11 @@
 
 <script setup lang="ts">
 import { computed, onMounted, ref, reactive } from 'vue'
+import { useRouter } from 'vue-router'
 import { getUsers, createUser, deleteUser, updateUser } from '@/api/admin'
 import type { AdminUser, AdminUserPermissions } from '@/api/admin'
 
+const router  = useRouter()
 const loading = ref(true)
 const users   = ref<AdminUser[]>([])
 
