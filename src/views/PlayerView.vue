@@ -149,12 +149,14 @@
             <v-icon size="16" color="rgba(255,255,255,0.4)">mdi-volume-low</v-icon>
             <input
               type="range" class="volume-slider"
-              min="0" max="1" step="0.02"
+              min="0" max="2" step="0.05"
               :value="player.volume"
               @input="player.setVolume(+($event.target as HTMLInputElement).value)"
               @change="player.setVolume(+($event.target as HTMLInputElement).value)"
             />
-            <v-icon size="16" color="rgba(255,255,255,0.4)">mdi-volume-high</v-icon>
+            <v-icon size="16" :color="player.volume > 1 ? '#d4a017' : 'rgba(255,255,255,0.4)'">
+              {{ player.volume > 1 ? 'mdi-volume-vibrate' : 'mdi-volume-high' }}
+            </v-icon>
           </div>
 
           <!-- Utility row -->

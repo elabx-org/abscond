@@ -291,12 +291,12 @@ export const usePlayerStore = defineStore('player', () => {
   }
 
   function setVolume(vol: number) {
-    volume.value = Math.max(0, Math.min(1, vol))
+    volume.value = Math.max(0, Math.min(2, vol))
     localStorage.setItem('abs_volume', String(volume.value))
     if (gainNode) {
       gainNode.gain.value = volume.value
     } else if (audio) {
-      audio.volume = volume.value
+      audio.volume = Math.min(1, volume.value)
     }
   }
 

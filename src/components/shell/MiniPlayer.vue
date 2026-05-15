@@ -15,11 +15,8 @@
         </div>
 
         <div class="mini-meta">
-          <p class="mini-title">{{ player.currentItem.media.metadata.title }}</p>
-          <p class="mini-author">
-            <span v-if="player.currentChapter">{{ player.currentChapter.title }}</span>
-            <span v-else>{{ authorNames }}</span>
-          </p>
+          <p class="mini-title">{{ displayTitle }}</p>
+          <p class="mini-author">{{ displaySubtitle }}</p>
         </div>
 
         <button class="mini-ctrl" @click.stop="player.togglePlay()">
@@ -65,9 +62,22 @@ const coverSrc = computed(() =>
   player.currentItem ? coverUrl(player.currentItem.id, auth.token ?? '') : ''
 )
 
-const authorNames = computed(() =>
-  player.session?.displayAuthor || player.currentItem?.media.metadata.authorName || ''
-)
+const isPodcast = computed(() => player.currentItem?.mediaType === 'podcast')
+
+const displayTitle = computed(() => {
+  if (isPodcast.value) {
+    return player.session?.displayTitle || player.currentItem?.media.metadata.title || ''
+  }
+  return player.currentItem?.media.metadata.title || ''
+})
+
+const displaySubtitle = computed(() => {
+  if (isPodcast.value) {
+    return player.session?.displayAuthor || player.currentItem?.media.metadata.title || ''
+  }
+  if (player.currentChapter) return player.currentChapter.title
+  return player.session?.displayAuthor || player.currentItem?.media.metadata.authorName || ''
+})
 </script>
 
 <style scoped>
