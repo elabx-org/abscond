@@ -55,7 +55,7 @@
         </template>
         <ContinueListeningCard
           v-else
-          v-for="item in progress.inProgress"
+          v-for="item in filterEbook(progress.inProgress)"
           :key="item.id"
           :item-id="item.id"
           :title="getCLTitle(item)"
@@ -87,7 +87,7 @@
       <div v-else-if="!progress.recentlyAdded.length" class="empty-row"><p>Nothing added yet</p></div>
       <div v-else class="h-scroll">
         <PortraitCard
-          v-for="item in progress.recentlyAdded"
+          v-for="item in filterEbook(progress.recentlyAdded)"
           :key="item.id"
           class="h-card"
           :item-id="item.id"
@@ -167,7 +167,7 @@
       </div>
       <div class="h-scroll">
         <PortraitCard
-          v-for="item in shelf.entities"
+          v-for="item in (shelf.type === 'book' ? filterEbook(shelf.entities) : shelf.entities)"
           :key="item.id"
           class="h-card"
           :item-id="item.id"
@@ -344,6 +344,22 @@ const allSections = computed<HomeSection[]>(() => {
 })
 
 const BUILT_IN_SHELF_IDS = new Set(['continue-listening', 'recently-added', 'listen-again', 'downloaded-books'])
+
+const hideEbookOnly = ref(localStorage.getItem('abs_lib_hide_ebook') === 'true')
+function isEbookOnlyItem(item: LibraryItem): boolean {
+  if (item.mediaType === 'podcast') return false
+  const m = item.media as unknown as Record<string, unknown>
+  if (((m.duration as number) ?? 0) > 0) return false
+  const af = m.audioFiles as unknown[]
+  const tr = m.tracks as unknown[]
+  if ((af?.length ?? 0) > 0 || (tr?.length ?? 0) > 0 || ((m.numAudioFiles as number) ?? 0) > 0) return false
+  return true
+}
+function filterEbook<T extends LibraryItem>(items: T[]): T[] {
+  if (!hideEbookOnly.value) return items
+  return items.filter(i => !isEbookOnlyItem(i))
+}
+
 const extraShelves = computed(() => allShelves.value.filter(s => !BUILT_IN_SHELF_IDS.has(s.id) && s.entities?.length > 0))
 
 function shelfIcon(id: string, type: string): string {
