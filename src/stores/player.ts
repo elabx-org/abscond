@@ -36,6 +36,7 @@ export const usePlayerStore = defineStore('player', () => {
   let audioCtx: AudioContext | null = null
   let gainNode: GainNode | null = null
   let syncTimer: ReturnType<typeof setInterval> | null = null
+  let seekSyncTimer: ReturnType<typeof setTimeout> | null = null
   let sleepTimer: ReturnType<typeof setTimeout> | null = null
   let sleepCountdown: ReturnType<typeof setInterval> | null = null
   let syncedAt = 0
@@ -254,6 +255,9 @@ export const usePlayerStore = defineStore('player', () => {
     audio.currentTime = time - track.startOffset
     currentTime.value = time
     if (wasPlaying) audio.play()
+    // Debounced sync to persist seek position to server
+    if (seekSyncTimer) clearTimeout(seekSyncTimer)
+    seekSyncTimer = setTimeout(() => { seekSyncTimer = null; _doSync() }, 2000)
   }
 
   function skipBack(secs = 30) { seek(Math.max(0, currentTime.value - secs)) }
@@ -310,6 +314,7 @@ export const usePlayerStore = defineStore('player', () => {
   }
 
   async function stop() {
+    if (seekSyncTimer) { clearTimeout(seekSyncTimer); seekSyncTimer = null }
     _stopSync()
     _clearSleepTimers()
     if (session.value) { await _doSync(); await closeSession(session.value.id).catch(() => {}) }
