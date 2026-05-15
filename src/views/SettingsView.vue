@@ -192,6 +192,60 @@
         </div>
       </div>
 
+      <!-- Auto sleep timer -->
+      <div class="settings-item" @click="toggleAutoSleep">
+        <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-weather-night</v-icon>
+        <div class="item-label-stack">
+          <span class="item-label">Auto sleep timer</span>
+          <span class="item-sublabel">Start sleep timer automatically within a time window</span>
+        </div>
+        <div class="toggle-pill" :class="{ on: autoSleepEnabled }">
+          <div class="toggle-thumb" />
+        </div>
+      </div>
+
+      <template v-if="autoSleepEnabled">
+        <div class="settings-item">
+          <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-clock-start</v-icon>
+          <span class="item-label">Window start</span>
+          <div class="interval-chips">
+            <button
+              v-for="h in autoSleepHourOptions"
+              :key="h"
+              class="interval-chip"
+              :class="{ active: autoSleepStart === h }"
+              @click.stop="setAutoSleepStart(h)"
+            >{{ fmtHour(h) }}</button>
+          </div>
+        </div>
+        <div class="settings-item">
+          <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-clock-end</v-icon>
+          <span class="item-label">Window end</span>
+          <div class="interval-chips">
+            <button
+              v-for="h in autoSleepHourOptions"
+              :key="h"
+              class="interval-chip"
+              :class="{ active: autoSleepEnd === h }"
+              @click.stop="setAutoSleepEnd(h)"
+            >{{ fmtHour(h) }}</button>
+          </div>
+        </div>
+        <div class="settings-item">
+          <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-timer-sand</v-icon>
+          <span class="item-label">Auto sleep duration</span>
+          <div class="interval-chips">
+            <button
+              v-for="m in autoSleepDurationOptions"
+              :key="m"
+              class="interval-chip"
+              :class="{ active: autoSleepMins === m }"
+              @click.stop="setAutoSleepMins(m)"
+            >{{ m }}m</button>
+          </div>
+        </div>
+      </template>
+
       <div class="settings-item" @click="toggleGoodreads">
         <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-bookshelf</v-icon>
         <div class="item-label-stack">
@@ -593,6 +647,25 @@ const sleepRewindSecs = ref(parseInt(localStorage.getItem('abs_sleep_rewind') ??
 function setSleepRewind(s: number) {
   sleepRewindSecs.value = s
   localStorage.setItem('abs_sleep_rewind', String(s))
+}
+
+const autoSleepEnabled = ref(localStorage.getItem('abs_auto_sleep') === 'true')
+const autoSleepHourOptions = [18, 19, 20, 21, 22, 23, 0, 1, 2, 3, 4, 5, 6]
+const autoSleepStart = ref(parseInt(localStorage.getItem('abs_auto_sleep_start') ?? '22'))
+const autoSleepEnd   = ref(parseInt(localStorage.getItem('abs_auto_sleep_end')   ?? '6'))
+const autoSleepDurationOptions = [15, 20, 30, 45, 60, 90]
+const autoSleepMins  = ref(parseInt(localStorage.getItem('abs_auto_sleep_mins')  ?? '30'))
+function toggleAutoSleep() {
+  autoSleepEnabled.value = !autoSleepEnabled.value
+  localStorage.setItem('abs_auto_sleep', String(autoSleepEnabled.value))
+}
+function setAutoSleepStart(h: number) { autoSleepStart.value = h; localStorage.setItem('abs_auto_sleep_start', String(h)) }
+function setAutoSleepEnd(h: number)   { autoSleepEnd.value   = h; localStorage.setItem('abs_auto_sleep_end',   String(h)) }
+function setAutoSleepMins(m: number)  { autoSleepMins.value  = m; localStorage.setItem('abs_auto_sleep_mins',  String(m)) }
+function fmtHour(h: number): string {
+  if (h === 0) return '12am'
+  if (h === 12) return '12pm'
+  return h < 12 ? `${h}am` : `${h - 12}pm`
 }
 
 const showGoodreads = ref(localStorage.getItem('abs_show_goodreads') === 'true')

@@ -296,10 +296,27 @@ export const usePlayerStore = defineStore('player', () => {
       await audio.play()
       _updateMediaSession()
       _startSync()
+      _checkAutoSleep()
     } catch (e: unknown) {
       error.value = e instanceof Error ? e.message : 'Failed to start playback'
     } finally {
       isLoading.value = false
+    }
+  }
+
+  function _checkAutoSleep() {
+    if (localStorage.getItem('abs_auto_sleep') !== 'true') return
+    if (sleepMinsLeft.value !== null || sleepEndOfChapter.value) return
+    const now = new Date()
+    const h = now.getHours()
+    const start = parseInt(localStorage.getItem('abs_auto_sleep_start') ?? '22')
+    const end   = parseInt(localStorage.getItem('abs_auto_sleep_end')   ?? '6')
+    const inWindow = start <= end
+      ? (h >= start && h < end)
+      : (h >= start || h < end)
+    if (inWindow) {
+      const mins = parseInt(localStorage.getItem('abs_auto_sleep_mins') ?? '30')
+      setSleepTimer(mins)
     }
   }
 
