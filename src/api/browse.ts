@@ -66,11 +66,23 @@ export async function getPodcastItem(itemId: string): Promise<PodcastItem> {
 }
 
 export async function getLibrarySeriesList(libraryId: string): Promise<SeriesDetail[]> {
-  const res = await api.get(`/libraries/${libraryId}/series`, { params: { limit: 100 } })
-  return res.data.results ?? res.data.series ?? []
+  const PAGE = 500
+  const first = await api.get(`/libraries/${libraryId}/series`, { params: { limit: PAGE, page: 0 } })
+  const total: number = first.data.total ?? 0
+  let all: SeriesDetail[] = first.data.results ?? first.data.series ?? []
+  if (total > PAGE) {
+    const pages = Math.ceil(total / PAGE)
+    const rest = await Promise.all(
+      Array.from({ length: pages - 1 }, (_, i) =>
+        api.get(`/libraries/${libraryId}/series`, { params: { limit: PAGE, page: i + 1 } })
+      )
+    )
+    all = [...all, ...rest.flatMap(r => r.data.results ?? r.data.series ?? [])]
+  }
+  return all
 }
 
 export async function getLibraryAuthors(libraryId: string): Promise<AuthorDetail[]> {
-  const res = await api.get(`/libraries/${libraryId}/authors`)
+  const res = await api.get(`/libraries/${libraryId}/authors`, { params: { limit: 500 } })
   return res.data.authors ?? []
 }
