@@ -192,19 +192,60 @@
           <span class="session-total-count">{{ sessionTotal }} sessions</span>
         </div>
         <div class="session-rows">
-          <div v-for="s in sessions" :key="s.id" class="session-row">
+          <div v-for="s in sessions" :key="s.id" class="session-row" @click="openSession(s)">
             <img :src="coverUrl(s.libraryItemId, auth.token ?? '')" class="session-cover" />
             <div class="session-meta">
               <p class="session-title">{{ s.displayTitle }}</p>
               <p class="session-sub">{{ s.displayAuthor }} · {{ formatDate(s.updatedAt) }}</p>
             </div>
             <span class="session-dur">{{ formatMinutes(s.duration) }}</span>
+            <v-icon size="14" color="rgba(255,255,255,0.15)">mdi-chevron-right</v-icon>
           </div>
         </div>
         <div ref="sessionSentinel" class="session-sentinel" />
       </section>
     </template>
   </div>
+
+  <!-- Session detail sheet -->
+  <v-bottom-sheet v-model="sessionSheet" :scrim="true">
+    <div v-if="activeSession" class="sess-sheet">
+      <div class="sheet-handle" />
+      <div class="sess-sheet-hero">
+        <img :src="coverUrl(activeSession.libraryItemId, auth.token ?? '')" class="sess-cover" />
+        <div class="sess-info">
+          <p class="sess-title">{{ activeSession.displayTitle }}</p>
+          <p class="sess-author">{{ activeSession.displayAuthor }}</p>
+        </div>
+      </div>
+      <div class="sess-details">
+        <div class="sess-detail-row">
+          <span class="sess-detail-label">Date</span>
+          <span class="sess-detail-val">{{ formatFullDate(activeSession.startedAt) }}</span>
+        </div>
+        <div class="sess-detail-row">
+          <span class="sess-detail-label">Duration</span>
+          <span class="sess-detail-val">{{ formatMinutes(activeSession.duration) }}</span>
+        </div>
+        <div v-if="activeSession.startTime != null" class="sess-detail-row">
+          <span class="sess-detail-label">Position</span>
+          <span class="sess-detail-val">{{ formatTime(activeSession.startTime ?? 0) }} → {{ formatTime(activeSession.currentTime ?? 0) }}</span>
+        </div>
+        <div v-if="activeSession.deviceInfo?.clientName" class="sess-detail-row">
+          <span class="sess-detail-label">Client</span>
+          <span class="sess-detail-val">{{ activeSession.deviceInfo.clientName }}</span>
+        </div>
+        <div v-if="activeSession.deviceInfo?.deviceName" class="sess-detail-row">
+          <span class="sess-detail-label">Device</span>
+          <span class="sess-detail-val">{{ activeSession.deviceInfo.deviceName }}</span>
+        </div>
+      </div>
+      <button class="sess-jump-btn" @click="jumpToSession(activeSession)">
+        <v-icon size="16" color="#111">mdi-play</v-icon>
+        Resume from {{ formatTime(activeSession.currentTime ?? activeSession.startTime ?? 0) }}
+      </button>
+    </div>
+  </v-bottom-sheet>
 </template>
 
 <script setup lang="ts">
@@ -212,11 +253,15 @@ import { onMounted, onBeforeUnmount, ref, computed, watch } from 'vue'
 import { getUserStats, getLibraryStats, getListeningSessions } from '@/api/stats'
 import { useLibraryStore } from '@/stores/library'
 import { useAuthStore } from '@/stores/auth'
-import { coverUrl } from '@/api/client'
+import { usePlayerStore } from '@/stores/player'
+import { useRouter } from 'vue-router'
+import { coverUrl, api } from '@/api/client'
 import type { UserStats, LibraryStats, ListeningSession } from '@/api/stats'
 
-const lib  = useLibraryStore()
-const auth = useAuthStore()
+const lib    = useLibraryStore()
+const auth   = useAuthStore()
+const player = usePlayerStore()
+const router = useRouter()
 const loading     = ref(true)
 const loadingMore = ref(false)
 const sessionPage = ref(0)
@@ -227,6 +272,8 @@ const userStats    = ref<UserStats | null>(null)
 const libStats     = ref<LibraryStats | null>(null)
 const sessions     = ref<ListeningSession[]>([])
 const sessionTotal = ref(0)
+const sessionSheet = ref(false)
+const activeSession = ref<ListeningSession | null>(null)
 
 const totalHoursDecimal = computed(() => {
   const secs = userStats.value?.totalTime ?? userStats.value?.totalListeningTime ?? 0
@@ -451,6 +498,38 @@ function formatMinutes(secs: number): string {
 
 function formatDate(ts: number): string {
   return new Date(ts * 1000).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })
+}
+
+function formatFullDate(ts: number): string {
+  return new Date(ts * 1000).toLocaleString(undefined, {
+    month: 'short', day: 'numeric', year: 'numeric',
+    hour: 'numeric', minute: '2-digit',
+  })
+}
+
+function formatTime(secs: number): string {
+  const h = Math.floor(secs / 3600)
+  const m = Math.floor((secs % 3600) / 60)
+  const s = Math.floor(secs % 60)
+  if (h > 0) return `${h}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`
+  return `${m}:${String(s).padStart(2, '0')}`
+}
+
+function openSession(s: ListeningSession) {
+  activeSession.value = s
+  sessionSheet.value = true
+}
+
+async function jumpToSession(s: ListeningSession) {
+  try {
+    const res = await api.get(`/items/${s.libraryItemId}`)
+    if (res.data) {
+      await player.play(res.data)
+      player.seek(s.currentTime ?? s.startTime ?? 0)
+      sessionSheet.value = false
+      router.push({ name: 'player' })
+    }
+  } catch {}
 }
 
 async function loadMore() {
@@ -684,4 +763,23 @@ onMounted(async () => {
 .top-item-right { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; flex-shrink: 0; }
 .top-item-dur { font-size: 11px; font-weight: 700; color: rgba(255,255,255,0.5); }
 .top-item-sessions { font-size: 9px; color: rgba(255,255,255,0.2); }
+
+/* Session detail sheet */
+.sess-sheet { background: #1a1a1a; border-radius: 20px 20px 0 0; padding: 12px 20px 40px; }
+.sess-sheet-hero { display: flex; gap: 14px; align-items: flex-start; margin-bottom: 20px; }
+.sess-cover { width: 64px; height: 64px; border-radius: 10px; object-fit: cover; flex-shrink: 0; background: #111; }
+.sess-info { flex: 1; min-width: 0; }
+.sess-title { font-size: 14px; font-weight: 700; color: rgba(255,255,255,0.9); margin: 0 0 4px; }
+.sess-author { font-size: 12px; color: rgba(255,255,255,0.45); margin: 0; }
+.sess-details { background: rgba(255,255,255,0.04); border-radius: 12px; padding: 4px 0; margin-bottom: 16px; }
+.sess-detail-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; border-bottom: 1px solid rgba(255,255,255,0.04); }
+.sess-detail-row:last-child { border-bottom: none; }
+.sess-detail-label { font-size: 12px; color: rgba(255,255,255,0.4); }
+.sess-detail-val { font-size: 12px; color: rgba(255,255,255,0.8); font-weight: 500; }
+.sess-jump-btn {
+  width: 100%; padding: 13px; border: none; border-radius: 12px;
+  background: #d4a017; color: #111; font-size: 14px; font-weight: 700;
+  cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;
+}
+.session-row { cursor: pointer; }
 </style>

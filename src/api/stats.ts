@@ -37,6 +37,10 @@ export interface ListeningSession {
   updatedAt: number
   deviceInfo?: { clientName?: string; deviceName?: string } | null
   libraryItemId: string
+  episodeId?: string | null
+  startTime?: number
+  currentTime?: number
+  mediaMetadata?: { title?: string; authorName?: string } | null
 }
 
 export interface SessionsResponse {
