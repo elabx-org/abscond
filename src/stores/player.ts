@@ -136,7 +136,7 @@ export const usePlayerStore = defineStore('player', () => {
     const base = localStorage.getItem('abs_base_url') ?? ''
     const token = localStorage.getItem('abs_token') ?? ''
     navigator.mediaSession.metadata = new MediaMetadata({
-      title:  meta.title,
+      title:  session.value?.displayTitle || meta.title,
       artist: session.value?.displayAuthor || (meta.authors ?? []).map((a: { name: string }) => a.name).join(', ') || (meta as Record<string, unknown>).authorName as string || '',
       album:  (meta.series ?? []).map((s: { name: string }) => s.name).join(', ') || '',
       artwork: [{ src: `${base}/api/items/${currentItem.value.id}/cover?token=${encodeURIComponent(token)}`, sizes: '512x512', type: 'image/jpeg' }],
