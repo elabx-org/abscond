@@ -520,7 +520,7 @@ const chapterSearch    = ref('')
 const showSleepPicker  = ref(false)
 const showSpeedPicker  = ref(false)
 const showQueue        = ref(false)
-const showMore         = ref(false)
+const showMore         = ref(false) // wired to MoreSheet in Task 5
 const queueDragFrom    = ref(-1)
 const queueDragOver    = ref(-1)
 const queueListEl      = ref<HTMLElement | null>(null)
@@ -554,9 +554,10 @@ const sleepFillPct = computed(() => {
 })
 
 const sleepCountdownLabel = computed(() => {
-  if (player.sleepMinsLeft === null) return ''
-  const m = Math.floor(player.sleepMinsLeft)
-  const s = Math.round((player.sleepMinsLeft - m) * 60)
+  const secs = player.sleepSecsLeft
+  if (secs === null) return ''
+  const m = Math.floor(secs / 60)
+  const s = secs % 60
   return s > 0 ? `${m}:${String(s).padStart(2, '0')}` : `${m}m`
 })
 
