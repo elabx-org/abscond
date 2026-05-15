@@ -6,6 +6,8 @@ export const useSettingsStore = defineStore('settings', () => {
   const skipFwdSecs         = ref<number>(parseInt(localStorage.getItem('abs_skip_fwd')  ?? '30'))
   const speedAdjustedTime   = ref<boolean>(localStorage.getItem('abs_speed_adj_time') !== 'false')
   const podcastAutoAdvance  = ref<boolean>(localStorage.getItem('abs_podcast_auto_advance') === 'true')
+  const autoRewindEnabled   = ref<boolean>(localStorage.getItem('abs_auto_rewind') !== 'false')
+  const autoRewindMax       = ref<number>(parseInt(localStorage.getItem('abs_auto_rewind_max') ?? '30'))
 
   function setSkipBack(s: number) {
     skipBackSecs.value = s
@@ -27,5 +29,15 @@ export const useSettingsStore = defineStore('settings', () => {
     localStorage.setItem('abs_podcast_auto_advance', String(v))
   }
 
-  return { skipBackSecs, skipFwdSecs, speedAdjustedTime, podcastAutoAdvance, setSkipBack, setSkipFwd, setSpeedAdjustedTime, setPodcastAutoAdvance }
+  function setAutoRewindEnabled(v: boolean) {
+    autoRewindEnabled.value = v
+    localStorage.setItem('abs_auto_rewind', String(v))
+  }
+
+  function setAutoRewindMax(secs: number) {
+    autoRewindMax.value = secs
+    localStorage.setItem('abs_auto_rewind_max', String(secs))
+  }
+
+  return { skipBackSecs, skipFwdSecs, speedAdjustedTime, podcastAutoAdvance, autoRewindEnabled, autoRewindMax, setSkipBack, setSkipFwd, setSpeedAdjustedTime, setPodcastAutoAdvance, setAutoRewindEnabled, setAutoRewindMax }
 })

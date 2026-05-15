@@ -45,6 +45,7 @@ export const usePlayerStore = defineStore('player', () => {
   let syncedAt = 0
   let timeListenedAccum = 0
   let trackStartOffset = 0
+  let pausedAt: number | null = null
 
   function _ensureAudioGraph() {
     if (!audio) return
@@ -120,9 +121,22 @@ export const usePlayerStore = defineStore('player', () => {
     audio.addEventListener('play', () => {
       isPlaying.value = true
       if ('mediaSession' in navigator) navigator.mediaSession.playbackState = 'playing'
+      if (pausedAt !== null) {
+        const pausedSecs = (Date.now() - pausedAt) / 1000
+        pausedAt = null
+        const settings = useSettingsStore()
+        if (settings.autoRewindEnabled && pausedSecs >= 3) {
+          const maxSecs = settings.autoRewindMax
+          // Scale 0→1 over [3s … 3600s] pause range
+          const t = Math.min((pausedSecs - 3) / (3600 - 3), 1)
+          const rewind = 1 + (maxSecs - 1) * t
+          seek(Math.max(0, currentTime.value - rewind))
+        }
+      }
     })
     audio.addEventListener('pause', () => {
       isPlaying.value = false
+      pausedAt = Date.now()
       if ('mediaSession' in navigator) navigator.mediaSession.playbackState = 'paused'
     })
     audio.addEventListener('error', () => { error.value = 'Playback error' })

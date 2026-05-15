@@ -105,6 +105,31 @@
           <div class="toggle-thumb" />
         </div>
       </div>
+
+      <div class="settings-item" @click="settingsStore.setAutoRewindEnabled(!settingsStore.autoRewindEnabled)">
+        <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-rewind</v-icon>
+        <div class="item-label-stack">
+          <span class="item-label">Auto-rewind on resume</span>
+          <span class="item-sublabel">Rewind up to {{ settingsStore.autoRewindMax }}s after a pause</span>
+        </div>
+        <div class="toggle-pill" :class="{ on: settingsStore.autoRewindEnabled }">
+          <div class="toggle-thumb" />
+        </div>
+      </div>
+
+      <div v-if="settingsStore.autoRewindEnabled" class="settings-item">
+        <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-rewind-outline</v-icon>
+        <span class="item-label">Max rewind</span>
+        <div class="interval-chips">
+          <button
+            v-for="s in rewindOptions"
+            :key="s"
+            class="interval-chip"
+            :class="{ active: settingsStore.autoRewindMax === s }"
+            @click.stop="settingsStore.setAutoRewindMax(s)"
+          >{{ s }}s</button>
+        </div>
+      </div>
     </section>
 
     <!-- Server -->
@@ -394,6 +419,7 @@ const skipFwdSecs = computed({
 })
 
 const skipIntervalOptions = [10, 15, 30, 45, 60]
+const rewindOptions = [5, 10, 20, 30, 60]
 
 function savePlaybackRate() {
   localStorage.setItem('abs_playback_rate', String(playbackRate.value))
