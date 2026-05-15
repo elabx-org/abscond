@@ -432,6 +432,27 @@ export async function updateAuthSettings(data: Partial<AuthSettings>): Promise<v
 }
 
 // ─── Item Metadata Quick Match ─────────────────────────────────────────────────
-export async function quickMatchLibrary(libraryId: string): Promise<void> {
-  await api.get(`/libraries/${libraryId}/matchall`)
+export interface SearchProviders {
+  books: Array<{ value: string; text: string }>
+  booksCovers: Array<{ value: string; text: string }>
+  podcasts: Array<{ value: string; text: string }>
+}
+
+export async function getSearchProviders(): Promise<SearchProviders> {
+  const res = await api.get('/search/providers')
+  return res.data.providers ?? { books: [], booksCovers: [], podcasts: [] }
+}
+
+export async function getLibraryItemIds(libraryId: string): Promise<string[]> {
+  const res = await api.get(`/libraries/${libraryId}/items`, { params: { limit: 1000 } })
+  return (res.data?.results ?? [])
+    .map((r: Record<string, unknown>) => r.id ?? (r.libraryItem as Record<string, unknown>)?.id)
+    .filter((id: unknown): id is string => typeof id === 'string' && id.length > 0)
+}
+
+export async function batchQuickMatch(
+  libraryItemIds: string[],
+  options: { provider?: string; overrideCover?: boolean; overrideDetails?: boolean }
+): Promise<void> {
+  await api.post('/items/batch/quickmatch', { libraryItemIds, options })
 }
