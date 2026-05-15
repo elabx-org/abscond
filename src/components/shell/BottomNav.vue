@@ -32,11 +32,11 @@ const route  = useRoute()
 const router = useRouter()
 
 const navItems = [
-  { route: 'home',    label: 'Home',    icon: 'mdi-home-outline',    iconActive: 'mdi-home' },
-  { route: 'library', label: 'Library', icon: 'mdi-bookshelf',       iconActive: 'mdi-bookshelf' },
-  { route: 'player',  label: 'Player',  icon: 'mdi-headphones',      iconActive: 'mdi-headphones' },
-  { route: 'browse',  label: 'Browse',  icon: 'mdi-compass-outline', iconActive: 'mdi-compass' },
-  { route: 'search',  label: 'Search',  icon: 'mdi-magnify',         iconActive: 'mdi-magnify' },
+  { route: 'home',     label: 'Home',     icon: 'mdi-home-outline',     iconActive: 'mdi-home' },
+  { route: 'library',  label: 'Library',  icon: 'mdi-bookshelf',        iconActive: 'mdi-bookshelf' },
+  { route: 'player',   label: 'Player',   icon: 'mdi-headphones',       iconActive: 'mdi-headphones' },
+  { route: 'browse',   label: 'Browse',   icon: 'mdi-compass-outline',  iconActive: 'mdi-compass' },
+  { route: 'settings', label: 'Settings', icon: 'mdi-cog-outline',      iconActive: 'mdi-cog' },
 ]
 
 const isActive = (name: string) => route.name === name

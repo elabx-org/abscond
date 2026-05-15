@@ -15,6 +15,14 @@
       </div>
     </Transition>
 
+    <!-- Header -->
+    <div class="view-header">
+      <h2 class="screen-title">Library</h2>
+      <button class="header-search-btn" @click="router.push({ name: 'search' })">
+        <v-icon size="20" color="rgba(255,255,255,0.6)">mdi-magnify</v-icon>
+      </button>
+    </div>
+
     <!-- Library switcher (multi-lib) -->
     <div v-if="lib.libraries.length > 1" class="lib-chips">
       <button
@@ -339,6 +347,7 @@
 
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue'
+import { useRouter } from 'vue-router'
 import { useLibraryStore } from '@/stores/library'
 import { useAuthStore } from '@/stores/auth'
 import { coverUrl, api } from '@/api/client'
@@ -362,6 +371,7 @@ const lib    = useLibraryStore()
 const auth   = useAuthStore()
 const player = usePlayerStore()
 const notify = useNotificationStore()
+const router = useRouter()
 
 type ViewMode = 'library' | 'series' | 'authors'
 const viewMode       = ref<ViewMode>('library')
@@ -659,6 +669,9 @@ watch(() => lib.activeLibraryId, (id) => {
 .spin { animation: spin 0.8s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
+.view-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+.screen-title { font-size: 18px; font-weight: 700; color: rgba(255,255,255,0.9); margin: 0; }
+.header-search-btn { background: transparent; border: none; cursor: pointer; padding: 4px; border-radius: 8px; display: flex; align-items: center; justify-content: center; }
 .lib-chips { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
 .lib-chip {
   font-size: 12px; padding: 5px 14px; border-radius: 20px; cursor: pointer;
