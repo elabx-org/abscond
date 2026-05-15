@@ -104,6 +104,14 @@
                 <v-icon size="16">mdi-share-outline</v-icon>
                 Share
               </button>
+              <button v-if="progress < 1" class="action-btn" :disabled="markingFinished" @click="markFinished">
+                <v-icon size="16">mdi-check-circle-outline</v-icon>
+                Finished
+              </button>
+              <button v-if="progress > 0" class="action-btn" :disabled="removingProgress" @click="removeProgress">
+                <v-icon size="16">mdi-restart</v-icon>
+                Reset
+              </button>
               <button v-if="auth.isAdmin" class="action-btn" @click="openEdit">
                 <v-icon size="16">mdi-pencil-outline</v-icon>
                 Edit
@@ -323,6 +331,34 @@ const editError         = ref('')
 const editMeta          = ref({ title: '', subtitle: '', authorNames: '', narratorNames: '', publishedYear: '', publisher: '', genres: '', tags: '', description: '' })
 const showDeleteConfirm = ref(false)
 const deleting          = ref(false)
+const markingFinished   = ref(false)
+const removingProgress  = ref(false)
+
+async function markFinished() {
+  markingFinished.value = true
+  try {
+    await api.patch(`/me/progress/${props.itemId}`, { isFinished: true, progress: 1, currentTime: props.item.media.duration })
+    if (props.item.userMediaProgress) {
+      props.item.userMediaProgress.isFinished = true
+      props.item.userMediaProgress.progress   = 1
+    } else {
+      (props.item as typeof props.item & { userMediaProgress: unknown }).userMediaProgress = { isFinished: true, progress: 1 }
+    }
+  } catch { /* ignore */ }
+  finally { markingFinished.value = false }
+}
+
+async function removeProgress() {
+  removingProgress.value = true
+  try {
+    await api.delete(`/me/progress/${props.itemId}`)
+    if (props.item.userMediaProgress) {
+      props.item.userMediaProgress.isFinished = false
+      props.item.userMediaProgress.progress   = 0
+    }
+  } catch { /* ignore */ }
+  finally { removingProgress.value = false }
+}
 
 async function doDeleteItem() {
   deleting.value = true
