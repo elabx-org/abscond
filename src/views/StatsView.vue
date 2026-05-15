@@ -84,6 +84,24 @@
         </div>
       </section>
 
+      <!-- Most listened -->
+      <section v-if="topItems.length" class="section">
+        <p class="section-label">Most Listened</p>
+        <div class="top-items">
+          <div v-for="(item, i) in topItems" :key="item.title" class="top-item-row">
+            <span class="top-item-rank">{{ i + 1 }}</span>
+            <div class="top-item-meta">
+              <p class="top-item-title">{{ item.title }}</p>
+              <p v-if="item.author" class="top-item-author">{{ item.author }}</p>
+            </div>
+            <div class="top-item-right">
+              <span class="top-item-dur">{{ formatMinutes(item.totalSeconds) }}</span>
+              <span class="top-item-sessions">{{ item.sessionCount }} session{{ item.sessionCount === 1 ? '' : 's' }}</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <!-- Recent sessions -->
       <section v-if="sessions.length" class="section">
         <div class="section-row-header">
@@ -211,6 +229,26 @@ const chartData = computed(() => {
 const chartPeriodHours = computed(() =>
   chartData.value.reduce((sum, d) => sum + d.hours, 0)
 )
+
+interface TopItem { title: string; author: string; totalSeconds: number; sessionCount: number }
+const topItems = computed<TopItem[]>(() => {
+  const byTitle = new Map<string, TopItem>()
+  for (const s of sessions.value) {
+    const title = s.displayTitle || ''
+    if (!title) continue
+    const author = s.displayAuthor || ''
+    const existing = byTitle.get(title)
+    if (existing) {
+      existing.totalSeconds += s.duration ?? 0
+      existing.sessionCount++
+    } else {
+      byTitle.set(title, { title, author, totalSeconds: s.duration ?? 0, sessionCount: 1 })
+    }
+  }
+  return [...byTitle.values()]
+    .sort((a, b) => b.totalSeconds - a.totalSeconds)
+    .slice(0, 5)
+})
 
 function formatHours(secs: number): string {
   const h = Math.floor(secs / 3600)
@@ -396,4 +434,30 @@ onMounted(async () => {
 .session-total-count { font-size: 10px; color: rgba(255,255,255,0.25); }
 
 .session-sentinel { height: 1px; }
+
+.top-items {
+  background: #111; border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.06);
+}
+.top-item-row {
+  display: flex; align-items: center; gap: 10px;
+  padding: 11px 14px; border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+.top-item-row:last-child { border-bottom: none; }
+.top-item-rank {
+  font-size: 13px; font-weight: 700; color: rgba(212,160,23,0.6);
+  width: 18px; flex-shrink: 0; text-align: center;
+}
+.top-item-meta { flex: 1; min-width: 0; }
+.top-item-title {
+  font-size: 12px; font-weight: 600; color: rgba(255,255,255,0.85);
+  margin: 0 0 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.top-item-author {
+  font-size: 10px; color: rgba(255,255,255,0.3); margin: 0;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.top-item-right { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; flex-shrink: 0; }
+.top-item-dur { font-size: 11px; font-weight: 700; color: rgba(255,255,255,0.5); }
+.top-item-sessions { font-size: 9px; color: rgba(255,255,255,0.2); }
 </style>
