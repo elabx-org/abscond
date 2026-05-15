@@ -38,6 +38,12 @@
               <v-icon size="16">{{ scanningId === lib.id ? 'mdi-loading' : 'mdi-magnify-scan' }}</v-icon>
               <span>{{ scanningId === lib.id ? 'Scanning…' : 'Scan' }}</span>
             </button>
+            <button class="edit-lib-btn" @click="openEditLib(lib)" title="Edit library">
+              <v-icon size="15">mdi-pencil-outline</v-icon>
+            </button>
+            <button class="del-lib-btn" @click="confirmDeleteLib(lib)" title="Delete library">
+              <v-icon size="15">mdi-delete-outline</v-icon>
+            </button>
           </div>
         </div>
         <div class="folder-list">
@@ -130,12 +136,63 @@
         </div>
       </Transition>
     </Teleport>
+
+    <!-- Edit library sheet -->
+    <Teleport to="body">
+      <Transition name="sheet">
+        <div v-if="editTarget" class="sheet-backdrop" @click.self="editTarget = null">
+          <div class="create-sheet">
+            <div class="drag-handle-area"><div class="drag-handle" /></div>
+            <div class="create-content">
+              <h3 class="create-title">Edit Library</h3>
+              <input v-model="editName" class="form-input" placeholder="Library name" />
+              <div class="settings-toggle-row">
+                <span class="toggle-label">Disable watcher</span>
+                <button class="toggle-btn" :class="{ on: editDisableWatcher }" @click="editDisableWatcher = !editDisableWatcher">
+                  <div class="toggle-knob" />
+                </button>
+              </div>
+              <div class="settings-toggle-row">
+                <span class="toggle-label">Find covers automatically</span>
+                <button class="toggle-btn" :class="{ on: editFindCovers }" @click="editFindCovers = !editFindCovers">
+                  <div class="toggle-knob" />
+                </button>
+              </div>
+              <p v-if="editError" class="form-error">{{ editError }}</p>
+              <button class="save-btn" :disabled="!editName.trim() || savingEdit" @click="doEditLib">
+                {{ savingEdit ? 'Saving…' : 'Save' }}
+              </button>
+              <button class="cancel-btn" @click="editTarget = null">Cancel</button>
+            </div>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
+
+    <!-- Delete library confirm -->
+    <Teleport to="body">
+      <Transition name="sheet">
+        <div v-if="deleteTarget" class="sheet-backdrop" @click.self="deleteTarget = null">
+          <div class="create-sheet">
+            <div class="drag-handle-area"><div class="drag-handle" /></div>
+            <div class="create-content">
+              <h3 class="create-title">Delete Library</h3>
+              <p class="confirm-text">Delete <strong>{{ deleteTarget.name }}</strong>? This removes the library from ABS but does not delete files on disk.</p>
+              <button class="del-confirm-btn" :disabled="deletingLib" @click="doDeleteLib">
+                {{ deletingLib ? 'Deleting…' : 'Delete Library' }}
+              </button>
+              <button class="cancel-btn" @click="deleteTarget = null">Cancel</button>
+            </div>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
   </div>
 </template>
 
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
-import { getAdminLibraries, scanLibrary, getPodcastFeed, addPodcast, createLibrary } from '@/api/admin'
+import { getAdminLibraries, scanLibrary, getPodcastFeed, addPodcast, createLibrary, updateLibrary, deleteLibrary } from '@/api/admin'
 import type { AdminLibrary, PodcastFeedInfo } from '@/api/admin'
 import { useSocketStore } from '@/stores/socket'
 
@@ -223,6 +280,55 @@ async function confirmAdd() {
   }
 }
 
+const editTarget        = ref<AdminLibrary | null>(null)
+const editName          = ref('')
+const editDisableWatcher = ref(false)
+const editFindCovers    = ref(false)
+const editError         = ref('')
+const savingEdit        = ref(false)
+const deleteTarget      = ref<AdminLibrary | null>(null)
+const deletingLib       = ref(false)
+
+function openEditLib(lib: AdminLibrary) {
+  editTarget.value        = lib
+  editName.value          = lib.name
+  editDisableWatcher.value = lib.settings.disableWatcher
+  editFindCovers.value    = false
+  editError.value         = ''
+}
+
+async function doEditLib() {
+  if (!editTarget.value) return
+  editError.value  = ''
+  savingEdit.value = true
+  try {
+    const updated = await updateLibrary(editTarget.value.id, {
+      name:     editName.value.trim(),
+      settings: { disableWatcher: editDisableWatcher.value },
+    })
+    const idx = libraries.value.findIndex(l => l.id === updated.id)
+    if (idx >= 0) libraries.value[idx] = { ...libraries.value[idx], ...updated }
+    editTarget.value = null
+  } catch (e: unknown) {
+    editError.value = (e instanceof Error ? e.message : null) ?? 'Failed to update library'
+  } finally { savingEdit.value = false }
+}
+
+function confirmDeleteLib(lib: AdminLibrary) {
+  deleteTarget.value = lib
+}
+
+async function doDeleteLib() {
+  if (!deleteTarget.value) return
+  deletingLib.value = true
+  try {
+    await deleteLibrary(deleteTarget.value.id)
+    libraries.value = libraries.value.filter(l => l.id !== deleteTarget.value!.id)
+    deleteTarget.value = null
+  } catch { /* ignore */ }
+  finally { deletingLib.value = false }
+}
+
 onMounted(async () => {
   try { libraries.value = await getAdminLibraries() } catch { /* ignore */ }
   finally { loading.value = false }
@@ -262,6 +368,24 @@ onMounted(async () => {
   border-radius: 8px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
   color: rgba(255,255,255,0.6); cursor: pointer; flex-shrink: 0;
 }
+.edit-lib-btn, .del-lib-btn {
+  display: flex; align-items: center; justify-content: center; width: 30px; height: 30px;
+  border-radius: 8px; background: transparent; border: 1px solid rgba(255,255,255,0.08);
+  cursor: pointer; color: rgba(255,255,255,0.35); flex-shrink: 0;
+}
+.del-lib-btn { color: rgba(239,68,68,0.5); }
+
+.settings-toggle-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.05); margin-bottom: 10px; }
+.toggle-label { font-size: 13px; color: rgba(255,255,255,0.6); }
+.toggle-btn { width: 42px; height: 24px; border-radius: 12px; border: none; cursor: pointer; background: rgba(255,255,255,0.1); position: relative; transition: background 0.2s; flex-shrink: 0; }
+.toggle-btn.on { background: #d4a017; }
+.toggle-knob { width: 18px; height: 18px; border-radius: 50%; background: white; position: absolute; top: 3px; left: 3px; transition: transform 0.2s; }
+.toggle-btn.on .toggle-knob { transform: translateX(18px); }
+
+.confirm-text { font-size: 13px; color: rgba(255,255,255,0.6); margin: 0 0 20px; line-height: 1.5; }
+.confirm-text strong { color: rgba(255,255,255,0.9); }
+.del-confirm-btn { width: 100%; padding: 14px; border-radius: 12px; border: none; cursor: pointer; background: #c0392b; color: white; font-size: 15px; font-weight: 700; margin-bottom: 10px; }
+.del-confirm-btn:disabled { opacity: 0.5; }
 
 .folder-list { display: flex; flex-direction: column; gap: 4px; margin-bottom: 8px; }
 .folder-row { display: flex; align-items: center; gap: 6px; }

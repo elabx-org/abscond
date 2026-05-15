@@ -87,6 +87,15 @@ export async function scanLibrary(libraryId: string): Promise<void> {
   await api.get(`/libraries/${libraryId}/scan`)
 }
 
+export async function updateLibrary(id: string, data: { name?: string; settings?: Partial<AdminLibrary['settings']> }): Promise<AdminLibrary> {
+  const res = await api.patch(`/libraries/${id}`, data)
+  return res.data.library ?? res.data
+}
+
+export async function deleteLibrary(id: string): Promise<void> {
+  await api.delete(`/libraries/${id}`)
+}
+
 export async function createLibrary(name: string, mediaType: 'book' | 'podcast', folderPath: string): Promise<AdminLibrary> {
   const res = await api.post('/libraries', {
     name,
