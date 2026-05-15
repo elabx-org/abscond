@@ -25,7 +25,7 @@ function userFromJwt(token: string): AbsUser {
   return {
     id:          payload.userId ?? payload.sub ?? '',
     username:    payload.username ?? payload.name ?? '',
-    isAdminOrUp: !!payload.isAdminOrUp,
+    isAdminOrUp: !!payload.isAdminOrUp || payload.type === 'root' || payload.type === 'admin',
     token,
   }
 }
@@ -58,10 +58,11 @@ onMounted(async () => {
       const accessToken: string = data?.user?.token ?? data?.user?.accessToken
       if (!accessToken) throw new Error('No token in server response.')
 
+      const u = data.user
       const user: AbsUser = {
-        id:          data.user.id          ?? '',
-        username:    data.user.username    ?? '',
-        isAdminOrUp: data.user.isAdminOrUp ?? false,
+        id:          u.id          ?? '',
+        username:    u.username    ?? '',
+        isAdminOrUp: u.isAdminOrUp ?? u.type === 'root' || u.type === 'admin',
         token:       accessToken,
       }
       auth.setSession(accessToken, user)
