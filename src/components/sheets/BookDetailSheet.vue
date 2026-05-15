@@ -196,21 +196,11 @@
                 {{ coverSaving ? 'Updating…' : 'Update cover' }}
               </button>
 
-              <!-- Quick match -->
-              <div class="qmatch-row">
-                <select v-model="matchProvider" class="edit-input" style="flex:1;margin:0">
-                  <option value="audible">Audible</option>
-                  <option value="openlibrary">Open Library</option>
-                  <option value="itunes">iTunes</option>
-                  <option value="audible.ca">Audible CA</option>
-                  <option value="audible.uk">Audible UK</option>
-                </select>
-                <button class="qmatch-btn" :disabled="matchLoading" @click="doQuickMatch">
-                  <v-icon size="14">{{ matchLoading ? 'mdi-loading' : 'mdi-magnify' }}</v-icon>
-                  {{ matchLoading ? 'Matching…' : 'Quick Match' }}
-                </button>
-              </div>
-              <p v-if="matchMsg" class="match-msg" :class="{ ok: matchOk }">{{ matchMsg }}</p>
+              <!-- Match Metadata -->
+              <button class="action-btn match-btn" @click="showMatch = true">
+                <v-icon size="14">mdi-magnify-scan</v-icon>
+                Match Metadata
+              </button>
 
               <input v-model="editMeta.title" class="edit-input" placeholder="Title" />
               <input v-model="editMeta.subtitle" class="edit-input" placeholder="Subtitle" />
@@ -387,6 +377,11 @@
     :item-title="item.media.metadata.title"
     :accent="accentHex"
   />
+    <MatchSheet
+      v-model="showMatch"
+      :item="props.item"
+      @matched="onMatched"
+    />
 </template>
 
 <script setup lang="ts">
@@ -401,14 +396,15 @@ import SeriesDetailSheet from '@/components/sheets/SeriesDetailSheet.vue'
 import AuthorDetailSheet from '@/components/sheets/AuthorDetailSheet.vue'
 import NarratorDetailSheet from '@/components/sheets/NarratorDetailSheet.vue'
 import NotesSheet from '@/components/sheets/NotesSheet.vue'
+import MatchSheet from '@/components/sheets/MatchSheet.vue'
 import { getDirectDownloadUrl } from '@/api/downloads'
 import { getBaseUrl, api } from '@/api/client'
+import { getItem } from '@/api/items'
 import { getPlaylists, addItemToPlaylist } from '@/api/playlists'
 import type { Playlist } from '@/api/playlists'
 import { getCollections, addBookToCollection } from '@/api/collections'
 import type { Collection } from '@/api/collections'
 import { createShareLink, removeShareLink } from '@/api/share'
-import { matchItem } from '@/api/items'
 import type { ShareLink } from '@/api/share'
 import type { LibraryItem, Series, Author, Chapter } from '@/api/types'
 import { getBookmarks } from '@/api/bookmarks'
@@ -581,22 +577,20 @@ async function doScan() {
   } finally { scanning.value = false }
 }
 
-const matchProvider     = ref('audible')
-const matchLoading      = ref(false)
-const matchMsg          = ref('')
-const matchOk           = ref(false)
+const showMatch         = ref(false)
 
-async function doQuickMatch() {
-  matchLoading.value = true
-  matchMsg.value     = ''
+async function onMatched(itemId: string) {
   try {
-    const result = await matchItem(props.item.id, matchProvider.value, editMeta.value.title, editMeta.value.authorNames || undefined)
-    matchOk.value  = result.updated
-    matchMsg.value = result.updated ? 'Metadata updated from provider' : 'No match found'
-  } catch {
-    matchOk.value  = false
-    matchMsg.value = 'Match request failed'
-  } finally { matchLoading.value = false }
+    const updated = await getItem(itemId)
+    editMeta.value.title         = updated.media.metadata.title ?? ''
+    editMeta.value.subtitle      = updated.media.metadata.subtitle ?? ''
+    editMeta.value.authorNames   = updated.media.metadata.authorName ?? ''
+    editMeta.value.narratorNames = updated.media.metadata.narratorName ?? ''
+    editMeta.value.publishedYear = updated.media.metadata.publishedYear ?? ''
+    editMeta.value.publisher     = updated.media.metadata.publisher ?? ''
+    editMeta.value.genres        = updated.media.metadata.genres?.join(', ') ?? ''
+    editMeta.value.description   = updated.media.metadata.description ?? ''
+  } catch { /* keep existing values on fetch failure */ }
 }
 
 const coverUrl_         = ref('')
@@ -1002,15 +996,6 @@ async function doSaveMeta() {
 }
 .edit-input::placeholder { color: rgba(255,255,255,0.3); }
 .edit-textarea { height: 80px; resize: none; line-height: 1.5; }
-.qmatch-row { display: flex; gap: 8px; align-items: center; width: 100%; margin-bottom: 6px; }
-.qmatch-btn {
-  display: flex; align-items: center; gap: 5px; white-space: nowrap; padding: 8px 12px;
-  border-radius: 8px; background: rgba(212,160,23,0.12); border: 1px solid rgba(212,160,23,0.25);
-  color: #d4a017; font-size: 11px; cursor: pointer; flex-shrink: 0;
-}
-.qmatch-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-.match-msg { font-size: 11px; color: rgba(255,255,255,0.4); margin: 0 0 6px; }
-.match-msg.ok { color: #22c55e; }
 .cover-update-row { display: flex; gap: 8px; align-items: center; width: 100%; }
 .cover-upload-btn {
   display: flex; align-items: center; justify-content: center;
