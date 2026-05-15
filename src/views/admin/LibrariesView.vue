@@ -63,6 +63,28 @@
             <span class="folder-path">{{ f.fullPath }}</span>
           </div>
         </div>
+        <!-- Podcast items (podcast libraries only) -->
+        <div v-if="lib.mediaType === 'podcast' && podcastItems[lib.id]" class="podcast-items-list">
+          <div
+            v-for="p in podcastItems[lib.id]"
+            :key="p.id"
+            class="podcast-item-row"
+            @click="router.push({ name: 'admin-podcast-detail', params: { id: p.id } })"
+          >
+            <v-icon size="13" color="rgba(212,160,23,0.6)">mdi-podcast</v-icon>
+            <span class="podcast-item-title">{{ p.media?.metadata?.title ?? p.id }}</span>
+            <v-icon size="12" color="rgba(255,255,255,0.2)">mdi-chevron-right</v-icon>
+          </div>
+        </div>
+        <button
+          v-if="lib.mediaType === 'podcast' && !podcastItems[lib.id]"
+          class="show-podcasts-btn"
+          :disabled="loadingPodcastsId === lib.id"
+          @click="loadPodcastItems(lib.id)"
+        >
+          <v-icon size="13" :class="{ spin: loadingPodcastsId === lib.id }">{{ loadingPodcastsId === lib.id ? 'mdi-loading' : 'mdi-podcast' }}</v-icon>
+          {{ loadingPodcastsId === lib.id ? 'Loading…' : 'Show podcasts' }}
+        </button>
         <!-- Real-time scan progress -->
         <div v-if="socket.scanProgress[lib.id]" class="scan-progress-wrap">
           <div class="scan-progress-bar" :style="{ width: `${socket.scanProgress[lib.id].pct}%` }" />
@@ -203,11 +225,16 @@
 
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
+import { useRouter } from 'vue-router'
 import { getAdminLibraries, scanLibrary, getPodcastFeed, addPodcast, createLibrary, updateLibrary, deleteLibrary, checkNewPodcastEpisodes, getLibraryPodcastItems } from '@/api/admin'
 import type { AdminLibrary, PodcastFeedInfo } from '@/api/admin'
 import { useSocketStore } from '@/stores/socket'
+import { api } from '@/api/client'
 
 const socket = useSocketStore()
+const router = useRouter()
+const podcastItems = ref<Record<string, Array<{ id: string; media?: { metadata?: { title?: string } } }>>>({})
+const loadingPodcastsId = ref<string | null>(null)
 
 const loading    = ref(true)
 const libraries  = ref<AdminLibrary[]>([])
@@ -361,6 +388,18 @@ async function doDeleteLib() {
   finally { deletingLib.value = false }
 }
 
+async function loadPodcastItems(libId: string) {
+  loadingPodcastsId.value = libId
+  try {
+    const res = await api.get(`/libraries/${libId}/items`, { params: { limit: 100, page: 0 } })
+    podcastItems.value = {
+      ...podcastItems.value,
+      [libId]: res.data?.results ?? res.data?.libraryItems ?? [],
+    }
+  } catch { /* ignore */ }
+  finally { loadingPodcastsId.value = null }
+}
+
 onMounted(async () => {
   try { libraries.value = await getAdminLibraries() } catch { /* ignore */ }
   finally { loading.value = false }
@@ -448,4 +487,13 @@ onMounted(async () => {
 .feed-episodes { font-size: 11px; color: rgba(255,255,255,0.35); margin: 0; }
 .sheet-enter-active, .sheet-leave-active { transition: opacity 0.25s; }
 .sheet-enter-from, .sheet-leave-to { opacity: 0; }
+
+.podcast-items-list { margin: 8px 0; display: flex; flex-direction: column; }
+.podcast-item-row { display: flex; align-items: center; gap: 7px; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.04); cursor: pointer; }
+.podcast-item-row:last-child { border-bottom: none; }
+.podcast-item-title { flex: 1; font-size: 12px; color: rgba(255,255,255,0.65); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.show-podcasts-btn { display: flex; align-items: center; gap: 5px; font-size: 11px; padding: 6px 12px; border-radius: 8px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); color: rgba(255,255,255,0.5); cursor: pointer; margin-top: 8px; }
+.show-podcasts-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.spin { animation: spin 0.8s linear infinite; }
 </style>
