@@ -26,6 +26,12 @@
               </div>
             </div>
 
+            <!-- View all link -->
+            <button class="view-all-btn" @click="viewAll">
+              <v-icon size="14">mdi-open-in-new</v-icon>
+              View all episodes
+            </button>
+
             <!-- Loading -->
             <div v-if="loading" class="ep-list">
               <div v-for="n in 5" :key="n" class="skel-ep" />
@@ -87,10 +93,11 @@ const player   = usePlayerStore()
 const loading  = ref(false)
 const episodes = ref<PodcastEpisode[]>([])
 
-const activeEpisodeId = computed(() => {
-  if (!player.session) return null
-  return (player.session as Record<string, unknown>).episodeId as string | null
-})
+const activeEpisodeId = computed(() => player.session?.episodeId ?? null)
+
+function viewAll() {
+  router.push({ name: 'podcast', query: { itemId: props.item.id } })
+}
 
 function isEpPlaying(epId: string) {
   return player.isPlaying && player.currentItem?.id === props.item.id && activeEpisodeId.value === epId
@@ -162,6 +169,13 @@ watch(() => props.show, async (v) => {
 .ep-progress-bar { height: 100%; background: #d4a017; }
 .ep-finished { font-size: 10px; color: #22c55e; margin: 2px 0 0; }
 .ep-play-btn { background: transparent; border: none; cursor: pointer; padding: 6px; flex-shrink: 0; }
+
+.view-all-btn {
+  display: flex; align-items: center; gap: 6px; margin: 0 0 16px;
+  font-size: 11px; color: rgba(212,160,23,0.8); background: transparent;
+  border: none; cursor: pointer; padding: 0;
+}
+
 .sheet-enter-active, .sheet-leave-active { transition: opacity 0.25s; }
 .sheet-enter-from, .sheet-leave-to { opacity: 0; }
 </style>

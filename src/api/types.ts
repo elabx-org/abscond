@@ -88,6 +88,7 @@ export interface PlaybackSession {
   id: string
   userId: string
   libraryItemId: string
+  episodeId?: string | null
   mediaType: 'book' | 'podcast'
   displayTitle: string
   displayAuthor: string

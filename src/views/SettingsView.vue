@@ -136,6 +136,11 @@
         <span class="item-label">Browse</span>
         <v-icon size="14" color="rgba(255,255,255,0.2)">mdi-chevron-right</v-icon>
       </div>
+      <div class="settings-item" @click="router.push({ name: 'bookmarks' })">
+        <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-bookmark-outline</v-icon>
+        <span class="item-label">Bookmarks</span>
+        <v-icon size="14" color="rgba(255,255,255,0.2)">mdi-chevron-right</v-icon>
+      </div>
     </section>
 
     <!-- Admin link -->
