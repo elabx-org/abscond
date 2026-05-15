@@ -57,6 +57,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 import { getServerInfo, getUsers, getAdminLibraries, getBackups, purgeCache, scanLibrary } from '@/api/admin/index'
+import type { AdminLibrary, AdminBackup } from '@/api/admin/index'
 
 const loading       = ref(true)
 const serverVersion = ref('—')
@@ -112,9 +113,9 @@ onMounted(async () => {
     serverVersion.value = info.version
     userCount.value     = users.length
     libraryCount.value  = libs.length
-    totalItems.value    = libs.reduce((sum: number, l: any) => sum + (l.stats?.totalItems ?? 0), 0)
+    totalItems.value    = libs.reduce((sum: number, l: AdminLibrary) => sum + (l.stats?.totalItems ?? 0), 0)
     backupCount.value   = backups.length
-    const latest        = [...backups].sort((a: any, b: any) => b.createdAt - a.createdAt)[0]
+    const latest        = [...backups].sort((a: AdminBackup, b: AdminBackup) => b.createdAt - a.createdAt)[0]
     lastBackupMs.value  = latest?.createdAt ?? null
   } finally { loading.value = false }
 })
