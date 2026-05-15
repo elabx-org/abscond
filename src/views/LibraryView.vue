@@ -109,16 +109,21 @@
         >{{ g }}</button>
       </div>
 
-      <div class="lib-search-wrap">
-        <v-icon size="14" color="rgba(255,255,255,0.3)">mdi-magnify</v-icon>
-        <input
-          v-model="searchQuery"
-          class="lib-search-input"
-          placeholder="Filter by title or author…"
-          @input="page = 1"
-        />
-        <button v-if="searchQuery" class="lib-search-clear" @click="searchQuery = ''; page = 1">
-          <v-icon size="12">mdi-close</v-icon>
+      <div class="lib-search-row">
+        <div class="lib-search-wrap">
+          <v-icon size="14" color="rgba(255,255,255,0.3)">mdi-magnify</v-icon>
+          <input
+            v-model="searchQuery"
+            class="lib-search-input"
+            placeholder="Filter by title or author…"
+            @input="page = 1"
+          />
+          <button v-if="searchQuery" class="lib-search-clear" @click="searchQuery = ''; page = 1">
+            <v-icon size="12">mdi-close</v-icon>
+          </button>
+        </div>
+        <button class="grid-density-btn" @click="toggleGridDensity" :title="gridDense ? 'Comfortable grid' : 'Compact grid'">
+          <v-icon size="16" color="rgba(255,255,255,0.5)">{{ gridDense ? 'mdi-view-grid' : 'mdi-view-comfy' }}</v-icon>
         </button>
       </div>
     </div>
@@ -126,7 +131,7 @@
     <!-- Library view -->
     <template v-if="viewMode === 'library'">
     <!-- Loading skeletons -->
-    <div v-if="lib.loading && !items.length" class="grid">
+    <div v-if="lib.loading && !items.length" class="grid" :class="{ 'grid--dense': gridDense }">
       <div v-for="n in 12" :key="n" class="skeleton-card">
         <div class="skeleton-cover" />
         <div class="skeleton-line short" />
@@ -141,7 +146,7 @@
     </div>
 
     <!-- Book grid -->
-    <div v-else class="grid">
+    <div v-else class="grid" :class="{ 'grid--dense': gridDense }">
       <PortraitCard
         v-for="item in sortedItems"
         :key="item.id"
@@ -462,11 +467,17 @@ const progressFilters = [
   { key: 'not-started' as const, label: 'Not Started' },
 ]
 const sortDesc     = ref(localStorage.getItem('abs_lib_sort_desc') === 'true')
+const gridDense    = ref(localStorage.getItem('abs_lib_dense') === 'true')
 const pageSize     = 100
 const page         = ref(1)
 const searchQuery  = ref('')
 const genreFilter  = ref('')
 const tagFilter    = ref('')
+
+function toggleGridDensity() {
+  gridDense.value = !gridDense.value
+  localStorage.setItem('abs_lib_dense', String(gridDense.value))
+}
 
 const items = computed(() =>
   lib.activeLibraryId ? lib.itemsFor(lib.activeLibraryId) : []
@@ -720,10 +731,15 @@ watch(() => lib.activeLibraryId, (id) => {
 }
 .filter-chip.active { background: rgba(212,160,23,0.12); border-color: rgba(212,160,23,0.4); color: #d4a017; }
 
+.lib-search-row { display: flex; align-items: center; gap: 6px; margin-top: 8px; }
 .lib-search-wrap {
-  display: flex; align-items: center; gap: 6px;
+  display: flex; align-items: center; gap: 6px; flex: 1;
   background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08);
-  border-radius: 10px; padding: 6px 10px; margin-top: 8px;
+  border-radius: 10px; padding: 6px 10px;
+}
+.grid-density-btn {
+  flex-shrink: 0; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 10px; padding: 6px 10px; cursor: pointer; display: flex; align-items: center;
 }
 .lib-search-input {
   flex: 1; background: transparent; border: none; outline: none;
@@ -738,6 +754,10 @@ watch(() => lib.activeLibraryId, (id) => {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
   gap: 12px 10px;
+}
+.grid--dense {
+  grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+  gap: 8px 6px;
 }
 
 .skeleton-card { display: flex; flex-direction: column; gap: 6px; }

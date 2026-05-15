@@ -466,7 +466,7 @@ function onChapterBarClick(e: MouseEvent) {
 }
 .cover-img-wrap {
   position: relative;
-  width: 100%; max-width: 220px;
+  width: 100%; max-width: min(300px, calc(100vw - 80px));
   aspect-ratio: 1 / 1;
   border-radius: 14px; overflow: hidden;
   box-shadow: 0 20px 60px rgba(0,0,0,0.8);
