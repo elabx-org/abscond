@@ -94,6 +94,17 @@
           <div class="toggle-thumb" />
         </div>
       </div>
+
+      <div class="settings-item" @click="settingsStore.setPodcastAutoAdvance(!settingsStore.podcastAutoAdvance)">
+        <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-skip-next-circle-outline</v-icon>
+        <div class="item-label-stack">
+          <span class="item-label">Auto-advance episodes</span>
+          <span class="item-sublabel">Automatically play next podcast episode</span>
+        </div>
+        <div class="toggle-pill" :class="{ on: settingsStore.podcastAutoAdvance }">
+          <div class="toggle-thumb" />
+        </div>
+      </div>
     </section>
 
     <!-- Server -->

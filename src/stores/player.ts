@@ -1,7 +1,9 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { startPlaySession, syncSession, closeSession } from '@/api/player'
+import { getPodcastItem } from '@/api/browse'
 import { useNotificationStore } from '@/stores/notifications'
+import { useSettingsStore } from '@/stores/settings'
 import type { LibraryItem, PlaybackSession, AudioTrack, Chapter } from '@/api/types'
 
 const SYNC_INTERVAL_MS = 15_000
@@ -139,7 +141,7 @@ export const usePlayerStore = defineStore('player', () => {
     }
   }
 
-  function _onTrackEnded() {
+  async function _onTrackEnded() {
     const tracks = session.value?.audioTracks ?? []
     const next = currentTrackIndex.value + 1
     if (next < tracks.length) {
@@ -151,8 +153,26 @@ export const usePlayerStore = defineStore('player', () => {
       if (queue.value.length > 0) {
         const nextItem = queue.value.shift()!
         setTimeout(() => play(nextItem), 500)
+      } else if (currentItem.value?.mediaType === 'podcast' && useSettingsStore().podcastAutoAdvance) {
+        await _autoAdvancePodcast()
       }
     }
+  }
+
+  async function _autoAdvancePodcast() {
+    const item = currentItem.value
+    const epId = session.value?.episodeId
+    if (!item || !epId) return
+    try {
+      const detail = await getPodcastItem(item.id)
+      const eps = (detail.media.episodes ?? [])
+        .slice()
+        .sort((a, b) => (a.publishedAt ?? 0) - (b.publishedAt ?? 0))
+      const idx = eps.findIndex(e => e.id === epId)
+      if (idx >= 0 && idx < eps.length - 1) {
+        setTimeout(() => play(item, eps[idx + 1].id), 500)
+      }
+    } catch {}
   }
 
   function _loadTrack(idx: number) {

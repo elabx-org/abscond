@@ -2,9 +2,10 @@ import { defineStore } from 'pinia'
 import { ref } from 'vue'
 
 export const useSettingsStore = defineStore('settings', () => {
-  const skipBackSecs      = ref<number>(parseInt(localStorage.getItem('abs_skip_back') ?? '30'))
-  const skipFwdSecs       = ref<number>(parseInt(localStorage.getItem('abs_skip_fwd')  ?? '30'))
-  const speedAdjustedTime = ref<boolean>(localStorage.getItem('abs_speed_adj_time') !== 'false')
+  const skipBackSecs        = ref<number>(parseInt(localStorage.getItem('abs_skip_back') ?? '30'))
+  const skipFwdSecs         = ref<number>(parseInt(localStorage.getItem('abs_skip_fwd')  ?? '30'))
+  const speedAdjustedTime   = ref<boolean>(localStorage.getItem('abs_speed_adj_time') !== 'false')
+  const podcastAutoAdvance  = ref<boolean>(localStorage.getItem('abs_podcast_auto_advance') === 'true')
 
   function setSkipBack(s: number) {
     skipBackSecs.value = s
@@ -21,5 +22,10 @@ export const useSettingsStore = defineStore('settings', () => {
     localStorage.setItem('abs_speed_adj_time', String(v))
   }
 
-  return { skipBackSecs, skipFwdSecs, speedAdjustedTime, setSkipBack, setSkipFwd, setSpeedAdjustedTime }
+  function setPodcastAutoAdvance(v: boolean) {
+    podcastAutoAdvance.value = v
+    localStorage.setItem('abs_podcast_auto_advance', String(v))
+  }
+
+  return { skipBackSecs, skipFwdSecs, speedAdjustedTime, podcastAutoAdvance, setSkipBack, setSkipFwd, setSpeedAdjustedTime, setPodcastAutoAdvance }
 })
