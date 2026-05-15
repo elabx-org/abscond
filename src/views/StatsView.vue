@@ -1,5 +1,19 @@
 <template>
-  <div class="stats-view">
+  <div
+    class="stats-view"
+    @touchstart.passive="onTouchStart"
+    @touchmove.passive="onTouchMove"
+    @touchend.passive="onTouchEnd"
+  >
+    <!-- Pull-to-refresh indicator -->
+    <Transition name="ptr">
+      <div v-if="ptr.pulling || ptr.refreshing" class="ptr-indicator">
+        <v-icon size="18" color="rgba(255,255,255,0.5)" :class="{ spin: ptr.refreshing }">
+          {{ ptr.refreshing ? 'mdi-loading' : 'mdi-arrow-down' }}
+        </v-icon>
+      </div>
+    </Transition>
+
     <h2 class="screen-title">Stats</h2>
 
     <div v-if="loading" class="loading-wrap">
@@ -263,6 +277,42 @@ const auth   = useAuthStore()
 const player = usePlayerStore()
 const router = useRouter()
 const loading     = ref(true)
+
+const ptr = ref({ pulling: false, refreshing: false, startY: 0 })
+
+function onTouchStart(e: TouchEvent) {
+  if (window.scrollY > 0) return
+  ptr.value.startY = e.touches[0].clientY
+}
+
+function onTouchMove(e: TouchEvent) {
+  if (!ptr.value.startY) return
+  const dy = e.touches[0].clientY - ptr.value.startY
+  ptr.value.pulling = dy > 40
+}
+
+function onTouchEnd() {
+  if (ptr.value.pulling) refresh()
+  ptr.value.pulling = false
+  ptr.value.startY = 0
+}
+
+async function refresh() {
+  if (ptr.value.refreshing) return
+  ptr.value.refreshing = true
+  try {
+    const [uStats, sess] = await Promise.all([
+      getUserStats(),
+      getListeningSessions(0),
+    ])
+    userStats.value = uStats
+    sessions.value  = sess.sessions
+    sessionTotal.value = sess.total
+    sessionPage.value = 0
+    if (lib.activeLibraryId) libStats.value = await getLibraryStats(lib.activeLibraryId)
+  } catch { /* ignore */ }
+  finally { ptr.value.refreshing = false }
+}
 const loadingMore = ref(false)
 const sessionPage = ref(0)
 const sessionSentinel = ref<HTMLElement | null>(null)
@@ -578,6 +628,16 @@ onMounted(async () => {
 
 <style scoped>
 .stats-view { min-height: 100vh; background: #0e0e0e; padding: 16px 12px 60px; }
+
+.ptr-indicator {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  display: flex; align-items: center; justify-content: center;
+  padding: 8px; background: rgba(14,14,14,0.85); backdrop-filter: blur(4px);
+}
+.ptr-enter-active, .ptr-leave-active { transition: opacity 0.2s, transform 0.2s; }
+.ptr-enter-from, .ptr-leave-to { opacity: 0; transform: translateY(-100%); }
+.spin { animation: spin 0.8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
 
 .screen-title { font-size: 18px; font-weight: 700; color: rgba(255,255,255,0.9); margin: 0 0 20px; }
 
