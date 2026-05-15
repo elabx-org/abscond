@@ -52,7 +52,9 @@ export const usePlayerStore = defineStore('player', () => {
   function _buildAudioUrl(track: AudioTrack): string {
     const token = localStorage.getItem('abs_token') ?? ''
     const base  = localStorage.getItem('abs_base_url') ?? '/api'
-    const url   = track.contentUrl.startsWith('http') ? track.contentUrl : `${base}${track.contentUrl}`
+    // base is 'http://server/api'; contentUrl starts with '/api/...' — strip trailing /api to get host
+    const host  = base.replace(/\/api$/, '')
+    const url   = track.contentUrl.startsWith('http') ? track.contentUrl : `${host}${track.contentUrl}`
     return `${url}?token=${encodeURIComponent(token)}`
   }
 
