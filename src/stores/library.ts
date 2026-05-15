@@ -28,8 +28,19 @@ export const useLibraryStore = defineStore('library', () => {
   async function fetchItems(libraryId: string) {
     loading.value = true
     try {
-      const res = await getLibraryItems(libraryId, { limit: 100 })
-      _items.value = { ..._items.value, [libraryId]: res.results }
+      const PAGE = 250
+      const first = await getLibraryItems(libraryId, { limit: PAGE, page: 0 })
+      let all = first.results
+      if (first.total > PAGE) {
+        const pages = Math.ceil(first.total / PAGE)
+        const rest = await Promise.all(
+          Array.from({ length: pages - 1 }, (_, i) =>
+            getLibraryItems(libraryId, { limit: PAGE, page: i + 1 })
+          )
+        )
+        all = [...all, ...rest.flatMap(r => r.results)]
+      }
+      _items.value = { ..._items.value, [libraryId]: all }
     } finally {
       loading.value = false
     }

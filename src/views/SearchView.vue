@@ -113,7 +113,7 @@
           <img :src="coverUrl(item.id, auth.token ?? '')" class="result-cover" :alt="item.media.metadata.title" />
           <div class="result-meta">
             <p class="result-title">{{ item.media.metadata.title }}</p>
-            <p class="result-sub">{{ (item.media.metadata.authors ?? []).map(a => a.name).join(', ') || 'Podcast' }}</p>
+            <p class="result-sub">{{ getAuthorDisplay(item) || 'Podcast' }}</p>
           </div>
           <v-icon size="14" color="rgba(255,255,255,0.2)">mdi-chevron-right</v-icon>
         </div>

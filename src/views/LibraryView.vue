@@ -183,7 +183,7 @@
           <div class="row-icon"><v-icon size="18" color="#d4a017">mdi-book-multiple</v-icon></div>
           <div class="row-info">
             <p class="row-name">{{ s.name }}</p>
-            <p class="row-sub">{{ s.books?.length ?? 0 }} books</p>
+            <p class="row-sub">{{ s.numBooks ?? s.books?.length ?? 0 }} books</p>
           </div>
           <v-icon size="16" color="rgba(255,255,255,0.2)">mdi-chevron-right</v-icon>
         </div>
@@ -209,7 +209,7 @@
           <div class="author-avatar">{{ a.name[0]?.toUpperCase() }}</div>
           <div class="row-info">
             <p class="row-name">{{ a.name }}</p>
-            <p class="row-sub" v-if="a.libraryItems?.length">{{ a.libraryItems.length }} books</p>
+            <p class="row-sub">{{ a.numBooks ?? a.libraryItems?.length ?? 0 }} books</p>
           </div>
           <v-icon size="16" color="rgba(255,255,255,0.2)">mdi-chevron-right</v-icon>
         </div>
@@ -440,7 +440,7 @@ const filteredItems = computed(() => {
     const q = searchQuery.value.toLowerCase()
     all = all.filter(i =>
       i.media.metadata.title.toLowerCase().includes(q) ||
-      (i.media.metadata.authors ?? []).some(a => a.name.toLowerCase().includes(q))
+      getAuthorDisplay(i).toLowerCase().includes(q)
     )
   }
   if (genreFilter.value) {
@@ -463,8 +463,8 @@ const sortedItems = computed(() => {
       va = a.media.metadata.title.toLowerCase()
       vb = b.media.metadata.title.toLowerCase()
     } else if (sortField.value === 'author') {
-      va = (a.media.metadata.authors ?? [])[0]?.name?.toLowerCase() ?? ''
-      vb = (b.media.metadata.authors ?? [])[0]?.name?.toLowerCase() ?? ''
+      va = getAuthorDisplay(a).toLowerCase()
+      vb = getAuthorDisplay(b).toLowerCase()
     } else if (sortField.value === 'duration') {
       va = a.media.duration ?? 0
       vb = b.media.duration ?? 0
