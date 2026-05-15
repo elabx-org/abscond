@@ -66,6 +66,17 @@
           <div class="toggle-thumb" />
         </div>
       </div>
+
+      <div class="settings-item" @click="toggleRectangleCovers">
+        <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-image-frame</v-icon>
+        <div class="item-label-stack">
+          <span class="item-label">Rectangle covers</span>
+          <span class="item-sublabel">Show book covers in 2:3 portrait ratio</span>
+        </div>
+        <div class="toggle-pill" :class="{ on: rectangleCovers }">
+          <div class="toggle-thumb" />
+        </div>
+      </div>
     </section>
 
     <!-- Playback -->
@@ -694,6 +705,12 @@ const showExplicit = ref(localStorage.getItem('abs_show_explicit') !== 'false')
 function toggleShowExplicit() {
   showExplicit.value = !showExplicit.value
   localStorage.setItem('abs_show_explicit', String(showExplicit.value))
+}
+
+const rectangleCovers = ref(localStorage.getItem('abs_lib_rect') === 'true')
+function toggleRectangleCovers() {
+  rectangleCovers.value = !rectangleCovers.value
+  localStorage.setItem('abs_lib_rect', String(rectangleCovers.value))
 }
 
 const confirmLogout      = ref(false)

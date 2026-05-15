@@ -96,6 +96,7 @@
           :cover-src="coverUrl(item.id, auth.token ?? '')"
           :progress="item.userMediaProgress?.progress ?? 0"
           :explicit="item.media.metadata.explicit ?? false"
+          :rectangle="rectangleCovers"
           @click="openDetail(item)"
           @long-press="openQuick(item)"
         />
@@ -124,6 +125,7 @@
           :author="getAuthorDisplay(item) || 'Unknown'"
           :cover-src="coverUrl(item.id, auth.token ?? '')"
           :progress="1"
+          :rectangle="rectangleCovers"
           @click="openDetail(item)"
         />
       </div>
@@ -154,6 +156,7 @@
           :author="getAuthorDisplay(item) || 'Unknown'"
           :cover-src="coverUrl(item.id, auth.token ?? '')"
           :progress="item.userMediaProgress?.progress ?? 0"
+          :rectangle="rectangleCovers"
           @click="openDetail(item)"
         />
       </div>
@@ -177,6 +180,7 @@
           :cover-src="coverUrl(item.id, auth.token ?? '')"
           :progress="item.userMediaProgress?.progress ?? 0"
           :explicit="(item.media.metadata as any).explicit ?? false"
+          :rectangle="shelf.type === 'book' ? rectangleCovers : false"
           @click="openShelfItem(item)"
         />
       </div>
@@ -347,6 +351,7 @@ const allSections = computed<HomeSection[]>(() => {
 
 const BUILT_IN_SHELF_IDS = new Set(['continue-listening', 'recently-added', 'downloaded-books'])
 
+const rectangleCovers = ref(localStorage.getItem('abs_lib_rect') === 'true')
 const hideEbookOnly = ref(localStorage.getItem('abs_lib_hide_ebook') === 'true')
 function isEbookOnlyItem(item: LibraryItem): boolean {
   if (item.mediaType === 'podcast') return false
