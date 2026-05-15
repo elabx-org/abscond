@@ -544,6 +544,7 @@ export const usePlayerStore = defineStore('player', () => {
     play, togglePlay, seek, skipBack, skipForward, setRate, setVolume, setSleepTimer, stop,
     resumeFromBarrier: () => { chapterBarrierPaused.value = false; audio?.play() },
     addToQueue: (item: LibraryItem) => { queue.value.push(item) },
+    addToFrontOfQueue: (item: LibraryItem) => { queue.value.unshift(item) },
     clearQueue: () => { queue.value = [] },
     removeFromQueue: (idx: number) => { queue.value.splice(idx, 1) },
     reorderQueue: (from: number, to: number) => {

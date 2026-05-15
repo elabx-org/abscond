@@ -422,6 +422,7 @@
       @play="playQuick"
       @mark-finished="markFinishedQuick"
       @clear-progress="clearProgressQuick"
+      @play-next="playNextFromQuick"
       @add-to-queue="addQuickToQueue"
       @add-to-playlist="openPlaylistForQuick"
       @view-detail="selectedItem = quickItem; quickItem = null"
@@ -800,6 +801,13 @@ async function clearProgressQuick() {
   if (!quickItem.value) return
   const id = quickItem.value.id
   await api.delete(`/me/progress/${id}`)
+  quickItem.value = null
+}
+
+function playNextFromQuick() {
+  if (!quickItem.value) return
+  player.addToFrontOfQueue(quickItem.value)
+  notify.show(`Will play next`, 'success')
   quickItem.value = null
 }
 

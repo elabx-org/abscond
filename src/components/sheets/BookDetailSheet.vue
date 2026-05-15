@@ -133,6 +133,10 @@
                 <v-icon size="16">mdi-share-outline</v-icon>
                 Share
               </button>
+              <button class="action-btn" @click="playNext">
+                <v-icon size="16">mdi-skip-next-circle-outline</v-icon>
+                Play next
+              </button>
               <button class="action-btn" @click="addToQueue">
                 <v-icon size="16">mdi-playlist-plus</v-icon>
                 Queue
@@ -423,6 +427,11 @@ const emit = defineEmits<{ close: [] }>()
 const router = useRouter()
 const player = usePlayerStore()
 const notify = useNotificationStore()
+
+function playNext() {
+  player.addToFrontOfQueue(props.item)
+  notify.show(`Will play next`, 'success')
+}
 
 function addToQueue() {
   player.addToQueue(props.item)
