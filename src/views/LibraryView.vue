@@ -13,7 +13,7 @@
         >{{ l.name }}</button>
       </div>
 
-      <!-- Sort / filter chips -->
+      <!-- Sort chips -->
       <div class="sort-chips">
         <button class="sort-chip" :class="{ active: sortField === 'title' }" @click="setSort('title')">
           <v-icon size="12">mdi-sort-alphabetical-ascending</v-icon> Title
@@ -27,6 +27,17 @@
         <button class="sort-chip sort-chip--dir" @click="toggleDir">
           <v-icon size="14">{{ sortDesc ? 'mdi-sort-descending' : 'mdi-sort-ascending' }}</v-icon>
         </button>
+      </div>
+
+      <!-- Progress filter -->
+      <div class="filter-chips">
+        <button
+          v-for="f in progressFilters"
+          :key="f.key"
+          class="filter-chip"
+          :class="{ active: progressFilter === f.key }"
+          @click="progressFilter = f.key; page = 1"
+        >{{ f.label }}</button>
       </div>
     </div>
 
@@ -116,10 +127,18 @@ import type { LibraryItem } from '@/api/types'
 const lib  = useLibraryStore()
 const auth = useAuthStore()
 
-const selectedItem = ref<LibraryItem | null>(null)
-const selectMode   = ref(false)
-const selectedIds  = ref(new Set<string>())
-const sortField    = ref<'title' | 'addedAt' | 'duration'>('title')
+const selectedItem   = ref<LibraryItem | null>(null)
+const selectMode     = ref(false)
+const selectedIds    = ref(new Set<string>())
+const sortField      = ref<'title' | 'addedAt' | 'duration'>('title')
+const progressFilter = ref<'all' | 'in-progress' | 'finished' | 'not-started'>('all')
+
+const progressFilters = [
+  { key: 'all' as const,         label: 'All' },
+  { key: 'in-progress' as const, label: 'In Progress' },
+  { key: 'finished' as const,    label: 'Finished' },
+  { key: 'not-started' as const, label: 'Not Started' },
+]
 const sortDesc     = ref(false)
 const pageSize     = 100
 const page         = ref(1)
@@ -128,8 +147,16 @@ const items = computed(() =>
   lib.activeLibraryId ? lib.itemsFor(lib.activeLibraryId) : []
 )
 
+const filteredItems = computed(() => {
+  const all = items.value
+  if (progressFilter.value === 'all') return all
+  if (progressFilter.value === 'in-progress') return all.filter(i => (i.userMediaProgress?.progress ?? 0) > 0 && !i.userMediaProgress?.isFinished)
+  if (progressFilter.value === 'finished')    return all.filter(i => i.userMediaProgress?.isFinished)
+  return all.filter(i => !i.userMediaProgress || i.userMediaProgress.progress === 0)
+})
+
 const sortedItems = computed(() => {
-  const arr = [...items.value]
+  const arr = [...filteredItems.value]
   arr.sort((a, b) => {
     let va: string | number, vb: string | number
     if (sortField.value === 'title') {
@@ -149,7 +176,7 @@ const sortedItems = computed(() => {
   return arr.slice(0, page.value * pageSize)
 })
 
-const hasMore = computed(() => items.value.length > page.value * pageSize)
+const hasMore = computed(() => filteredItems.value.length > page.value * pageSize)
 
 function setSort(field: typeof sortField.value) {
   if (sortField.value === field) { sortDesc.value = !sortDesc.value } else {
@@ -244,6 +271,15 @@ watch(() => lib.activeLibraryId, (id) => {
 }
 .sort-chip.active { background: rgba(212,160,23,0.12); border-color: rgba(212,160,23,0.4); color: #d4a017; }
 .sort-chip--dir { padding: 4px 8px; }
+
+.filter-chips { display: flex; gap: 6px; flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; margin-top: 8px; padding-bottom: 2px; }
+.filter-chips::-webkit-scrollbar { display: none; }
+.filter-chip {
+  flex-shrink: 0; font-size: 11px; padding: 4px 10px; border-radius: 20px; cursor: pointer;
+  background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08);
+  color: rgba(255,255,255,0.45); transition: all 0.15s;
+}
+.filter-chip.active { background: rgba(212,160,23,0.12); border-color: rgba(212,160,23,0.4); color: #d4a017; }
 
 .load-more-wrap { display: flex; justify-content: center; padding: 20px 0; }
 .load-more-btn {
