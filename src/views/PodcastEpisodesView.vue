@@ -23,6 +23,14 @@
         </div>
       </div>
 
+      <!-- Refresh feed -->
+      <div class="ep-refresh-row">
+        <button class="ep-refresh-btn" :disabled="refreshing" @click="refreshFeed">
+          <v-icon size="14" :class="{ spin: refreshing }">mdi-refresh</v-icon>
+          {{ refreshing ? 'Checking for new episodes…' : 'Refresh feed' }}
+        </button>
+      </div>
+
       <!-- Episode filter -->
       <div class="ep-filter-row">
         <div class="ep-search-wrap">
@@ -96,7 +104,8 @@ import type { PodcastItem, PodcastEpisode } from '@/api/browse'
 const route  = useRoute()
 const auth   = useAuthStore()
 const player = usePlayerStore()
-const loading = ref(false)
+const loading   = ref(false)
+const refreshing = ref(false)
 const item    = ref<PodcastItem | null>(null)
 const epSearch     = ref('')
 const epFilter     = ref<'all' | 'unfinished' | 'finished'>('all')
@@ -146,6 +155,18 @@ async function toggleFinished(ep: PodcastEpisode) {
   }
 }
 
+async function refreshFeed() {
+  if (!item.value) return
+  refreshing.value = true
+  try {
+    await api.post(`/podcasts/${item.value.id}/check-and-download-new-episodes`)
+    // Reload item to get new episodes
+    const fresh = await getPodcastItem(item.value.id)
+    item.value = fresh
+  } catch { /* ignore */ }
+  finally { refreshing.value = false }
+}
+
 function formatDate(ts: number): string {
   return new Date(ts * 1000).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
 }
@@ -185,6 +206,13 @@ onMounted(async () => {
 .podcast-info { flex: 1; }
 .podcast-desc { font-size: 12px; color: rgba(255,255,255,0.45); margin: 0; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; }
 
+.ep-refresh-row { margin-bottom: 10px; }
+.ep-refresh-btn {
+  display: flex; align-items: center; gap: 5px; font-size: 11px; padding: 6px 12px;
+  border-radius: 20px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08);
+  color: rgba(255,255,255,0.5); cursor: pointer;
+}
+.ep-refresh-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 .ep-filter-row { margin-bottom: 12px; }
 .ep-search-wrap {
   display: flex; align-items: center; gap: 8px; margin-bottom: 8px;
