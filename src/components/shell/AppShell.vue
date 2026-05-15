@@ -55,8 +55,31 @@ watch(() => socket.connected, (isConnected) => {
 
 const width = ref(window.innerWidth)
 const onResize = () => { width.value = window.innerWidth }
-onMounted(() => window.addEventListener('resize', onResize))
-onBeforeUnmount(() => window.removeEventListener('resize', onResize))
+
+function _isInputFocused(): boolean {
+  const el = document.activeElement
+  if (!el) return false
+  const tag = el.tagName.toLowerCase()
+  return tag === 'input' || tag === 'textarea' || (el as HTMLElement).isContentEditable
+}
+
+function onKeyDown(e: KeyboardEvent) {
+  if (!player.currentItem) return
+  if (_isInputFocused()) return
+  if (e.metaKey || e.ctrlKey || e.altKey) return
+  if (e.key === ' ') { e.preventDefault(); player.togglePlay() }
+  else if (e.key === 'ArrowLeft')  { e.preventDefault(); player.skipBack(10) }
+  else if (e.key === 'ArrowRight') { e.preventDefault(); player.skipForward(10) }
+}
+
+onMounted(() => {
+  window.addEventListener('resize', onResize)
+  window.addEventListener('keydown', onKeyDown)
+})
+onBeforeUnmount(() => {
+  window.removeEventListener('resize', onResize)
+  window.removeEventListener('keydown', onKeyDown)
+})
 
 const isMobile  = computed(() => width.value < 768)
 const isTablet  = computed(() => width.value >= 768 && width.value < 1280)
