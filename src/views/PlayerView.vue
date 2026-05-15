@@ -48,7 +48,15 @@
                   :src="coverUrl(item.id, auth.token ?? '')"
                   :alt="item.media.metadata.title"
                   class="cover-img"
+                  :class="{ 'cover-active-tap': i === currentIndex }"
+                  @click="i === currentIndex ? onCoverTap() : null"
                 />
+                <!-- Tap feedback on active cover -->
+                <Transition name="cover-flash">
+                  <div v-if="coverFlash && i === currentIndex" class="cover-flash-overlay">
+                    <v-icon size="56" color="rgba(255,255,255,0.85)">{{ player.isPlaying ? 'mdi-pause' : 'mdi-play' }}</v-icon>
+                  </div>
+                </Transition>
                 <!-- Play overlay on non-active slides -->
                 <div v-if="!player.currentItem || i !== currentIndex" class="cover-play-overlay" @click="switchToItem(item)">
                   <v-icon size="40" color="white">mdi-play-circle</v-icon>
@@ -565,6 +573,15 @@ function switchToItem(item: LibraryItem) {
   if (item.id !== player.currentItem?.id) player.play(item)
 }
 
+const coverFlash = ref(false)
+let coverFlashTimer = 0
+function onCoverTap() {
+  player.togglePlay()
+  coverFlash.value = true
+  clearTimeout(coverFlashTimer)
+  coverFlashTimer = window.setTimeout(() => { coverFlash.value = false }, 600)
+}
+
 // ── Chapters / progress ───────────────────────────────────────────────────────
 const chapters = computed(() => player.session?.chapters ?? [])
 const filteredChapters = computed(() => {
@@ -846,6 +863,15 @@ function queueDragEnd() {
 }
 .cover-inactive { transform: scale(0.88); opacity: 0.6; }
 .cover-img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.cover-active-tap { cursor: pointer; }
+.cover-flash-overlay {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(0,0,0,0.25); pointer-events: none;
+}
+.cover-flash-enter-active { transition: opacity 0.1s ease; }
+.cover-flash-leave-active { transition: opacity 0.5s ease; }
+.cover-flash-enter-from, .cover-flash-leave-to { opacity: 0; }
 .cover-play-overlay {
   position: absolute; inset: 0; background: rgba(0,0,0,0.45);
   display: flex; align-items: center; justify-content: center;
