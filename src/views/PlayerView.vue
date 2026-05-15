@@ -280,19 +280,25 @@ const currentIndex = computed(() => {
   return idx >= 0 ? idx : 0
 })
 
-const displayItem = computed(() =>
-  carouselItems.value[currentIndex.value] ?? player.currentItem
-)
+const previewIndex = ref(-1)
+
+const displayItem = computed(() => {
+  const idx = previewIndex.value >= 0 ? previewIndex.value : currentIndex.value
+  return carouselItems.value[idx] ?? player.currentItem
+})
 
 const backdropSrc = computed(() =>
   displayItem.value ? coverUrl(displayItem.value.id, auth.token ?? '') : ''
 )
 
-const displayAuthor = computed(() =>
-  player.currentItem
+const displayAuthor = computed(() => {
+  if (previewIndex.value >= 0) {
+    return displayItem.value?.media.metadata.authorName || ''
+  }
+  return player.currentItem
     ? (player.session?.displayAuthor || player.currentItem.media.metadata.authorName || 'Unknown Author')
     : (displayItem.value?.media.metadata.authorName || '')
-)
+})
 
 let swipeStartX = 0
 let swipeStartY = 0
@@ -318,12 +324,18 @@ function onSwipeMove(e: TouchEvent) {
   if (!swipeTracking) return
   const dx = e.touches[0].clientX - swipeStartX
   const dy = e.touches[0].clientY - swipeStartY
-  if (Math.abs(dy) > Math.abs(dx) + 5) { swipeTracking = false; swipeDx.value = 0; return }
+  if (Math.abs(dy) > Math.abs(dx) + 5) { swipeTracking = false; swipeDx.value = 0; previewIndex.value = -1; return }
   swipeDx.value = dx
+  // Update preview index as user peeks at adjacent items
+  const idx = currentIndex.value
+  if (dx < -40 && idx < carouselItems.value.length - 1) previewIndex.value = idx + 1
+  else if (dx > 40 && idx > 0) previewIndex.value = idx - 1
+  else previewIndex.value = -1
 }
 
 function onSwipeEnd(e: TouchEvent) {
   swipeTracking = false
+  previewIndex.value = -1
   const dx = e.changedTouches[0].clientX - swipeStartX
   const dy = e.changedTouches[0].clientY - swipeStartY
   swipeDx.value = 0

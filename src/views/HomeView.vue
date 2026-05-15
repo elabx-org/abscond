@@ -234,6 +234,7 @@ async function onTouchEnd() {
       progress.fetchInProgress(),
       progress.fetchRecentlyAdded(lib.activeLibraryId),
       progress.fetchRecentlyFinished(lib.activeLibraryId),
+      progress.fetchDiscover(lib.activeLibraryId),
     ])
   } finally {
     ptr.value.refreshing = false
