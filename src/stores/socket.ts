@@ -132,13 +132,16 @@ export const useSocketStore = defineStore('socket', () => {
       const ep = d.episode as Record<string, unknown> | undefined
       if (!ep || !d.libraryItemId) return
       const ls = useLibraryStore()
-      const items = ls.itemsFor(d.libraryItemId as string)
-      const item  = items.find(i => i.id === d.libraryItemId)
-      if (item) {
-        const episodes = (item.media as unknown as Record<string, unknown>).episodes as unknown[] | undefined
-        if (episodes) {
-          const idx = episodes.findIndex((e: unknown) => (e as Record<string, unknown>).id === ep.id)
-          if (idx >= 0) episodes[idx] = ep
+      for (const libId of ls.libraries.map(l => l.id)) {
+        const items = ls.itemsFor(libId)
+        const item = items.find(i => i.id === d.libraryItemId)
+        if (item) {
+          const episodes = (item.media as unknown as Record<string, unknown>).episodes as unknown[] | undefined
+          if (episodes) {
+            const idx = episodes.findIndex((e: unknown) => (e as Record<string, unknown>).id === ep.id)
+            if (idx >= 0) episodes[idx] = ep
+          }
+          break
         }
       }
     }))

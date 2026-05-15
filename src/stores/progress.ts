@@ -23,7 +23,7 @@ export const useProgressStore = defineStore('progress', () => {
   async function fetchRecentlyFinished(libraryId: string) {
     try {
       const res = await api.get(`/libraries/${libraryId}/items`, {
-        params: { limit: 40, sort: 'addedAt', desc: 1, filter: 'progress.finished' },
+        params: { limit: 40, sort: 'addedAt', desc: 1, filter: btoa('progress.finished') },
       })
       // Sort by finishedAt client-side if available
       const finished = (res.data.results ?? []).filter(
@@ -43,7 +43,7 @@ export const useProgressStore = defineStore('progress', () => {
   async function fetchDiscover(libraryId: string) {
     try {
       const res = await api.get(`/libraries/${libraryId}/items`, {
-        params: { limit: 30, sort: 'random', desc: 0, filter: 'progress.not-started' },
+        params: { limit: 30, sort: 'random', desc: 0, filter: btoa('progress.not-started') },
       })
       discover.value = (res.data.results ?? []).slice(0, 20)
     } catch {

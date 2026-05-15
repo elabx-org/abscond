@@ -177,9 +177,36 @@
       @mark-finished="markFinishedQuick"
       @clear-progress="clearProgressQuick"
       @add-to-queue="addQuickToQueue"
-      @add-to-playlist="quickItem = null"
+      @add-to-playlist="openPlaylistForQuick"
       @view-detail="selectedItem = quickItem; quickItem = null"
     />
+    <!-- Playlist picker sheet -->
+    <Teleport to="body">
+      <Transition name="sheet">
+        <div v-if="showPlaylistPicker" class="picker-backdrop" @click.self="showPlaylistPicker = false">
+          <div class="picker-sheet">
+            <div class="drag-handle" />
+            <p class="picker-title">Add to playlist</p>
+            <div v-if="loadingPlaylists" class="picker-loading">
+              <v-icon size="20" color="rgba(255,255,255,0.3)">mdi-loading</v-icon>
+            </div>
+            <div v-else class="picker-list">
+              <button
+                v-for="pl in playlists"
+                :key="pl.id"
+                class="picker-row"
+                @click="addToPlaylistFromQuick(pl.id)"
+              >
+                <v-icon size="16" color="rgba(255,255,255,0.5)">mdi-playlist-music</v-icon>
+                <span class="picker-name">{{ pl.name }}</span>
+                <span class="picker-count">{{ pl.items.length }}</span>
+              </button>
+              <div v-if="!playlists.length" class="picker-empty">No playlists yet</div>
+            </div>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
   </div>
 </template>
 
@@ -198,6 +225,8 @@ import PodcastDetailSheet from '@/components/sheets/PodcastDetailSheet.vue'
 import QuickActionsSheet from '@/components/sheets/QuickActionsSheet.vue'
 import type { LibraryItem } from '@/api/types'
 import { getAuthorDisplay } from '@/utils/metadata'
+import { getPlaylists, addItemToPlaylist } from '@/api/playlists'
+import type { Playlist } from '@/api/playlists'
 
 const progress = useProgressStore()
 const router   = useRouter()
@@ -206,12 +235,16 @@ const auth     = useAuthStore()
 const player   = usePlayerStore()
 const notify   = useNotificationStore()
 
-const selectedItem    = ref<LibraryItem | null>(null)
-const quickItem       = ref<LibraryItem | null>(null)
-const loadingProgress = ref(false)
-const loadingRecent   = ref(false)
-const loadingFinished = ref(false)
-const loadingDiscover = ref(false)
+const selectedItem       = ref<LibraryItem | null>(null)
+const quickItem          = ref<LibraryItem | null>(null)
+const loadingProgress    = ref(false)
+const loadingRecent      = ref(false)
+const loadingFinished    = ref(false)
+const loadingDiscover    = ref(false)
+const showPlaylistPicker = ref(false)
+const playlists          = ref<Playlist[]>([])
+const loadingPlaylists   = ref(false)
+const playlistTarget     = ref<LibraryItem | null>(null)
 
 // Pull-to-refresh
 const ptr = ref({ pulling: false, refreshing: false, startY: 0 })
@@ -296,6 +329,29 @@ function addQuickToQueue() {
   player.addToQueue(quickItem.value)
   notify.show(`Added to queue`, 'success')
   quickItem.value = null
+}
+
+async function loadPlaylists() {
+  if (playlists.value.length) return
+  loadingPlaylists.value = true
+  try { playlists.value = await getPlaylists() }
+  catch { playlists.value = [] }
+  finally { loadingPlaylists.value = false }
+}
+
+function openPlaylistForQuick() {
+  playlistTarget.value = quickItem.value
+  quickItem.value = null
+  showPlaylistPicker.value = true
+  loadPlaylists()
+}
+
+async function addToPlaylistFromQuick(playlistId: string) {
+  if (!playlistTarget.value) return
+  await addItemToPlaylist(playlistId, playlistTarget.value.id).catch(() => {})
+  notify.show('Added to playlist', 'success')
+  showPlaylistPicker.value = false
+  playlistTarget.value = null
 }
 
 async function refreshDiscover() {
@@ -384,4 +440,27 @@ watch(() => lib.activeLibraryId, async (id) => {
 .skeleton-line.short { width: 70%; }
 @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
 .empty-row { font-size: 12px; color: rgba(255,255,255,0.25); padding: 8px 0; }
+
+.picker-backdrop {
+  position: fixed; inset: 0; z-index: 220;
+  background: rgba(0,0,0,0.6); display: flex; align-items: flex-end;
+}
+.picker-sheet {
+  width: 100%; background: #131313;
+  border-radius: 20px 20px 0 0; border-top: 1px solid rgba(255,255,255,0.08);
+  padding: 0 16px 40px; max-height: 60vh; overflow-y: auto;
+}
+.drag-handle { width: 36px; height: 4px; background: rgba(255,255,255,0.15); border-radius: 2px; margin: 12px auto 16px; }
+.picker-title { font-size: 14px; font-weight: 700; color: rgba(255,255,255,0.8); margin: 0 0 16px; }
+.picker-loading { padding: 20px 0; display: flex; justify-content: center; }
+.picker-list { display: flex; flex-direction: column; }
+.picker-row {
+  display: flex; align-items: center; gap: 10px; padding: 12px 4px;
+  border-bottom: 1px solid rgba(255,255,255,0.04); background: transparent;
+  border-left: none; border-right: none; border-top: none;
+  cursor: pointer; color: rgba(255,255,255,0.8); text-align: left;
+}
+.picker-name { flex: 1; font-size: 13px; }
+.picker-count { font-size: 11px; color: rgba(255,255,255,0.3); }
+.picker-empty { font-size: 12px; color: rgba(255,255,255,0.3); padding: 16px 0; text-align: center; }
 </style>
