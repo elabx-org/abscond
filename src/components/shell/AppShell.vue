@@ -11,9 +11,6 @@
     <!-- Mobile bottom nav -->
     <BottomNav v-if="isMobile" :is-playing="player.isPlaying" />
 
-    <!-- Mini player (mobile) -->
-    <MiniPlayer v-if="isMobile" />
-
     <!-- Tablet side rail -->
     <SideRail v-else-if="isTablet" />
 
@@ -32,7 +29,6 @@ import { computed, ref, onMounted, onBeforeUnmount, watch } from 'vue'
 import BottomNav  from './BottomNav.vue'
 import SideRail   from './SideRail.vue'
 import NavDrawer  from './NavDrawer.vue'
-import MiniPlayer from './MiniPlayer.vue'
 import { usePlayerStore } from '@/stores/player'
 import { useSocketStore } from '@/stores/socket'
 import { useAuthStore } from '@/stores/auth'
@@ -93,8 +89,7 @@ const shellClass = computed(() => ({
 
 const contentStyle = computed(() => {
   if (isMobile.value) {
-    const base = player.currentItem ? '116px' : '56px'
-    return { paddingBottom: `calc(${base} + env(safe-area-inset-bottom))` }
+    return { paddingBottom: `calc(56px + env(safe-area-inset-bottom))` }
   }
   if (isTablet.value)  return { paddingLeft: '72px' }
   return { paddingLeft: '200px' }

@@ -20,7 +20,204 @@
       <div class="player-content">
         <div class="player-layout">
 
-        <!-- Left column: cover + dots -->
+        <!-- Right column (DOM-first: renders above carousel on mobile; order: 2 on desktop) -->
+        <div class="player-right">
+
+        <!-- Screen title bar (mobile) -->
+        <div class="player-topbar">
+          <div class="player-wordmark">
+            ABSCOND
+            <v-icon
+              size="13"
+              :color="socket.connected ? 'rgba(100,215,100,0.85)' : 'rgba(255,255,255,0.2)'"
+              style="margin-left:4px"
+            >mdi-cloud-outline</v-icon>
+          </div>
+          <div class="player-topbar-actions">
+            <button
+              v-if="player.currentItem"
+              class="topbar-action-btn"
+              title="Stop playback"
+              @click="player.stop()"
+            >
+              <v-icon size="16">mdi-stop</v-icon>
+            </button>
+            <button
+              class="topbar-action-btn"
+              :class="{ active: showQueue }"
+              title="Queue"
+              @click="showQueue = !showQueue; showChapters = false; showSleepPicker = false; showSpeedPicker = false"
+            >
+              <v-icon size="16">mdi-playlist-play</v-icon>
+              <span v-if="player.queue.length" class="topbar-queue-badge">{{ player.queue.length }}</span>
+            </button>
+          </div>
+        </div>
+
+        <div v-if="player.currentItem || player.recentItems.length" class="player-screen-title">
+          {{ player.currentItem ? 'Absconding' : 'Recently Played' }}
+        </div>
+
+        <!-- Book title + author (small, below screen title) -->
+        <div v-if="displayItem" class="player-meta-header">
+          <span class="pmh-title">{{ displayTitle }}</span>
+          <span class="pmh-sep">·</span>
+          <span class="pmh-author">{{ displayAuthor }}</span>
+        </div>
+
+          <!-- Speed picker -->
+          <Transition name="panel">
+            <div v-if="showSpeedPicker" class="panel-box" @touchmove.stop>
+              <div class="speed-header">
+                <button class="speed-step" @click="stepSpeed(-0.05)">−</button>
+                <div class="speed-current-wrap">
+                  <span class="speed-current">{{ player.playbackRate.toFixed(2) }}×</span>
+                </div>
+                <button class="speed-step" @click="stepSpeed(+0.05)">+</button>
+              </div>
+              <div class="panel-opts">
+                <button
+                  v-for="s in speedPresets" :key="s"
+                  class="panel-opt" :class="{ active: Math.abs(player.playbackRate - s) < 0.01 }"
+                  @click="setSpeed(s)"
+                  @contextmenu.prevent="removeSpeedPreset(s)"
+                >{{ s }}×</button>
+                <button class="panel-opt speed-add" :title="'Save ' + player.playbackRate.toFixed(2) + '× as preset'" @click="addSpeedPreset">
+                  <v-icon size="13">mdi-plus</v-icon>
+                </button>
+              </div>
+            </div>
+          </Transition>
+
+          <!-- Sleep picker -->
+          <Transition name="panel">
+            <div v-if="showSleepPicker" class="panel-box" @touchmove.stop>
+              <p class="panel-title">Sleep Timer</p>
+              <div class="panel-opts">
+                <button v-for="m in [5, 10, 15, 20, 30, 45, 60]" :key="m"
+                  class="panel-opt" :class="{ active: player.sleepMinsLeft === m && !sleepCustomActive }"
+                  @click="setSleep(m); sleepCustomActive = false">{{ m }}m</button>
+                <button class="panel-opt" :class="{ active: player.sleepEndOfChapter }" @click="setSleepEoc(); sleepCustomActive = false">End of Ch.</button>
+                <button class="panel-opt cancel" @click="setSleep(null); sleepCustomActive = false">Off</button>
+              </div>
+              <!-- Custom duration slider -->
+              <div class="sleep-custom">
+                <div class="sleep-custom-row">
+                  <span class="sleep-custom-label">Custom: {{ sleepCustomMins }}m</span>
+                  <button class="panel-opt" :class="{ active: sleepCustomActive }" @click="setSleep(sleepCustomMins); sleepCustomActive = true">Set</button>
+                </div>
+                <input
+                  type="range" min="1" max="120" step="1"
+                  v-model.number="sleepCustomMins"
+                  class="sleep-slider"
+                  @change="sleepCustomActive = false"
+                />
+              </div>
+              <!-- Rewind on sleep -->
+              <div class="sleep-rewind-row">
+                <span class="sleep-custom-label">Rewind on sleep</span>
+                <div class="sleep-rewind-opts">
+                  <button
+                    v-for="s in [0, 5, 10, 15, 30]"
+                    :key="s"
+                    class="panel-opt sleep-rewind-opt"
+                    :class="{ active: sleepRewindSecs === s }"
+                    @click="setSleepRewind(s)"
+                  >{{ s === 0 ? 'Off' : `${s}s` }}</button>
+                </div>
+              </div>
+            </div>
+          </Transition>
+
+          <!-- Queue panel -->
+          <Transition name="panel">
+            <div v-if="showQueue" class="panel-box queue-panel" @touchmove.stop>
+              <div class="queue-header">
+                <span class="panel-title" style="margin:0">Up Next</span>
+                <span class="queue-count">{{ player.queue.length }} items</span>
+                <button v-if="player.queue.length" class="queue-clear-btn" @click="player.clearQueue()">Clear all</button>
+              </div>
+              <div v-if="!player.queue.length" class="queue-empty-msg">
+                <v-icon size="28" color="rgba(255,255,255,0.15)">mdi-playlist-remove</v-icon>
+                <p>Queue is empty</p>
+              </div>
+              <div v-else ref="queueListEl" class="queue-list"
+                @pointermove="queueDragMove" @pointerup="queueDragEnd" @pointercancel="queueDragEnd">
+                <div
+                  v-for="(entry, idx) in player.queue"
+                  :key="entry.episodeId ?? entry.item.id"
+                  class="queue-item-row"
+                  :class="{
+                    'queue-drag-source': queueDragFrom === idx,
+                    'queue-drag-over': queueDragOver === idx && queueDragFrom !== idx && queueDragFrom >= 0
+                  }"
+                >
+                  <div class="queue-drag-handle" @pointerdown.prevent="queueDragStart($event, idx)" touch-action="none">
+                    <v-icon size="16" color="rgba(255,255,255,0.2)">mdi-drag-vertical</v-icon>
+                  </div>
+                  <img :src="coverUrl(entry.item.id, auth.token ?? '')" class="queue-item-cover" />
+                  <div class="queue-item-meta">
+                    <p class="queue-item-title">{{ entry.episodeId ? (epTitle(entry) || entry.item.media.metadata.title) : entry.item.media.metadata.title }}</p>
+                    <p class="queue-item-author">{{ entry.episodeId ? entry.item.media.metadata.title : (entry.item.media.metadata.authorName || 'Unknown') }}</p>
+                  </div>
+                  <button class="queue-item-del" @click="player.removeFromQueue(idx)">
+                    <v-icon size="16" color="rgba(255,255,255,0.4)">mdi-close</v-icon>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </Transition>
+
+          <!-- Chapters panel -->
+          <Transition name="panel">
+            <div v-if="showChapters" class="panel-box chapters-panel" @touchmove.stop>
+              <div class="chapters-panel-header">
+                <span class="panel-title" style="margin:0">Chapters</span>
+                <span class="chapters-count">{{ filteredChapters.length }}/{{ chapters.length }}</span>
+              </div>
+              <div v-if="loadingChapters" class="chapters-loading-row">
+                <v-icon size="16" color="rgba(255,255,255,0.3)" class="spin">mdi-loading</v-icon>
+                <span>Loading chapters…</span>
+              </div>
+              <div v-else-if="!chapters.length" class="chapters-empty-row">No chapters available</div>
+              <div v-if="chapters.length > 8" class="chapter-search-wrap">
+                <v-icon size="13" color="rgba(255,255,255,0.3)">mdi-magnify</v-icon>
+                <input v-model="chapterSearch" class="chapter-search-input" placeholder="Search chapters…" />
+                <button v-if="chapterSearch" class="chapter-search-clear" @click="chapterSearch = ''">
+                  <v-icon size="11">mdi-close</v-icon>
+                </button>
+              </div>
+              <div ref="chaptersListEl" class="chapters-list">
+                <div
+                  v-for="ch in filteredChapters" :key="ch.id"
+                  class="chapter-item"
+                  :class="{
+                    active: panelCurrentChapter?.id === ch.id,
+                    finished: player.currentTime > ch.end && panelCurrentChapter?.id !== ch.id
+                  }"
+                  @click="player.seek(ch.start)"
+                >
+                  <span class="chapter-item-num">
+                    <v-icon v-if="panelCurrentChapter?.id === ch.id" size="12" color="#d4a017">mdi-volume-high</v-icon>
+                    <v-icon v-else-if="player.currentTime > ch.end && panelCurrentChapter?.id !== ch.id" size="12" color="rgba(255,255,255,0.2)">mdi-check</v-icon>
+                    <span v-else class="ch-num-label">{{ chapters.indexOf(ch) + 1 }}</span>
+                  </span>
+                  <span class="chapter-item-name">{{ ch.title }}</span>
+                  <span class="chapter-item-dur">{{ formatTime(ch.end - ch.start) }}</span>
+                </div>
+                <p v-if="!filteredChapters.length" class="chapters-no-match">No chapters match</p>
+              </div>
+            </div>
+          </Transition>
+
+        <!-- Recent-only play prompt -->
+        <div v-if="!player.currentItem" class="recent-only-prompt">
+          <p class="recent-only-hint">Tap a cover to resume playback</p>
+        </div>
+
+        </div><!-- /.player-right -->
+
+        <!-- Left column: cover + dots (order: 1 on desktop) -->
         <div class="player-left">
 
         <!-- Swipeable cover carousel -->
@@ -239,203 +436,6 @@
         </div>
 
         </div><!-- /.player-left -->
-
-        <!-- Right column: controls + panels -->
-        <div class="player-right">
-
-        <!-- Screen title bar (mobile) -->
-        <div class="player-topbar">
-          <div class="player-wordmark">
-            ABSCOND
-            <v-icon
-              size="13"
-              :color="socket.connected ? 'rgba(100,215,100,0.85)' : 'rgba(255,255,255,0.2)'"
-              style="margin-left:4px"
-            >mdi-cloud-outline</v-icon>
-          </div>
-          <div class="player-topbar-actions">
-            <button
-              v-if="player.currentItem"
-              class="topbar-action-btn"
-              title="Stop playback"
-              @click="player.stop()"
-            >
-              <v-icon size="16">mdi-stop</v-icon>
-            </button>
-            <button
-              class="topbar-action-btn"
-              :class="{ active: showQueue }"
-              title="Queue"
-              @click="showQueue = !showQueue; showChapters = false; showSleepPicker = false; showSpeedPicker = false"
-            >
-              <v-icon size="16">mdi-playlist-play</v-icon>
-              <span v-if="player.queue.length" class="topbar-queue-badge">{{ player.queue.length }}</span>
-            </button>
-          </div>
-        </div>
-
-        <div v-if="player.currentItem || player.recentItems.length" class="player-screen-title">
-          {{ player.currentItem ? 'Absconding' : 'Recently Played' }}
-        </div>
-
-        <!-- Book title + author (small, below screen title) -->
-        <div v-if="displayItem" class="player-meta-header">
-          <span class="pmh-title">{{ displayTitle }}</span>
-          <span class="pmh-sep">·</span>
-          <span class="pmh-author">{{ displayAuthor }}</span>
-        </div>
-
-          <!-- Speed picker -->
-          <Transition name="panel">
-            <div v-if="showSpeedPicker" class="panel-box" @touchmove.stop>
-              <div class="speed-header">
-                <button class="speed-step" @click="stepSpeed(-0.05)">−</button>
-                <div class="speed-current-wrap">
-                  <span class="speed-current">{{ player.playbackRate.toFixed(2) }}×</span>
-                </div>
-                <button class="speed-step" @click="stepSpeed(+0.05)">+</button>
-              </div>
-              <div class="panel-opts">
-                <button
-                  v-for="s in speedPresets" :key="s"
-                  class="panel-opt" :class="{ active: Math.abs(player.playbackRate - s) < 0.01 }"
-                  @click="setSpeed(s)"
-                  @contextmenu.prevent="removeSpeedPreset(s)"
-                >{{ s }}×</button>
-                <button class="panel-opt speed-add" :title="'Save ' + player.playbackRate.toFixed(2) + '× as preset'" @click="addSpeedPreset">
-                  <v-icon size="13">mdi-plus</v-icon>
-                </button>
-              </div>
-            </div>
-          </Transition>
-
-          <!-- Sleep picker -->
-          <Transition name="panel">
-            <div v-if="showSleepPicker" class="panel-box" @touchmove.stop>
-              <p class="panel-title">Sleep Timer</p>
-              <div class="panel-opts">
-                <button v-for="m in [5, 10, 15, 20, 30, 45, 60]" :key="m"
-                  class="panel-opt" :class="{ active: player.sleepMinsLeft === m && !sleepCustomActive }"
-                  @click="setSleep(m); sleepCustomActive = false">{{ m }}m</button>
-                <button class="panel-opt" :class="{ active: player.sleepEndOfChapter }" @click="setSleepEoc(); sleepCustomActive = false">End of Ch.</button>
-                <button class="panel-opt cancel" @click="setSleep(null); sleepCustomActive = false">Off</button>
-              </div>
-              <!-- Custom duration slider -->
-              <div class="sleep-custom">
-                <div class="sleep-custom-row">
-                  <span class="sleep-custom-label">Custom: {{ sleepCustomMins }}m</span>
-                  <button class="panel-opt" :class="{ active: sleepCustomActive }" @click="setSleep(sleepCustomMins); sleepCustomActive = true">Set</button>
-                </div>
-                <input
-                  type="range" min="1" max="120" step="1"
-                  v-model.number="sleepCustomMins"
-                  class="sleep-slider"
-                  @change="sleepCustomActive = false"
-                />
-              </div>
-              <!-- Rewind on sleep -->
-              <div class="sleep-rewind-row">
-                <span class="sleep-custom-label">Rewind on sleep</span>
-                <div class="sleep-rewind-opts">
-                  <button
-                    v-for="s in [0, 5, 10, 15, 30]"
-                    :key="s"
-                    class="panel-opt sleep-rewind-opt"
-                    :class="{ active: sleepRewindSecs === s }"
-                    @click="setSleepRewind(s)"
-                  >{{ s === 0 ? 'Off' : `${s}s` }}</button>
-                </div>
-              </div>
-            </div>
-          </Transition>
-
-          <!-- Queue panel -->
-          <Transition name="panel">
-            <div v-if="showQueue" class="panel-box queue-panel" @touchmove.stop>
-              <div class="queue-header">
-                <span class="panel-title" style="margin:0">Up Next</span>
-                <span class="queue-count">{{ player.queue.length }} items</span>
-                <button v-if="player.queue.length" class="queue-clear-btn" @click="player.clearQueue()">Clear all</button>
-              </div>
-              <div v-if="!player.queue.length" class="queue-empty-msg">
-                <v-icon size="28" color="rgba(255,255,255,0.15)">mdi-playlist-remove</v-icon>
-                <p>Queue is empty</p>
-              </div>
-              <div v-else ref="queueListEl" class="queue-list"
-                @pointermove="queueDragMove" @pointerup="queueDragEnd" @pointercancel="queueDragEnd">
-                <div
-                  v-for="(entry, idx) in player.queue"
-                  :key="entry.episodeId ?? entry.item.id"
-                  class="queue-item-row"
-                  :class="{
-                    'queue-drag-source': queueDragFrom === idx,
-                    'queue-drag-over': queueDragOver === idx && queueDragFrom !== idx && queueDragFrom >= 0
-                  }"
-                >
-                  <div class="queue-drag-handle" @pointerdown.prevent="queueDragStart($event, idx)" touch-action="none">
-                    <v-icon size="16" color="rgba(255,255,255,0.2)">mdi-drag-vertical</v-icon>
-                  </div>
-                  <img :src="coverUrl(entry.item.id, auth.token ?? '')" class="queue-item-cover" />
-                  <div class="queue-item-meta">
-                    <p class="queue-item-title">{{ entry.episodeId ? (epTitle(entry) || entry.item.media.metadata.title) : entry.item.media.metadata.title }}</p>
-                    <p class="queue-item-author">{{ entry.episodeId ? entry.item.media.metadata.title : (entry.item.media.metadata.authorName || 'Unknown') }}</p>
-                  </div>
-                  <button class="queue-item-del" @click="player.removeFromQueue(idx)">
-                    <v-icon size="16" color="rgba(255,255,255,0.4)">mdi-close</v-icon>
-                  </button>
-                </div>
-              </div>
-            </div>
-          </Transition>
-
-          <!-- Chapters panel -->
-          <Transition name="panel">
-            <div v-if="showChapters" class="panel-box chapters-panel" @touchmove.stop>
-              <div class="chapters-panel-header">
-                <span class="panel-title" style="margin:0">Chapters</span>
-                <span class="chapters-count">{{ filteredChapters.length }}/{{ chapters.length }}</span>
-              </div>
-              <div v-if="loadingChapters" class="chapters-loading-row">
-                <v-icon size="16" color="rgba(255,255,255,0.3)" class="spin">mdi-loading</v-icon>
-                <span>Loading chapters…</span>
-              </div>
-              <div v-else-if="!chapters.length" class="chapters-empty-row">No chapters available</div>
-              <div v-if="chapters.length > 8" class="chapter-search-wrap">
-                <v-icon size="13" color="rgba(255,255,255,0.3)">mdi-magnify</v-icon>
-                <input v-model="chapterSearch" class="chapter-search-input" placeholder="Search chapters…" />
-                <button v-if="chapterSearch" class="chapter-search-clear" @click="chapterSearch = ''">
-                  <v-icon size="11">mdi-close</v-icon>
-                </button>
-              </div>
-              <div ref="chaptersListEl" class="chapters-list">
-                <div
-                  v-for="ch in filteredChapters" :key="ch.id"
-                  class="chapter-item"
-                  :class="{
-                    active: panelCurrentChapter?.id === ch.id,
-                    finished: player.currentTime > ch.end && panelCurrentChapter?.id !== ch.id
-                  }"
-                  @click="player.seek(ch.start)"
-                >
-                  <span class="chapter-item-num">
-                    <v-icon v-if="panelCurrentChapter?.id === ch.id" size="12" color="#d4a017">mdi-volume-high</v-icon>
-                    <v-icon v-else-if="player.currentTime > ch.end && panelCurrentChapter?.id !== ch.id" size="12" color="rgba(255,255,255,0.2)">mdi-check</v-icon>
-                    <span v-else class="ch-num-label">{{ chapters.indexOf(ch) + 1 }}</span>
-                  </span>
-                  <span class="chapter-item-name">{{ ch.title }}</span>
-                  <span class="chapter-item-dur">{{ formatTime(ch.end - ch.start) }}</span>
-                </div>
-                <p v-if="!filteredChapters.length" class="chapters-no-match">No chapters match</p>
-              </div>
-            </div>
-          </Transition>
-
-        <!-- Recent-only play prompt -->
-        <div v-if="!player.currentItem" class="recent-only-prompt">
-          <p class="recent-only-hint">Tap a cover to resume playback</p>
-        </div>
-
-        </div><!-- /.player-right -->
         </div><!-- /.player-layout -->
 
       </div>
@@ -1480,6 +1480,13 @@ function queueDragEnd() {
     flex: 1; min-width: 0;
     display: flex; flex-direction: column;
   }
+
+  /* DOM order is right-first; use order to put cover left on desktop */
+  .player-left { order: 1; }
+  .player-right { order: 2; }
+
+  /* Topbar is mobile-only; NavDrawer provides context on desktop */
+  .player-topbar { display: none; }
 
   /* On desktop, carousel is fixed-width, not full-vw */
   .cover-carousel { width: 320px; margin-left: 0; }
