@@ -43,12 +43,38 @@ export const useSocketStore = defineStore('socket', () => {
       const prog = d.userMediaProgress as Record<string, unknown> | undefined
       if (!prog) return
       const ps = useProgressStore()
-      const updateInList = (list: { id: unknown; userMediaProgress?: Record<string, unknown> | null }[]) => {
-        const item = list.find(i => i.id === d.id || i.id === prog.libraryItemId)
-        if (item) item.userMediaProgress = prog as unknown as typeof item.userMediaProgress
+      const itemId = (prog.libraryItemId ?? d.id) as string | undefined
+      if (!itemId) return
+
+      const applyProgress = (list: { id: unknown; userMediaProgress?: unknown }[]) => {
+        const item = list.find(i => i.id === itemId)
+        if (item) item.userMediaProgress = prog
+        return item
       }
-      updateInList(ps.inProgress)
-      updateInList(ps.recentlyAdded)
+      applyProgress(ps.inProgress)
+      applyProgress(ps.recentlyAdded)
+      applyProgress(ps.recentlyFinished)
+
+      const isFinished = !!(prog.isFinished)
+      if (isFinished) {
+        ps.inProgress = ps.inProgress.filter((i: { id: unknown }) => i.id !== itemId)
+        if (!ps.recentlyFinished.some((i: { id: unknown }) => i.id === itemId)) {
+          const ls = useLibraryStore()
+          let src: { id: unknown; userMediaProgress?: unknown; media: unknown } | undefined =
+            ps.recentlyAdded.find((i: { id: unknown }) => i.id === itemId) as typeof src
+          if (!src) {
+            for (const libId of ls.libraries.map(l => l.id)) {
+              src = ls.itemsFor(libId).find(i => i.id === itemId) as typeof src
+              if (src) break
+            }
+          }
+          if (src) {
+            ps.recentlyFinished = [{ ...src, userMediaProgress: prog }, ...ps.recentlyFinished].slice(0, 20) as typeof ps.recentlyFinished
+          }
+        }
+      } else {
+        ps.recentlyFinished = ps.recentlyFinished.filter((i: { id: unknown }) => i.id !== itemId)
+      }
     }))
 
     cleanups.push(onSocketEvent('item_updated', (data: unknown) => {
