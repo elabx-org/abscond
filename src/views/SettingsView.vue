@@ -574,6 +574,20 @@
       </div>
     </section>
 
+    <!-- Abscond -->
+    <section class="settings-section">
+      <p class="section-label">Abscond</p>
+
+      <div class="settings-item" @click="showClearCacheConfirm = true">
+        <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-cached</v-icon>
+        <div class="item-label-stack">
+          <span class="item-label">Clear App Cache</span>
+          <span class="item-sublabel">Clears cached assets and reloads the app</span>
+        </div>
+        <v-icon size="14" color="rgba(255,255,255,0.2)">mdi-chevron-right</v-icon>
+      </div>
+    </section>
+
     <!-- Data & Backup -->
     <section class="settings-section">
       <p class="section-label">Data &amp; Backup</p>
@@ -687,6 +701,24 @@
         </div>
       </Transition>
     </Teleport>
+
+    <!-- Clear cache confirmation -->
+    <Teleport to="body">
+      <Transition name="fade">
+        <div v-if="showClearCacheConfirm" class="confirm-backdrop" @click.self="showClearCacheConfirm = false">
+          <div class="confirm-sheet">
+            <p class="confirm-title">Clear App Cache?</p>
+            <p class="confirm-sub">Cached assets will be deleted and the app will reload. Your login and settings are not affected.</p>
+            <div class="confirm-btns">
+              <button class="confirm-cancel" @click="showClearCacheConfirm = false">Cancel</button>
+              <button class="confirm-logout" style="background:rgba(212,160,23,0.12);color:#d4a017" :disabled="clearingCache" @click="clearAppCache">
+                {{ clearingCache ? 'Clearing…' : 'Clear Cache' }}
+              </button>
+            </div>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
   </div>
 </template>
 
@@ -730,8 +762,26 @@ function toggleHideEbookOnly() {
   localStorage.setItem('abs_lib_hide_ebook', String(hideEbookOnly.value))
 }
 
-const confirmLogout      = ref(false)
-const socketConnected    = computed(() => socketStore.connected)
+const confirmLogout         = ref(false)
+const showClearCacheConfirm = ref(false)
+const clearingCache         = ref(false)
+const socketConnected       = computed(() => socketStore.connected)
+
+async function clearAppCache() {
+  clearingCache.value = true
+  try {
+    if ('caches' in window) {
+      const names = await caches.keys()
+      await Promise.all(names.map(n => caches.delete(n)))
+    }
+    if ('serviceWorker' in navigator) {
+      const regs = await navigator.serviceWorker.getRegistrations()
+      await Promise.all(regs.map(r => r.unregister()))
+    }
+  } finally {
+    window.location.reload()
+  }
+}
 const importFileRef      = ref<HTMLInputElement | null>(null)
 
 const noteCount = computed(() => {
