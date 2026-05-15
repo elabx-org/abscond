@@ -27,6 +27,7 @@ const router = createRouter({
         { path: 'settings',    name: 'settings',    component: () => import('@/views/SettingsView.vue') },
         { path: 'stats',       name: 'stats',       component: () => import('@/views/StatsView.vue') },
         { path: 'collections', name: 'collections', component: () => import('@/views/CollectionsView.vue') },
+        { path: 'playlists',   name: 'playlists',   component: () => import('@/views/PlaylistsView.vue') },
         {
           path: 'admin',
           component: () => import('@/views/admin/AdminLayout.vue'),

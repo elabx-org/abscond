@@ -29,7 +29,14 @@
             <!-- Title & Authors -->
             <h2 class="sheet-title">{{ item.media.metadata.title }}</h2>
             <p v-if="item.media.metadata.subtitle" class="sheet-subtitle">{{ item.media.metadata.subtitle }}</p>
-            <p class="sheet-authors">{{ authorNames }}</p>
+            <div class="author-chips">
+              <button
+                v-for="a in (item.media.metadata.authors ?? [])"
+                :key="a.id"
+                class="author-chip"
+                @click.stop="openAuthor(a)"
+              >{{ a.name }}</button>
+            </div>
             <p v-if="narratorNames" class="sheet-narrator">Read by {{ narratorNames }}</p>
 
             <!-- Progress bar -->
@@ -41,7 +48,12 @@
 
             <!-- Series -->
             <div v-if="allSeries.length" class="series-rows">
-              <p v-for="s in allSeries" :key="s.id" class="sheet-series">{{ seriesLabel(s) }}</p>
+              <button
+                v-for="s in allSeries"
+                :key="s.id"
+                class="series-btn"
+                @click.stop="openSeries(s)"
+              >{{ seriesLabel(s) }}</button>
             </div>
 
             <!-- Play button -->
@@ -73,6 +85,24 @@
       </div>
     </Transition>
   </Teleport>
+
+  <!-- Sub-sheets -->
+  <SeriesDetailSheet
+    v-if="activeSeriesId"
+    :show="!!activeSeriesId"
+    :series-id="activeSeriesId"
+    :series-name="activeSeriesName"
+    @close="activeSeriesId = ''"
+    @open-book="onSubSheetBook"
+  />
+  <AuthorDetailSheet
+    v-if="activeAuthorId"
+    :show="!!activeAuthorId"
+    :author-id="activeAuthorId"
+    :author-name="activeAuthorName"
+    @close="activeAuthorId = ''"
+    @open-book="onSubSheetBook"
+  />
 </template>
 
 <script setup lang="ts">
@@ -81,7 +111,9 @@ import { useRouter } from 'vue-router'
 import { useDraggableSheet } from '@/composables/useDraggableSheet'
 import { useColorThief } from '@/composables/useColorThief'
 import { usePlayerStore } from '@/stores/player'
-import type { LibraryItem, Series } from '@/api/types'
+import SeriesDetailSheet from '@/components/sheets/SeriesDetailSheet.vue'
+import AuthorDetailSheet from '@/components/sheets/AuthorDetailSheet.vue'
+import type { LibraryItem, Series, Author } from '@/api/types'
 
 const props = defineProps<{
   item: LibraryItem
@@ -98,7 +130,30 @@ const sheet  = useDraggableSheet({ initial: 85, min: 30, max: 95 })
 const coverImgRef = ref<HTMLImageElement | null>(null)
 const { accent } = useColorThief(coverImgRef)
 
-const descExpanded = ref(false)
+const descExpanded    = ref(false)
+const activeSeriesId   = ref('')
+const activeSeriesName = ref('')
+const activeAuthorId   = ref('')
+const activeAuthorName = ref('')
+
+function openSeries(s: Series) {
+  activeSeriesId.value   = s.id
+  activeSeriesName.value = s.name
+}
+
+function openAuthor(a: Author) {
+  activeAuthorId.value   = a.id
+  activeAuthorName.value = a.name
+}
+
+function onSubSheetBook(item: LibraryItem) {
+  activeSeriesId.value = ''
+  activeAuthorId.value = ''
+  emit('close')
+  // slight delay so the parent can reopen detail for new item
+  setTimeout(() => { router.push({ name: 'library' }) }, 100)
+  void item
+}
 
 const isThisPlaying = computed(() =>
   player.isPlaying && player.currentItem?.id === props.item.id
@@ -110,10 +165,6 @@ async function onPlayPress() {
   await player.play(props.item)
   router.push({ name: 'player' })
 }
-
-const authorNames = computed(() =>
-  (props.item.media.metadata.authors ?? []).map(a => a.name).join(', ') || 'Unknown Author'
-)
 
 const narratorNames = computed(() =>
   (props.item.media.metadata.narrators ?? []).join(', ')
@@ -192,8 +243,10 @@ watch(() => props.show, (v) => { if (v) descExpanded.value = false })
 .sheet-subtitle {
   font-size: 12px; color: rgba(255,255,255,0.45); text-align: center; margin: 0 0 4px;
 }
-.sheet-authors {
-  font-size: 12px; color: rgba(255,255,255,0.55); text-align: center; margin: 0 0 4px;
+.author-chips { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; margin: 0 0 4px; }
+.author-chip {
+  font-size: 12px; color: rgba(212,160,23,0.85); background: transparent;
+  border: none; cursor: pointer; padding: 2px 0; text-decoration: underline; text-underline-offset: 2px;
 }
 .sheet-narrator {
   font-size: 11px; color: rgba(255,255,255,0.35); text-align: center; margin: 0 0 12px;
@@ -213,9 +266,11 @@ watch(() => props.show, (v) => { if (v) descExpanded.value = false })
 .finished-badge {
   font-size: 11px; color: #22c55e; text-align: center; margin: 4px 0 8px;
 }
-.series-rows { margin: 0 0 8px; }
-.sheet-series {
-  font-size: 10px; color: rgba(255,255,255,0.35); text-align: center; margin: 0 0 4px;
+.series-rows { margin: 0 0 8px; display: flex; flex-wrap: wrap; justify-content: center; gap: 4px; }
+.series-btn {
+  font-size: 10px; color: rgba(255,255,255,0.45); background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.08); border-radius: 20px;
+  padding: 3px 10px; cursor: pointer;
 }
 .play-btn {
   display: flex; align-items: center; justify-content: center; gap: 8px;

@@ -64,9 +64,16 @@
       <button class="load-more-btn" @click="loadMore">Load more</button>
     </div>
 
-    <!-- Book detail sheet -->
+    <!-- Book/Podcast detail sheet -->
     <BookDetailSheet
-      v-if="selectedItem"
+      v-if="selectedItem && selectedItem.mediaType !== 'podcast'"
+      :item="selectedItem"
+      :cover-src="coverUrl(selectedItem.id, auth.token ?? '')"
+      :show="!!selectedItem"
+      @close="selectedItem = null"
+    />
+    <PodcastDetailSheet
+      v-if="selectedItem && selectedItem.mediaType === 'podcast'"
       :item="selectedItem"
       :cover-src="coverUrl(selectedItem.id, auth.token ?? '')"
       :show="!!selectedItem"
@@ -82,6 +89,7 @@ import { useAuthStore } from '@/stores/auth'
 import { coverUrl } from '@/api/client'
 import PortraitCard from '@/components/cards/PortraitCard.vue'
 import BookDetailSheet from '@/components/sheets/BookDetailSheet.vue'
+import PodcastDetailSheet from '@/components/sheets/PodcastDetailSheet.vue'
 import type { LibraryItem } from '@/api/types'
 
 const lib  = useLibraryStore()

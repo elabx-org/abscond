@@ -126,6 +126,11 @@
         <span class="item-label">Collections</span>
         <v-icon size="14" color="rgba(255,255,255,0.2)">mdi-chevron-right</v-icon>
       </div>
+      <div class="settings-item" @click="router.push({ name: 'playlists' })">
+        <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-playlist-music</v-icon>
+        <span class="item-label">Playlists</span>
+        <v-icon size="14" color="rgba(255,255,255,0.2)">mdi-chevron-right</v-icon>
+      </div>
     </section>
 
     <!-- Admin link -->
