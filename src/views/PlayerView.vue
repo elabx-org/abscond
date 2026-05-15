@@ -251,6 +251,19 @@
                   @change="sleepCustomActive = false"
                 />
               </div>
+              <!-- Rewind on sleep -->
+              <div class="sleep-rewind-row">
+                <span class="sleep-custom-label">Rewind on sleep</span>
+                <div class="sleep-rewind-opts">
+                  <button
+                    v-for="s in [0, 5, 10, 15, 30]"
+                    :key="s"
+                    class="panel-opt sleep-rewind-opt"
+                    :class="{ active: sleepRewindSecs === s }"
+                    @click="setSleepRewind(s)"
+                  >{{ s === 0 ? 'Off' : `${s}s` }}</button>
+                </div>
+              </div>
             </div>
           </Transition>
 
@@ -440,8 +453,9 @@ const showBookmarkSheet = ref(false)
 const showAddBookmark  = ref(false)
 const newBookmarkTitle = ref('')
 const itemBookmarks    = ref<Bookmark[]>([])
-const sleepCustomMins  = ref(parseInt(localStorage.getItem('abs_sleep_custom') ?? '45'))
+const sleepCustomMins   = ref(parseInt(localStorage.getItem('abs_sleep_custom') ?? '45'))
 const sleepCustomActive = ref(false)
+const sleepRewindSecs   = ref(parseInt(localStorage.getItem('abs_sleep_rewind') ?? '0'))
 const scrubberEl      = ref<HTMLElement | null>(null)
 let scrubbing = false
 const isScrubbing      = ref(false)
@@ -631,6 +645,10 @@ function setSleep(mins: number | null) {
   showSleepPicker.value = false
 }
 function setSleepEoc() { player.setSleepTimer(null, true); showSleepPicker.value = false }
+function setSleepRewind(secs: number) {
+  sleepRewindSecs.value = secs
+  localStorage.setItem('abs_sleep_rewind', String(secs))
+}
 
 const DEFAULT_SPEEDS = [0.75, 1.0, 1.25, 1.5, 1.75, 2.0, 2.5, 3.0]
 function _loadSpeedPresets(): number[] {
@@ -980,6 +998,9 @@ function queueDragEnd() {
 .sleep-custom-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
 .sleep-custom-label { font-size: 12px; color: rgba(255,255,255,0.5); }
 .sleep-slider { width: 100%; accent-color: #d4a017; }
+.sleep-rewind-row { margin-top: 10px; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 10px; display: flex; flex-direction: column; gap: 8px; }
+.sleep-rewind-opts { display: flex; gap: 6px; flex-wrap: wrap; }
+.sleep-rewind-opt { min-width: 40px; }
 
 /* Queue panel */
 .queue-panel { padding: 14px 0; }
