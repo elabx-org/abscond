@@ -153,6 +153,10 @@
                 <v-icon size="16">mdi-pencil-outline</v-icon>
                 Edit
               </button>
+              <button v-if="auth.isAdmin" class="action-btn" @click="showMatch = true">
+                <v-icon size="16">mdi-magnify-scan</v-icon>
+                Match
+              </button>
               <button v-if="auth.isAdmin" class="action-btn" :disabled="scanning" @click="doScan">
                 <v-icon size="16" :class="{ spin: scanning }">{{ scanning ? 'mdi-loading' : 'mdi-magnify-scan' }}</v-icon>
                 {{ scanning ? 'Scanning…' : 'Scan' }}
@@ -194,12 +198,6 @@
               <button v-if="coverUrl_ || coverFile" class="cover-save-btn" :disabled="coverSaving" @click="doUpdateCover">
                 <v-icon size="14">{{ coverSaving ? 'mdi-loading' : 'mdi-check' }}</v-icon>
                 {{ coverSaving ? 'Updating…' : 'Update cover' }}
-              </button>
-
-              <!-- Match Metadata -->
-              <button class="action-btn match-btn" @click="showMatch = true">
-                <v-icon size="14">mdi-magnify-scan</v-icon>
-                Match Metadata
               </button>
 
               <input v-model="editMeta.title" class="edit-input" placeholder="Title" />
@@ -943,10 +941,10 @@ async function doSaveMeta() {
   padding: 3px 10px; cursor: pointer;
 }
 .action-row {
-  display: flex; gap: 8px; margin: 4px 0 12px;
+  display: flex; flex-wrap: wrap; gap: 8px; margin: 4px 0 12px;
 }
 .action-btn {
-  flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px;
+  flex: 1 1 auto; min-width: 72px; display: flex; align-items: center; justify-content: center; gap: 6px;
   font-size: 11px; color: rgba(255,255,255,0.5); background: rgba(255,255,255,0.05);
   border: 1px solid rgba(255,255,255,0.08); border-radius: 10px;
   cursor: pointer; padding: 8px 4px;
