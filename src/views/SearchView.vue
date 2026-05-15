@@ -100,6 +100,40 @@
           <v-icon size="14" color="rgba(255,255,255,0.2)">mdi-chevron-right</v-icon>
         </div>
       </div>
+
+      <!-- Podcasts -->
+      <div v-if="podcastResults.length" class="result-group">
+        <p class="group-label">Podcasts</p>
+        <div
+          v-for="item in podcastResults"
+          :key="item.id"
+          class="result-row"
+          @click="openDetail(item)"
+        >
+          <img :src="coverUrl(item.id, auth.token ?? '')" class="result-cover" :alt="item.media.metadata.title" />
+          <div class="result-meta">
+            <p class="result-title">{{ item.media.metadata.title }}</p>
+            <p class="result-sub">{{ (item.media.metadata.authors ?? []).map(a => a.name).join(', ') || 'Podcast' }}</p>
+          </div>
+          <v-icon size="14" color="rgba(255,255,255,0.2)">mdi-chevron-right</v-icon>
+        </div>
+      </div>
+
+      <!-- Narrators -->
+      <div v-if="narratorResults.length" class="result-group">
+        <p class="group-label">Narrators</p>
+        <div class="narrator-chips">
+          <button
+            v-for="n in narratorResults"
+            :key="n"
+            class="narrator-chip"
+            @click="browseNarrator(n)"
+          >
+            <v-icon size="14" color="rgba(255,255,255,0.5)">mdi-microphone</v-icon>
+            {{ n }}
+          </button>
+        </div>
+      </div>
     </div>
 
     <!-- Detail sheets -->
@@ -164,11 +198,19 @@ let debounceTimer: ReturnType<typeof setTimeout> | null = null
 const bookResults = computed(() =>
   (results.value?.book ?? []).map(r => r.libraryItem)
 )
+const podcastResults = computed(() =>
+  (results.value?.podcast ?? []).map(r => r.libraryItem)
+)
 const seriesResults = computed(() => results.value?.series ?? [])
 const authorResults = computed(() => results.value?.authors ?? [])
+const narratorResults = computed(() => results.value?.narrators ?? [])
 
 const isEmpty = computed(() =>
-  !bookResults.value.length && !seriesResults.value.length && !authorResults.value.length
+  !bookResults.value.length &&
+  !podcastResults.value.length &&
+  !seriesResults.value.length &&
+  !authorResults.value.length &&
+  !narratorResults.value.length
 )
 
 function onInput() {
@@ -212,6 +254,11 @@ function openSeries(s: { id: string; name: string; books: LibraryItem[] }) {
 
 function openAuthor(a: { id: string; name: string; numBooks: number }) {
   activeAuthor.value = a
+}
+
+function browseNarrator(name: string) {
+  query.value = name
+  doSearch()
 }
 
 onMounted(() => {
@@ -303,4 +350,13 @@ onMounted(() => {
   font-size: 11px; color: rgba(255,255,255,0.4); margin: 0;
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
+
+.narrator-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.narrator-chip {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 12px; padding: 6px 12px; border-radius: 20px;
+  background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.08);
+  color: rgba(255,255,255,0.7); cursor: pointer;
+}
+.narrator-chip:hover { background: rgba(255,255,255,0.1); }
 </style>
