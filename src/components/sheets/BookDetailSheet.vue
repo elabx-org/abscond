@@ -105,6 +105,20 @@
             <!-- Edit metadata panel -->
             <div v-if="showEdit" class="playlist-inline edit-panel">
               <p class="playlist-inline-title">Edit Metadata</p>
+
+              <!-- Cover update -->
+              <div class="cover-update-row">
+                <input v-model="coverUrl_" class="edit-input" placeholder="Cover image URL" style="flex:1" />
+                <button class="cover-upload-btn" @click="coverFileInput?.click()" title="Upload image file">
+                  <v-icon size="16">mdi-image-plus</v-icon>
+                </button>
+                <input ref="coverFileInput" type="file" accept="image/*" style="display:none" @change="onCoverFile" />
+              </div>
+              <button v-if="coverUrl_ || coverFile" class="cover-save-btn" :disabled="coverSaving" @click="doUpdateCover">
+                <v-icon size="14">{{ coverSaving ? 'mdi-loading' : 'mdi-check' }}</v-icon>
+                {{ coverSaving ? 'Updating…' : 'Update cover' }}
+              </button>
+
               <input v-model="editMeta.title" class="edit-input" placeholder="Title" />
               <input v-model="editMeta.subtitle" class="edit-input" placeholder="Subtitle" />
               <input v-model="editMeta.authorNames" class="edit-input" placeholder="Authors (comma-separated)" />
@@ -257,6 +271,31 @@ const showEdit          = ref(false)
 const editSaving        = ref(false)
 const editError         = ref('')
 const editMeta          = ref({ title: '', subtitle: '', authorNames: '', narratorNames: '', publishedYear: '', publisher: '', genres: '', tags: '', description: '' })
+const coverUrl_         = ref('')
+const coverFile         = ref<File | null>(null)
+const coverFileInput    = ref<HTMLInputElement | null>(null)
+const coverSaving       = ref(false)
+
+function onCoverFile(e: Event) {
+  const f = (e.target as HTMLInputElement).files?.[0]
+  if (f) { coverFile.value = f; coverUrl_.value = '' }
+}
+
+async function doUpdateCover() {
+  coverSaving.value = true
+  try {
+    if (coverFile.value) {
+      const form = new FormData()
+      form.append('cover', coverFile.value)
+      await api.post(`/items/${props.itemId}/cover`, form, { headers: { 'Content-Type': 'multipart/form-data' } })
+    } else if (coverUrl_.value.trim()) {
+      await api.post(`/items/${props.itemId}/cover`, { url: coverUrl_.value.trim() })
+    }
+    coverUrl_.value  = ''
+    coverFile.value  = null
+  } catch { /* ignore */ }
+  finally { coverSaving.value = false }
+}
 const shareError        = ref('')
 const shareCopied       = ref(false)
 
@@ -406,6 +445,8 @@ function openEdit() {
     description:   m.description ?? '',
   }
   editError.value = ''
+  coverUrl_.value  = ''
+  coverFile.value  = null
   showEdit.value  = true
 }
 
@@ -570,6 +611,19 @@ async function doSaveMeta() {
 }
 .edit-input::placeholder { color: rgba(255,255,255,0.3); }
 .edit-textarea { height: 80px; resize: none; line-height: 1.5; }
+.cover-update-row { display: flex; gap: 8px; align-items: center; width: 100%; }
+.cover-upload-btn {
+  display: flex; align-items: center; justify-content: center;
+  width: 36px; height: 36px; border-radius: 8px; flex-shrink: 0;
+  background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
+  color: rgba(255,255,255,0.6); cursor: pointer;
+}
+.cover-save-btn {
+  display: flex; align-items: center; gap: 5px; font-size: 11px; padding: 6px 12px;
+  border-radius: 8px; background: rgba(212,160,23,0.12); border: 1px solid rgba(212,160,23,0.25);
+  color: #d4a017; cursor: pointer; width: 100%; justify-content: center;
+}
+.cover-save-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 .read-btn {
   display: flex; align-items: center; justify-content: center; gap: 8px;
   width: 100%; padding: 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.15);
