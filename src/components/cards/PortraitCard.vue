@@ -86,7 +86,7 @@ function cancelLongPress() {
 <style scoped>
 .portrait-card { cursor: pointer; display: flex; flex-direction: column; gap: 4px; }
 .portrait-card.selected .cover-wrap { outline: 2px solid #d4a017; outline-offset: 1px; }
-.cover-wrap { position: relative; width: 100%; aspect-ratio: 1 / 1; border-radius: 8px; overflow: hidden; background: #141414; }
+.cover-wrap { position: relative; width: 100%; aspect-ratio: 2 / 3; border-radius: 8px; overflow: hidden; background: #141414; }
 .cover-img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .cover-placeholder { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; }
 .progress-bar { position: absolute; bottom: 0; left: 0; height: 3px; border-radius: 0 2px 0 0; transition: width 0.3s; }
