@@ -55,7 +55,10 @@
         :author="(item.media.metadata.authors ?? []).map(a => a.name).join(', ') || 'Unknown'"
         :cover-src="coverUrl(item.id, auth.token ?? '')"
         :progress="item.userMediaProgress?.progress ?? 0"
-        @click="openDetail(item)"
+        :selected="selectedIds.has(item.id)"
+        :select-mode="selectMode"
+        @click="onCardClick(item)"
+        @long-press="onLongPress(item)"
       />
     </div>
 
@@ -63,6 +66,24 @@
     <div v-if="hasMore && !lib.loading" class="load-more-wrap">
       <button class="load-more-btn" @click="loadMore">Load more</button>
     </div>
+
+    <!-- Batch select bar -->
+    <Transition name="batch-bar">
+      <div v-if="selectMode" class="batch-bar">
+        <button class="batch-cancel" @click="exitSelectMode">
+          <v-icon size="18">mdi-close</v-icon>
+        </button>
+        <span class="batch-count">{{ selectedIds.size }} selected</span>
+        <button class="batch-action" @click="batchMarkFinished">
+          <v-icon size="16">mdi-check-all</v-icon>
+          Mark finished
+        </button>
+        <button class="batch-action batch-action--danger" @click="batchClearProgress">
+          <v-icon size="16">mdi-restore</v-icon>
+          Clear progress
+        </button>
+      </div>
+    </Transition>
 
     <!-- Book/Podcast detail sheet -->
     <BookDetailSheet
@@ -86,7 +107,7 @@
 import { computed, onMounted, ref, watch } from 'vue'
 import { useLibraryStore } from '@/stores/library'
 import { useAuthStore } from '@/stores/auth'
-import { coverUrl } from '@/api/client'
+import { coverUrl, api } from '@/api/client'
 import PortraitCard from '@/components/cards/PortraitCard.vue'
 import BookDetailSheet from '@/components/sheets/BookDetailSheet.vue'
 import PodcastDetailSheet from '@/components/sheets/PodcastDetailSheet.vue'
@@ -96,6 +117,8 @@ const lib  = useLibraryStore()
 const auth = useAuthStore()
 
 const selectedItem = ref<LibraryItem | null>(null)
+const selectMode   = ref(false)
+const selectedIds  = ref(new Set<string>())
 const sortField    = ref<'title' | 'addedAt' | 'duration'>('title')
 const sortDesc     = ref(false)
 const pageSize     = 100
@@ -154,6 +177,42 @@ async function switchLibrary(id: string) {
 
 function openDetail(item: LibraryItem) {
   selectedItem.value = item
+}
+
+function onCardClick(item: LibraryItem) {
+  if (selectMode.value) {
+    if (selectedIds.value.has(item.id)) selectedIds.value.delete(item.id)
+    else selectedIds.value.add(item.id)
+    if (selectedIds.value.size === 0) exitSelectMode()
+  } else {
+    openDetail(item)
+  }
+}
+
+function onLongPress(item: LibraryItem) {
+  selectMode.value = true
+  selectedIds.value.add(item.id)
+}
+
+function exitSelectMode() {
+  selectMode.value = false
+  selectedIds.value.clear()
+}
+
+async function batchMarkFinished() {
+  const ids = [...selectedIds.value]
+  await Promise.allSettled(ids.map(id =>
+    api.patch(`/me/progress/${id}`, { isFinished: true, progress: 1 })
+  ))
+  exitSelectMode()
+}
+
+async function batchClearProgress() {
+  const ids = [...selectedIds.value]
+  await Promise.allSettled(ids.map(id =>
+    api.delete(`/me/progress/${id}`)
+  ))
+  exitSelectMode()
 }
 
 onMounted(init)
@@ -217,4 +276,21 @@ watch(() => lib.activeLibraryId, (id) => {
   display: flex; flex-direction: column; align-items: center;
   gap: 12px; padding: 80px 0; color: rgba(255,255,255,0.4); font-size: 13px;
 }
+
+.batch-bar {
+  position: fixed; bottom: 60px; left: 0; right: 0; z-index: 150;
+  background: rgba(20,20,20,0.95); backdrop-filter: blur(16px);
+  border-top: 1px solid rgba(255,255,255,0.1);
+  padding: 10px 12px; display: flex; align-items: center; gap: 10px;
+}
+.batch-cancel { background: transparent; border: none; cursor: pointer; color: rgba(255,255,255,0.6); padding: 6px; }
+.batch-count { font-size: 13px; font-weight: 600; color: rgba(255,255,255,0.8); flex: 1; }
+.batch-action {
+  display: flex; align-items: center; gap: 5px; font-size: 11px; padding: 6px 10px;
+  border-radius: 8px; background: rgba(212,160,23,0.15); border: 1px solid rgba(212,160,23,0.3);
+  color: #d4a017; cursor: pointer; white-space: nowrap;
+}
+.batch-action--danger { background: rgba(220,80,80,0.1); border-color: rgba(220,80,80,0.3); color: #e05555; }
+.batch-bar-enter-active, .batch-bar-leave-active { transition: transform 0.2s; }
+.batch-bar-enter-from, .batch-bar-leave-to { transform: translateY(100%); }
 </style>
