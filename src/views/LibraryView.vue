@@ -580,8 +580,10 @@ async function init() {
 async function switchLibrary(id: string) {
   lib.setActiveLibrary(id)
   page.value = 1
-  genreFilter.value = ''
-  tagFilter.value   = ''
+  genreFilter.value    = ''
+  tagFilter.value      = ''
+  searchQuery.value    = ''
+  progressFilter.value = 'all'
   if (!lib.itemsFor(id).length) await lib.fetchItems(id)
 }
 

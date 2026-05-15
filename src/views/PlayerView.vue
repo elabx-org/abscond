@@ -11,7 +11,9 @@
     <div v-else class="player-wrap">
       <!-- Blurred backdrop from active item or first recent -->
       <div class="player-backdrop">
-        <img :src="backdropSrc" class="backdrop-img" aria-hidden="true" />
+        <Transition name="backdrop">
+          <img :key="backdropSrc" :src="backdropSrc" class="backdrop-img" aria-hidden="true" />
+        </Transition>
         <div class="backdrop-scrim" />
       </div>
 
@@ -454,6 +456,7 @@ function onChapterBarClick(e: MouseEvent) {
 .backdrop-img {
   width: 100%; height: 100%; object-fit: cover;
   filter: blur(40px) brightness(0.3) saturate(1.4); transform: scale(1.1);
+  transition: opacity 0.4s ease;
 }
 .backdrop-scrim {
   position: absolute; inset: 0;
@@ -651,4 +654,7 @@ function onChapterBarClick(e: MouseEvent) {
 /* Transitions */
 .panel-enter-active, .panel-leave-active { transition: opacity 0.18s, transform 0.18s; }
 .panel-enter-from, .panel-leave-to { opacity: 0; transform: translateY(-6px); }
+.backdrop-enter-active { transition: opacity 0.5s ease; position: absolute; inset: 0; }
+.backdrop-leave-active { transition: opacity 0.5s ease; position: absolute; inset: 0; }
+.backdrop-enter-from, .backdrop-leave-to { opacity: 0; }
 </style>
