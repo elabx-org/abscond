@@ -54,6 +54,17 @@
           </div>
         </div>
 
+        <!-- Chapter nav row -->
+        <div v-if="chapters.length > 1" class="chapter-nav-row">
+          <button class="chapter-nav-btn" :disabled="!prevChapter" @click="prevChapter && player.seek(prevChapter.start)">
+            <v-icon size="18" :color="prevChapter ? 'rgba(255,255,255,0.6)' : 'rgba(255,255,255,0.15)'">mdi-skip-previous</v-icon>
+          </button>
+          <span class="chapter-nav-label">{{ player.currentChapter?.title ?? '' }}</span>
+          <button class="chapter-nav-btn" :disabled="!nextChapter" @click="nextChapter && player.seek(nextChapter.start)">
+            <v-icon size="18" :color="nextChapter ? 'rgba(255,255,255,0.6)' : 'rgba(255,255,255,0.15)'">mdi-skip-next</v-icon>
+          </button>
+        </div>
+
         <!-- Transport controls -->
         <div class="controls-area">
           <button class="ctrl-btn" @click="player.skipBack(skipBackSecs)">
@@ -163,6 +174,22 @@ const authorNames = computed(() =>
 )
 
 const chapters = computed(() => player.session?.chapters ?? [])
+
+const prevChapter = computed(() => {
+  const chs = chapters.value
+  const cur = player.currentChapter
+  if (!cur) return null
+  const idx = chs.findIndex(c => c.id === cur.id)
+  return idx > 0 ? chs[idx - 1] : null
+})
+
+const nextChapter = computed(() => {
+  const chs = chapters.value
+  const cur = player.currentChapter
+  if (!cur) return null
+  const idx = chs.findIndex(c => c.id === cur.id)
+  return idx >= 0 && idx < chs.length - 1 ? chs[idx + 1] : null
+})
 
 const chapterDuration = computed(() => {
   const ch = player.currentChapter
@@ -300,6 +327,14 @@ function onChapterBarClick(e: MouseEvent) {
 
 .time-row { display: flex; justify-content: space-between; margin-top: 4px; }
 .time-label { font-size: 11px; color: rgba(255,255,255,0.4); }
+
+.chapter-nav-row {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 8px; margin-bottom: 12px; padding: 0 4px;
+}
+.chapter-nav-btn { background: transparent; border: none; cursor: pointer; padding: 6px; flex-shrink: 0; }
+.chapter-nav-btn:disabled { cursor: default; }
+.chapter-nav-label { flex: 1; text-align: center; font-size: 11px; color: rgba(255,255,255,0.4); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
 .controls-area {
   display: flex; align-items: center; justify-content: center;

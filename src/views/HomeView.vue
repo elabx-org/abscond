@@ -1,5 +1,19 @@
 <template>
-  <div class="home-view">
+  <div
+    class="home-view"
+    @touchstart.passive="onTouchStart"
+    @touchmove.passive="onTouchMove"
+    @touchend.passive="onTouchEnd"
+  >
+    <!-- Pull-to-refresh indicator -->
+    <Transition name="ptr">
+      <div v-if="ptr.pulling || ptr.refreshing" class="ptr-indicator">
+        <v-icon size="18" color="rgba(255,255,255,0.5)" :class="{ spin: ptr.refreshing }">
+          {{ ptr.refreshing ? 'mdi-loading' : 'mdi-arrow-down' }}
+        </v-icon>
+      </div>
+    </Transition>
+
     <!-- Greeting -->
     <div class="greeting">
       <div>
@@ -173,6 +187,34 @@ const loadingRecent   = ref(false)
 const loadingFinished = ref(false)
 const loadingDiscover = ref(false)
 
+// Pull-to-refresh
+const ptr = ref({ pulling: false, refreshing: false, startY: 0 })
+
+function onTouchStart(e: TouchEvent) {
+  if (window.scrollY === 0) ptr.value.startY = e.touches[0].clientY
+}
+function onTouchMove(e: TouchEvent) {
+  if (ptr.value.startY && e.touches[0].clientY - ptr.value.startY > 60 && window.scrollY === 0) {
+    ptr.value.pulling = true
+  }
+}
+async function onTouchEnd() {
+  if (!ptr.value.pulling) return
+  ptr.value.pulling = false
+  ptr.value.refreshing = true
+  try {
+    if (!lib.activeLibraryId) return
+    await Promise.allSettled([
+      progress.fetchInProgress(),
+      progress.fetchRecentlyAdded(lib.activeLibraryId),
+      progress.fetchRecentlyFinished(lib.activeLibraryId),
+    ])
+  } finally {
+    ptr.value.refreshing = false
+    ptr.value.startY = 0
+  }
+}
+
 let deferredPrompt: Event | null = null
 const showInstallBanner = ref(false)
 
@@ -231,6 +273,12 @@ onMounted(async () => {
 
 <style scoped>
 .home-view { padding: 16px 12px 80px; min-height: 100vh; background: #0e0e0e; }
+
+.ptr-indicator {
+  display: flex; justify-content: center; padding: 8px 0; margin-top: -8px; margin-bottom: 4px;
+}
+.ptr-enter-active, .ptr-leave-active { transition: opacity 0.2s; }
+.ptr-enter-from, .ptr-leave-to { opacity: 0; }
 
 .greeting { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
 .greeting-time { font-size: 12px; color: rgba(255,255,255,0.4); margin: 0 0 2px; }

@@ -27,6 +27,33 @@ export const useSocketStore = defineStore('socket', () => {
       }
     }))
 
+    cleanups.push(onSocketEvent('user_item_progress_updated', (data: unknown) => {
+      if (!data || typeof data !== 'object') return
+      const d = data as Record<string, unknown>
+      const prog = d.userMediaProgress as Record<string, unknown> | undefined
+      if (!prog) return
+      const ps = useProgressStore()
+      const updateInList = (list: { id: unknown; userMediaProgress?: Record<string, unknown> | null }[]) => {
+        const item = list.find(i => i.id === d.id || i.id === prog.libraryItemId)
+        if (item) item.userMediaProgress = prog as unknown as typeof item.userMediaProgress
+      }
+      updateInList(ps.inProgress)
+      updateInList(ps.recentlyAdded)
+    }))
+
+    cleanups.push(onSocketEvent('item_updated', (data: unknown) => {
+      if (!data || typeof data !== 'object') return
+      const d = data as Record<string, unknown>
+      if (!d.id) return
+      const ls = useLibraryStore()
+      const libId = d.libraryId as string
+      if (libId) {
+        const items = ls.itemsFor(libId)
+        const idx = items.findIndex(i => i.id === d.id)
+        if (idx >= 0) items[idx] = d as unknown as typeof items[0]
+      }
+    }))
+
     cleanups.push(onSocketEvent('library_scan_complete', () => {
       const ls = useLibraryStore()
       if (ls.activeLibraryId) ls.fetchItems(ls.activeLibraryId)
