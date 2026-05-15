@@ -226,6 +226,20 @@
         </div>
       </div>
 
+      <div v-if="sleepChimeEnabled" class="settings-item">
+        <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-volume-medium</v-icon>
+        <span class="item-label">Chime volume</span>
+        <div style="display:flex;align-items:center;gap:8px;flex:1;justify-content:flex-end">
+          <input
+            type="range" min="0.1" max="1" step="0.05"
+            :value="sleepChimeVol"
+            class="volume-slider"
+            @input="setSleepChimeVol(parseFloat(($event.target as HTMLInputElement).value))"
+          />
+          <span class="item-value">{{ Math.round(sleepChimeVol * 100) }}%</span>
+        </div>
+      </div>
+
       <div class="settings-item" @click="toggleSleepResetOnPause">
         <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-pause-circle-outline</v-icon>
         <div class="item-label-stack">
@@ -791,6 +805,11 @@ function toggleSleepChime() {
   sleepChimeEnabled.value = !sleepChimeEnabled.value
   localStorage.setItem('abs_sleep_chime', String(sleepChimeEnabled.value))
 }
+const sleepChimeVol = ref(parseFloat(localStorage.getItem('abs_sleep_chime_vol') ?? '0.4'))
+function setSleepChimeVol(v: number) {
+  sleepChimeVol.value = v
+  localStorage.setItem('abs_sleep_chime_vol', String(v))
+}
 
 const sleepResetOnPause = ref(localStorage.getItem('abs_sleep_reset_on_pause') === 'true')
 function toggleSleepResetOnPause() {
@@ -1051,4 +1070,6 @@ async function doLogout() {
   font-size: 12px; transition: background 0.15s;
 }
 .eq-reset-btn:hover { background: rgba(255,255,255,0.08); }
+
+.volume-slider { width: 100px; accent-color: #d4a017; cursor: pointer; }
 </style>
