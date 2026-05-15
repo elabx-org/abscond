@@ -58,3 +58,10 @@ export async function getListeningSessions(page = 0): Promise<SessionsResponse> 
   const res = await api.get('/me/listening-sessions', { params: { page, itemsPerPage: 20 } })
   return res.data
 }
+
+export async function getItemListeningSessions(libraryItemId: string): Promise<ListeningSession[]> {
+  try {
+    const res = await api.get(`/me/item/${libraryItemId}/listening-sessions`, { params: { itemsPerPage: 10 } })
+    return (res.data?.sessions ?? res.data ?? []) as ListeningSession[]
+  } catch { return [] }
+}

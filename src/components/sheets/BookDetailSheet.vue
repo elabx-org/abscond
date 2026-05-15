@@ -316,6 +316,29 @@
               </div>
             </div>
 
+            <!-- Listening History -->
+            <div class="chapters-section">
+              <button class="chapters-toggle" @click="historyExpanded = !historyExpanded">
+                <v-icon size="15" color="rgba(255,255,255,0.5)">mdi-history</v-icon>
+                <span class="chapters-toggle-label">Listening History</span>
+                <v-icon size="14" color="rgba(255,255,255,0.25)" class="ml-auto">{{ historyExpanded ? 'mdi-chevron-up' : 'mdi-chevron-down' }}</v-icon>
+              </button>
+              <div v-if="historyExpanded" class="chapters-list">
+                <div v-if="loadingHistory" class="chapters-loading">Loading…</div>
+                <div v-else-if="!history.length" class="chapters-loading" style="color:rgba(255,255,255,0.25)">No sessions recorded yet</div>
+                <div
+                  v-else
+                  v-for="sess in history"
+                  :key="sess.id"
+                  class="history-row"
+                >
+                  <div class="history-date">{{ _fmtSessionDate(sess.updatedAt) }}</div>
+                  <div class="history-dur">{{ _fmtSessionDur(sess.duration) }}</div>
+                  <div v-if="sess.deviceInfo?.deviceName" class="history-device">{{ sess.deviceInfo.deviceName }}</div>
+                </div>
+              </div>
+            </div>
+
             <!-- Description -->
             <div v-if="item.media.metadata.description" class="sheet-desc-wrap">
               <p class="sheet-desc" :class="{ expanded: descExpanded }">
@@ -388,6 +411,8 @@ import type { ShareLink } from '@/api/share'
 import type { LibraryItem, Series, Author, Chapter } from '@/api/types'
 import { getBookmarks } from '@/api/bookmarks'
 import type { Bookmark } from '@/api/bookmarks'
+import { getItemListeningSessions } from '@/api/stats'
+import type { ListeningSession } from '@/api/stats'
 
 const props = defineProps<{
   item: LibraryItem
@@ -446,6 +471,9 @@ const loadingChapters   = ref(false)
 const chapters          = ref<Chapter[]>([])
 const bookmarksExpanded = ref(false)
 const bookmarks         = ref<Bookmark[]>([])
+const historyExpanded   = ref(false)
+const history           = ref<ListeningSession[]>([])
+const loadingHistory    = ref(false)
 
 function isCurrentChapter(ch: Chapter): boolean {
   return player.currentItem?.id === props.item.id && player.currentChapter?.id === ch.id
@@ -706,6 +734,8 @@ watch(() => props.show, async (v) => {
     chapters.value         = []
     bookmarksExpanded.value = false
     bookmarks.value = await getBookmarks(props.item.id)
+    historyExpanded.value  = false
+    history.value          = []
   }
 })
 
@@ -733,6 +763,23 @@ watch(showCollectionAdd, async (v) => {
 async function addToCollection(collectionId: string) {
   await addBookToCollection(collectionId, props.item.id).catch(() => {})
   showCollectionAdd.value = false
+}
+
+watch(historyExpanded, async (v) => {
+  if (!v || history.value.length) return
+  loadingHistory.value = true
+  try { history.value = await getItemListeningSessions(props.item.id) }
+  finally { loadingHistory.value = false }
+})
+
+function _fmtSessionDate(ms: number): string {
+  return new Date(ms).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })
+}
+function _fmtSessionDur(secs: number): string {
+  const h = Math.floor(secs / 3600)
+  const m = Math.floor((secs % 3600) / 60)
+  if (h > 0) return `${h}h ${m}m`
+  return `${m}m`
 }
 
 async function toggleShare() {
@@ -1009,6 +1056,14 @@ async function doSaveMeta() {
 .chapter-row.active .chapter-title { color: #d4a017; }
 .chapter-title { flex: 1; font-size: 12px; color: rgba(255,255,255,0.8); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .chapter-time { font-size: 11px; color: rgba(255,255,255,0.35); flex-shrink: 0; font-variant-numeric: tabular-nums; }
+
+.history-row {
+  display: flex; align-items: center; gap: 8px; padding: 8px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+.history-date { font-size: 11px; color: rgba(255,255,255,0.35); min-width: 56px; }
+.history-dur { font-size: 12px; font-weight: 600; color: rgba(255,255,255,0.8); }
+.history-device { font-size: 11px; color: rgba(255,255,255,0.25); margin-left: auto; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 120px; }
 
 .sheet-desc-wrap { margin: 4px 0 16px; }
 .sheet-desc {
