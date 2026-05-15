@@ -62,7 +62,7 @@
                   <v-icon size="40" color="white">mdi-play-circle</v-icon>
                 </div>
                 <!-- "Up Next" badge for queued items not yet played -->
-                <div v-if="player.queue.some(q => q.id === item.id) && i !== currentIndex" class="upnext-badge">
+                <div v-if="player.queue.some(q => q.item.id === item.id) && i !== currentIndex" class="upnext-badge">
                   Up Next
                 </div>
               </div>
@@ -311,8 +311,8 @@
               <div v-else ref="queueListEl" class="queue-list"
                 @pointermove="queueDragMove" @pointerup="queueDragEnd" @pointercancel="queueDragEnd">
                 <div
-                  v-for="(item, idx) in player.queue"
-                  :key="item.id"
+                  v-for="(entry, idx) in player.queue"
+                  :key="entry.episodeId ?? entry.item.id"
                   class="queue-item-row"
                   :class="{
                     'queue-drag-source': queueDragFrom === idx,
@@ -322,10 +322,10 @@
                   <div class="queue-drag-handle" @pointerdown.prevent="queueDragStart($event, idx)" touch-action="none">
                     <v-icon size="16" color="rgba(255,255,255,0.2)">mdi-drag-vertical</v-icon>
                   </div>
-                  <img :src="coverUrl(item.id, auth.token ?? '')" class="queue-item-cover" />
+                  <img :src="coverUrl(entry.item.id, auth.token ?? '')" class="queue-item-cover" />
                   <div class="queue-item-meta">
-                    <p class="queue-item-title">{{ item.media.metadata.title }}</p>
-                    <p class="queue-item-author">{{ item.media.metadata.authorName || 'Unknown' }}</p>
+                    <p class="queue-item-title">{{ entry.episodeId ? (epTitle(entry) || entry.item.media.metadata.title) : entry.item.media.metadata.title }}</p>
+                    <p class="queue-item-author">{{ entry.episodeId ? entry.item.media.metadata.title : (entry.item.media.metadata.authorName || 'Unknown') }}</p>
                   </div>
                   <button class="queue-item-del" @click="player.removeFromQueue(idx)">
                     <v-icon size="16" color="rgba(255,255,255,0.4)">mdi-close</v-icon>
@@ -469,6 +469,7 @@ import EqualizerSheet from '@/components/sheets/EqualizerSheet.vue'
 import NotesSheet from '@/components/sheets/NotesSheet.vue'
 import { useEqualizerStore } from '@/stores/equalizer'
 import type { LibraryItem } from '@/api/types'
+import type { QueueEntry } from '@/stores/player'
 
 const player   = usePlayerStore()
 const auth     = useAuthStore()
@@ -513,7 +514,7 @@ const FWD_ICONS:    Record<number, string> = { 10: 'mdi-fast-forward-10', 15: 'm
 // Carousel shows recently played books PLUS any queued items (deduped)
 const carouselItems = computed(() => {
   const recent = player.recentItems
-  const extra  = player.queue.filter(q => !recent.some(r => r.id === q.id))
+  const extra  = player.queue.map(e => e.item).filter(i => !recent.some(r => r.id === i.id))
   return [...recent, ...extra]
 })
 
@@ -811,6 +812,12 @@ watch(showChapters, (open) => {
     el?.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
   })
 })
+
+function epTitle(entry: QueueEntry): string {
+  if (!entry.episodeId) return ''
+  const eps: any[] = (entry.item as any).media?.episodes ?? []
+  return eps.find((e: any) => e.id === entry.episodeId)?.title ?? ''
+}
 
 function queueDragStart(e: PointerEvent, idx: number) {
   queueDragFrom.value = idx

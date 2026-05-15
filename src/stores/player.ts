@@ -8,6 +8,8 @@ import { useSettingsStore } from '@/stores/settings'
 import { useEqualizerStore } from '@/stores/equalizer'
 import type { LibraryItem, PlaybackSession, AudioTrack, Chapter } from '@/api/types'
 
+export interface QueueEntry { item: LibraryItem; episodeId?: string }
+
 const SYNC_INTERVAL_MS = 15_000
 
 function _loadRecentItems(): LibraryItem[] {
@@ -34,7 +36,7 @@ export const usePlayerStore = defineStore('player', () => {
   const sleepTotalSecs     = ref<number | null>(null)
   const sleepEndOfChapter      = ref(false)
   const chapterBarrierPaused   = ref(false)
-  const queue                  = ref<LibraryItem[]>([])
+  const queue                  = ref<QueueEntry[]>([])
   const volume             = ref<number>(parseFloat(localStorage.getItem('abs_volume') ?? '1'))
   const recentItems        = ref<LibraryItem[]>(_loadRecentItems())
 
@@ -237,8 +239,8 @@ export const usePlayerStore = defineStore('player', () => {
       isPlaying.value = false
       _doSync()
       if (queue.value.length > 0) {
-        const nextItem = queue.value.shift()!
-        setTimeout(() => play(nextItem), 500)
+        const next = queue.value.shift()!
+        setTimeout(() => play(next.item, next.episodeId), 500)
       } else if (currentItem.value?.mediaType === 'podcast' && useSettingsStore().podcastAutoAdvance) {
         await _autoAdvancePodcast()
       } else if (currentItem.value?.mediaType === 'book' && useSettingsStore().bookAutoAdvance) {
@@ -543,14 +545,14 @@ export const usePlayerStore = defineStore('player', () => {
     currentChapter, currentTrackIndex, progress, chapterBarrierPaused,
     play, togglePlay, seek, skipBack, skipForward, setRate, setVolume, setSleepTimer, stop,
     resumeFromBarrier: () => { chapterBarrierPaused.value = false; audio?.play() },
-    addToQueue: (item: LibraryItem) => { queue.value.push(item) },
-    addToFrontOfQueue: (item: LibraryItem) => { queue.value.unshift(item) },
+    addToQueue: (item: LibraryItem, episodeId?: string) => { queue.value.push({ item, episodeId }) },
+    addToFrontOfQueue: (item: LibraryItem, episodeId?: string) => { queue.value.unshift({ item, episodeId }) },
     clearQueue: () => { queue.value = [] },
     removeFromQueue: (idx: number) => { queue.value.splice(idx, 1) },
     reorderQueue: (from: number, to: number) => {
       if (from === to || from < 0 || to < 0 || from >= queue.value.length || to >= queue.value.length) return
-      const [item] = queue.value.splice(from, 1)
-      queue.value.splice(to, 0, item)
+      const [entry] = queue.value.splice(from, 1)
+      queue.value.splice(to, 0, entry)
     },
   }
 })

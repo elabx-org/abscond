@@ -54,6 +54,10 @@
                 <v-icon size="16">{{ epFinished ? 'mdi-undo' : 'mdi-check-circle-outline' }}</v-icon>
                 {{ epFinished ? 'Unfinish' : 'Finished' }}
               </button>
+              <button class="action-btn" @click="onPlayNext">
+                <v-icon size="16">mdi-skip-next-circle-outline</v-icon>
+                Play next
+              </button>
               <button class="action-btn" @click="onAddToQueue">
                 <v-icon size="16">mdi-playlist-plus</v-icon>
                 Queue
@@ -147,8 +151,12 @@ async function onToggleFinished() {
   finally { togglingFinished.value = false }
 }
 
+function onPlayNext() {
+  player.addToFrontOfQueue(props.item, props.episode.id)
+}
+
 function onAddToQueue() {
-  player.addToQueue(props.item)
+  player.addToQueue(props.item, props.episode.id)
   notify.show('Added to queue', 'success')
 }
 
