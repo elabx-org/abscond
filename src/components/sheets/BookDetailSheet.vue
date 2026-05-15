@@ -104,6 +104,10 @@
                 <v-icon size="16">mdi-share-outline</v-icon>
                 Share
               </button>
+              <button class="action-btn" @click="addToQueue">
+                <v-icon size="16">mdi-playlist-plus</v-icon>
+                Queue
+              </button>
               <button v-if="progress < 1" class="action-btn" :disabled="markingFinished" @click="markFinished">
                 <v-icon size="16">mdi-check-circle-outline</v-icon>
                 Finished
@@ -279,6 +283,7 @@ import { useRouter } from 'vue-router'
 import { useDraggableSheet } from '@/composables/useDraggableSheet'
 import { useColorThief } from '@/composables/useColorThief'
 import { usePlayerStore } from '@/stores/player'
+import { useNotificationStore } from '@/stores/notifications'
 import { useAuthStore } from '@/stores/auth'
 import SeriesDetailSheet from '@/components/sheets/SeriesDetailSheet.vue'
 import AuthorDetailSheet from '@/components/sheets/AuthorDetailSheet.vue'
@@ -304,6 +309,12 @@ const emit = defineEmits<{ close: [] }>()
 
 const router = useRouter()
 const player = usePlayerStore()
+const notify = useNotificationStore()
+
+function addToQueue() {
+  player.addToQueue(props.item)
+  notify.show(`"${props.item.media.metadata.title}" added to queue`, 'success')
+}
 const auth   = useAuthStore()
 const sheet  = useDraggableSheet({ initial: 85, min: 30, max: 95 })
 
