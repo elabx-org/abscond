@@ -57,65 +57,6 @@
       </Transition>
     </Teleport>
 
-    <!-- Edit permissions sheet -->
-    <Teleport to="body">
-      <Transition name="sheet">
-        <div v-if="editTarget" class="sheet-backdrop" @click.self="editTarget = null">
-          <div class="create-sheet">
-            <div class="drag-handle-area"><div class="drag-handle" /></div>
-            <div class="create-content">
-              <h3 class="create-title">Edit — {{ editTarget.username }}</h3>
-
-              <!-- Active toggle -->
-              <div class="perm-row" @click="editActive = !editActive">
-                <div class="perm-info">
-                  <p class="perm-label">Active</p>
-                  <p class="perm-sub">Allow user to log in</p>
-                </div>
-                <div class="toggle" :class="{ on: editActive }">
-                  <div class="toggle-thumb" />
-                </div>
-              </div>
-
-              <div class="perm-divider" />
-
-              <div
-                v-for="perm in permKeys"
-                :key="perm.key"
-                class="perm-row"
-                @click="editPerms[perm.key] = !editPerms[perm.key]"
-              >
-                <div class="perm-info">
-                  <p class="perm-label">{{ perm.label }}</p>
-                  <p class="perm-sub">{{ perm.desc }}</p>
-                </div>
-                <div class="toggle" :class="{ on: editPerms[perm.key] }">
-                  <div class="toggle-thumb" />
-                </div>
-              </div>
-
-              <div class="perm-divider" />
-
-              <!-- Password reset -->
-              <div class="pw-reset-section">
-                <p class="pw-reset-label">Reset Password</p>
-                <input v-model="newPw" class="form-input" type="password" placeholder="New password" autocomplete="new-password" />
-                <button class="pw-reset-btn" :disabled="!newPw.trim() || pwSaving" @click="doResetPw">
-                  {{ pwSaving ? 'Updating…' : 'Update Password' }}
-                </button>
-                <p v-if="pwError" class="form-error" style="margin-top:4px">{{ pwError }}</p>
-              </div>
-
-              <p v-if="editError" class="form-error">{{ editError }}</p>
-              <button class="save-btn" :disabled="editSaving" @click="doSaveEdit">
-                {{ editSaving ? 'Saving…' : 'Save Changes' }}
-              </button>
-            </div>
-          </div>
-        </div>
-      </Transition>
-    </Teleport>
-
     <!-- Delete confirm sheet -->
     <Teleport to="body">
       <Transition name="sheet">
@@ -138,10 +79,10 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref, reactive } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { getUsers, createUser, deleteUser, updateUser } from '@/api/admin'
-import type { AdminUser, AdminUserPermissions } from '@/api/admin'
+import { getUsers, createUser, deleteUser } from '@/api/admin'
+import type { AdminUser } from '@/api/admin'
 
 const router  = useRouter()
 const loading = ref(true)
@@ -157,74 +98,6 @@ const canCreate   = computed(() => newUsername.value.trim().length > 0 && newPas
 
 const deleteTarget = ref<AdminUser | null>(null)
 const deleting     = ref(false)
-
-const editTarget = ref<AdminUser | null>(null)
-const editActive = ref(true)
-const editSaving = ref(false)
-const editError  = ref('')
-const editPerms  = reactive<Record<string, boolean>>({
-  download: true, update: true, delete: false, upload: false,
-  accessAllLibraries: true, accessAllTags: true, accessExplicitContent: false,
-})
-
-const permKeys = [
-  { key: 'download',             label: 'Download',              desc: 'Download audio files' },
-  { key: 'update',               label: 'Update Items',          desc: 'Edit library item metadata' },
-  { key: 'delete',               label: 'Delete Items',          desc: 'Delete books and podcasts' },
-  { key: 'upload',               label: 'Upload',                desc: 'Upload new library items' },
-  { key: 'accessAllLibraries',   label: 'All Libraries',         desc: 'Access all libraries' },
-  { key: 'accessAllTags',        label: 'All Tags',              desc: 'Access items with any tag' },
-  { key: 'accessExplicitContent',label: 'Explicit Content',      desc: 'Access explicit items' },
-]
-
-const newPw    = ref('')
-const pwSaving = ref(false)
-const pwError  = ref('')
-
-async function doResetPw() {
-  if (!editTarget.value || !newPw.value.trim()) return
-  pwSaving.value = true
-  pwError.value  = ''
-  try {
-    await updateUser(editTarget.value.id, { password: newPw.value })
-    newPw.value = ''
-  } catch (e: unknown) {
-    pwError.value = e instanceof Error ? e.message : 'Failed to update password'
-  } finally { pwSaving.value = false }
-}
-
-function openEdit(u: AdminUser) {
-  editTarget.value = u
-  editActive.value = u.isActive
-  editError.value  = ''
-  newPw.value      = ''
-  pwError.value    = ''
-  const p = u.permissions
-  editPerms.download              = p?.download              ?? true
-  editPerms.update                = p?.update                ?? true
-  editPerms.delete                = p?.delete                ?? false
-  editPerms.upload                = p?.upload                ?? false
-  editPerms.accessAllLibraries    = p?.accessAllLibraries    ?? true
-  editPerms.accessAllTags         = p?.accessAllTags         ?? true
-  editPerms.accessExplicitContent = p?.accessExplicitContent ?? false
-}
-
-async function doSaveEdit() {
-  if (!editTarget.value) return
-  editSaving.value = true
-  editError.value  = ''
-  try {
-    const updated = await updateUser(editTarget.value.id, {
-      isActive: editActive.value,
-      permissions: editPerms as unknown as Partial<AdminUserPermissions>,
-    })
-    const idx = users.value.findIndex(u => u.id === editTarget.value!.id)
-    if (idx !== -1) users.value[idx] = { ...users.value[idx], ...updated, permissions: editPerms as unknown as AdminUserPermissions }
-    editTarget.value = null
-  } catch (e: unknown) {
-    editError.value = e instanceof Error ? e.message : 'Failed to save'
-  } finally { editSaving.value = false }
-}
 
 function confirmDelete(u: AdminUser) { deleteTarget.value = u }
 
@@ -343,34 +216,4 @@ onMounted(async () => {
 }
 .sheet-enter-active, .sheet-leave-active { transition: opacity 0.25s; }
 .sheet-enter-from, .sheet-leave-to { opacity: 0; }
-
-.perm-row {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 12px 0; border-bottom: 1px solid rgba(255,255,255,0.04);
-  cursor: pointer;
-}
-.perm-row:last-of-type { border-bottom: none; }
-.perm-info { flex: 1; }
-.perm-label { font-size: 13px; color: rgba(255,255,255,0.85); margin: 0 0 2px; }
-.perm-sub { font-size: 11px; color: rgba(255,255,255,0.35); margin: 0; }
-.perm-divider { height: 1px; background: rgba(255,255,255,0.06); margin: 4px 0 4px; }
-
-.toggle {
-  width: 42px; height: 24px; border-radius: 12px; background: rgba(255,255,255,0.12);
-  position: relative; transition: background 0.2s; flex-shrink: 0;
-}
-.toggle.on { background: #d4a017; }
-.toggle-thumb {
-  position: absolute; top: 3px; left: 3px; width: 18px; height: 18px;
-  border-radius: 50%; background: white; transition: left 0.2s;
-}
-.toggle.on .toggle-thumb { left: 21px; }
-.pw-reset-section { padding: 8px 0; }
-.pw-reset-label { font-size: 11px; font-weight: 600; color: rgba(255,255,255,0.35); text-transform: uppercase; letter-spacing: 0.06em; margin: 0 0 8px; }
-.pw-reset-btn {
-  width: 100%; padding: 10px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1);
-  background: rgba(255,255,255,0.05); color: rgba(255,255,255,0.6); font-size: 13px; cursor: pointer;
-  margin-top: 6px;
-}
-.pw-reset-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 </style>
