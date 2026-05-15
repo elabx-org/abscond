@@ -1,5 +1,20 @@
 <template>
-  <div ref="scrollEl" class="library-view">
+  <div
+    ref="scrollEl"
+    class="library-view"
+    @touchstart.passive="onTouchStart"
+    @touchmove.passive="onTouchMove"
+    @touchend.passive="onTouchEnd"
+  >
+    <!-- Pull-to-refresh indicator -->
+    <Transition name="ptr">
+      <div v-if="ptr.pulling || ptr.refreshing" class="ptr-indicator">
+        <v-icon size="18" color="rgba(255,255,255,0.5)" :class="{ spin: ptr.refreshing }">
+          {{ ptr.refreshing ? 'mdi-loading' : 'mdi-arrow-down' }}
+        </v-icon>
+      </div>
+    </Transition>
+
     <!-- Header row -->
     <div class="lib-header">
       <!-- Library switcher (multi-lib) -->
@@ -204,6 +219,28 @@ const auth   = useAuthStore()
 const player = usePlayerStore()
 const notify = useNotificationStore()
 
+const ptr = ref({ pulling: false, refreshing: false, startY: 0 })
+
+function onTouchStart(e: TouchEvent) {
+  if (window.scrollY === 0) ptr.value.startY = e.touches[0].clientY
+}
+function onTouchMove(e: TouchEvent) {
+  if (ptr.value.startY && e.touches[0].clientY - ptr.value.startY > 60 && window.scrollY === 0) {
+    ptr.value.pulling = true
+  }
+}
+async function onTouchEnd() {
+  if (!ptr.value.pulling) return
+  ptr.value.pulling = false
+  ptr.value.refreshing = true
+  try {
+    if (lib.activeLibraryId) await lib.fetchItems(lib.activeLibraryId)
+  } finally {
+    ptr.value.refreshing = false
+    ptr.value.startY = 0
+  }
+}
+
 const selectedItem      = ref<LibraryItem | null>(null)
 const quickItem         = ref<LibraryItem | null>(null)
 const selectMode        = ref(false)
@@ -396,6 +433,11 @@ watch(() => lib.activeLibraryId, (id) => {
 
 <style scoped>
 .library-view { padding: 12px; min-height: 100vh; background: #0e0e0e; }
+.ptr-indicator { display: flex; justify-content: center; padding: 8px 0; margin-top: -8px; margin-bottom: 4px; }
+.ptr-enter-active, .ptr-leave-active { transition: opacity 0.2s; }
+.ptr-enter-from, .ptr-leave-to { opacity: 0; }
+.spin { animation: spin 0.8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
 
 .lib-header { margin-bottom: 12px; }
 
