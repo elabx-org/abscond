@@ -12,7 +12,7 @@
         v-for="tab in tabs"
         :key="tab.name"
         class="subnav-tab"
-        :class="{ active: route.name === tab.name }"
+        :class="{ active: route.name === tab.name || DETAIL_PARENT[route.name as string] === tab.name }"
         @click="router.push({ name: tab.name })"
       >
         <v-icon size="16">{{ tab.icon }}</v-icon>
@@ -31,6 +31,11 @@ import { useRoute, useRouter } from 'vue-router'
 
 const route  = useRoute()
 const router = useRouter()
+
+const DETAIL_PARENT: Record<string, string> = {
+  'admin-user-detail':    'admin-users',
+  'admin-podcast-detail': 'admin-libraries',
+}
 
 const tabs = [
   { name: 'admin-overview',       label: 'Overview',       icon: 'mdi-view-dashboard-outline' },

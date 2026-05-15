@@ -107,6 +107,11 @@ describe('updateNotificationSettings', () => {
     await updateNotificationSettings({ appriseApiUrl: 'http://new' })
     expect(api.patch).toHaveBeenCalledWith('/notificationSettings', { appriseApiUrl: 'http://new' })
   })
+  it('sends null to clear the URL', async () => {
+    vi.mocked(api.patch).mockResolvedValueOnce({ data: {} })
+    await updateNotificationSettings({ appriseApiUrl: null })
+    expect(api.patch).toHaveBeenCalledWith('/notificationSettings', { appriseApiUrl: null })
+  })
 })
 
 describe('patchNotification', () => {
