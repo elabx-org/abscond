@@ -281,9 +281,8 @@ async function browseGenre(genre: string) {
   if (!lib.activeLibraryId) return
   loadingGenreItems.value = true
   try {
-    const encoded = encodeURIComponent(`genres.${genre}`)
     const res = await api.get(`/libraries/${lib.activeLibraryId}/items`, {
-      params: { limit: 100, filter: encoded }
+      params: { limit: 100, filter: btoa(`genres.${genre}`) }
     })
     genreItems.value = res.data.results ?? []
   } catch {

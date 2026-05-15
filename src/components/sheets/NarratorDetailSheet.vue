@@ -75,9 +75,8 @@ async function load() {
   if (!props.narratorName || !lib.activeLibraryId) return
   loading.value = true
   try {
-    const encoded = encodeURIComponent(`narrators.${props.narratorName}`)
     const res = await api.get(`/libraries/${lib.activeLibraryId}/items`, {
-      params: { limit: 100, filter: encoded }
+      params: { limit: 100, filter: btoa(`narrators.${props.narratorName}`) }
     })
     items.value = res.data.results ?? []
   } catch {
