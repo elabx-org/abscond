@@ -259,8 +259,36 @@
         </div>
         <div class="interval-chips">
           <button class="interval-chip" :class="{ active: settingsStore.shakeMode === 'off' }"     @click.stop="settingsStore.setShakeMode('off')">Off</button>
-          <button class="interval-chip" :class="{ active: settingsStore.shakeMode === 'addTime' }" @click.stop="settingsStore.setShakeMode('addTime')">+5 min</button>
+          <button class="interval-chip" :class="{ active: settingsStore.shakeMode === 'addTime' }" @click.stop="settingsStore.setShakeMode('addTime')">+{{ shakeAddMins }} min</button>
           <button class="interval-chip" :class="{ active: settingsStore.shakeMode === 'reset' }"   @click.stop="settingsStore.setShakeMode('reset')">Reset</button>
+        </div>
+      </div>
+
+      <div v-if="settingsStore.shakeMode !== 'off'" class="settings-item">
+        <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-speedometer</v-icon>
+        <span class="item-label">Shake sensitivity</span>
+        <div style="display:flex;align-items:center;gap:8px;flex:1;justify-content:flex-end">
+          <input
+            type="range" min="0" max="4" step="1"
+            :value="shakeSensitivityIndex"
+            class="volume-slider"
+            @input="setShakeSensitivity(parseInt(($event.target as HTMLInputElement).value))"
+          />
+          <span class="item-value">{{ shakeSensitivityLabel }}</span>
+        </div>
+      </div>
+
+      <div v-if="settingsStore.shakeMode === 'addTime'" class="settings-item">
+        <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-timer-plus-outline</v-icon>
+        <span class="item-label">Shake adds</span>
+        <div style="display:flex;align-items:center;gap:8px;flex:1;justify-content:flex-end">
+          <input
+            type="range" min="1" max="30" step="1"
+            :value="shakeAddMins"
+            class="volume-slider"
+            @input="setShakeAddMins(parseInt(($event.target as HTMLInputElement).value))"
+          />
+          <span class="item-value">{{ shakeAddMins }} min</span>
         </div>
       </div>
 
@@ -809,6 +837,26 @@ const sleepChimeVol = ref(parseFloat(localStorage.getItem('abs_sleep_chime_vol')
 function setSleepChimeVol(v: number) {
   sleepChimeVol.value = v
   localStorage.setItem('abs_sleep_chime_vol', String(v))
+}
+
+const SHAKE_SENSITIVITY_KEYS = ['veryLow', 'low', 'medium', 'high', 'veryHigh'] as const
+const SHAKE_SENSITIVITY_LABELS: Record<string, string> = { veryLow: 'Very Low', low: 'Low', medium: 'Medium', high: 'High', veryHigh: 'Very High' }
+const shakeSensitivity = ref(localStorage.getItem('abs_shake_sensitivity') ?? 'medium')
+const shakeSensitivityIndex = computed(() => {
+  const i = SHAKE_SENSITIVITY_KEYS.indexOf(shakeSensitivity.value as typeof SHAKE_SENSITIVITY_KEYS[number])
+  return i === -1 ? 2 : i
+})
+const shakeSensitivityLabel = computed(() => SHAKE_SENSITIVITY_LABELS[shakeSensitivity.value] ?? 'Medium')
+function setShakeSensitivity(index: number) {
+  const key = SHAKE_SENSITIVITY_KEYS[index] ?? 'medium'
+  shakeSensitivity.value = key
+  localStorage.setItem('abs_shake_sensitivity', key)
+}
+
+const shakeAddMins = ref(parseInt(localStorage.getItem('abs_shake_add_mins') ?? '5'))
+function setShakeAddMins(v: number) {
+  shakeAddMins.value = v
+  localStorage.setItem('abs_shake_add_mins', String(v))
 }
 
 const sleepResetOnPause = ref(localStorage.getItem('abs_sleep_reset_on_pause') === 'true')

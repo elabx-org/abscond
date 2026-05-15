@@ -49,7 +49,7 @@ export const usePlayerStore = defineStore('player', () => {
   let sleepCountdown: ReturnType<typeof setInterval> | null = null
   let sleepFadeStartVol = 1
   let _shakeLastAt = 0
-  const SHAKE_THRESHOLD = 15   // m/s² magnitude
+  const SHAKE_THRESHOLDS: Record<string, number> = { veryLow: 8, low: 11, medium: 15, high: 20, veryHigh: 28 }
   const SHAKE_COOLDOWN  = 3000 // ms between triggers
   let chimePlayed = false
   let syncedAt = 0
@@ -519,12 +519,15 @@ export const usePlayerStore = defineStore('player', () => {
     if (!a) return
     const mag = Math.sqrt((a.x ?? 0) ** 2 + (a.y ?? 0) ** 2 + (a.z ?? 0) ** 2)
     const now = Date.now()
-    if (mag < SHAKE_THRESHOLD || now - _shakeLastAt < SHAKE_COOLDOWN) return
+    const sensitivity = localStorage.getItem('abs_shake_sensitivity') ?? 'medium'
+    const threshold = SHAKE_THRESHOLDS[sensitivity] ?? 15
+    if (mag < threshold || now - _shakeLastAt < SHAKE_COOLDOWN) return
     _shakeLastAt = now
     const mode = localStorage.getItem('abs_shake_mode') ?? 'off'
     if (mode === 'addTime' && sleepMinsLeft.value !== null) {
-      setSleepTimer(sleepMinsLeft.value + 5)
-      useNotificationStore().show('+5 min added', 'success')
+      const addMins = parseInt(localStorage.getItem('abs_shake_add_mins') ?? '5')
+      setSleepTimer(sleepMinsLeft.value + addMins)
+      useNotificationStore().show(`+${addMins} min added`, 'success')
     } else if (mode === 'reset' && sleepTotalSecs.value !== null) {
       setSleepTimer(Math.round(sleepTotalSecs.value / 60))
       useNotificationStore().show('Sleep timer reset', 'info')
