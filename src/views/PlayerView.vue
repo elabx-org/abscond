@@ -81,6 +81,21 @@
           </button>
         </div>
 
+        <!-- Volume row -->
+        <div class="volume-row">
+          <v-icon size="16" color="rgba(255,255,255,0.4)">mdi-volume-low</v-icon>
+          <input
+            type="range"
+            class="volume-slider"
+            min="0"
+            max="1"
+            step="0.02"
+            :value="player.volume"
+            @input="player.setVolume(+($event.target as HTMLInputElement).value)"
+          />
+          <v-icon size="16" color="rgba(255,255,255,0.4)">mdi-volume-high</v-icon>
+        </div>
+
         <!-- Utility row -->
         <div class="util-row">
           <button class="util-btn" @click="cycleSpeed">
@@ -390,6 +405,15 @@ function onChapterBarClick(e: MouseEvent) {
 }
 .play-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
+.volume-row {
+  display: flex; align-items: center; gap: 10px; margin-bottom: 16px; padding: 0 4px;
+}
+.volume-slider {
+  flex: 1; -webkit-appearance: none; appearance: none;
+  height: 3px; border-radius: 2px; outline: none;
+  background: rgba(255,255,255,0.12);
+  accent-color: #d4a017;
+}
 .util-row { display: flex; gap: 12px; margin-bottom: 20px; }
 .util-btn {
   display: flex; align-items: center; justify-content: center;

@@ -18,6 +18,7 @@ export const usePlayerStore = defineStore('player', () => {
   const sleepMinsLeft      = ref<number | null>(null)
   const sleepEndOfChapter  = ref(false)
   const queue              = ref<LibraryItem[]>([])
+  const volume             = ref<number>(parseFloat(localStorage.getItem('abs_volume') ?? '1'))
 
   let audio: HTMLAudioElement | null = null
   let syncTimer: ReturnType<typeof setInterval> | null = null
@@ -162,6 +163,7 @@ export const usePlayerStore = defineStore('player', () => {
 
       audio = new Audio()
       audio.playbackRate = playbackRate.value
+      audio.volume = volume.value
       _attachListeners()
 
       // Find the track for startTime
@@ -214,6 +216,12 @@ export const usePlayerStore = defineStore('player', () => {
     if (audio) audio.playbackRate = rate
   }
 
+  function setVolume(vol: number) {
+    volume.value = Math.max(0, Math.min(1, vol))
+    localStorage.setItem('abs_volume', String(volume.value))
+    if (audio) audio.volume = volume.value
+  }
+
   function setSleepTimer(mins: number | null, endOfChapter = false) {
     if (sleepTimer) { clearTimeout(sleepTimer); sleepTimer = null }
     sleepEndOfChapter.value = false
@@ -249,9 +257,9 @@ export const usePlayerStore = defineStore('player', () => {
 
   return {
     currentItem, session, isPlaying, currentTime, duration, queue,
-    playbackRate, isLoading, error, sleepMinsLeft, sleepEndOfChapter,
+    playbackRate, volume, isLoading, error, sleepMinsLeft, sleepEndOfChapter,
     currentChapter, currentTrackIndex, progress,
-    play, togglePlay, seek, skipBack, skipForward, setRate, setSleepTimer, stop,
+    play, togglePlay, seek, skipBack, skipForward, setRate, setVolume, setSleepTimer, stop,
     addToQueue: (item: LibraryItem) => { queue.value.push(item) },
     clearQueue: () => { queue.value = [] },
     removeFromQueue: (idx: number) => { queue.value.splice(idx, 1) },

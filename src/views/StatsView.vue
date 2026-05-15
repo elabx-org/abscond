@@ -52,24 +52,27 @@
 
       <!-- Daily chart -->
       <section v-if="chartData.length" class="section">
-        <p class="section-label">Last 30 days</p>
+        <div class="chart-section-header">
+          <p class="section-label" style="margin: 0">Last 30 days</p>
+          <span class="chart-total">{{ chartPeriodHours.toFixed(1) }}h total</span>
+        </div>
         <div class="chart-wrap">
           <div class="chart-bars">
             <div
-              v-for="d in chartData"
+              v-for="(d, i) in chartData"
               :key="d.label"
               class="chart-col"
             >
               <div
                 class="chart-bar"
-                :style="{ height: `${d.pct}%` }"
+                :class="{ today: d.isToday }"
+                :style="{ height: `${Math.max(d.pct, d.hours > 0 ? 4 : 0)}%` }"
                 :title="`${d.label}: ${d.hours.toFixed(1)}h`"
               />
+              <span v-if="i % 7 === 0 || d.isToday" class="chart-day-label" :class="{ today: d.isToday }">
+                {{ d.isToday ? 'T' : d.weekLabel }}
+              </span>
             </div>
-          </div>
-          <div class="chart-footer">
-            <span>{{ chartData[0]?.label }}</span>
-            <span>{{ chartData[chartData.length - 1]?.label }}</span>
           </div>
         </div>
       </section>
@@ -109,21 +112,34 @@ const totalHours = computed(() => {
   return Math.round(secs / 3600)
 })
 
+const DAY_ABBR = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa']
+
 const chartData = computed(() => {
   const days = userStats.value?.days
   if (!days) return []
   const now = Date.now()
-  const result: { label: string; hours: number; pct: number }[] = []
+  const todayKey = new Date().toISOString().slice(0, 10)
+  const result: { label: string; weekLabel: string; hours: number; pct: number; isToday: boolean }[] = []
   for (let i = 29; i >= 0; i--) {
     const d = new Date(now - i * 86400000)
     const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
     const secs = days[key] ?? 0
-    result.push({ label: key.slice(5), hours: secs / 3600, pct: 0 })
+    result.push({
+      label:     key.slice(5),
+      weekLabel: DAY_ABBR[d.getDay()],
+      hours:     secs / 3600,
+      pct:       0,
+      isToday:   key === todayKey,
+    })
   }
   const max = Math.max(...result.map(r => r.hours), 0.001)
   result.forEach(r => { r.pct = (r.hours / max) * 100 })
   return result
 })
+
+const chartPeriodHours = computed(() =>
+  chartData.value.reduce((sum, d) => sum + d.hours, 0)
+)
 
 function formatHours(secs: number): string {
   const h = Math.floor(secs / 3600)
@@ -206,24 +222,35 @@ onMounted(async () => {
 .info-key { font-size: 13px; color: rgba(255,255,255,0.6); }
 .info-val { font-size: 13px; color: rgba(255,255,255,0.85); font-weight: 600; }
 
+.chart-section-header {
+  display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;
+}
+.chart-total { font-size: 11px; color: rgba(212,160,23,0.7); }
+
 .chart-wrap {
   background: #111; border-radius: 12px;
   border: 1px solid rgba(255,255,255,0.06);
-  padding: 14px;
+  padding: 14px 14px 4px;
 }
 .chart-bars {
   display: flex; align-items: flex-end; gap: 2px; height: 80px;
 }
-.chart-col { flex: 1; display: flex; align-items: flex-end; height: 100%; }
+.chart-col {
+  flex: 1; display: flex; flex-direction: column; align-items: center;
+  justify-content: flex-end; height: 100%;
+}
 .chart-bar {
-  width: 100%; min-height: 2px; border-radius: 2px 2px 0 0;
-  background: #d4a017; opacity: 0.8; transition: opacity 0.2s;
+  width: 100%; border-radius: 2px 2px 0 0;
+  background: rgba(212,160,23,0.5); transition: opacity 0.2s;
+  align-self: flex-end;
 }
+.chart-bar.today { background: #d4a017; }
 .chart-bar:hover { opacity: 1; }
-.chart-footer {
-  display: flex; justify-content: space-between; margin-top: 4px;
-  font-size: 9px; color: rgba(255,255,255,0.25);
+.chart-day-label {
+  font-size: 7px; color: rgba(255,255,255,0.2);
+  margin-top: 3px; line-height: 1; white-space: nowrap;
 }
+.chart-day-label.today { color: #d4a017; }
 
 .session-rows {
   background: #111; border-radius: 12px;
