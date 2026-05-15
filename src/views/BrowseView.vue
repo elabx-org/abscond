@@ -64,7 +64,7 @@
       </div>
       <div v-else class="thumb-grid">
         <div v-for="a in filteredAuthors" :key="a.id" class="thumb-card" @click="openAuthor(a)">
-          <div class="thumb-cover-wrap">
+          <div class="thumb-cover-wrap thumb-cover-wrap--circle">
             <img v-if="a.imagePath" :src="authorImageUrl(a.id)" class="thumb-cover author-img" :alt="a.name" />
             <div v-else class="thumb-initial"><span class="thumb-letter">{{ a.name[0]?.toUpperCase() }}</span></div>
           </div>
@@ -462,6 +462,7 @@ onMounted(async () => {
 .thumb-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 12px 10px; }
 .thumb-card { display: flex; flex-direction: column; gap: 5px; cursor: pointer; }
 .thumb-cover-wrap { position: relative; aspect-ratio: 1; border-radius: 8px; overflow: hidden; background: #1a1a1a; }
+.thumb-cover-wrap--circle { border-radius: 50%; }
 .thumb-cover { width: 100%; height: 100%; object-fit: cover; display: block; }
 .thumb-cover.author-img { object-position: top; }
 .thumb-placeholder { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.04); }

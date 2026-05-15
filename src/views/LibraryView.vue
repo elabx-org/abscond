@@ -229,7 +229,7 @@
           class="series-card"
           @click="activeAuthor = a"
         >
-          <div class="series-cover-wrap">
+          <div class="series-cover-wrap series-cover-wrap--circle">
             <img
               v-if="a.imagePath"
               :src="authorImageUrl(a.id)"
@@ -810,6 +810,7 @@ watch(() => lib.activeLibraryId, (id) => {
 
 .series-card { display: flex; flex-direction: column; gap: 5px; cursor: pointer; }
 .series-cover-wrap { position: relative; aspect-ratio: 1; border-radius: 8px; overflow: hidden; background: #1a1a1a; }
+.series-cover-wrap--circle { border-radius: 50%; }
 .series-cover { width: 100%; height: 100%; object-fit: cover; display: block; }
 .series-cover.author-img { object-position: top; }
 .series-cover-placeholder {
