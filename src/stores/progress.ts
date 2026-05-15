@@ -36,11 +36,18 @@ export const useProgressStore = defineStore('progress', () => {
   async function fetchDiscover(libraryId: string) {
     try {
       const res = await api.get(`/libraries/${libraryId}/items`, {
-        params: { limit: 20, sort: 'random', desc: 0 },
+        params: { limit: 30, sort: 'random', desc: 0, filter: 'progress.not-started' },
       })
-      discover.value = res.data.results ?? []
+      discover.value = (res.data.results ?? []).slice(0, 20)
     } catch {
-      discover.value = []
+      try {
+        const res = await api.get(`/libraries/${libraryId}/items`, {
+          params: { limit: 20, sort: 'random', desc: 0 },
+        })
+        discover.value = res.data.results ?? []
+      } catch {
+        discover.value = []
+      }
     }
   }
 
