@@ -2,10 +2,7 @@
   <Teleport to="body">
     <Transition name="sheet">
       <div v-if="show" class="sheet-backdrop" @click.self="emit('close')">
-        <div
-          class="book-sheet"
-          :style="{ height: `${sheet.heightPct.value}vh` }"
-        >
+        <div class="book-sheet" :style="{ height: `${sheet.heightPct.value}vh` }">
           <!-- Blurred cover bleed -->
           <div class="sheet-bleed">
             <img v-if="coverSrc" :src="coverSrc" class="bleed-img" aria-hidden="true" />
@@ -26,27 +23,40 @@
 
             <!-- Cover -->
             <div class="cover-container">
-              <img :src="coverSrc" :alt="item.media.metadata.title" class="sheet-cover" />
+              <img ref="coverImgRef" :src="coverSrc" :alt="item.media.metadata.title" class="sheet-cover" />
             </div>
 
             <!-- Title & Authors -->
             <h2 class="sheet-title">{{ item.media.metadata.title }}</h2>
+            <p v-if="item.media.metadata.subtitle" class="sheet-subtitle">{{ item.media.metadata.subtitle }}</p>
             <p class="sheet-authors">{{ authorNames }}</p>
             <p v-if="narratorNames" class="sheet-narrator">Read by {{ narratorNames }}</p>
 
             <!-- Progress bar -->
-            <div v-if="progress > 0" class="sheet-progress-wrap">
+            <div v-if="progress > 0 && progress < 1" class="sheet-progress-wrap">
               <div class="sheet-progress-bar" :style="{ width: `${Math.round(progress * 100)}%` }" />
+              <span class="progress-pct">{{ Math.round(progress * 100) }}%</span>
             </div>
+            <p v-if="progress >= 1" class="finished-badge">✓ Finished</p>
 
             <!-- Series -->
-            <p v-if="seriesLabel" class="sheet-series">{{ seriesLabel }}</p>
+            <div v-if="allSeries.length" class="series-rows">
+              <p v-for="s in allSeries" :key="s.id" class="sheet-series">{{ seriesLabel(s) }}</p>
+            </div>
+
+            <!-- Play button -->
+            <button class="play-btn" :style="{ background: accent }" @click="onPlayPress">
+              <v-icon size="20" color="white">{{ isThisPlaying ? 'mdi-pause' : 'mdi-play' }}</v-icon>
+              {{ isThisPlaying ? 'Pause' : (progress > 0 && progress < 1 ? 'Continue' : 'Play') }}
+            </button>
 
             <!-- Metadata chips -->
             <div class="chip-row">
               <span v-if="durationLabel" class="chip">{{ durationLabel }}</span>
+              <span v-if="item.media.numChapters" class="chip">{{ item.media.numChapters }} chapters</span>
               <span v-if="item.media.metadata.publishedYear" class="chip">{{ item.media.metadata.publishedYear }}</span>
-              <span v-for="g in (item.media.metadata.genres ?? []).slice(0, 3)" :key="g" class="chip">{{ g }}</span>
+              <span v-if="item.media.metadata.publisher" class="chip">{{ item.media.metadata.publisher }}</span>
+              <span v-for="g in (item.media.metadata.genres ?? []).slice(0, 4)" :key="g" class="chip">{{ g }}</span>
             </div>
 
             <!-- Description -->
@@ -58,12 +68,6 @@
                 {{ descExpanded ? 'Show less' : 'Show more' }}
               </button>
             </div>
-
-            <!-- Play button -->
-            <button class="play-btn" :style="{ background: accent }" @click="onPlayPress">
-              <v-icon size="20" color="white">{{ isThisPlaying ? 'mdi-pause' : 'mdi-play' }}</v-icon>
-              {{ isThisPlaying ? 'Pause' : 'Play' }}
-            </button>
           </div>
         </div>
       </div>
@@ -77,7 +81,7 @@ import { useRouter } from 'vue-router'
 import { useDraggableSheet } from '@/composables/useDraggableSheet'
 import { useColorThief } from '@/composables/useColorThief'
 import { usePlayerStore } from '@/stores/player'
-import type { LibraryItem } from '@/api/types'
+import type { LibraryItem, Series } from '@/api/types'
 
 const props = defineProps<{
   item: LibraryItem
@@ -94,21 +98,18 @@ const sheet  = useDraggableSheet({ initial: 85, min: 30, max: 95 })
 const coverImgRef = ref<HTMLImageElement | null>(null)
 const { accent } = useColorThief(coverImgRef)
 
+const descExpanded = ref(false)
+
 const isThisPlaying = computed(() =>
   player.isPlaying && player.currentItem?.id === props.item.id
 )
 
 async function onPlayPress() {
-  if (isThisPlaying.value) {
-    player.togglePlay()
-    return
-  }
+  if (isThisPlaying.value) { player.togglePlay(); return }
   emit('close')
   await player.play(props.item)
   router.push({ name: 'player' })
 }
-
-const descExpanded = ref(false)
 
 const authorNames = computed(() =>
   (props.item.media.metadata.authors ?? []).map(a => a.name).join(', ') || 'Unknown Author'
@@ -118,11 +119,11 @@ const narratorNames = computed(() =>
   (props.item.media.metadata.narrators ?? []).join(', ')
 )
 
-const seriesLabel = computed(() => {
-  const s = (props.item.media.metadata.series ?? [])[0]
-  if (!s) return ''
+const allSeries = computed(() => props.item.media.metadata.series ?? [])
+
+function seriesLabel(s: Series): string {
   return s.sequence ? `${s.name} #${s.sequence}` : s.name
-})
+}
 
 const durationLabel = computed(() => {
   const d = props.item.media.duration
@@ -134,9 +135,7 @@ const durationLabel = computed(() => {
 
 const progress = computed(() => props.item.userMediaProgress?.progress ?? 0)
 
-watch(() => props.show, (v) => {
-  if (v) descExpanded.value = false
-})
+watch(() => props.show, (v) => { if (v) descExpanded.value = false })
 </script>
 
 <style scoped>
@@ -148,8 +147,7 @@ watch(() => props.show, (v) => {
   position: absolute; bottom: 0; left: 0; right: 0;
   border-radius: 24px 24px 0 0;
   border-top: 1px solid rgba(255,255,255,0.08);
-  background: #111;
-  overflow: hidden;
+  background: #111; overflow: hidden;
   display: flex; flex-direction: column;
   transition: height 0.05s;
 }
@@ -158,8 +156,7 @@ watch(() => props.show, (v) => {
 }
 .bleed-img {
   width: 100%; height: 100%; object-fit: cover;
-  filter: blur(28px) brightness(0.55) saturate(1.3);
-  transform: scale(1.1);
+  filter: blur(28px) brightness(0.55) saturate(1.3); transform: scale(1.1);
 }
 .bleed-scrim {
   position: absolute; inset: 0;
@@ -179,8 +176,7 @@ watch(() => props.show, (v) => {
 }
 .sheet-close {
   background: transparent; border: none; cursor: pointer;
-  color: rgba(255,255,255,0.5); padding: 4px; margin-bottom: 8px;
-  float: right;
+  color: rgba(255,255,255,0.5); padding: 4px; margin-bottom: 8px; float: right;
 }
 .cover-container {
   display: flex; justify-content: center; margin: 8px 0 16px; clear: both;
@@ -193,24 +189,41 @@ watch(() => props.show, (v) => {
   font-size: 15px; font-weight: 700; text-align: center;
   color: rgba(255,255,255,0.95); margin: 0 0 4px;
 }
+.sheet-subtitle {
+  font-size: 12px; color: rgba(255,255,255,0.45); text-align: center; margin: 0 0 4px;
+}
 .sheet-authors {
   font-size: 12px; color: rgba(255,255,255,0.55); text-align: center; margin: 0 0 4px;
 }
 .sheet-narrator {
   font-size: 11px; color: rgba(255,255,255,0.35); text-align: center; margin: 0 0 12px;
 }
-.sheet-series {
-  font-size: 10px; color: rgba(255,255,255,0.35); text-align: center; margin: 0 0 12px;
-}
 .sheet-progress-wrap {
-  height: 3px; background: rgba(255,255,255,0.1); border-radius: 2px; margin: 8px 0;
+  display: flex; align-items: center; gap: 8px; margin: 8px 0;
 }
-.sheet-progress-bar {
-  height: 100%; border-radius: 2px; background: #d4a017; transition: width 0.3s;
+.sheet-progress-wrap .sheet-progress-bar {
+  flex: 1; height: 3px; border-radius: 2px; background: #d4a017; transition: width 0.3s;
 }
-.chip-row {
-  display: flex; flex-wrap: wrap; gap: 6px; margin: 12px 0;
+/* wrapper bg */
+.sheet-progress-wrap { background: rgba(255,255,255,0.1); border-radius: 2px; position: relative; }
+.sheet-progress-wrap .sheet-progress-bar {
+  position: absolute; left: 0; top: 0; height: 100%;
 }
+.progress-pct { font-size: 10px; color: rgba(255,255,255,0.4); white-space: nowrap; }
+.finished-badge {
+  font-size: 11px; color: #22c55e; text-align: center; margin: 4px 0 8px;
+}
+.series-rows { margin: 0 0 8px; }
+.sheet-series {
+  font-size: 10px; color: rgba(255,255,255,0.35); text-align: center; margin: 0 0 4px;
+}
+.play-btn {
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  width: 100%; padding: 14px; border-radius: 12px; border: none;
+  font-size: 15px; font-weight: 700; color: white; cursor: pointer;
+  background: #d4a017; margin: 12px 0 8px;
+}
+.chip-row { display: flex; flex-wrap: wrap; gap: 6px; margin: 12px 0; }
 .chip {
   font-size: 9px; padding: 3px 8px; border-radius: 20px;
   background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.08);
@@ -225,13 +238,6 @@ watch(() => props.show, (v) => {
 .sheet-desc.expanded { display: block; }
 .show-more {
   font-size: 11px; color: #d4a017; background: transparent; border: none; cursor: pointer; padding: 0;
-}
-.play-btn {
-  display: flex; align-items: center; justify-content: center; gap: 8px;
-  width: 100%; padding: 14px; border-radius: 12px; border: none;
-  font-size: 15px; font-weight: 700; color: white; cursor: pointer;
-  background: #d4a017;
-  margin-top: 8px;
 }
 
 .sheet-enter-active, .sheet-leave-active { transition: opacity 0.25s; }

@@ -10,8 +10,7 @@
       <div class="h-scroll">
         <template v-if="loadingProgress">
           <div v-for="n in 4" :key="n" class="h-card-skeleton">
-            <div class="skeleton-cover" />
-            <div class="skeleton-line short" />
+            <div class="skeleton-cover" /><div class="skeleton-line short" />
           </div>
         </template>
         <PortraitCard
@@ -38,16 +37,43 @@
       </div>
       <div v-if="loadingRecent" class="h-scroll">
         <div v-for="n in 4" :key="n" class="h-card-skeleton">
-          <div class="skeleton-cover" />
-          <div class="skeleton-line short" />
+          <div class="skeleton-cover" /><div class="skeleton-line short" />
         </div>
       </div>
-      <div v-else-if="!progress.recentlyAdded.length" class="empty-row">
-        <p>Nothing added yet</p>
-      </div>
+      <div v-else-if="!progress.recentlyAdded.length" class="empty-row"><p>Nothing added yet</p></div>
       <div v-else class="h-scroll">
         <PortraitCard
           v-for="item in progress.recentlyAdded"
+          :key="item.id"
+          class="h-card"
+          :item-id="item.id"
+          :title="item.media.metadata.title"
+          :author="(item.media.metadata.authors ?? []).map(a => a.name).join(', ') || 'Unknown'"
+          :cover-src="coverUrl(item.id, auth.token ?? '')"
+          :progress="item.userMediaProgress?.progress ?? 0"
+          @click="openDetail(item)"
+        />
+      </div>
+    </section>
+
+    <!-- Discover -->
+    <section v-if="progress.discover.length || loadingDiscover" class="section">
+      <div class="section-header">
+        <v-icon size="16" color="rgba(255,255,255,0.35)">mdi-shuffle-variant</v-icon>
+        <span class="section-label">Discover</span>
+        <button class="refresh-btn" @click="refreshDiscover" :disabled="loadingDiscover">
+          <v-icon size="14" :class="{ spin: loadingDiscover }">mdi-refresh</v-icon>
+        </button>
+      </div>
+      <div class="h-scroll">
+        <template v-if="loadingDiscover">
+          <div v-for="n in 4" :key="n" class="h-card-skeleton">
+            <div class="skeleton-cover" /><div class="skeleton-line short" />
+          </div>
+        </template>
+        <PortraitCard
+          v-else
+          v-for="item in progress.discover"
           :key="item.id"
           class="h-card"
           :item-id="item.id"
@@ -88,14 +114,20 @@ const auth     = useAuthStore()
 const selectedItem    = ref<LibraryItem | null>(null)
 const loadingProgress = ref(false)
 const loadingRecent   = ref(false)
+const loadingDiscover = ref(false)
 
-function openDetail(item: LibraryItem) {
-  selectedItem.value = item
+function openDetail(item: LibraryItem) { selectedItem.value = item }
+
+async function refreshDiscover() {
+  if (!lib.activeLibraryId) return
+  loadingDiscover.value = true
+  await progress.fetchDiscover(lib.activeLibraryId).finally(() => { loadingDiscover.value = false })
 }
 
 onMounted(async () => {
   loadingProgress.value = true
-  loadingRecent.value = true
+  loadingRecent.value   = true
+  loadingDiscover.value = true
 
   if (!lib.libraries.length) await lib.fetchLibraries()
 
@@ -104,6 +136,9 @@ onMounted(async () => {
     lib.activeLibraryId
       ? progress.fetchRecentlyAdded(lib.activeLibraryId).finally(() => { loadingRecent.value = false })
       : Promise.resolve().then(() => { loadingRecent.value = false }),
+    lib.activeLibraryId
+      ? progress.fetchDiscover(lib.activeLibraryId).finally(() => { loadingDiscover.value = false })
+      : Promise.resolve().then(() => { loadingDiscover.value = false }),
   ])
 })
 </script>
@@ -118,9 +153,16 @@ onMounted(async () => {
 }
 .section-label { font-size: 12px; font-weight: 600; color: rgba(255,255,255,0.7); flex: 1; }
 
+.refresh-btn {
+  background: transparent; border: none; cursor: pointer;
+  color: rgba(255,255,255,0.4); padding: 2px;
+}
+.refresh-btn:disabled { opacity: 0.4; }
+.spin { animation: spin 0.8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
 .h-scroll {
-  display: flex; gap: 10px; overflow-x: auto; scrollbar-width: none;
-  padding-bottom: 4px;
+  display: flex; gap: 10px; overflow-x: auto; scrollbar-width: none; padding-bottom: 4px;
 }
 .h-scroll::-webkit-scrollbar { display: none; }
 
