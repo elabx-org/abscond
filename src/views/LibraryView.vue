@@ -129,6 +129,9 @@
             <v-icon size="12">mdi-close</v-icon>
           </button>
         </div>
+        <button class="grid-density-btn" :class="{ active: hideEbookOnly }" @click="toggleHideEbook" title="Hide ebook-only items">
+          <v-icon size="16" :color="hideEbookOnly ? '#d4a017' : 'rgba(255,255,255,0.5)'">mdi-headphones</v-icon>
+        </button>
         <button class="grid-density-btn" @click="toggleRectangle" :title="rectangleCovers ? 'Square covers' : 'Portrait covers'">
           <v-icon size="16" color="rgba(255,255,255,0.5)">{{ rectangleCovers ? 'mdi-image-outline' : 'mdi-image-frame' }}</v-icon>
         </button>
@@ -234,27 +237,14 @@
         <p>No series found</p>
       </div>
       <div v-else class="grid">
-        <div
+        <SeriesStackCard
           v-for="s in filteredSeries"
           :key="s.id"
-          class="series-card"
+          :series="s"
+          :token="auth.token ?? ''"
+          :library-items="items"
           @click="activeSeries = s"
-        >
-          <div class="series-cover-wrap">
-            <img
-              v-if="s.books && s.books.length"
-              :src="coverUrl(s.books[0].id, auth.token ?? '')"
-              class="series-cover"
-              :alt="s.name"
-            />
-            <div v-else class="series-cover-placeholder">
-              <v-icon size="28" color="rgba(255,255,255,0.2)">mdi-book-multiple</v-icon>
-            </div>
-            <div class="series-count-badge">{{ s.numBooks ?? s.books?.length ?? 0 }}</div>
-          </div>
-          <p class="card-title">{{ s.name }}</p>
-          <p class="card-sub">{{ s.numBooks ?? s.books?.length ?? 0 }} books</p>
-        </div>
+        />
       </div>
     </template>
 
@@ -485,6 +475,7 @@ import { useLibraryStore } from '@/stores/library'
 import { useAuthStore } from '@/stores/auth'
 import { coverUrl, api } from '@/api/client'
 import PortraitCard from '@/components/cards/PortraitCard.vue'
+import SeriesStackCard from '@/components/cards/SeriesStackCard.vue'
 import BookDetailSheet from '@/components/sheets/BookDetailSheet.vue'
 import PodcastDetailSheet from '@/components/sheets/PodcastDetailSheet.vue'
 import QuickActionsSheet from '@/components/sheets/QuickActionsSheet.vue'
@@ -627,6 +618,7 @@ const progressFilters = [
 const sortDesc     = ref(localStorage.getItem('abs_lib_sort_desc') === 'true')
 const gridDense       = ref(localStorage.getItem('abs_lib_dense') === 'true')
 const rectangleCovers = ref(localStorage.getItem('abs_lib_rect') === 'true')
+const hideEbookOnly   = ref(localStorage.getItem('abs_lib_hide_ebook') === 'true')
 const pageSize     = 100
 const page         = ref(1)
 const searchQuery  = ref('')
@@ -641,6 +633,12 @@ function toggleGridDensity() {
 function toggleRectangle() {
   rectangleCovers.value = !rectangleCovers.value
   localStorage.setItem('abs_lib_rect', String(rectangleCovers.value))
+}
+
+function toggleHideEbook() {
+  hideEbookOnly.value = !hideEbookOnly.value
+  localStorage.setItem('abs_lib_hide_ebook', String(hideEbookOnly.value))
+  page.value = 1
 }
 
 const items = computed(() =>
@@ -677,6 +675,9 @@ const filteredItems = computed(() => {
   }
   if (tagFilter.value) {
     all = all.filter(i => (i.tags ?? []).includes(tagFilter.value))
+  }
+  if (hideEbookOnly.value) {
+    all = all.filter(i => (i.media.numAudioFiles ?? 0) > 0 || (i.media.duration ?? 0) > 0)
   }
   if (progressFilter.value === 'all') return all
   if (progressFilter.value === 'in-progress') return all.filter(i => (i.userMediaProgress?.progress ?? 0) > 0 && !i.userMediaProgress?.isFinished)
@@ -973,6 +974,7 @@ watch(searchQuery, (q) => {
   flex-shrink: 0; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08);
   border-radius: 10px; padding: 6px 10px; cursor: pointer; display: flex; align-items: center;
 }
+.grid-density-btn.active { background: rgba(212,160,23,0.1); border-color: rgba(212,160,23,0.3); }
 .lib-search-input {
   flex: 1; background: transparent; border: none; outline: none;
   color: rgba(255,255,255,0.85); font-size: 12px;
