@@ -2,6 +2,7 @@ import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { startPlaySession, syncSession, closeSession } from '@/api/player'
 import { getPodcastItem } from '@/api/browse'
+import { getItemsInProgress } from '@/api/items'
 import { api } from '@/api/client'
 import { useNotificationStore } from '@/stores/notifications'
 import { useSettingsStore } from '@/stores/settings'
@@ -585,11 +586,22 @@ export const usePlayerStore = defineStore('player', () => {
     try { localStorage.removeItem('abs_last_item') } catch {}
   }
 
+  async function hydrateRecentItems() {
+    if (recentItems.value.length > 0) return
+    try {
+      const items = await getItemsInProgress()
+      if (items.length > 0) {
+        recentItems.value = items.slice(0, 10)
+        _saveRecentItems(recentItems.value)
+      }
+    } catch { /* silent — localStorage state is used as-is */ }
+  }
+
   return {
     currentItem, session, isPlaying, currentTime, duration, queue, recentItems,
     playbackRate, volume, isLoading, error, sleepMinsLeft, sleepSecsLeft, sleepTotalSecs, sleepEndOfChapter,
     currentChapter, currentTrackIndex, progress, chapterBarrierPaused,
-    play, togglePlay, seek, skipBack, skipForward, setRate, setVolume, setSleepTimer, stop,
+    play, togglePlay, seek, skipBack, skipForward, setRate, setVolume, setSleepTimer, stop, hydrateRecentItems,
     resumeFromBarrier: () => { chapterBarrierPaused.value = false; audio?.play() },
     addToQueue: (item: LibraryItem, episodeId?: string) => { queue.value.push({ item, episodeId }) },
     addToFrontOfQueue: (item: LibraryItem, episodeId?: string) => { queue.value.unshift({ item, episodeId }) },
