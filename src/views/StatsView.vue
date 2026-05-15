@@ -16,6 +16,10 @@
       <!-- Period + streak cards -->
       <div class="period-cards">
         <div class="period-card">
+          <p class="period-value">{{ todayHours.toFixed(1) }}<span class="period-unit">h</span></p>
+          <p class="period-label">Today</p>
+        </div>
+        <div class="period-card">
           <p class="period-value">{{ thisWeekHours.toFixed(1) }}<span class="period-unit">h</span></p>
           <p class="period-label">This week</p>
         </div>
@@ -153,6 +157,12 @@ const totalHoursDecimal = computed(() => {
 const _dayMap = computed(() =>
   userStats.value?.days ?? userStats.value?.booksListeningStats?.days ?? {}
 )
+
+const todayHours = computed(() => {
+  const d = new Date()
+  const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+  return (_dayMap.value[key] ?? 0) / 3600
+})
 
 const thisWeekHours = computed(() => {
   const map = _dayMap.value
@@ -338,7 +348,7 @@ onMounted(async () => {
   font-size: 12px; color: rgba(255,255,255,0.4); margin: 6px 0 0; text-transform: uppercase; letter-spacing: 0.5px;
 }
 
-.period-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 24px; }
+.period-cards { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 24px; }
 .period-card {
   background: #111; border-radius: 12px; border: 1px solid rgba(255,255,255,0.06);
   padding: 14px 16px; display: flex; flex-direction: column;
