@@ -198,7 +198,6 @@
               :class="{ active: player.sleepMinsLeft !== null || player.sleepEndOfChapter }"
               @click="showSleepPicker = !showSleepPicker; showSpeedPicker = false; showChapters = false; showQueue = false"
             >
-              <!-- Fill bar depletes as timer counts down -->
               <div
                 v-if="player.sleepMinsLeft !== null"
                 class="sleep-fill"
@@ -210,6 +209,7 @@
             </button>
             <button class="util-btn" :class="{ active: showChapters }" @click="showChapters = !showChapters; if (!showChapters) chapterSearch = ''; showQueue = false; showSleepPicker = false; showSpeedPicker = false">
               <v-icon size="18">mdi-format-list-bulleted</v-icon>
+              <span v-if="chapters.length" class="util-badge">{{ chapters.length }}</span>
             </button>
             <button class="util-btn" :class="{ active: showQueue || player.queue.length > 0 }" @click="showQueue = !showQueue; showChapters = false; showSleepPicker = false; showSpeedPicker = false">
               <v-icon size="18">mdi-playlist-play</v-icon>
@@ -616,7 +616,12 @@ function onCoverTap() {
 }
 
 // ── Chapters / progress ───────────────────────────────────────────────────────
-const chapters = computed(() => player.session?.chapters ?? [])
+const chapters = computed<import('@/api/types').Chapter[]>(() => {
+  const sess = player.session?.chapters ?? []
+  if (sess.length > 0) return sess
+  const mediaChs = (player.currentItem?.media as any)?.chapters
+  return Array.isArray(mediaChs) ? mediaChs : []
+})
 const filteredChapters = computed(() => {
   const q = chapterSearch.value.trim().toLowerCase()
   if (!q) return chapters.value
@@ -1040,10 +1045,14 @@ function queueDragEnd() {
 }
 
 /* ── Util row ────────────────────────────────────────────────────────────────── */
-.util-row { display: flex; gap: 10px; margin-bottom: 16px; width: 100%; justify-content: center; }
+.util-row {
+  display: flex; flex-wrap: wrap; justify-content: center;
+  gap: 8px; margin-bottom: 12px; width: 100%;
+}
 .util-btn {
   display: flex; align-items: center; justify-content: center;
-  flex: 1; height: 38px; border-radius: 10px;
+  flex: 1 1 0; min-width: 0; max-width: calc(20% - 7px);
+  height: 40px; border-radius: 10px;
   background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.08);
   cursor: pointer; color: rgba(255,255,255,0.6); gap: 3px;
 }

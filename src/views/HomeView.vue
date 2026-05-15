@@ -179,7 +179,7 @@
           :author="getShelfItemAuthor(item)"
           :cover-src="coverUrl(item.id, auth.token ?? '')"
           :progress="item.userMediaProgress?.progress ?? 0"
-          :explicit="(item.media.metadata as any).explicit ?? false"
+          :explicit="(item.media?.metadata as any)?.explicit ?? false"
           :rectangle="shelf.type === 'book' ? rectangleCovers : false"
           @click="openShelfItem(item)"
         />
@@ -367,7 +367,12 @@ function filterEbook<T extends LibraryItem>(items: T[]): T[] {
   return items.filter(i => !isEbookOnlyItem(i))
 }
 
-const extraShelves = computed(() => allShelves.value.filter(s => !BUILT_IN_SHELF_IDS.has(s.id) && s.entities?.length > 0))
+const RENDERABLE_SHELF_TYPES = new Set(['book', 'episode'])
+const extraShelves = computed(() => allShelves.value.filter(s =>
+  !BUILT_IN_SHELF_IDS.has(s.id) &&
+  s.entities?.length > 0 &&
+  RENDERABLE_SHELF_TYPES.has(s.type)
+))
 
 function shelfIcon(id: string, type: string): string {
   if (id.includes('series'))   return 'mdi-bookshelf'
@@ -380,7 +385,7 @@ function shelfIcon(id: string, type: string): string {
 function getShelfItemTitle(item: LibraryItem): string {
   const raw = item as unknown as Record<string, unknown>
   const ep  = (raw.episode ?? raw.recentEpisode) as Record<string, unknown> | undefined
-  return (ep?.title as string) || item.media.metadata.title
+  return (ep?.title as string) || item.media?.metadata?.title || ''
 }
 
 function getShelfItemAuthor(item: LibraryItem): string {
