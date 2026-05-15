@@ -61,6 +61,22 @@
         >{{ f.label }}</button>
       </div>
 
+      <!-- Tag filter -->
+      <div v-if="availableTags.length" class="filter-chips">
+        <button
+          class="filter-chip"
+          :class="{ active: !tagFilter }"
+          @click="tagFilter = ''; page = 1"
+        >All tags</button>
+        <button
+          v-for="t in availableTags"
+          :key="t"
+          class="filter-chip"
+          :class="{ active: tagFilter === t }"
+          @click="tagFilter = t; page = 1"
+        >{{ t }}</button>
+      </div>
+
       <!-- Genre filter -->
       <div v-if="availableGenres.length" class="filter-chips genre-chips">
         <button
@@ -278,6 +294,7 @@ const pageSize     = 100
 const page         = ref(1)
 const searchQuery  = ref('')
 const genreFilter  = ref('')
+const tagFilter    = ref('')
 
 const items = computed(() =>
   lib.activeLibraryId ? lib.itemsFor(lib.activeLibraryId) : []
@@ -291,6 +308,14 @@ const availableGenres = computed(() => {
   return [...genreSet].sort()
 })
 
+const availableTags = computed(() => {
+  const tagSet = new Set<string>()
+  for (const item of items.value) {
+    for (const t of (item.tags ?? [])) tagSet.add(t)
+  }
+  return [...tagSet].sort()
+})
+
 const filteredItems = computed(() => {
   let all = items.value
   if (searchQuery.value.trim()) {
@@ -302,6 +327,9 @@ const filteredItems = computed(() => {
   }
   if (genreFilter.value) {
     all = all.filter(i => (i.media.metadata.genres ?? []).includes(genreFilter.value))
+  }
+  if (tagFilter.value) {
+    all = all.filter(i => (i.tags ?? []).includes(tagFilter.value))
   }
   if (progressFilter.value === 'all') return all
   if (progressFilter.value === 'in-progress') return all.filter(i => (i.userMediaProgress?.progress ?? 0) > 0 && !i.userMediaProgress?.isFinished)
@@ -360,6 +388,7 @@ async function switchLibrary(id: string) {
   lib.setActiveLibrary(id)
   page.value = 1
   genreFilter.value = ''
+  tagFilter.value   = ''
   if (!lib.itemsFor(id).length) await lib.fetchItems(id)
 }
 

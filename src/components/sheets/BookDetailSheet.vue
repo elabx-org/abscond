@@ -75,6 +75,7 @@
               <span v-if="item.media.metadata.publishedYear" class="chip">{{ item.media.metadata.publishedYear }}</span>
               <span v-if="item.media.metadata.publisher" class="chip">{{ item.media.metadata.publisher }}</span>
               <span v-for="g in (item.media.metadata.genres ?? []).slice(0, 4)" :key="g" class="chip">{{ g }}</span>
+              <span v-for="t in (item.tags ?? []).slice(0, 3)" :key="t" class="chip chip--tag">{{ t }}</span>
             </div>
 
             <!-- Action row -->
@@ -111,6 +112,7 @@
               <input v-model="editMeta.publishedYear" class="edit-input" placeholder="Published year" />
               <input v-model="editMeta.publisher" class="edit-input" placeholder="Publisher" />
               <input v-model="editMeta.genres" class="edit-input" placeholder="Genres (comma-separated)" />
+              <input v-model="editMeta.tags" class="edit-input" placeholder="Tags (comma-separated)" />
               <textarea v-model="editMeta.description" class="edit-input edit-textarea" placeholder="Description" />
               <p v-if="editError" class="form-error-sm">{{ editError }}</p>
               <div class="share-actions">
@@ -254,7 +256,7 @@ const shareLoading      = ref(false)
 const showEdit          = ref(false)
 const editSaving        = ref(false)
 const editError         = ref('')
-const editMeta          = ref({ title: '', subtitle: '', authorNames: '', narratorNames: '', publishedYear: '', publisher: '', genres: '', description: '' })
+const editMeta          = ref({ title: '', subtitle: '', authorNames: '', narratorNames: '', publishedYear: '', publisher: '', genres: '', tags: '', description: '' })
 const shareError        = ref('')
 const shareCopied       = ref(false)
 
@@ -400,6 +402,7 @@ function openEdit() {
     publishedYear: m.publishedYear ?? '',
     publisher:     m.publisher ?? '',
     genres:        (m.genres ?? []).join(', '),
+    tags:          (props.item.tags ?? []).join(', '),
     description:   m.description ?? '',
   }
   editError.value = ''
@@ -420,7 +423,8 @@ async function doSaveMeta() {
         publisher:     editMeta.value.publisher.trim() || null,
         genres:        editMeta.value.genres.split(',').map(g => g.trim()).filter(Boolean),
         description:   editMeta.value.description.trim() || null,
-      }
+      },
+      tags: editMeta.value.tags.split(',').map(t => t.trim()).filter(Boolean),
     }
     await api.patch(`/items/${props.item.id}/media`, payload)
     showEdit.value = false
@@ -584,6 +588,7 @@ async function doSaveMeta() {
   background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.08);
   color: rgba(255,255,255,0.55);
 }
+.chip--tag { background: rgba(212,160,23,0.08); border-color: rgba(212,160,23,0.2); color: rgba(212,160,23,0.8); }
 .sheet-desc-wrap { margin: 4px 0 16px; }
 .sheet-desc {
   font-size: 12px; line-height: 1.6; color: rgba(255,255,255,0.6);

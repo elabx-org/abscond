@@ -48,6 +48,7 @@ export interface LibraryItem {
   libraryId: string
   mediaType: 'book' | 'podcast'
   media: LibraryItemMedia
+  tags?: string[] | null
   addedAt: number
   updatedAt: number
   userMediaProgress?: MediaProgress | null
