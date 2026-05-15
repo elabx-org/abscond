@@ -178,9 +178,22 @@ export const usePlayerStore = defineStore('player', () => {
     audio.addEventListener('error', () => { error.value = 'Playback error' })
   }
 
+  let _posStateTimer = 0
   function _onTimeUpdate() {
     if (!audio || !session.value) return
     currentTime.value = trackStartOffset + audio.currentTime
+    // Update Media Session position every 5 seconds
+    const now = Date.now()
+    if ('mediaSession' in navigator && now - _posStateTimer > 5000 && duration.value > 0) {
+      _posStateTimer = now
+      try {
+        navigator.mediaSession.setPositionState({
+          duration: duration.value,
+          position: Math.min(currentTime.value, duration.value),
+          playbackRate: playbackRate.value,
+        })
+      } catch {}
+    }
     if (sleepEndOfChapter.value) {
       const ch = currentChapter.value
       if (ch && currentTime.value >= ch.end - 0.5) {

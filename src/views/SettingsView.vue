@@ -60,6 +60,18 @@
       </div>
 
       <div class="settings-item">
+        <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-speedometer-medium</v-icon>
+        <div class="item-label-stack">
+          <span class="item-label">Speed presets</span>
+          <span class="item-sublabel">Long-press a chip in the player to remove; + to add</span>
+        </div>
+        <button class="reset-presets-btn" @click="resetSpeedPresets">Reset</button>
+      </div>
+      <div class="presets-row">
+        <span v-for="s in speedPresets" :key="s" class="preset-chip">{{ s }}×</span>
+      </div>
+
+      <div class="settings-item">
         <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-skip-backward</v-icon>
         <span class="item-label">Skip back</span>
         <div class="interval-chips">
@@ -778,6 +790,20 @@ function toggleGoodreads() {
   localStorage.setItem('abs_show_goodreads', String(showGoodreads.value))
 }
 
+const DEFAULT_SPEED_PRESETS = [0.75, 1.0, 1.25, 1.5, 1.75, 2.0, 2.5, 3.0]
+function _loadPresets(): number[] {
+  try {
+    const raw = localStorage.getItem('abs_speed_presets')
+    if (raw) { const p = JSON.parse(raw) as number[]; if (Array.isArray(p) && p.length) return p }
+  } catch {}
+  return [...DEFAULT_SPEED_PRESETS]
+}
+const speedPresets = ref<number[]>(_loadPresets())
+function resetSpeedPresets() {
+  speedPresets.value = [...DEFAULT_SPEED_PRESETS]
+  localStorage.removeItem('abs_speed_presets')
+}
+
 function savePlaybackRate() {
   settingsStore.setDefaultSpeed(playbackRate.value)
   player.setRate(playbackRate.value)
@@ -856,6 +882,22 @@ async function doLogout() {
   color: rgba(255,255,255,0.45); transition: all 0.15s;
 }
 .interval-chip.active { background: rgba(212,160,23,0.15); border-color: rgba(212,160,23,0.4); color: #d4a017; }
+
+.reset-presets-btn {
+  font-size: 11px; padding: 3px 10px; border-radius: 12px; cursor: pointer;
+  background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
+  color: rgba(255,255,255,0.5);
+}
+.reset-presets-btn:active { background: rgba(255,255,255,0.1); }
+.presets-row {
+  display: flex; flex-wrap: wrap; gap: 6px;
+  padding: 2px 16px 10px; border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+.preset-chip {
+  font-size: 11px; padding: 3px 10px; border-radius: 12px;
+  background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08);
+  color: rgba(255,255,255,0.45);
+}
 
 .item-label-stack { flex: 1; display: flex; flex-direction: column; gap: 1px; }
 .item-sublabel { font-size: 10px; color: rgba(255,255,255,0.3); }

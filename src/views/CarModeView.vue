@@ -85,10 +85,17 @@ const title    = computed(() => player.currentItem?.media.metadata.title ?? '')
 const author   = computed(() => player.session?.displayAuthor || (player.currentItem?.media.metadata.authors?.map((a: { name: string }) => a.name).join(', ') ?? ''))
 const chapter  = computed(() => player.currentChapter?.title ?? null)
 
-const RATES = [0.75, 1, 1.25, 1.5, 1.75, 2, 2.5, 3]
+function _loadSpeedPresets(): number[] {
+  try {
+    const raw = localStorage.getItem('abs_speed_presets')
+    if (raw) { const p = JSON.parse(raw) as number[]; if (Array.isArray(p) && p.length) return p }
+  } catch {}
+  return [0.75, 1, 1.25, 1.5, 1.75, 2, 2.5, 3]
+}
 const nextRate = computed(() => {
-  const idx = RATES.indexOf(player.playbackRate)
-  return RATES[(idx + 1) % RATES.length]
+  const rates = _loadSpeedPresets()
+  const idx = rates.findIndex(r => Math.abs(r - player.playbackRate) < 0.01)
+  return rates[(idx + 1) % rates.length]
 })
 
 const BACK_ICONS: Record<number, string> = { 10: 'mdi-rewind-10', 15: 'mdi-rewind-15', 30: 'mdi-rewind-30' }
