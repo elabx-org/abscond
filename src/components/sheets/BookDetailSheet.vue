@@ -56,6 +56,12 @@
               >{{ seriesLabel(s) }}</button>
             </div>
 
+            <!-- Read button (ebook) -->
+            <button v-if="hasEbook" class="read-btn" @click="onReadPress">
+              <v-icon size="18" color="white">mdi-book-open-page-variant</v-icon>
+              Read
+            </button>
+
             <!-- Play button -->
             <button class="play-btn" :style="{ background: accent }" @click="onPlayPress">
               <v-icon size="20" color="white">{{ isThisPlaying ? 'mdi-pause' : 'mdi-play' }}</v-icon>
@@ -158,6 +164,16 @@ function onSubSheetBook(item: LibraryItem) {
 const isThisPlaying = computed(() =>
   player.isPlaying && player.currentItem?.id === props.item.id
 )
+
+const hasEbook = computed(() => {
+  const m = props.item.media as unknown as Record<string, unknown>
+  return !!(m.ebookFile || m.ebookFormat)
+})
+
+function onReadPress() {
+  emit('close')
+  router.push({ name: 'reader', query: { itemId: props.item.id } })
+}
 
 async function onPlayPress() {
   if (isThisPlaying.value) { player.togglePlay(); return }
@@ -272,11 +288,17 @@ watch(() => props.show, (v) => { if (v) descExpanded.value = false })
   border: 1px solid rgba(255,255,255,0.08); border-radius: 20px;
   padding: 3px 10px; cursor: pointer;
 }
+.read-btn {
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  width: 100%; padding: 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.15);
+  font-size: 14px; font-weight: 600; color: rgba(255,255,255,0.8); cursor: pointer;
+  background: rgba(255,255,255,0.06); margin: 8px 0 4px;
+}
 .play-btn {
   display: flex; align-items: center; justify-content: center; gap: 8px;
   width: 100%; padding: 14px; border-radius: 12px; border: none;
   font-size: 15px; font-weight: 700; color: white; cursor: pointer;
-  background: #d4a017; margin: 12px 0 8px;
+  background: #d4a017; margin: 4px 0 8px;
 }
 .chip-row { display: flex; flex-wrap: wrap; gap: 6px; margin: 12px 0; }
 .chip {

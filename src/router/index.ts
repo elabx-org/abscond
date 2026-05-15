@@ -16,6 +16,17 @@ const router = createRouter({
       component: () => import('@/views/AuthCallbackView.vue'),
     },
     {
+      path: '/share/:slug',
+      name: 'share',
+      component: () => import('@/views/ShareView.vue'),
+      meta: { public: true },
+    },
+    {
+      path: '/reader',
+      name: 'reader',
+      component: () => import('@/views/ReaderView.vue'),
+    },
+    {
       path: '/',
       redirect: '/home',
       component: () => import('@/components/shell/AppShell.vue'),
