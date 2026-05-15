@@ -71,6 +71,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { useLibraryStore } from '@/stores/library'
 import { usePlayerStore } from '@/stores/player'
@@ -84,6 +85,7 @@ import { api } from '@/api/client'
 const auth   = useAuthStore()
 const lib    = useLibraryStore()
 const player = usePlayerStore()
+const router = useRouter()
 
 const loading      = ref(false)
 const selectedItem = ref<LibraryItem | null>(null)
@@ -111,6 +113,7 @@ function formatTime(secs: number): string {
 async function playFrom(_itemId: string, time: number, item: LibraryItem) {
   await player.play(item)
   player.seek(time)
+  router.push({ name: 'player' })
 }
 
 async function removeBookmark(itemId: string, time: number, bm: Bookmark) {
