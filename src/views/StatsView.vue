@@ -38,6 +38,45 @@
         </div>
       </div>
 
+      <!-- Activity accent cards -->
+      <section class="section">
+        <p class="section-label">Activity</p>
+        <div class="accent-grid">
+          <div class="accent-card accent-card--orange">
+            <v-icon size="18" color="#f97316">mdi-fire</v-icon>
+            <p class="accent-value">{{ currentStreak }}</p>
+            <p class="accent-label">Current streak</p>
+            <p class="accent-sub">days</p>
+          </div>
+          <div class="accent-card accent-card--amber">
+            <v-icon size="18" color="#f59e0b">mdi-trophy-outline</v-icon>
+            <p class="accent-value">{{ longestStreak }}</p>
+            <p class="accent-label">Best streak</p>
+            <p class="accent-sub">days</p>
+          </div>
+          <div class="accent-card accent-card--green">
+            <v-icon size="18" color="#22c55e">mdi-book-check-outline</v-icon>
+            <p class="accent-value">{{ totalBooksFinished }}</p>
+            <p class="accent-label">Books finished</p>
+          </div>
+          <div class="accent-card accent-card--teal">
+            <v-icon size="18" color="#14b8a6">mdi-bookshelf</v-icon>
+            <p class="accent-value">{{ booksThisYear }}</p>
+            <p class="accent-label">This year</p>
+          </div>
+          <div class="accent-card accent-card--blue">
+            <v-icon size="18" color="#3b82f6">mdi-calendar-check-outline</v-icon>
+            <p class="accent-value">{{ activeDays }}</p>
+            <p class="accent-label">Days active</p>
+          </div>
+          <div class="accent-card accent-card--purple">
+            <v-icon size="18" color="#a855f7">mdi-speedometer</v-icon>
+            <p class="accent-value">{{ dailyAverageLabel }}</p>
+            <p class="accent-label">Daily average</p>
+          </div>
+        </div>
+      </section>
+
       <!-- Library stats -->
       <section v-if="libStats" class="section">
         <p class="section-label">Library</p>
@@ -211,6 +250,43 @@ const totalBooksFinished = computed(() =>
   ?? 0
 )
 
+const currentStreak = computed(() => {
+  const map = _dayMap.value
+  let streak = 0
+  const today = new Date()
+  for (let i = 0; i < 365; i++) {
+    const d = new Date(today.getTime() - i * 86400000)
+    const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+    if ((map[key] ?? 0) > 0) streak++
+    else if (i > 0) break  // allow today to be 0 still (early in day)
+  }
+  return streak
+})
+
+const booksThisYear = computed(() => {
+  const year = new Date().getFullYear()
+  return sessions.value.filter(s => {
+    const d = new Date(s.updatedAt)
+    return d.getFullYear() === year
+  }).reduce((set, s) => { set.add(s.libraryItemId); return set }, new Set<string>()).size
+})
+
+const activeDays = computed(() => {
+  const map = _dayMap.value
+  return Object.values(map).filter(v => (v ?? 0) > 0).length
+})
+
+const dailyAverageLabel = computed(() => {
+  const days = activeDays.value
+  if (!days) return '0m'
+  const map = _dayMap.value
+  const total = Object.values(map).reduce((a, b) => a + (b ?? 0), 0)
+  const avg = total / days
+  const h = Math.floor(avg / 3600)
+  const m = Math.floor((avg % 3600) / 60)
+  return h > 0 ? `${h}h${m}m` : `${m}m`
+})
+
 const DAY_ABBR = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa']
 
 const chartData = computed(() => {
@@ -371,6 +447,21 @@ onMounted(async () => {
 }
 .stat-unit { font-size: 16px; }
 .stat-label { font-size: 11px; color: rgba(255,255,255,0.4); margin: 0; }
+
+.accent-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.accent-card {
+  background: #111; border-radius: 12px; border: 1px solid rgba(255,255,255,0.06);
+  padding: 12px 14px; display: flex; flex-direction: column; gap: 3px;
+}
+.accent-value { font-size: 22px; font-weight: 700; color: rgba(255,255,255,0.9); margin: 4px 0 0; line-height: 1; }
+.accent-label { font-size: 11px; color: rgba(255,255,255,0.5); margin: 0; }
+.accent-sub { font-size: 9px; color: rgba(255,255,255,0.25); margin: 0; }
+.accent-card--orange { border-color: rgba(249,115,22,0.15); background: rgba(249,115,22,0.05); }
+.accent-card--amber  { border-color: rgba(245,158,11,0.15); background: rgba(245,158,11,0.05); }
+.accent-card--green  { border-color: rgba(34,197,94,0.15);  background: rgba(34,197,94,0.05); }
+.accent-card--teal   { border-color: rgba(20,184,166,0.15); background: rgba(20,184,166,0.05); }
+.accent-card--blue   { border-color: rgba(59,130,246,0.15); background: rgba(59,130,246,0.05); }
+.accent-card--purple { border-color: rgba(168,85,247,0.15); background: rgba(168,85,247,0.05); }
 
 .section { margin-bottom: 24px; }
 .section-label {
