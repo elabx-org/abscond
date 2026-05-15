@@ -8,7 +8,7 @@
       </div>
 
       <div v-if="loading" class="hist-loading">
-        <v-icon size="18" color="rgba(255,255,255,0.3)">mdi-loading</v-icon>
+        <v-icon size="18" color="rgba(255,255,255,0.3)" class="mdi-spin">mdi-loading</v-icon>
         <span>Loading…</span>
       </div>
       <div v-else-if="!sessions.length" class="hist-empty">
@@ -55,12 +55,15 @@ watch(() => props.modelValue, async (v) => {
     sessions.value = (res.data?.sessions ?? []).filter(
       (s: ListeningSession) => s.libraryItemId === props.itemId
     )
-  } catch { /* ignore */ }
-  finally { loading.value = false }
+  } catch {
+    sessions.value = []
+  } finally {
+    loading.value = false
+  }
 })
 
 function formatDate(ts: number): string {
-  return new Date(ts).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })
+  return new Date(ts * 1000).toLocaleDateString(undefined, { month: 'long', day: 'numeric', year: 'numeric' })
 }
 
 function formatDuration(secs: number): string {
