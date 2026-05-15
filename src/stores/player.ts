@@ -44,7 +44,7 @@ export const usePlayerStore = defineStore('player', () => {
   let sleepTimer: ReturnType<typeof setTimeout> | null = null
   let sleepCountdown: ReturnType<typeof setInterval> | null = null
   let sleepFadeStartVol = 1
-  const SLEEP_FADE_SECS = 30
+  let chimePlayed = false
   let syncedAt = 0
   let timeListenedAccum = 0
   let trackStartOffset = 0
@@ -69,6 +69,26 @@ export const usePlayerStore = defineStore('player', () => {
       // MediaElementAudioSourceNode already created for this element — safe to ignore
     }
     if (audioCtx.state === 'suspended') audioCtx.resume().catch(() => {})
+  }
+
+  function _playChime() {
+    if (!audioCtx) return
+    const ctx = audioCtx
+    const osc1 = ctx.createOscillator()
+    const osc2 = ctx.createOscillator()
+    const g    = ctx.createGain()
+    osc1.connect(g); osc2.connect(g)
+    g.connect(ctx.destination)
+    osc1.type = 'sine'; osc2.type = 'sine'
+    osc1.frequency.setValueAtTime(880, ctx.currentTime)
+    osc1.frequency.exponentialRampToValueAtTime(660, ctx.currentTime + 0.8)
+    osc2.frequency.setValueAtTime(1108, ctx.currentTime + 0.15)
+    osc2.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.9)
+    const vol = parseFloat(localStorage.getItem('abs_sleep_chime_vol') ?? '0.4')
+    g.gain.setValueAtTime(vol, ctx.currentTime)
+    g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 1.4)
+    osc1.start(); osc2.start(ctx.currentTime + 0.15)
+    osc1.stop(ctx.currentTime + 1.4); osc2.stop(ctx.currentTime + 1.4)
   }
 
   // Flattened global time → position within a specific audio track
@@ -134,17 +154,25 @@ export const usePlayerStore = defineStore('player', () => {
         const settings = useSettingsStore()
         if (settings.autoRewindEnabled && pausedSecs >= 3) {
           const maxSecs = settings.autoRewindMax
-          // Scale 0→1 over [3s … 3600s] pause range
           const t = Math.min((pausedSecs - 3) / (3600 - 3), 1)
           const rewind = 1 + (maxSecs - 1) * t
           seek(Math.max(0, currentTime.value - rewind))
         }
+      }
+      // Restart sleep countdown if it was paused on audio pause
+      if (localStorage.getItem('abs_sleep_reset_on_pause') === 'true' && sleepSecsLeft.value !== null && !sleepCountdown) {
+        _startSleepCountdown()
       }
     })
     audio.addEventListener('pause', () => {
       isPlaying.value = false
       pausedAt = Date.now()
       if ('mediaSession' in navigator) navigator.mediaSession.playbackState = 'paused'
+      // Pause sleep countdown while audio is paused
+      if (localStorage.getItem('abs_sleep_reset_on_pause') === 'true' && sleepCountdown) {
+        clearInterval(sleepCountdown)
+        sleepCountdown = null
+      }
     })
     audio.addEventListener('error', () => { error.value = 'Playback error' })
   }
@@ -330,6 +358,27 @@ export const usePlayerStore = defineStore('player', () => {
     if (sleepTimer)    { clearTimeout(sleepTimer);    sleepTimer    = null }
     if (sleepCountdown){ clearInterval(sleepCountdown); sleepCountdown = null }
     if (gainNode) gainNode.gain.value = volume.value
+    chimePlayed = false
+  }
+
+  function _startSleepCountdown() {
+    if (sleepCountdown) return
+    const fadeEnabled = localStorage.getItem('abs_sleep_fade') !== 'false'
+    const fadeSecs = parseInt(localStorage.getItem('abs_sleep_fade_secs') ?? '30')
+    sleepCountdown = setInterval(() => {
+      if (sleepSecsLeft.value !== null && sleepSecsLeft.value > 0) {
+        sleepSecsLeft.value--
+        sleepMinsLeft.value = Math.ceil(sleepSecsLeft.value / 60)
+        if (fadeEnabled && gainNode && sleepSecsLeft.value <= fadeSecs) {
+          gainNode.gain.value = sleepFadeStartVol * (sleepSecsLeft.value / fadeSecs)
+        }
+        const chimeEnabled = localStorage.getItem('abs_sleep_chime') !== 'false'
+        if (chimeEnabled && !chimePlayed && sleepSecsLeft.value <= 30 && sleepSecsLeft.value > 28) {
+          chimePlayed = true
+          _playChime()
+        }
+      }
+    }, 1_000)
   }
 
   function setSleepTimer(mins: number | null, endOfChapter = false) {
@@ -359,16 +408,7 @@ export const usePlayerStore = defineStore('player', () => {
         sleepTotalSecs.value = null
         useNotificationStore().show('Sleep timer — playback paused', 'info')
       }, mins * 60 * 1000)
-      const fadeEnabled = localStorage.getItem('abs_sleep_fade') !== 'false'
-      sleepCountdown = setInterval(() => {
-        if (sleepSecsLeft.value !== null && sleepSecsLeft.value > 0) {
-          sleepSecsLeft.value--
-          sleepMinsLeft.value = Math.ceil(sleepSecsLeft.value / 60)
-          if (fadeEnabled && gainNode && sleepSecsLeft.value <= SLEEP_FADE_SECS) {
-            gainNode.gain.value = sleepFadeStartVol * (sleepSecsLeft.value / SLEEP_FADE_SECS)
-          }
-        }
-      }, 1_000)
+      _startSleepCountdown()
     }
   }
 

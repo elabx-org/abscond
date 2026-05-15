@@ -135,9 +135,45 @@
         <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-volume-minus</v-icon>
         <div class="item-label-stack">
           <span class="item-label">Fade volume before sleep</span>
-          <span class="item-sublabel">Gradually lower volume during the last 30 seconds</span>
+          <span class="item-sublabel">Gradually lower volume before sleep timer fires</span>
         </div>
         <div class="toggle-pill" :class="{ on: sleepFadeEnabled }">
+          <div class="toggle-thumb" />
+        </div>
+      </div>
+
+      <div v-if="sleepFadeEnabled" class="settings-item">
+        <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-timer-outline</v-icon>
+        <span class="item-label">Fade duration</span>
+        <div class="interval-chips">
+          <button
+            v-for="s in sleepFadeDurationOptions"
+            :key="s"
+            class="interval-chip"
+            :class="{ active: sleepFadeSecs === s }"
+            @click.stop="setSleepFadeSecs(s)"
+          >{{ s }}s</button>
+        </div>
+      </div>
+
+      <div class="settings-item" @click="toggleSleepChime">
+        <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-bell-outline</v-icon>
+        <div class="item-label-stack">
+          <span class="item-label">Chime before sleep</span>
+          <span class="item-sublabel">Play a soft chime 30 seconds before sleep fires</span>
+        </div>
+        <div class="toggle-pill" :class="{ on: sleepChimeEnabled }">
+          <div class="toggle-thumb" />
+        </div>
+      </div>
+
+      <div class="settings-item" @click="toggleSleepResetOnPause">
+        <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-pause-circle-outline</v-icon>
+        <div class="item-label-stack">
+          <span class="item-label">Pause sleep timer when paused</span>
+          <span class="item-sublabel">Stop sleep countdown while audio is paused</span>
+        </div>
+        <div class="toggle-pill" :class="{ on: sleepResetOnPause }">
           <div class="toggle-thumb" />
         </div>
       </div>
@@ -531,6 +567,25 @@ const sleepFadeEnabled = ref(localStorage.getItem('abs_sleep_fade') !== 'false')
 function toggleSleepFade() {
   sleepFadeEnabled.value = !sleepFadeEnabled.value
   localStorage.setItem('abs_sleep_fade', String(sleepFadeEnabled.value))
+}
+
+const sleepFadeDurationOptions = [15, 30, 45, 60, 120]
+const sleepFadeSecs = ref(parseInt(localStorage.getItem('abs_sleep_fade_secs') ?? '30'))
+function setSleepFadeSecs(s: number) {
+  sleepFadeSecs.value = s
+  localStorage.setItem('abs_sleep_fade_secs', String(s))
+}
+
+const sleepChimeEnabled = ref(localStorage.getItem('abs_sleep_chime') !== 'false')
+function toggleSleepChime() {
+  sleepChimeEnabled.value = !sleepChimeEnabled.value
+  localStorage.setItem('abs_sleep_chime', String(sleepChimeEnabled.value))
+}
+
+const sleepResetOnPause = ref(localStorage.getItem('abs_sleep_reset_on_pause') === 'true')
+function toggleSleepResetOnPause() {
+  sleepResetOnPause.value = !sleepResetOnPause.value
+  localStorage.setItem('abs_sleep_reset_on_pause', String(sleepResetOnPause.value))
 }
 
 const sleepRewindOptions = [0, 15, 30, 45, 60]
