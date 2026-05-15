@@ -95,6 +95,10 @@
           :key="ep.id"
           class="ep-row"
           :class="{ finished: ep.userEpisodeProgress?.isFinished }"
+          @pointerdown="startLongPress(ep)"
+          @pointerup="cancelLongPress"
+          @pointerleave="cancelLongPress"
+          @contextmenu.prevent="selectedEpisode = ep"
         >
           <div class="ep-main">
             <div class="ep-num" v-if="ep.index">{{ ep.index }}</div>
@@ -136,6 +140,15 @@
       </div>
     </div>
   </div>
+
+  <EpisodeDetailSheet
+    v-if="selectedEpisode && item"
+    :show="!!selectedEpisode"
+    :item="item"
+    :episode="selectedEpisode"
+    :cover-src="coverUrl(item.id, auth.token ?? '')"
+    @close="selectedEpisode = null"
+  />
 </template>
 
 <script setup lang="ts">
@@ -148,6 +161,7 @@ import { coverUrl, api } from '@/api/client'
 import { getPodcastItem } from '@/api/browse'
 import type { PodcastItem, PodcastEpisode } from '@/api/browse'
 import { getAuthorDisplay } from '@/utils/metadata'
+import EpisodeDetailSheet from '@/components/sheets/EpisodeDetailSheet.vue'
 
 const route  = useRoute()
 const auth   = useAuthStore()
@@ -157,11 +171,20 @@ const loading        = ref(false)
 const refreshing     = ref(false)
 const showSettings   = ref(false)
 const savingSettings = ref(false)
-const downloadingEps = ref(new Set<string>())
-const item    = ref<PodcastItem | null>(null)
-const epSearch     = ref('')
-const epFilter     = ref<'all' | 'unfinished' | 'finished'>('all')
-const expandedEps  = ref(new Set<string>())
+const downloadingEps    = ref(new Set<string>())
+const item              = ref<PodcastItem | null>(null)
+const epSearch          = ref('')
+const epFilter          = ref<'all' | 'unfinished' | 'finished'>('all')
+const expandedEps       = ref(new Set<string>())
+const selectedEpisode   = ref<PodcastEpisode | null>(null)
+let lpTimer: ReturnType<typeof setTimeout> | null = null
+
+function startLongPress(ep: PodcastEpisode) {
+  lpTimer = setTimeout(() => { selectedEpisode.value = ep }, 500)
+}
+function cancelLongPress() {
+  if (lpTimer) { clearTimeout(lpTimer); lpTimer = null }
+}
 
 const settingsForm = ref({ autoDownload: false, maxToKeep: 0, maxNew: 3 })
 
