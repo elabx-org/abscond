@@ -1,5 +1,15 @@
 import { api } from '@/api/client'
 
+export interface AdminUserPermissions {
+  download: boolean
+  update: boolean
+  delete: boolean
+  upload: boolean
+  accessAllLibraries: boolean
+  accessAllTags: boolean
+  accessExplicitContent: boolean
+}
+
 export interface AdminUser {
   id: string
   username: string
@@ -9,6 +19,7 @@ export interface AdminUser {
   isActive: boolean
   lastSeen?: number | null
   createdAt?: number
+  permissions?: AdminUserPermissions
 }
 
 export interface AdminLibrary {
@@ -60,6 +71,11 @@ export async function createUser(data: { username: string; password: string; typ
 
 export async function deleteUser(id: string): Promise<void> {
   await api.delete(`/users/${id}`)
+}
+
+export async function updateUser(id: string, data: { isActive?: boolean; permissions?: Partial<AdminUserPermissions> }): Promise<AdminUser> {
+  const res = await api.patch(`/users/${id}`, data)
+  return res.data.updatedUser ?? res.data.user ?? res.data
 }
 
 export async function getAdminLibraries(): Promise<AdminLibrary[]> {
