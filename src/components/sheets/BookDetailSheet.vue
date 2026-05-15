@@ -286,6 +286,26 @@
               </div>
             </div>
 
+            <!-- Bookmarks -->
+            <div v-if="bookmarks.length > 0" class="chapters-section">
+              <button class="chapters-toggle" @click="bookmarksExpanded = !bookmarksExpanded">
+                <v-icon size="15" color="rgba(255,255,255,0.5)">mdi-bookmark-multiple-outline</v-icon>
+                <span class="chapters-toggle-label">Bookmarks ({{ bookmarks.length }})</span>
+                <v-icon size="14" color="rgba(255,255,255,0.25)" class="ml-auto">{{ bookmarksExpanded ? 'mdi-chevron-up' : 'mdi-chevron-down' }}</v-icon>
+              </button>
+              <div v-if="bookmarksExpanded" class="chapters-list">
+                <button
+                  v-for="bm in bookmarks"
+                  :key="bm.time"
+                  class="chapter-row"
+                  @click="seekToBookmark(bm)"
+                >
+                  <span class="chapter-title">{{ bm.title }}</span>
+                  <span class="chapter-time">{{ chapterFormatTime(bm.time) }}</span>
+                </button>
+              </div>
+            </div>
+
             <!-- Description -->
             <div v-if="item.media.metadata.description" class="sheet-desc-wrap">
               <p class="sheet-desc" :class="{ expanded: descExpanded }">
@@ -348,6 +368,8 @@ import { createShareLink, removeShareLink } from '@/api/share'
 import { matchItem } from '@/api/items'
 import type { ShareLink } from '@/api/share'
 import type { LibraryItem, Series, Author, Chapter } from '@/api/types'
+import { getBookmarks } from '@/api/bookmarks'
+import type { Bookmark } from '@/api/bookmarks'
 
 const props = defineProps<{
   item: LibraryItem
@@ -398,6 +420,8 @@ const removingProgress  = ref(false)
 const chaptersExpanded  = ref(false)
 const loadingChapters   = ref(false)
 const chapters          = ref<Chapter[]>([])
+const bookmarksExpanded = ref(false)
+const bookmarks         = ref<Bookmark[]>([])
 
 function isCurrentChapter(ch: Chapter): boolean {
   return player.currentItem?.id === props.item.id && player.currentChapter?.id === ch.id
@@ -437,6 +461,18 @@ async function seekToChapter(ch: Chapter) {
   }
 }
 
+async function seekToBookmark(bm: Bookmark) {
+  if (player.currentItem?.id !== props.item.id) {
+    emit('close')
+    await player.play(props.item)
+    await new Promise<void>(r => setTimeout(r, 600))
+    player.seek(bm.time)
+    router.push({ name: 'player' })
+  } else {
+    player.seek(bm.time)
+  }
+}
+
 async function markFinished() {
   markingFinished.value = true
   try {
@@ -455,6 +491,10 @@ async function removeProgress() {
   removingProgress.value = true
   try {
     await api.delete(`/me/progress/${props.item.id}`)
+    // Hide from continue-listening by patching back to zero
+    await api.patch(`/me/progress/${props.item.id}`, {
+      currentTime: 0, progress: 0, isFinished: false, hideFromContinueListening: true,
+    }).catch(() => {})
     if (props.item.userMediaProgress) {
       props.item.userMediaProgress.isFinished = false
       props.item.userMediaProgress.progress   = 0
@@ -606,7 +646,7 @@ async function setRating(stars: number) {
   } catch { /* ignore */ }
 }
 
-watch(() => props.show, (v) => {
+watch(() => props.show, async (v) => {
   if (v) {
     descExpanded.value    = false
     userRating.value      = props.item.userMediaProgress?.rating ?? 0
@@ -617,6 +657,8 @@ watch(() => props.show, (v) => {
     showEdit.value        = false
     chaptersExpanded.value = false
     chapters.value         = []
+    bookmarksExpanded.value = false
+    bookmarks.value = await getBookmarks(props.item.id)
   }
 })
 
