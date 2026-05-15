@@ -174,7 +174,7 @@
           :author="getShelfItemAuthor(item)"
           :cover-src="coverUrl(item.id, auth.token ?? '')"
           :progress="item.userMediaProgress?.progress ?? 0"
-          @click="openDetail(item)"
+          @click="openShelfItem(item)"
         />
       </div>
     </section>
@@ -254,6 +254,14 @@
         </div>
       </Transition>
     </Teleport>
+    <EpisodeDetailSheet
+      v-if="selectedEpItem"
+      :show="!!selectedEpItem"
+      :item="selectedEpItem.item"
+      :episode="selectedEpItem.episode"
+      :cover-src="coverUrl(selectedEpItem.item.id, auth.token ?? '')"
+      @close="selectedEpItem = null"
+    />
   </div>
 </template>
 
@@ -272,11 +280,13 @@ import PortraitCard from '@/components/cards/PortraitCard.vue'
 import ContinueListeningCard from '@/components/cards/ContinueListeningCard.vue'
 import BookDetailSheet from '@/components/sheets/BookDetailSheet.vue'
 import PodcastDetailSheet from '@/components/sheets/PodcastDetailSheet.vue'
+import EpisodeDetailSheet from '@/components/sheets/EpisodeDetailSheet.vue'
 import QuickActionsSheet from '@/components/sheets/QuickActionsSheet.vue'
 import SectionDetailSheet from '@/components/sheets/SectionDetailSheet.vue'
 import HomeCustomizeSheet from '@/components/sheets/HomeCustomizeSheet.vue'
 import type { HomeSection } from '@/components/sheets/HomeCustomizeSheet.vue'
 import type { LibraryItem } from '@/api/types'
+import type { PodcastEpisode } from '@/api/browse'
 import { getAuthorDisplay } from '@/utils/metadata'
 import { getPlaylists, addItemToPlaylist } from '@/api/playlists'
 import type { Playlist } from '@/api/playlists'
@@ -289,6 +299,7 @@ const player   = usePlayerStore()
 const notify   = useNotificationStore()
 
 const selectedItem       = ref<LibraryItem | null>(null)
+const selectedEpItem     = ref<{ item: LibraryItem; episode: PodcastEpisode } | null>(null)
 const quickItem          = ref<LibraryItem | null>(null)
 const loadingProgress    = ref(false)
 const loadingRecent      = ref(false)
@@ -323,7 +334,8 @@ function shelfIcon(id: string, type: string): string {
 }
 
 function getShelfItemTitle(item: LibraryItem): string {
-  const ep = (item as unknown as Record<string, unknown>).recentEpisode as Record<string, unknown> | undefined
+  const raw = item as unknown as Record<string, unknown>
+  const ep  = (raw.episode ?? raw.recentEpisode) as Record<string, unknown> | undefined
   return (ep?.title as string) || item.media.metadata.title
 }
 
@@ -396,6 +408,12 @@ const timeOfDayLabel = computed(() => {
 })
 
 function openDetail(item: LibraryItem) { selectedItem.value = item }
+function openShelfItem(item: LibraryItem) {
+  const raw = item as unknown as Record<string, unknown>
+  const ep  = (raw.episode ?? raw.recentEpisode) as PodcastEpisode | undefined
+  if (ep?.id) { selectedEpItem.value = { item, episode: ep }; return }
+  selectedItem.value = item
+}
 function openQuick(item: LibraryItem) { quickItem.value = item }
 
 async function resumeItem(item: LibraryItem) {
