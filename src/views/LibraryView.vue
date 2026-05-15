@@ -264,7 +264,11 @@
         <span class="batch-count">{{ selectedIds.size }} selected</span>
         <button class="batch-action" @click="showPlaylistPicker = true; loadPlaylists()">
           <v-icon size="16">mdi-playlist-plus</v-icon>
-          Add to playlist
+          Playlist
+        </button>
+        <button class="batch-action" @click="showCollectionPicker = true; loadCollections()">
+          <v-icon size="16">mdi-bookmark-plus-outline</v-icon>
+          Collection
         </button>
         <button class="batch-action" @click="batchMarkFinished">
           <v-icon size="16">mdi-check-all</v-icon>
@@ -299,6 +303,34 @@
                 <span class="picker-count">{{ pl.items.length }}</span>
               </button>
               <div v-if="!playlists.length" class="picker-empty">No playlists yet</div>
+            </div>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
+
+    <!-- Collection picker sheet -->
+    <Teleport to="body">
+      <Transition name="batch-bar">
+        <div v-if="showCollectionPicker" class="playlist-picker-backdrop" @click.self="showCollectionPicker = false">
+          <div class="playlist-picker-sheet">
+            <div class="drag-handle" />
+            <p class="picker-title">Add {{ selectedIds.size }} book{{ selectedIds.size !== 1 ? 's' : '' }} to collection</p>
+            <div v-if="loadingCollections" class="picker-loading">
+              <v-icon size="20" color="rgba(255,255,255,0.3)">mdi-loading</v-icon>
+            </div>
+            <div v-else class="picker-list">
+              <button
+                v-for="col in collections"
+                :key="col.id"
+                class="picker-row"
+                @click="addBatchToCollection(col.id)"
+              >
+                <v-icon size="16" color="rgba(255,255,255,0.5)">mdi-bookmark-multiple-outline</v-icon>
+                <span class="picker-name">{{ col.name }}</span>
+                <span class="picker-count">{{ col.books.length }}</span>
+              </button>
+              <div v-if="!collections.length" class="picker-empty">No collections yet</div>
             </div>
           </div>
         </div>
@@ -369,7 +401,9 @@ import QuickActionsSheet from '@/components/sheets/QuickActionsSheet.vue'
 import SeriesDetailSheet from '@/components/sheets/SeriesDetailSheet.vue'
 import AuthorDetailSheet from '@/components/sheets/AuthorDetailSheet.vue'
 import { getPlaylists, addItemToPlaylist } from '@/api/playlists'
+import { getCollections, addBookToCollection } from '@/api/collections'
 import type { Playlist } from '@/api/playlists'
+import type { Collection } from '@/api/collections'
 import type { LibraryItem } from '@/api/types'
 import { usePlayerStore } from '@/stores/player'
 import { useNotificationStore } from '@/stores/notifications'
@@ -455,9 +489,12 @@ const selectedItem      = ref<LibraryItem | null>(null)
 const quickItem         = ref<LibraryItem | null>(null)
 const selectMode        = ref(false)
 const selectedIds       = ref(new Set<string>())
-const showPlaylistPicker = ref(false)
-const playlists         = ref<Playlist[]>([])
-const loadingPlaylists  = ref(false)
+const showPlaylistPicker   = ref(false)
+const playlists            = ref<Playlist[]>([])
+const loadingPlaylists     = ref(false)
+const showCollectionPicker = ref(false)
+const collections          = ref<Collection[]>([])
+const loadingCollections   = ref(false)
 const sortField      = ref<'title' | 'author' | 'addedAt' | 'duration' | 'progress' | 'lastPlayed'>(
   (localStorage.getItem('abs_lib_sort') as 'title' | 'author' | 'addedAt' | 'duration' | 'progress' | 'lastPlayed') ?? 'title'
 )
@@ -674,6 +711,22 @@ async function addBatchToPlaylist(playlistId: string) {
   const ids = [...selectedIds.value]
   await Promise.allSettled(ids.map(id => addItemToPlaylist(playlistId, id)))
   showPlaylistPicker.value = false
+  exitSelectMode()
+}
+
+async function loadCollections() {
+  if (collections.value.length) return
+  loadingCollections.value = true
+  try { collections.value = await getCollections() }
+  catch { collections.value = [] }
+  finally { loadingCollections.value = false }
+}
+
+async function addBatchToCollection(collectionId: string) {
+  const ids = [...selectedIds.value]
+  await Promise.allSettled(ids.map(id => addBookToCollection(collectionId, id)))
+  notify.show(`Added ${ids.length} book${ids.length !== 1 ? 's' : ''} to collection`, 'success')
+  showCollectionPicker.value = false
   exitSelectMode()
 }
 

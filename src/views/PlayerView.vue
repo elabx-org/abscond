@@ -109,14 +109,26 @@
           <!-- Transport controls -->
           <div class="controls-area">
             <button class="ctrl-btn" @click="player.skipBack(skipBackSecs)">
-              <v-icon size="28">{{ skipBackSecs === 10 ? 'mdi-rewind-10' : skipBackSecs === 15 ? 'mdi-rewind-15' : 'mdi-rewind-30' }}</v-icon>
+              <span v-if="REWIND_ICONS[skipBackSecs]" class="skip-icon-only">
+                <v-icon size="28">{{ REWIND_ICONS[skipBackSecs] }}</v-icon>
+              </span>
+              <span v-else class="skip-icon-labeled">
+                <v-icon size="22">mdi-rewind</v-icon>
+                <span class="skip-secs-label">{{ skipBackSecs }}s</span>
+              </span>
             </button>
             <button class="play-btn" :disabled="player.isLoading" @click="player.togglePlay()">
               <v-icon v-if="player.isPlaying" size="40" color="#111">mdi-pause</v-icon>
               <v-icon v-else size="40" color="#111">mdi-play</v-icon>
             </button>
             <button class="ctrl-btn" @click="player.skipForward(skipFwdSecs)">
-              <v-icon size="28">{{ skipFwdSecs === 10 ? 'mdi-fast-forward-10' : skipFwdSecs === 15 ? 'mdi-fast-forward-15' : 'mdi-fast-forward-30' }}</v-icon>
+              <span v-if="FWD_ICONS[skipFwdSecs]" class="skip-icon-only">
+                <v-icon size="28">{{ FWD_ICONS[skipFwdSecs] }}</v-icon>
+              </span>
+              <span v-else class="skip-icon-labeled">
+                <v-icon size="22">mdi-fast-forward</v-icon>
+                <span class="skip-secs-label">{{ skipFwdSecs }}s</span>
+              </span>
             </button>
           </div>
 
@@ -144,7 +156,8 @@
               @click="showSleepPicker = !showSleepPicker; showSpeedPicker = false; showChapters = false; showQueue = false"
             >
               <v-icon size="18">mdi-timer-outline</v-icon>
-              <span v-if="player.sleepMinsLeft" class="util-badge">{{ player.sleepMinsLeft }}m</span>
+              <span v-if="player.sleepSecsLeft !== null && player.sleepSecsLeft < 60" class="util-badge">{{ player.sleepSecsLeft }}s</span>
+              <span v-else-if="player.sleepMinsLeft" class="util-badge">{{ player.sleepMinsLeft }}m</span>
               <span v-else-if="player.sleepEndOfChapter" class="util-badge">ch</span>
             </button>
             <button class="util-btn" :class="{ active: showChapters }" @click="showChapters = !showChapters; showQueue = false; showSleepPicker = false; showSpeedPicker = false">
@@ -267,6 +280,9 @@ let scrubbing = false
 
 const skipBackSecs = parseInt(localStorage.getItem('abs_skip_back') ?? '30')
 const skipFwdSecs  = parseInt(localStorage.getItem('abs_skip_fwd')  ?? '30')
+
+const REWIND_ICONS: Record<number, string> = { 10: 'mdi-rewind-10', 15: 'mdi-rewind-15', 30: 'mdi-rewind-30' }
+const FWD_ICONS:    Record<number, string> = { 10: 'mdi-fast-forward-10', 15: 'mdi-fast-forward-15', 30: 'mdi-fast-forward-30' }
 
 // ── Carousel / swipe ──────────────────────────────────────────────────────────
 // Carousel shows recently played books PLUS any queued items (deduped)
@@ -562,7 +578,10 @@ function onChapterBarClick(e: MouseEvent) {
   display: flex; align-items: center; justify-content: center;
   gap: 32px; margin-bottom: 20px;
 }
-.ctrl-btn { background: transparent; border: none; cursor: pointer; color: rgba(255,255,255,0.75); padding: 8px; }
+.ctrl-btn { background: transparent; border: none; cursor: pointer; color: rgba(255,255,255,0.75); padding: 8px; display: flex; align-items: center; justify-content: center; }
+.skip-icon-only { display: flex; align-items: center; }
+.skip-icon-labeled { display: flex; flex-direction: column; align-items: center; gap: 1px; }
+.skip-secs-label { font-size: 9px; font-weight: 700; color: rgba(255,255,255,0.6); line-height: 1; }
 .play-btn {
   width: 68px; height: 68px; border-radius: 50%;
   background: rgba(255,255,255,0.93); border: none; cursor: pointer;
