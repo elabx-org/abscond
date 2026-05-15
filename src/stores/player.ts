@@ -32,8 +32,9 @@ export const usePlayerStore = defineStore('player', () => {
   const sleepMinsLeft      = ref<number | null>(null)
   const sleepSecsLeft      = ref<number | null>(null)
   const sleepTotalSecs     = ref<number | null>(null)
-  const sleepEndOfChapter  = ref(false)
-  const queue              = ref<LibraryItem[]>([])
+  const sleepEndOfChapter      = ref(false)
+  const chapterBarrierPaused   = ref(false)
+  const queue                  = ref<LibraryItem[]>([])
   const volume             = ref<number>(parseFloat(localStorage.getItem('abs_volume') ?? '1'))
   const recentItems        = ref<LibraryItem[]>(_loadRecentItems())
 
@@ -47,6 +48,7 @@ export const usePlayerStore = defineStore('player', () => {
   let sleepFadeStartVol = 1
   let chimePlayed = false
   let syncedAt = 0
+  let _lastChapterIdx = -1
   let timeListenedAccum = 0
   let trackStartOffset = 0
   let pausedAt: number | null = null
@@ -207,6 +209,22 @@ export const usePlayerStore = defineStore('player', () => {
         useNotificationStore().show('Sleep timer — end of chapter', 'info')
       }
     }
+
+    // Chapter barrier: pause at chapter boundaries
+    const chapters = (currentItem.value?.media as Record<string, unknown>)?.chapters as { start: number; end: number }[] | undefined
+    if (chapters?.length && useSettingsStore().chapterBarrierEnabled) {
+      let idx = -1
+      for (let i = 0; i < chapters.length; i++) {
+        if (currentTime.value >= chapters[i].start && currentTime.value < chapters[i].end) { idx = i; break }
+      }
+      if (idx >= 0 && _lastChapterIdx >= 0 && idx !== _lastChapterIdx && idx > _lastChapterIdx) {
+        audio.currentTime = Math.max(0, chapters[idx].start - trackStartOffset)
+        currentTime.value = chapters[idx].start
+        audio.pause()
+        chapterBarrierPaused.value = true
+      }
+      if (idx >= 0) _lastChapterIdx = idx
+    }
   }
 
   async function _onTrackEnded() {
@@ -299,6 +317,8 @@ export const usePlayerStore = defineStore('player', () => {
     await stop()
     isLoading.value = true
     error.value = null
+    _lastChapterIdx = -1
+    chapterBarrierPaused.value = false
     try {
       const s = await startPlaySession(item.id, episodeId)
       session.value     = s
@@ -520,8 +540,9 @@ export const usePlayerStore = defineStore('player', () => {
   return {
     currentItem, session, isPlaying, currentTime, duration, queue, recentItems,
     playbackRate, volume, isLoading, error, sleepMinsLeft, sleepSecsLeft, sleepTotalSecs, sleepEndOfChapter,
-    currentChapter, currentTrackIndex, progress,
+    currentChapter, currentTrackIndex, progress, chapterBarrierPaused,
     play, togglePlay, seek, skipBack, skipForward, setRate, setVolume, setSleepTimer, stop,
+    resumeFromBarrier: () => { chapterBarrierPaused.value = false; audio?.play() },
     addToQueue: (item: LibraryItem) => { queue.value.push(item) },
     clearQueue: () => { queue.value = [] },
     removeFromQueue: (idx: number) => { queue.value.splice(idx, 1) },

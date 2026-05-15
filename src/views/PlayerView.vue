@@ -164,6 +164,15 @@
             </button>
           </div>
 
+          <!-- Chapter barrier banner -->
+          <Transition name="barrier">
+            <div v-if="player.chapterBarrierPaused" class="barrier-banner" @click="player.resumeFromBarrier()">
+              <v-icon size="16" color="#d4a017">mdi-bookmark-check-outline</v-icon>
+              <span class="barrier-text">Chapter complete</span>
+              <span class="barrier-cta">Tap to continue</span>
+            </div>
+          </Transition>
+
           <!-- Volume -->
           <div class="volume-row">
             <v-icon size="16" color="rgba(255,255,255,0.4)">mdi-volume-low</v-icon>
@@ -897,6 +906,16 @@ function queueDragEnd() {
 .cover-flash-enter-active { transition: opacity 0.1s ease; }
 .cover-flash-leave-active { transition: opacity 0.5s ease; }
 .cover-flash-enter-from, .cover-flash-leave-to { opacity: 0; }
+
+.barrier-banner {
+  display: flex; align-items: center; gap: 8px; cursor: pointer;
+  background: rgba(212,160,23,0.12); border: 1px solid rgba(212,160,23,0.25);
+  border-radius: 12px; padding: 10px 14px; margin: 8px 0 0;
+}
+.barrier-text { font-size: 13px; font-weight: 600; color: rgba(255,255,255,0.85); flex: 1; }
+.barrier-cta  { font-size: 11px; color: rgba(212,160,23,0.8); }
+.barrier-enter-active, .barrier-leave-active { transition: opacity 0.2s, transform 0.2s; }
+.barrier-enter-from, .barrier-leave-to { opacity: 0; transform: translateY(-6px); }
 .cover-play-overlay {
   position: absolute; inset: 0; background: rgba(0,0,0,0.45);
   display: flex; align-items: center; justify-content: center;

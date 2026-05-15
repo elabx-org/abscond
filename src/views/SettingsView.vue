@@ -132,6 +132,17 @@
         </div>
       </div>
 
+      <div class="settings-item" @click="settingsStore.setChapterBarrierEnabled(!settingsStore.chapterBarrierEnabled)">
+        <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-book-check-outline</v-icon>
+        <div class="item-label-stack">
+          <span class="item-label">Pause at chapter end</span>
+          <span class="item-sublabel">Pause playback at each chapter boundary</span>
+        </div>
+        <div class="toggle-pill" :class="{ on: settingsStore.chapterBarrierEnabled }">
+          <div class="toggle-thumb" />
+        </div>
+      </div>
+
       <div class="settings-item" @click="settingsStore.setAutoRewindEnabled(!settingsStore.autoRewindEnabled)">
         <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-rewind</v-icon>
         <div class="item-label-stack">

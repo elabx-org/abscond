@@ -9,7 +9,13 @@ export const useSettingsStore = defineStore('settings', () => {
   const bookAutoAdvance     = ref<boolean>(localStorage.getItem('abs_book_auto_advance') !== 'false')
   const autoRewindEnabled   = ref<boolean>(localStorage.getItem('abs_auto_rewind') !== 'false')
   const autoRewindMax       = ref<number>(parseInt(localStorage.getItem('abs_auto_rewind_max') ?? '30'))
-  const defaultSpeed        = ref<number>(parseFloat(localStorage.getItem('abs_default_speed') ?? '1'))
+  const defaultSpeed          = ref<number>(parseFloat(localStorage.getItem('abs_default_speed') ?? '1'))
+  const chapterBarrierEnabled = ref<boolean>(localStorage.getItem('abs_chapter_barrier') === 'true')
+
+  function setChapterBarrierEnabled(v: boolean) {
+    chapterBarrierEnabled.value = v
+    localStorage.setItem('abs_chapter_barrier', String(v))
+  }
 
   function setSkipBack(s: number) {
     skipBackSecs.value = s
@@ -51,5 +57,5 @@ export const useSettingsStore = defineStore('settings', () => {
     localStorage.setItem('abs_default_speed', String(rate))
   }
 
-  return { skipBackSecs, skipFwdSecs, speedAdjustedTime, podcastAutoAdvance, bookAutoAdvance, autoRewindEnabled, autoRewindMax, defaultSpeed, setSkipBack, setSkipFwd, setSpeedAdjustedTime, setPodcastAutoAdvance, setBookAutoAdvance, setAutoRewindEnabled, setAutoRewindMax, setDefaultSpeed }
+  return { skipBackSecs, skipFwdSecs, speedAdjustedTime, podcastAutoAdvance, bookAutoAdvance, autoRewindEnabled, autoRewindMax, defaultSpeed, chapterBarrierEnabled, setSkipBack, setSkipFwd, setSpeedAdjustedTime, setPodcastAutoAdvance, setBookAutoAdvance, setAutoRewindEnabled, setAutoRewindMax, setDefaultSpeed, setChapterBarrierEnabled }
 })
