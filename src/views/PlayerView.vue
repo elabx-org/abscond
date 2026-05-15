@@ -104,7 +104,7 @@
                   <!-- Streaming indicator -->
                   <div v-if="i === currentIndex && player.currentItem && player.isPlaying" class="card-stream-row">
                     <span class="card-stream-dot" />
-                    <span class="card-stream-label">Streaming</span>
+                    <span class="card-stream-label">Playing</span>
                   </div>
 
                   <!-- Cover image -->
@@ -1030,7 +1030,7 @@ function queueDragEnd() {
 }
 .cover-track { display: flex; }
 .cover-slide {
-  width: calc(100vw - 0px); flex-shrink: 0;
+  width: 100vw; flex-shrink: 0;
   display: flex; justify-content: center; align-items: center;
   padding: 0 16px;
 }
