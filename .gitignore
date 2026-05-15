@@ -34,3 +34,6 @@ dev-dist
 
 # Local config.json override (public/config.json is tracked; root-level override is not)
 /config.json
+
+# Playwright MCP snapshots
+.playwright-mcp/
