@@ -438,7 +438,7 @@ function addToQueue() {
   notify.show(`"${props.item.media.metadata.title}" added to queue`, 'success')
 }
 const auth   = useAuthStore()
-const sheet  = useDraggableSheet({ initial: 85, min: 30, max: 95 })
+const sheet  = useDraggableSheet({ initial: 85, min: 30, max: 95, onClose: () => emit('close') })
 
 const coverImgRef = ref<HTMLImageElement | null>(null)
 const { accent } = useColorThief(coverImgRef)

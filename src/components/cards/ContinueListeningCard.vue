@@ -58,6 +58,7 @@ const props = defineProps<{
   author: string
   coverSrc: string
   progress?: number
+  currentTime?: number
   duration?: number
   isPlaying?: boolean
   isCurrent?: boolean
@@ -103,10 +104,18 @@ function hslToRgb(h: number, s: number, l: number): string {
   return `#${f(0)}${f(8)}${f(4)}`
 }
 
-const pct = computed(() => Math.round((props.progress ?? 0) * 100))
+const effectiveProgress = computed(() => {
+  const p = props.progress ?? 0
+  if (p > 0) return p
+  const ct = props.currentTime ?? 0
+  const dur = props.duration ?? 0
+  return dur > 0 && ct > 0 ? ct / dur : 0
+})
+
+const pct = computed(() => Math.round(effectiveProgress.value * 100))
 
 const timeRemaining = computed(() => {
-  const p = props.progress ?? 0
+  const p = effectiveProgress.value
   if (!props.duration || p <= 0 || p >= 1) return ''
   const remaining = props.duration * (1 - p)
   const h = Math.floor(remaining / 3600)

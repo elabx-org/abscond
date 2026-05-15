@@ -62,6 +62,7 @@
           :author="getCLAuthor(item)"
           :cover-src="coverUrl(item.id, auth.token ?? '')"
           :progress="item.userMediaProgress?.progress ?? 0"
+          :current-time="item.userMediaProgress?.currentTime ?? 0"
           :duration="item.media.duration"
           :is-playing="player.currentItem?.id === item.id && player.isPlaying"
           :is-current="player.currentItem?.id === item.id"

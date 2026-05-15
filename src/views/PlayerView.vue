@@ -861,7 +861,8 @@ function queueDragEnd() {
 .empty-sub   { font-size: 12px; color: rgba(255,255,255,0.3); margin: 0; text-align: center; }
 
 /* ── Player wrap ─────────────────────────────────────────────────────────────── */
-.player-wrap { flex: 1; position: relative; overflow: hidden; min-height: 100vh; }
+.player-wrap { flex: 1; position: relative; overflow-x: hidden; overflow-y: auto; min-height: 100vh; scrollbar-width: none; }
+.player-wrap::-webkit-scrollbar { display: none; }
 
 /* Edge progress bar (thin strip at very top of player) */
 .edge-progress-bar {

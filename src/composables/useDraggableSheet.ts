@@ -1,8 +1,9 @@
 import { ref, onBeforeUnmount } from 'vue'
 
-interface SheetOptions { initial: number; min: number; max: number }
+interface SheetOptions { initial: number; min: number; max: number; onClose?: () => void }
 
-export function useDraggableSheet({ initial, min, max }: SheetOptions) {
+export function useDraggableSheet(options: SheetOptions) {
+  const { initial, min, max } = options
   const heightPct = ref(initial)
   const isDragging = ref(false)
   let startY = 0
@@ -27,9 +28,17 @@ export function useDraggableSheet({ initial, min, max }: SheetOptions) {
   function onPointerUp() {
     isDragging.value = false
     const mid = (min + initial) / 2
-    if (heightPct.value < mid) heightPct.value = min
-    else if (heightPct.value < (initial + max) / 2) heightPct.value = initial
-    else heightPct.value = max
+    if (heightPct.value < mid) {
+      if (options.onClose) {
+        options.onClose()
+      } else {
+        heightPct.value = min
+      }
+    } else if (heightPct.value < (initial + max) / 2) {
+      heightPct.value = initial
+    } else {
+      heightPct.value = max
+    }
     window.removeEventListener('pointermove', onPointerMove)
     window.removeEventListener('pointerup', onPointerUp)
   }
