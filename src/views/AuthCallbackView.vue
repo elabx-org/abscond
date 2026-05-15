@@ -62,7 +62,7 @@ onMounted(async () => {
       const user: AbsUser = {
         id:          u.id          ?? '',
         username:    u.username    ?? '',
-        isAdminOrUp: u.isAdminOrUp ?? u.type === 'root' || u.type === 'admin',
+        isAdminOrUp: !!(u.isAdminOrUp || u.type === 'root' || u.type === 'admin'),
         token:       accessToken,
       }
       auth.setSession(accessToken, user)
