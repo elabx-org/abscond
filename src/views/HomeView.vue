@@ -57,8 +57,8 @@
           v-for="item in progress.inProgress"
           :key="item.id"
           :item-id="item.id"
-          :title="item.media.metadata.title"
-          :author="getAuthorDisplay(item) || 'Unknown'"
+          :title="getCLTitle(item)"
+          :author="getCLAuthor(item)"
           :cover-src="coverUrl(item.id, auth.token ?? '')"
           :progress="item.userMediaProgress?.progress ?? 0"
           :duration="item.media.duration"
@@ -341,6 +341,18 @@ function getShelfItemTitle(item: LibraryItem): string {
 
 function getShelfItemAuthor(item: LibraryItem): string {
   return getAuthorDisplay(item) || 'Unknown'
+}
+
+function getCLTitle(item: LibraryItem): string {
+  if (item.mediaType !== 'podcast') return item.media.metadata.title
+  const raw = item as unknown as Record<string, unknown>
+  const ep  = (raw.recentEpisode ?? raw.episode) as Record<string, unknown> | undefined
+  return (ep?.title as string) || item.media.metadata.title
+}
+
+function getCLAuthor(item: LibraryItem): string {
+  if (item.mediaType !== 'podcast') return getAuthorDisplay(item) || 'Unknown'
+  return item.media.metadata.title
 }
 
 async function fetchExtraShelves(libraryId: string) {
