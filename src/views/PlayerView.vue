@@ -60,7 +60,7 @@
         </div>
 
         <!-- Book title + author (small, below screen title) -->
-        <div v-if="displayItem || showMore" class="player-meta-header">
+        <div v-if="displayItem" class="player-meta-header">
           <span class="pmh-title">{{ displayTitle }}</span>
           <span class="pmh-sep">·</span>
           <span class="pmh-author">{{ displayAuthor }}</span>
@@ -529,7 +529,6 @@ const settings = useSettingsStore()
 const notify = useNotificationStore()
 const eq = useEqualizerStore()
 const socket = useSocketStore()
-const showMore = ref(false)
 
 const showChapters     = ref(false)
 const chapterSearch    = ref('')
@@ -1014,6 +1013,7 @@ function queueDragEnd() {
 .pmh-author {
   font-size: 12px; color: rgba(255,255,255,0.4);
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  flex: 1; min-width: 0;
 }
 
 /* ── Carousel ────────────────────────────────────────────────────────────────── */
