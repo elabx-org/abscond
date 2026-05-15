@@ -78,7 +78,7 @@ function close() {
 
 <style scoped>
 .book-actions-overlay {
-  position: fixed; inset: 0; z-index: 300;
+  position: fixed; inset: 0; z-index: 450;
   background: rgba(0,0,0,0.5);
   display: flex; align-items: flex-end;
 }

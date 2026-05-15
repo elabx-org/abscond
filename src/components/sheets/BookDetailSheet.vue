@@ -892,7 +892,7 @@ async function doSaveMeta() {
 
 <style scoped>
 .sheet-backdrop {
-  position: fixed; inset: 0; z-index: 200;
+  position: fixed; inset: 0; z-index: 350;
   background: rgba(0,0,0,0.55);
 }
 .book-sheet {
