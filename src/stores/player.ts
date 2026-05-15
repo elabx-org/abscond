@@ -6,8 +6,18 @@ import type { LibraryItem, PlaybackSession, AudioTrack, Chapter } from '@/api/ty
 
 const SYNC_INTERVAL_MS = 15_000
 
+function _loadRecentItems(): LibraryItem[] {
+  try { return JSON.parse(localStorage.getItem('abs_recent_items') ?? '[]') } catch { return [] }
+}
+function _saveRecentItems(items: LibraryItem[]) {
+  try { localStorage.setItem('abs_recent_items', JSON.stringify(items.slice(0, 10))) } catch {}
+}
+function _loadLastItem(): LibraryItem | null {
+  try { return JSON.parse(localStorage.getItem('abs_last_item') ?? 'null') } catch { return null }
+}
+
 export const usePlayerStore = defineStore('player', () => {
-  const currentItem   = ref<LibraryItem | null>(null)
+  const currentItem   = ref<LibraryItem | null>(_loadLastItem())
   const session       = ref<PlaybackSession | null>(null)
   const isPlaying     = ref(false)
   const currentTime   = ref(0)
@@ -19,6 +29,7 @@ export const usePlayerStore = defineStore('player', () => {
   const sleepEndOfChapter  = ref(false)
   const queue              = ref<LibraryItem[]>([])
   const volume             = ref<number>(parseFloat(localStorage.getItem('abs_volume') ?? '1'))
+  const recentItems        = ref<LibraryItem[]>(_loadRecentItems())
 
   let audio: HTMLAudioElement | null = null
   let syncTimer: ReturnType<typeof setInterval> | null = null
@@ -163,6 +174,13 @@ export const usePlayerStore = defineStore('player', () => {
       duration.value    = s.duration
       currentTime.value = s.currentTime
 
+      // Persist and update recent history
+      try { localStorage.setItem('abs_last_item', JSON.stringify(item)) } catch {}
+      const recent = recentItems.value.filter(r => r.id !== item.id)
+      recent.unshift(item)
+      recentItems.value = recent.slice(0, 10)
+      _saveRecentItems(recentItems.value)
+
       audio = new Audio()
       audio.playbackRate = playbackRate.value
       audio.volume = volume.value
@@ -255,10 +273,11 @@ export const usePlayerStore = defineStore('player', () => {
     duration.value    = 0
     sleepMinsLeft.value = null
     timeListenedAccum = 0
+    try { localStorage.removeItem('abs_last_item') } catch {}
   }
 
   return {
-    currentItem, session, isPlaying, currentTime, duration, queue,
+    currentItem, session, isPlaying, currentTime, duration, queue, recentItems,
     playbackRate, volume, isLoading, error, sleepMinsLeft, sleepEndOfChapter,
     currentChapter, currentTrackIndex, progress,
     play, togglePlay, seek, skipBack, skipForward, setRate, setVolume, setSleepTimer, stop,

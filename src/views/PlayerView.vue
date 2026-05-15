@@ -1,10 +1,35 @@
 <template>
   <div class="player-view">
-    <!-- Empty state -->
-    <div v-if="!player.currentItem" class="empty-state">
+    <!-- Empty state (no current item, no history) -->
+    <div v-if="!player.currentItem && !player.recentItems.length" class="empty-state">
       <v-icon size="56" color="rgba(255,255,255,0.1)">mdi-headphones</v-icon>
       <p class="empty-title">Nothing playing</p>
       <p class="empty-sub">Choose a book from Library or Home to start listening</p>
+    </div>
+
+    <!-- Recent books (no active session, but history exists) -->
+    <div v-else-if="!player.currentItem && player.recentItems.length" class="recent-only-wrap">
+      <div class="player-backdrop" style="position:absolute;inset:0">
+        <img :src="coverUrl(player.recentItems[0].id, auth.token ?? '')" class="backdrop-img" aria-hidden="true" />
+        <div class="backdrop-scrim" />
+      </div>
+      <div class="recent-only-content">
+        <p class="recent-label">Recently Played</p>
+        <div class="recent-strip">
+          <div
+            v-for="item in player.recentItems"
+            :key="item.id"
+            class="recent-card"
+            @click="player.play(item)"
+          >
+            <div class="recent-cover-wrap">
+              <img :src="coverUrl(item.id, auth.token ?? '')" class="recent-cover" />
+              <div class="recent-play-overlay"><v-icon size="28" color="white">mdi-play-circle</v-icon></div>
+            </div>
+            <p class="recent-title">{{ item.media.metadata.title }}</p>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- Player -->
@@ -17,9 +42,22 @@
 
       <!-- Content -->
       <div class="player-content">
+        <!-- Recent books strip -->
+        <div v-if="player.recentItems.length > 1" class="recent-strip-bar">
+          <div
+            v-for="item in player.recentItems"
+            :key="item.id"
+            class="strip-thumb"
+            :class="{ active: player.currentItem?.id === item.id }"
+            @click="item.id !== player.currentItem?.id && player.play(item)"
+          >
+            <img :src="coverUrl(item.id, auth.token ?? '')" class="strip-thumb-img" />
+          </div>
+        </div>
+
         <!-- Cover -->
         <div class="cover-area">
-          <img v-if="coverSrc" :src="coverSrc" :alt="player.currentItem.media.metadata.title" class="cover-img" />
+          <img v-if="coverSrc" :src="coverSrc" :alt="player.currentItem?.media.metadata.title ?? ''" class="cover-img" />
           <div v-else class="cover-placeholder">
             <v-icon size="64" color="rgba(255,255,255,0.2)">mdi-book-open-variant</v-icon>
           </div>
@@ -27,7 +65,7 @@
 
         <!-- Title / author / chapter -->
         <div class="meta-area">
-          <p class="book-title">{{ player.currentItem.media.metadata.title }}</p>
+          <p class="book-title">{{ player.currentItem?.media.metadata.title }}</p>
           <p class="book-author">{{ authorNames }}</p>
           <p v-if="player.currentChapter" class="chapter-title">{{ player.currentChapter.title }}</p>
         </div>
@@ -202,6 +240,7 @@
     </div>
   </div>
 </template>
+
 
 <script setup lang="ts">
 import { computed, ref } from 'vue'
@@ -479,4 +518,43 @@ function onChapterBarClick(e: MouseEvent) {
 
 .fade-enter-active, .fade-leave-active { transition: opacity 0.2s; }
 .fade-enter-from, .fade-leave-to { opacity: 0; }
+
+/* Recent-only state (stopped but has history) */
+.recent-only-wrap { flex: 1; position: relative; overflow: hidden; min-height: 100vh; }
+.recent-only-content {
+  position: relative; z-index: 1;
+  display: flex; flex-direction: column;
+  padding: 40px 20px 40px; gap: 20px;
+}
+.recent-label { font-size: 11px; font-weight: 700; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 0.6px; margin: 0; }
+
+/* Scrollable recent cards */
+.recent-strip {
+  display: flex; gap: 12px;
+  overflow-x: auto; scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 4px;
+}
+.recent-strip::-webkit-scrollbar { display: none; }
+.recent-card { display: flex; flex-direction: column; gap: 6px; flex-shrink: 0; width: 120px; cursor: pointer; }
+.recent-cover-wrap { position: relative; width: 120px; height: 120px; border-radius: 10px; overflow: hidden; background: #1a1a1a; }
+.recent-cover { width: 100%; height: 100%; object-fit: cover; }
+.recent-play-overlay {
+  position: absolute; inset: 0; background: rgba(0,0,0,0.4);
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0; transition: opacity 0.15s;
+}
+.recent-card:active .recent-play-overlay { opacity: 1; }
+.recent-title { font-size: 11px; color: rgba(255,255,255,0.7); margin: 0; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+
+/* Recent strip bar inside active player */
+.recent-strip-bar {
+  display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none;
+  -webkit-overflow-scrolling: touch; padding: 4px 0 8px; width: 100%;
+}
+.recent-strip-bar::-webkit-scrollbar { display: none; }
+.strip-thumb { flex-shrink: 0; cursor: pointer; opacity: 0.45; transition: opacity 0.15s; }
+.strip-thumb.active { opacity: 1; }
+.strip-thumb-img { width: 40px; height: 40px; border-radius: 6px; object-fit: cover; display: block; }
+.strip-thumb.active .strip-thumb-img { outline: 2px solid #d4a017; outline-offset: 2px; }
 </style>
