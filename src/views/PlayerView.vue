@@ -18,48 +18,10 @@
       </div>
 
       <div class="player-content">
+        <div class="player-layout">
 
-        <!-- Screen title bar (mobile) -->
-        <div class="player-topbar">
-          <div class="player-wordmark">
-            ABSCOND
-            <v-icon
-              size="13"
-              :color="socket.connected ? 'rgba(100,215,100,0.85)' : 'rgba(255,255,255,0.2)'"
-              style="margin-left:4px"
-            >mdi-cloud-outline</v-icon>
-          </div>
-          <div class="player-topbar-actions">
-            <button
-              v-if="player.currentItem"
-              class="topbar-action-btn"
-              title="Stop playback"
-              @click="player.stop()"
-            >
-              <v-icon size="16">mdi-stop</v-icon>
-            </button>
-            <button
-              class="topbar-action-btn"
-              :class="{ active: showQueue }"
-              title="Queue"
-              @click="showQueue = !showQueue; showChapters = false; showSleepPicker = false; showSpeedPicker = false"
-            >
-              <v-icon size="16">mdi-playlist-play</v-icon>
-              <span v-if="player.queue.length" class="topbar-queue-badge">{{ player.queue.length }}</span>
-            </button>
-          </div>
-        </div>
-
-        <div v-if="player.currentItem || player.recentItems.length" class="player-screen-title">
-          {{ player.currentItem ? 'Absconding' : 'Recently Played' }}
-        </div>
-
-        <!-- Book title + author (small, below screen title) -->
-        <div v-if="displayItem" class="player-meta-header">
-          <span class="pmh-title">{{ displayTitle }}</span>
-          <span class="pmh-sep">·</span>
-          <span class="pmh-author">{{ displayAuthor }}</span>
-        </div>
+        <!-- Left column: cover + dots -->
+        <div class="player-left">
 
         <!-- Swipeable cover carousel -->
         <div
@@ -259,6 +221,69 @@
           />
         </div>
 
+        <!-- Desktop thumbnail strip -->
+        <div v-if="carouselItems.length > 1" class="desktop-thumbs">
+          <div
+            v-for="(item, i) in carouselItems"
+            :key="item.id"
+            class="desktop-thumb"
+            :class="{ active: i === currentIndex, inactive: i !== currentIndex }"
+            @click="switchToItem(item)"
+          >
+            <img :src="coverUrl(item.id, auth.token ?? '')" :alt="item.media.metadata.title" />
+          </div>
+        </div>
+        <div v-if="carouselItems.length > 1" class="desktop-thumbs-label">
+          {{ carouselItems.length }} books in progress
+        </div>
+
+        </div><!-- /.player-left -->
+
+        <!-- Right column: controls + panels -->
+        <div class="player-right">
+
+        <!-- Screen title bar (mobile) -->
+        <div class="player-topbar">
+          <div class="player-wordmark">
+            ABSCOND
+            <v-icon
+              size="13"
+              :color="socket.connected ? 'rgba(100,215,100,0.85)' : 'rgba(255,255,255,0.2)'"
+              style="margin-left:4px"
+            >mdi-cloud-outline</v-icon>
+          </div>
+          <div class="player-topbar-actions">
+            <button
+              v-if="player.currentItem"
+              class="topbar-action-btn"
+              title="Stop playback"
+              @click="player.stop()"
+            >
+              <v-icon size="16">mdi-stop</v-icon>
+            </button>
+            <button
+              class="topbar-action-btn"
+              :class="{ active: showQueue }"
+              title="Queue"
+              @click="showQueue = !showQueue; showChapters = false; showSleepPicker = false; showSpeedPicker = false"
+            >
+              <v-icon size="16">mdi-playlist-play</v-icon>
+              <span v-if="player.queue.length" class="topbar-queue-badge">{{ player.queue.length }}</span>
+            </button>
+          </div>
+        </div>
+
+        <div v-if="player.currentItem || player.recentItems.length" class="player-screen-title">
+          {{ player.currentItem ? 'Absconding' : 'Recently Played' }}
+        </div>
+
+        <!-- Book title + author (small, below screen title) -->
+        <div v-if="displayItem" class="player-meta-header">
+          <span class="pmh-title">{{ displayTitle }}</span>
+          <span class="pmh-sep">·</span>
+          <span class="pmh-author">{{ displayAuthor }}</span>
+        </div>
+
           <!-- Speed picker -->
           <Transition name="panel">
             <div v-if="showSpeedPicker" class="panel-box" @touchmove.stop>
@@ -408,6 +433,9 @@
         <div v-if="!player.currentItem" class="recent-only-prompt">
           <p class="recent-only-hint">Tap a cover to resume playback</p>
         </div>
+
+        </div><!-- /.player-right -->
+        </div><!-- /.player-layout -->
 
       </div>
     </div>
@@ -1412,4 +1440,53 @@ function queueDragEnd() {
 
 .expand-bm-enter-active, .expand-bm-leave-active { transition: max-height 0.2s ease, opacity 0.2s; overflow: hidden; max-height: 200px; }
 .expand-bm-enter-from, .expand-bm-leave-to { max-height: 0; opacity: 0; }
+
+/* ── Desktop two-column layout ───────────────────────────────────────────────── */
+.player-layout { display: contents; }
+
+@media (min-width: 1280px) {
+  .player-content { padding: 32px 40px; }
+
+  .player-layout {
+    display: flex; align-items: flex-start;
+    gap: 48px; width: 100%; max-width: 1000px;
+  }
+  .player-left {
+    flex-shrink: 0; width: 320px;
+    display: flex; flex-direction: column; align-items: center; gap: 10px;
+  }
+  .player-right {
+    flex: 1; min-width: 0;
+    display: flex; flex-direction: column;
+  }
+
+  /* On desktop, carousel is fixed-width, not full-vw */
+  .cover-carousel { width: 320px; margin-left: 0; }
+  .cover-slide { width: 320px; padding: 0; }
+  .cover-card { border-radius: 20px; }
+
+  /* Thumbnail strip (desktop book switcher) */
+  .desktop-thumbs {
+    display: flex; gap: 8px; align-items: center; justify-content: center;
+  }
+  .desktop-thumb {
+    width: 38px; height: 38px; border-radius: 8px; overflow: hidden;
+    cursor: pointer; border: 1.5px solid transparent; transition: transform 0.15s, opacity 0.15s;
+  }
+  .desktop-thumb.active { border-color: rgba(212,160,23,0.7); transform: scale(1.08); }
+  .desktop-thumb.inactive { opacity: 0.45; }
+  .desktop-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .desktop-thumbs-label {
+    font-size: 9px; color: rgba(255,255,255,0.28); text-align: center;
+  }
+
+  /* Hide screen title on desktop (nav drawer already anchors the page) */
+  .player-screen-title { display: none; }
+}
+
+/* Mobile/tablet: layout divs are transparent pass-throughs */
+@media (max-width: 1279px) {
+  .player-left, .player-right { display: contents; }
+  .desktop-thumbs, .desktop-thumbs-label { display: none; }
+}
 </style>
