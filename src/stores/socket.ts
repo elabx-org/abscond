@@ -4,6 +4,7 @@ import { connectSocket, disconnectSocket, onSocketEvent } from '@/api/socket'
 import { getBaseUrl } from '@/api/client'
 import { useProgressStore } from '@/stores/progress'
 import { useLibraryStore } from '@/stores/library'
+import { useNotificationStore } from '@/stores/notifications'
 
 export const useSocketStore = defineStore('socket', () => {
   const connected = ref(false)
@@ -54,9 +55,21 @@ export const useSocketStore = defineStore('socket', () => {
       }
     }))
 
-    cleanups.push(onSocketEvent('library_scan_complete', () => {
+    cleanups.push(onSocketEvent('library_scan_complete', (data: unknown) => {
       const ls = useLibraryStore()
+      const ns = useNotificationStore()
       if (ls.activeLibraryId) ls.fetchItems(ls.activeLibraryId)
+      const d = data as Record<string, unknown> | undefined
+      const count = d?.totalAdded as number | undefined
+      ns.show(count ? `Library scan complete — ${count} new item${count !== 1 ? 's' : ''}` : 'Library scan complete', 'success')
+    }))
+
+    cleanups.push(onSocketEvent('item_added', (data: unknown) => {
+      if (!data || typeof data !== 'object') return
+      const d = data as Record<string, unknown>
+      const ls = useLibraryStore()
+      const libId = d.libraryId as string
+      if (libId && libId === ls.activeLibraryId) ls.fetchItems(libId)
     }))
   }
 

@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { startPlaySession, syncSession, closeSession } from '@/api/player'
+import { useNotificationStore } from '@/stores/notifications'
 import type { LibraryItem, PlaybackSession, AudioTrack, Chapter } from '@/api/types'
 
 const SYNC_INTERVAL_MS = 15_000
@@ -95,6 +96,7 @@ export const usePlayerStore = defineStore('player', () => {
       if (ch && currentTime.value >= ch.end - 0.5) {
         audio.pause()
         sleepEndOfChapter.value = false
+        useNotificationStore().show('Sleep timer — end of chapter', 'info')
       }
     }
   }
@@ -220,6 +222,7 @@ export const usePlayerStore = defineStore('player', () => {
       sleepTimer = setTimeout(() => {
         audio?.pause()
         sleepMinsLeft.value = null
+        useNotificationStore().show('Sleep timer — playback paused', 'info')
       }, mins * 60 * 1000)
     }
   }
