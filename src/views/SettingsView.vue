@@ -269,6 +269,79 @@
       </div>
     </section>
 
+    <!-- Equalizer -->
+    <section class="settings-section">
+      <p class="section-label">Equalizer</p>
+
+      <div class="settings-item" @click="eq.setEnabled(!eq.enabled)">
+        <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-equalizer</v-icon>
+        <div class="item-label-stack">
+          <span class="item-label">Equalizer</span>
+          <span class="item-sublabel">{{ eq.enabled ? (eq.isCustom ? 'Custom' : eq.activePreset) : 'Off' }}</span>
+        </div>
+        <div class="toggle-pill" :class="{ on: eq.enabled }">
+          <div class="toggle-thumb" />
+        </div>
+      </div>
+
+      <Transition name="expand">
+        <div v-if="eq.enabled" class="eq-panel">
+          <!-- Preset chips -->
+          <div class="eq-presets-wrap">
+            <button
+              v-for="name in Object.keys(PRESETS)"
+              :key="name"
+              class="eq-preset-chip"
+              :class="{ active: eq.activePreset === name }"
+              @click="eq.applyPreset(name)"
+            >{{ name }}</button>
+          </div>
+
+          <!-- Band sliders -->
+          <div class="eq-bands-wrap">
+            <div v-for="(band, i) in EQ_BANDS" :key="band.freq" class="eq-band">
+              <input
+                type="range"
+                :min="eq.MIN_DB" :max="eq.MAX_DB" step="0.5"
+                :value="eq.bands[i]"
+                class="eq-band-slider"
+                orient="vertical"
+                @input="eq.setBand(i, parseFloat(($event.target as HTMLInputElement).value))"
+              />
+              <span class="eq-band-db" :class="{ pos: eq.bands[i] > 0, neg: eq.bands[i] < 0 }">
+                {{ eq.bands[i] > 0 ? '+' : '' }}{{ eq.bands[i].toFixed(0) }}
+              </span>
+              <span class="eq-band-label">{{ band.label }}</span>
+            </div>
+          </div>
+
+          <!-- Bass boost + Mono row -->
+          <div class="eq-extras">
+            <div class="eq-extra-item">
+              <span class="eq-extra-label">Bass boost</span>
+              <div class="eq-bass-row">
+                <input
+                  type="range" min="0" max="1" step="0.05"
+                  :value="eq.bassBoost"
+                  class="eq-bass-slider"
+                  @input="eq.setBassBoost(parseFloat(($event.target as HTMLInputElement).value))"
+                />
+                <span class="eq-bass-val">{{ Math.round(eq.bassBoost * 100) }}%</span>
+              </div>
+            </div>
+            <div class="eq-extra-item eq-mono-item" @click="eq.setMono(!eq.mono)">
+              <span class="eq-extra-label">Mono</span>
+              <div class="toggle-pill sm" :class="{ on: eq.mono }">
+                <div class="toggle-thumb" />
+              </div>
+            </div>
+          </div>
+
+          <button class="eq-reset-btn" @click="eq.resetAll()">Reset to flat</button>
+        </div>
+      </Transition>
+    </section>
+
     <!-- Server -->
     <section class="settings-section">
       <p class="section-label">Server</p>
@@ -476,6 +549,7 @@ import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { useLibraryStore } from '@/stores/library'
 import { usePlayerStore } from '@/stores/player'
+import { useEqualizerStore, EQ_BANDS, PRESETS } from '@/stores/equalizer'
 import { useSocketStore } from '@/stores/socket'
 import { useSettingsStore } from '@/stores/settings'
 import { updatePassword, updateUsername } from '@/api/auth'
@@ -486,6 +560,7 @@ const lib       = useLibraryStore()
 const player    = usePlayerStore()
 const socketStore    = useSocketStore()
 const settingsStore  = useSettingsStore()
+const eq = useEqualizerStore()
 
 declare const __APP_VERSION__: string
 const appVersion = __APP_VERSION__
@@ -828,4 +903,44 @@ async function doLogout() {
 }
 .form-error { font-size: 12px; color: #ef4444; margin: 0 0 10px; }
 .form-success { font-size: 12px; color: #22c55e; margin: 0 0 10px; }
+
+/* Equalizer */
+.eq-panel { padding: 0 14px 14px; }
+.eq-presets-wrap { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 16px; }
+.eq-preset-chip {
+  padding: 5px 10px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.1);
+  background: rgba(255,255,255,0.04); color: rgba(255,255,255,0.5);
+  font-size: 11px; cursor: pointer; transition: all 0.15s; text-transform: capitalize;
+}
+.eq-preset-chip.active {
+  border-color: rgba(212,160,23,0.6); background: rgba(212,160,23,0.12);
+  color: #d4a017; font-weight: 600;
+}
+.eq-bands-wrap { display: flex; justify-content: space-around; gap: 8px; margin-bottom: 16px; height: 120px; }
+.eq-band { display: flex; flex-direction: column; align-items: center; gap: 4px; flex: 1; }
+.eq-band-slider {
+  -webkit-appearance: slider-vertical; writing-mode: vertical-lr; direction: rtl;
+  width: 28px; flex: 1; cursor: pointer;
+  accent-color: #d4a017;
+}
+.eq-band-db { font-size: 10px; font-weight: 700; color: rgba(255,255,255,0.5); min-height: 14px; }
+.eq-band-db.pos { color: #d4a017; }
+.eq-band-db.neg { color: rgba(212,160,23,0.5); }
+.eq-band-label { font-size: 9px; color: rgba(255,255,255,0.3); }
+.eq-extras { display: flex; gap: 12px; margin-bottom: 12px; align-items: flex-end; }
+.eq-extra-item { flex: 1; }
+.eq-extra-label { font-size: 11px; color: rgba(255,255,255,0.4); display: block; margin-bottom: 6px; }
+.eq-bass-row { display: flex; align-items: center; gap: 8px; }
+.eq-bass-slider { flex: 1; accent-color: #d4a017; cursor: pointer; }
+.eq-bass-val { font-size: 11px; color: rgba(255,255,255,0.5); width: 28px; text-align: right; flex-shrink: 0; }
+.eq-mono-item { display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
+.toggle-pill.sm { width: 36px; height: 20px; }
+.toggle-pill.sm .toggle-thumb { width: 14px; height: 14px; }
+.toggle-pill.sm.on .toggle-thumb { transform: translateX(18px); }
+.eq-reset-btn {
+  width: 100%; padding: 9px; border-radius: 8px; border: none; cursor: pointer;
+  background: rgba(255,255,255,0.05); color: rgba(255,255,255,0.4);
+  font-size: 12px; transition: background 0.15s;
+}
+.eq-reset-btn:hover { background: rgba(255,255,255,0.08); }
 </style>
