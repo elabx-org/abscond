@@ -44,7 +44,7 @@
           <div class="row-icon"><v-icon size="18" color="#d4a017">mdi-bookshelf</v-icon></div>
           <div class="row-info">
             <p class="row-name">{{ s.name }}</p>
-            <p class="row-sub">{{ s.books?.length ?? 0 }} books</p>
+            <p class="row-sub">{{ s.numBooks ?? s.books?.length ?? 0 }} books</p>
           </div>
           <v-icon size="16" color="rgba(255,255,255,0.2)">mdi-chevron-right</v-icon>
         </div>
