@@ -3,15 +3,13 @@
     <Transition name="sheet">
       <div v-if="show" class="sheet-backdrop" @click.self="emit('close')">
         <div class="book-sheet" :style="{ height: `${sheet.heightPct.value}vh` }">
-          <!-- Blurred cover bleed -->
-          <div class="sheet-bleed">
-            <img v-if="coverSrc" :src="coverSrc" class="bleed-img" aria-hidden="true" />
-            <div class="bleed-scrim" />
-          </div>
-
-          <!-- Drag handle -->
-          <div class="drag-handle-area" @pointerdown="sheet.onPointerDown">
-            <div class="drag-handle" />
+          <!-- Full-width bleed cover -->
+          <div class="cover-bleed">
+            <img ref="coverImgRef" :src="coverSrc" :alt="item.media.metadata.title" class="cover-bleed-img" crossorigin="anonymous" />
+            <div class="cover-bleed-scrim" />
+            <div class="cover-drag-area" @pointerdown="sheet.onPointerDown">
+              <div class="cover-drag-pill" />
+            </div>
           </div>
 
           <!-- Scrollable content -->
@@ -20,11 +18,6 @@
             <button data-testid="sheet-close" class="sheet-close" @click="emit('close')">
               <v-icon size="20">mdi-close</v-icon>
             </button>
-
-            <!-- Cover -->
-            <div class="cover-container">
-              <img ref="coverImgRef" :src="coverSrc" :alt="item.media.metadata.title" class="sheet-cover" />
-            </div>
 
             <!-- Title & Authors -->
             <h2 class="sheet-title">{{ item.media.metadata.title }}</h2>
@@ -111,63 +104,27 @@
               <span v-if="finishedDateLabel" class="chip chip--date chip--finished">✓ {{ finishedDateLabel }}</span>
             </div>
 
-            <!-- Action row -->
-            <div class="action-row">
-              <button class="action-btn" @click="showNotes = true">
-                <v-icon size="16">mdi-note-text-outline</v-icon>
-                Notes
-              </button>
-              <button class="action-btn" @click="onDownload">
-                <v-icon size="16">mdi-download-outline</v-icon>
+            <!-- Primary action row -->
+            <div class="action-row-primary">
+              <button class="action-download" @click="onDownload">
+                <v-icon size="15">mdi-download-outline</v-icon>
                 Download
               </button>
-              <button class="action-btn" @click="showPlaylistAdd = true">
-                <v-icon size="16">mdi-playlist-plus</v-icon>
-                Playlist
+              <button
+                v-if="progress < 1"
+                class="action-finished"
+                :disabled="markingFinished"
+                @click="markFinished"
+              >
+                <v-icon size="15">mdi-check-circle-outline</v-icon>
+                {{ markingFinished ? 'Marking…' : 'Mark Finished' }}
               </button>
-              <button class="action-btn" @click="showCollectionAdd = true">
-                <v-icon size="16">mdi-bookmark-plus-outline</v-icon>
-                Collection
-              </button>
-              <button class="action-btn" @click="toggleShare">
-                <v-icon size="16">mdi-share-outline</v-icon>
-                Share
-              </button>
-              <button class="action-btn" @click="playNext">
-                <v-icon size="16">mdi-skip-next-circle-outline</v-icon>
-                Play next
-              </button>
-              <button class="action-btn" @click="addToQueue">
-                <v-icon size="16">mdi-playlist-plus</v-icon>
-                Queue
-              </button>
-              <button v-if="progress < 1" class="action-btn" :disabled="markingFinished" @click="markFinished">
-                <v-icon size="16">mdi-check-circle-outline</v-icon>
+              <div v-else class="action-finished action-finished--done">
+                <v-icon size="15" color="#22c55e">mdi-check-circle</v-icon>
                 Finished
-              </button>
-              <button v-if="progress > 0" class="action-btn" :disabled="removingProgress" @click="removeProgress">
-                <v-icon size="16">mdi-restart</v-icon>
-                Reset
-              </button>
-              <button v-if="auth.isAdmin" class="action-btn" @click="openEdit">
-                <v-icon size="16">mdi-pencil-outline</v-icon>
-                Edit
-              </button>
-              <button v-if="auth.isAdmin" class="action-btn" @click="showMatch = true">
-                <v-icon size="16">mdi-magnify-scan</v-icon>
-                Match
-              </button>
-              <button v-if="auth.isAdmin" class="action-btn" :disabled="scanning" @click="doScan">
-                <v-icon size="16" :class="{ spin: scanning }">{{ scanning ? 'mdi-loading' : 'mdi-magnify-scan' }}</v-icon>
-                {{ scanning ? 'Scanning…' : 'Scan' }}
-              </button>
-              <button v-if="auth.isAdmin" class="action-btn action-btn--danger" @click="showDeleteConfirm = true">
-                <v-icon size="16">mdi-delete-outline</v-icon>
-                Delete
-              </button>
-              <button v-if="goodreadsEnabled" class="action-btn" @click="openGoodreads">
-                <v-icon size="16">mdi-bookshelf</v-icon>
-                Goodreads
+              </div>
+              <button class="action-more" @click="showActions = true">
+                <v-icon size="18">mdi-dots-horizontal</v-icon>
               </button>
             </div>
 
@@ -380,10 +337,17 @@
       :item="props.item"
       @matched="onMatched"
     />
+  <BookActionsSheet
+    v-model="showActions"
+    :progress="progress"
+    :is-admin="auth.isAdmin"
+    :goodreads-enabled="goodreadsEnabled"
+    @action="handleAction"
+  />
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { computed, ref, watch, onBeforeUnmount } from 'vue'
 import { useRouter } from 'vue-router'
 import { useDraggableSheet } from '@/composables/useDraggableSheet'
 import { useColorThief } from '@/composables/useColorThief'
@@ -395,6 +359,7 @@ import AuthorDetailSheet from '@/components/sheets/AuthorDetailSheet.vue'
 import NarratorDetailSheet from '@/components/sheets/NarratorDetailSheet.vue'
 import NotesSheet from '@/components/sheets/NotesSheet.vue'
 import MatchSheet from '@/components/sheets/MatchSheet.vue'
+import BookActionsSheet from '@/components/sheets/BookActionsSheet.vue'
 import { getDirectDownloadUrl } from '@/api/downloads'
 import { getBaseUrl, api } from '@/api/client'
 import { getItem } from '@/api/items'
@@ -463,6 +428,7 @@ const editSaving        = ref(false)
 const editError         = ref('')
 const editMeta          = ref({ title: '', subtitle: '', authorNames: '', narratorNames: '', publishedYear: '', publisher: '', genres: '', tags: '', description: '' })
 const showMatch         = ref(false)
+const showActions       = ref(false)
 const showDeleteConfirm = ref(false)
 const deleting          = ref(false)
 const scanning          = ref(false)
@@ -590,6 +556,21 @@ async function onMatched(itemId: string) {
     editMeta.value.description   = m.description ?? ''
     editMeta.value.tags          = (updated.tags ?? []).join(', ')
   } catch { /* keep existing values on fetch failure */ }
+}
+
+function handleAction(id: string) {
+  if      (id === 'notes')      showNotes.value         = true
+  else if (id === 'playlist')   showPlaylistAdd.value   = true
+  else if (id === 'collection') showCollectionAdd.value = true
+  else if (id === 'share')      toggleShare()
+  else if (id === 'play-next')  playNext()
+  else if (id === 'queue')      addToQueue()
+  else if (id === 'reset')      removeProgress()
+  else if (id === 'goodreads')  openGoodreads()
+  else if (id === 'match')      showMatch.value         = true
+  else if (id === 'edit')       openEdit()
+  else if (id === 'scan')       doScan()
+  else if (id === 'delete')     showDeleteConfirm.value = true
 }
 
 const coverUrl_         = ref('')
@@ -721,7 +702,10 @@ async function setRating(stars: number) {
   } catch { /* ignore */ }
 }
 
+onBeforeUnmount(() => { document.body.style.overflow = '' })
+
 watch(() => props.show, async (v) => {
+  document.body.style.overflow = v ? 'hidden' : ''
   if (v) {
     descExpanded.value    = false
     userRating.value      = props.item.userMediaProgress?.rating ?? 0
@@ -866,24 +850,28 @@ async function doSaveMeta() {
   background: #111; overflow: hidden;
   display: flex; flex-direction: column;
   transition: height 0.05s;
+  overscroll-behavior: contain;
 }
-.sheet-bleed {
-  position: absolute; top: 0; left: 0; right: 0; height: 45%; overflow: hidden; z-index: 0;
+.cover-bleed {
+  position: relative; flex-shrink: 0;
+  width: 100%; height: 240px; overflow: hidden;
 }
-.bleed-img {
-  width: 100%; height: 100%; object-fit: cover;
-  filter: blur(28px) brightness(0.55) saturate(1.3); transform: scale(1.1);
+.cover-bleed-img {
+  width: 100%; height: 100%; object-fit: cover; display: block;
 }
-.bleed-scrim {
-  position: absolute; inset: 0;
-  background: linear-gradient(to bottom, rgba(0,0,0,0.1), rgba(17,17,17,1));
+.cover-bleed-scrim {
+  position: absolute; bottom: 0; left: 0; right: 0; height: 55%;
+  background: linear-gradient(to bottom, transparent, #111);
+  pointer-events: none;
 }
-.drag-handle-area {
-  position: relative; z-index: 1; padding: 10px 0 4px; cursor: grab; flex-shrink: 0;
+.cover-drag-area {
+  position: absolute; top: 0; left: 0; right: 0;
+  padding: 12px 0 8px; cursor: grab; touch-action: none;
+  display: flex; justify-content: center;
 }
-.drag-handle {
+.cover-drag-pill {
   width: 40px; height: 4px; border-radius: 2px;
-  background: rgba(255,255,255,0.25); margin: 0 auto;
+  background: rgba(255,255,255,0.4);
 }
 .sheet-content {
   position: relative; z-index: 1; flex: 1;
@@ -894,13 +882,7 @@ async function doSaveMeta() {
   background: transparent; border: none; cursor: pointer;
   color: rgba(255,255,255,0.5); padding: 4px; margin-bottom: 8px; float: right;
 }
-.cover-container {
-  display: flex; justify-content: center; margin: 8px 0 16px; clear: both;
-}
-.sheet-cover {
-  width: 160px; height: 160px; object-fit: cover;
-  border-radius: 10px; box-shadow: 0 12px 40px rgba(0,0,0,0.7);
-}
+
 .sheet-title {
   font-size: 15px; font-weight: 700; text-align: center;
   color: rgba(255,255,255,0.95); margin: 0 0 4px;
@@ -940,17 +922,26 @@ async function doSaveMeta() {
   border: 1px solid rgba(255,255,255,0.08); border-radius: 20px;
   padding: 3px 10px; cursor: pointer;
 }
-.action-row {
-  display: flex; flex-wrap: wrap; gap: 8px; margin: 4px 0 12px;
+.action-row-primary {
+  display: flex; gap: 8px; margin: 4px 0 12px;
 }
-.action-btn {
-  flex: 1 1 auto; min-width: 72px; display: flex; align-items: center; justify-content: center; gap: 6px;
-  font-size: 11px; color: rgba(255,255,255,0.5); background: rgba(255,255,255,0.05);
-  border: 1px solid rgba(255,255,255,0.08); border-radius: 10px;
-  cursor: pointer; padding: 8px 4px;
+.action-download, .action-finished {
+  flex: 1; height: 40px; display: flex; align-items: center; justify-content: center; gap: 6px;
+  font-size: 12px; font-weight: 600; color: rgba(255,255,255,0.6);
+  background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.09);
+  border-radius: 14px; cursor: pointer;
 }
-.action-btn--danger { color: rgba(239,68,68,0.7); border-color: rgba(239,68,68,0.2); background: rgba(239,68,68,0.05); }
-.action-btn--danger:disabled { opacity: 0.5; cursor: not-allowed; }
+.action-finished:disabled { opacity: 0.5; cursor: not-allowed; }
+.action-finished--done {
+  cursor: default; color: rgba(34,197,94,0.7);
+  background: rgba(34,197,94,0.06); border-color: rgba(34,197,94,0.15);
+}
+.action-more {
+  width: 44px; height: 40px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.09);
+  border-radius: 14px; cursor: pointer; color: rgba(255,255,255,0.5);
+}
 .confirm-text-sm { font-size: 12px; color: rgba(255,255,255,0.55); margin: 0 0 12px; line-height: 1.5; }
 .confirm-text-sm strong { color: rgba(255,255,255,0.85); }
 .playlist-inline {

@@ -62,3 +62,24 @@ describe('BookDetailSheet', () => {
     expect(wrapper.find('.book-sheet').exists()).toBe(false)
   })
 })
+
+describe('BookDetailSheet — redesigned layout', () => {
+  it('renders cover-bleed section', () => {
+    const wrapper = mount(BookDetailSheet, mountOpts({ item: mockItem, coverSrc: '/cover.jpg', show: true }))
+    expect(wrapper.find('.cover-bleed').exists()).toBe(true)
+  })
+
+  it('action row has download, finished, and more buttons', () => {
+    const wrapper = mount(BookDetailSheet, mountOpts({ item: mockItem, coverSrc: '/cover.jpg', show: true }))
+    expect(wrapper.find('.action-download').exists()).toBe(true)
+    expect(wrapper.find('.action-finished').exists()).toBe(true)
+    expect(wrapper.find('.action-more').exists()).toBe(true)
+  })
+
+  it('action row does not have the old sprawl of buttons', () => {
+    const wrapper = mount(BookDetailSheet, mountOpts({ item: mockItem, coverSrc: '/cover.jpg', show: true }))
+    const actionRow = wrapper.find('.action-row-primary')
+    expect(actionRow.text()).not.toContain('Notes')
+    expect(actionRow.text()).not.toContain('Playlist')
+  })
+})
