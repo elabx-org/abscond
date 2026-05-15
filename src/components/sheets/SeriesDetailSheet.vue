@@ -13,7 +13,13 @@
                 <v-icon size="28" color="#d4a017">mdi-bookshelf</v-icon>
               </div>
               <h3 class="series-name">{{ seriesName }}</h3>
-              <p class="series-count">{{ books.length }} books</p>
+              <p class="series-count">{{ books.length }} book{{ books.length !== 1 ? 's' : '' }}</p>
+              <div v-if="!loading && books.length" class="series-progress-wrap">
+                <div class="series-progress-bar">
+                  <div class="series-progress-fill" :style="{ width: `${finishedPct}%` }" />
+                </div>
+                <p class="series-progress-label">{{ finishedCount }} of {{ books.length }} finished</p>
+              </div>
             </div>
 
             <div v-if="loading" class="book-grid">
@@ -43,7 +49,7 @@
 </template>
 
 <script setup lang="ts">
-import { watch, ref } from 'vue'
+import { watch, ref, computed } from 'vue'
 import { coverUrl } from '@/api/client'
 import { useAuthStore } from '@/stores/auth'
 import { useLibraryStore } from '@/stores/library'
@@ -66,6 +72,13 @@ const auth  = useAuthStore()
 const lib   = useLibraryStore()
 const loading = ref(false)
 const books   = ref<LibraryItem[]>([])
+
+const finishedCount = computed(() =>
+  books.value.filter(b => b.userMediaProgress?.isFinished).length
+)
+const finishedPct = computed(() =>
+  books.value.length ? Math.round((finishedCount.value / books.value.length) * 100) : 0
+)
 
 watch(() => props.show, async (v) => {
   if (!v || !props.seriesId || !lib.activeLibraryId) return
@@ -92,7 +105,11 @@ watch(() => props.show, async (v) => {
 .sheet-head { margin-bottom: 20px; text-align: center; padding-top: 8px; }
 .series-icon { width: 60px; height: 60px; border-radius: 50%; background: rgba(212,160,23,0.12); display: flex; align-items: center; justify-content: center; margin: 0 auto 10px; clear: both; }
 .series-name { font-size: 18px; font-weight: 700; color: rgba(255,255,255,0.9); margin: 0 0 4px; }
-.series-count { font-size: 12px; color: rgba(255,255,255,0.4); margin: 0; }
+.series-count { font-size: 12px; color: rgba(255,255,255,0.4); margin: 0 0 10px; }
+.series-progress-wrap { margin-top: 6px; }
+.series-progress-bar { height: 3px; background: rgba(255,255,255,0.08); border-radius: 2px; overflow: hidden; margin-bottom: 4px; }
+.series-progress-fill { height: 100%; background: #d4a017; border-radius: 2px; transition: width 0.4s ease; }
+.series-progress-label { font-size: 11px; color: rgba(255,255,255,0.35); margin: 0; }
 .book-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 12px; }
 .skel-card { display: flex; flex-direction: column; gap: 6px; }
 .skel-cover { aspect-ratio: 2/3; border-radius: 8px; background: linear-gradient(90deg, #1a1a1a 25%, #222 50%, #1a1a1a 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; }
