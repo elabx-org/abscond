@@ -256,8 +256,20 @@
                 <v-icon size="28" color="rgba(255,255,255,0.15)">mdi-playlist-remove</v-icon>
                 <p>Queue is empty</p>
               </div>
-              <div v-else class="queue-list">
-                <div v-for="(item, idx) in player.queue" :key="item.id" class="queue-item-row">
+              <div v-else ref="queueListEl" class="queue-list"
+                @pointermove="queueDragMove" @pointerup="queueDragEnd" @pointercancel="queueDragEnd">
+                <div
+                  v-for="(item, idx) in player.queue"
+                  :key="item.id"
+                  class="queue-item-row"
+                  :class="{
+                    'queue-drag-source': queueDragFrom === idx,
+                    'queue-drag-over': queueDragOver === idx && queueDragFrom !== idx && queueDragFrom >= 0
+                  }"
+                >
+                  <div class="queue-drag-handle" @pointerdown.prevent="queueDragStart($event, idx)" touch-action="none">
+                    <v-icon size="16" color="rgba(255,255,255,0.2)">mdi-drag-vertical</v-icon>
+                  </div>
                   <img :src="coverUrl(item.id, auth.token ?? '')" class="queue-item-cover" />
                   <div class="queue-item-meta">
                     <p class="queue-item-title">{{ item.media.metadata.title }}</p>
@@ -355,6 +367,9 @@ const chapterSearch    = ref('')
 const showSleepPicker  = ref(false)
 const showSpeedPicker  = ref(false)
 const showQueue        = ref(false)
+const queueDragFrom    = ref(-1)
+const queueDragOver    = ref(-1)
+const queueListEl      = ref<HTMLElement | null>(null)
 const showItemDetail   = ref(false)
 const showEq           = ref(false)
 const sleepCustomMins  = ref(parseInt(localStorage.getItem('abs_sleep_custom') ?? '45'))
@@ -601,6 +616,29 @@ function onChapterBarClick(e: MouseEvent) {
   const ch = player.currentChapter
   if (ch) player.seek(ch.start + frac * chapterDuration.value)
 }
+
+function queueDragStart(e: PointerEvent, idx: number) {
+  queueDragFrom.value = idx
+  queueDragOver.value = idx
+  ;(e.target as HTMLElement).setPointerCapture(e.pointerId)
+}
+function queueDragMove(e: PointerEvent) {
+  if (queueDragFrom.value < 0 || !queueListEl.value) return
+  const rows = queueListEl.value.querySelectorAll<HTMLElement>('.queue-item-row')
+  for (let i = 0; i < rows.length; i++) {
+    const rect = rows[i].getBoundingClientRect()
+    if (e.clientY >= rect.top && e.clientY < rect.bottom) {
+      queueDragOver.value = i; break
+    }
+  }
+}
+function queueDragEnd() {
+  if (queueDragFrom.value >= 0 && queueDragOver.value >= 0) {
+    player.reorderQueue(queueDragFrom.value, queueDragOver.value)
+  }
+  queueDragFrom.value = -1
+  queueDragOver.value = -1
+}
 </script>
 
 <style scoped>
@@ -835,9 +873,14 @@ function onChapterBarClick(e: MouseEvent) {
 .queue-list { max-height: 240px; overflow-y: auto; scrollbar-width: none; }
 .queue-item-row {
   display: flex; align-items: center; gap: 10px;
-  padding: 10px 16px; border-bottom: 1px solid rgba(255,255,255,0.04);
+  padding: 10px 12px 10px 8px; border-bottom: 1px solid rgba(255,255,255,0.04);
+  transition: background 0.1s, opacity 0.1s;
 }
 .queue-item-row:last-child { border-bottom: none; }
+.queue-drag-handle { padding: 4px; cursor: grab; flex-shrink: 0; touch-action: none; }
+.queue-drag-handle:active { cursor: grabbing; }
+.queue-drag-source { opacity: 0.4; }
+.queue-drag-over { background: rgba(212,160,23,0.08); border-radius: 0; border-left: 2px solid rgba(212,160,23,0.5); }
 .queue-item-cover { width: 40px; height: 40px; border-radius: 6px; object-fit: cover; flex-shrink: 0; background: #1a1a1a; }
 .queue-item-meta { flex: 1; min-width: 0; }
 .queue-item-title { font-size: 12px; font-weight: 600; color: rgba(255,255,255,0.8); margin: 0 0 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

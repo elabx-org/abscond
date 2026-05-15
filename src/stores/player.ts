@@ -472,5 +472,10 @@ export const usePlayerStore = defineStore('player', () => {
     addToQueue: (item: LibraryItem) => { queue.value.push(item) },
     clearQueue: () => { queue.value = [] },
     removeFromQueue: (idx: number) => { queue.value.splice(idx, 1) },
+    reorderQueue: (from: number, to: number) => {
+      if (from === to || from < 0 || to < 0 || from >= queue.value.length || to >= queue.value.length) return
+      const [item] = queue.value.splice(from, 1)
+      queue.value.splice(to, 0, item)
+    },
   }
 })
