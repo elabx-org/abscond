@@ -98,7 +98,7 @@
 
         <!-- Utility row -->
         <div class="util-row">
-          <button class="util-btn" @click="cycleSpeed">
+          <button class="util-btn" :class="{ active: player.playbackRate !== 1 }" @click="showSpeedPicker = !showSpeedPicker">
             <span class="util-label">{{ player.playbackRate }}×</span>
           </button>
           <button
@@ -121,6 +121,22 @@
             <v-icon size="18">mdi-bookmark-plus-outline</v-icon>
           </button>
         </div>
+
+        <!-- Speed picker -->
+        <Transition name="fade">
+          <div v-if="showSpeedPicker" class="sleep-picker">
+            <p class="sleep-title">Playback Speed</p>
+            <div class="sleep-opts">
+              <button
+                v-for="s in SPEEDS"
+                :key="s"
+                class="sleep-opt"
+                :class="{ active: player.playbackRate === s }"
+                @click="setSpeed(s)"
+              >{{ s }}×</button>
+            </div>
+          </div>
+        </Transition>
 
         <!-- Sleep timer picker -->
         <Transition name="fade">
@@ -201,6 +217,7 @@ const notify = useNotificationStore()
 
 const showChapters    = ref(false)
 const showSleepPicker = ref(false)
+const showSpeedPicker = ref(false)
 const showQueue       = ref(false)
 const scrubberEl     = ref<HTMLElement | null>(null)
 let scrubbing = false
@@ -267,10 +284,10 @@ async function addBookmark() {
   }
 }
 
-const SPEEDS = [0.5, 0.75, 1, 1.25, 1.5, 2]
-function cycleSpeed() {
-  const idx  = SPEEDS.indexOf(player.playbackRate)
-  player.setRate(SPEEDS[(idx + 1) % SPEEDS.length])
+const SPEEDS = [0.5, 0.6, 0.75, 0.8, 1.0, 1.1, 1.25, 1.5, 1.75, 2.0, 2.5, 3.0]
+function setSpeed(rate: number) {
+  player.setRate(rate)
+  showSpeedPicker.value = false
 }
 
 function formatTime(secs: number): string {
