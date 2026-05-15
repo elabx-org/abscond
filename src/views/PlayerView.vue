@@ -86,6 +86,9 @@
           <button class="util-btn" @click="showChapters = !showChapters">
             <v-icon size="18">mdi-format-list-bulleted</v-icon>
           </button>
+          <button class="util-btn" @click="addBookmark">
+            <v-icon size="18">mdi-bookmark-plus-outline</v-icon>
+          </button>
         </div>
 
         <!-- Sleep timer picker -->
@@ -131,6 +134,7 @@ import { computed, ref } from 'vue'
 import { usePlayerStore } from '@/stores/player'
 import { useAuthStore } from '@/stores/auth'
 import { coverUrl } from '@/api/client'
+import { createBookmark } from '@/api/bookmarks'
 
 const player = usePlayerStore()
 const auth   = useAuthStore()
@@ -166,6 +170,12 @@ const chapterProgressPct = computed(() => {
   if (!ch || chapterDuration.value <= 0) return 0
   return Math.min(((player.currentTime - ch.start) / chapterDuration.value) * 100, 100)
 })
+
+async function addBookmark() {
+  if (!player.currentItem) return
+  const title = player.currentChapter?.title ?? formatTime(player.currentTime)
+  await createBookmark(player.currentItem.id, Math.floor(player.currentTime), title).catch(() => {})
+}
 
 const SPEEDS = [0.5, 0.75, 1, 1.25, 1.5, 2]
 function cycleSpeed() {
