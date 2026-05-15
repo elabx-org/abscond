@@ -115,7 +115,16 @@
           <div class="time-row">
             <span class="time-label">{{ formatTime(speedAdjustedElapsed) }}</span>
             <span class="time-pct">{{ progressPct }}%</span>
-            <span class="time-label">-{{ formatTime(speedAdjustedRemaining) }}</span>
+            <span
+              class="time-label time-label--tap"
+              :title="timeRemainingMode === 'book' ? 'Chapter remaining' : 'Book remaining'"
+              @click="timeRemainingMode = timeRemainingMode === 'book' ? 'chapter' : 'book'"
+            >
+              <template v-if="timeRemainingMode === 'chapter' && currentChapterRemaining > 0">
+                <span class="time-label-sub">ch</span> -{{ formatTime(currentChapterRemaining) }}
+              </template>
+              <template v-else>-{{ formatTime(speedAdjustedRemaining) }}</template>
+            </span>
           </div>
 
           <!-- Chapter nav row -->
@@ -463,7 +472,8 @@ const newBookmarkTitle = ref('')
 const itemBookmarks    = ref<Bookmark[]>([])
 const sleepCustomMins   = ref(parseInt(localStorage.getItem('abs_sleep_custom') ?? '45'))
 const sleepCustomActive = ref(false)
-const sleepRewindSecs   = ref(parseInt(localStorage.getItem('abs_sleep_rewind') ?? '0'))
+const sleepRewindSecs    = ref(parseInt(localStorage.getItem('abs_sleep_rewind') ?? '0'))
+const timeRemainingMode  = ref<'book' | 'chapter'>('book')
 const scrubberEl      = ref<HTMLElement | null>(null)
 let scrubbing = false
 const isScrubbing      = ref(false)
@@ -630,6 +640,13 @@ const speedAdjustedElapsed = computed(() => {
   const rate = settings.speedAdjustedTime ? (player.playbackRate || 1) : 1
   return player.currentTime / rate
 })
+const currentChapterRemaining = computed(() => {
+  const ch = player.currentChapter
+  if (!ch) return 0
+  const rate = settings.speedAdjustedTime ? (player.playbackRate || 1) : 1
+  return (ch.end - player.currentTime) / rate
+})
+
 const speedAdjustedRemaining = computed(() => {
   const rate = settings.speedAdjustedTime ? (player.playbackRate || 1) : 1
   return (player.duration - player.currentTime) / rate
@@ -938,6 +955,9 @@ function queueDragEnd() {
 
 .time-row { display: flex; justify-content: space-between; align-items: center; margin-top: 2px; margin-bottom: 8px; }
 .time-label { font-size: 11px; color: rgba(255,255,255,0.4); }
+.time-label--tap { cursor: pointer; user-select: none; }
+.time-label--tap:active { color: rgba(255,255,255,0.7); }
+.time-label-sub { font-size: 8px; font-weight: 600; color: #d4a017; margin-right: 1px; }
 .time-pct   { font-size: 11px; font-weight: 600; color: rgba(255,255,255,0.55); }
 
 .chapter-nav-row {
