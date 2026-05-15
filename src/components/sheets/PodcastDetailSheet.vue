@@ -56,6 +56,10 @@
                 class="ep-row"
                 :class="{ active: isEpPlaying(ep.id) }"
                 @click="playEpisode(ep)"
+                @contextmenu.prevent="selectedEpisode = ep"
+                @pointerdown="startLongPress(ep)"
+                @pointerup="cancelLongPress"
+                @pointerleave="cancelLongPress"
               >
                 <div class="ep-info">
                   <p class="ep-title">{{ ep.title }}</p>
@@ -84,6 +88,15 @@
       </div>
     </Transition>
   </Teleport>
+
+  <EpisodeDetailSheet
+    v-if="selectedEpisode"
+    :show="!!selectedEpisode"
+    :item="item"
+    :episode="selectedEpisode"
+    :cover-src="coverSrc"
+    @close="selectedEpisode = null"
+  />
 </template>
 
 <script setup lang="ts">
@@ -96,6 +109,7 @@ import { getBaseUrl } from '@/api/client'
 import type { LibraryItem } from '@/api/types'
 import type { PodcastEpisode } from '@/api/browse'
 import { getAuthorDisplay } from '@/utils/metadata'
+import EpisodeDetailSheet from '@/components/sheets/EpisodeDetailSheet.vue'
 
 const props = defineProps<{
   show: boolean
@@ -142,7 +156,16 @@ const episodes = computed(() => {
   return list
 })
 
-const activeEpisodeId = computed(() => player.session?.episodeId ?? null)
+const activeEpisodeId   = computed(() => player.session?.episodeId ?? null)
+const selectedEpisode   = ref<PodcastEpisode | null>(null)
+
+let longPressTimer: ReturnType<typeof setTimeout> | null = null
+function startLongPress(ep: PodcastEpisode) {
+  longPressTimer = setTimeout(() => { selectedEpisode.value = ep }, 500)
+}
+function cancelLongPress() {
+  if (longPressTimer) { clearTimeout(longPressTimer); longPressTimer = null }
+}
 
 function viewAll() {
   router.push({ name: 'podcast', query: { itemId: props.item.id } })
