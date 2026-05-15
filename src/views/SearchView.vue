@@ -65,7 +65,7 @@
           <img :src="coverUrl(item.id, auth.token ?? '')" class="result-cover" :alt="item.media.metadata.title" />
           <div class="result-meta">
             <p class="result-title">{{ item.media.metadata.title }}</p>
-            <p class="result-sub">{{ (item.media.metadata.authors ?? []).map(a => a.name).join(', ') || 'Unknown' }}</p>
+            <p class="result-sub">{{ getAuthorDisplay(item) || 'Unknown' }}</p>
           </div>
           <v-icon size="14" color="rgba(255,255,255,0.2)">mdi-chevron-right</v-icon>
         </div>
@@ -189,6 +189,7 @@ import SeriesDetailSheet from '@/components/sheets/SeriesDetailSheet.vue'
 import AuthorDetailSheet from '@/components/sheets/AuthorDetailSheet.vue'
 import NarratorDetailSheet from '@/components/sheets/NarratorDetailSheet.vue'
 import type { LibraryItem, SearchResult } from '@/api/types'
+import { getAuthorDisplay } from '@/utils/metadata'
 
 const lib     = useLibraryStore()
 const auth    = useAuthStore()

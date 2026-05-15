@@ -35,7 +35,7 @@
                 :key="b.id"
                 :item-id="b.id"
                 :title="b.media.metadata.title"
-                :author="(b.media.metadata.authors ?? []).map(a => a.name).join(', ') || 'Unknown'"
+                :author="getAuthorDisplay(b) || 'Unknown'"
                 :cover-src="coverUrl(b.id, auth.token ?? '')"
                 :progress="b.userMediaProgress?.progress ?? 0"
                 @click="$emit('open-book', b)"
@@ -56,6 +56,7 @@ import { useLibraryStore } from '@/stores/library'
 import { getSeriesBooks } from '@/api/browse'
 import PortraitCard from '@/components/cards/PortraitCard.vue'
 import type { LibraryItem } from '@/api/types'
+import { getAuthorDisplay } from '@/utils/metadata'
 
 const props = defineProps<{
   show: boolean

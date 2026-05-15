@@ -55,7 +55,7 @@
           class="h-card"
           :item-id="item.id"
           :title="item.media.metadata.title"
-          :author="(item.media.metadata.authors ?? []).map(a => a.name).join(', ') || 'Unknown'"
+          :author="getAuthorDisplay(item) || 'Unknown'"
           :cover-src="coverUrl(item.id, auth.token ?? '')"
           :progress="item.userMediaProgress?.progress ?? 0"
           @click="openDetail(item)"
@@ -84,7 +84,7 @@
           class="h-card"
           :item-id="item.id"
           :title="item.media.metadata.title"
-          :author="(item.media.metadata.authors ?? []).map(a => a.name).join(', ') || 'Unknown'"
+          :author="getAuthorDisplay(item) || 'Unknown'"
           :cover-src="coverUrl(item.id, auth.token ?? '')"
           :progress="item.userMediaProgress?.progress ?? 0"
           @click="openDetail(item)"
@@ -112,7 +112,7 @@
           class="h-card"
           :item-id="item.id"
           :title="item.media.metadata.title"
-          :author="(item.media.metadata.authors ?? []).map(a => a.name).join(', ') || 'Unknown'"
+          :author="getAuthorDisplay(item) || 'Unknown'"
           :cover-src="coverUrl(item.id, auth.token ?? '')"
           :progress="1"
           @click="openDetail(item)"
@@ -142,7 +142,7 @@
           class="h-card"
           :item-id="item.id"
           :title="item.media.metadata.title"
-          :author="(item.media.metadata.authors ?? []).map(a => a.name).join(', ') || 'Unknown'"
+          :author="getAuthorDisplay(item) || 'Unknown'"
           :cover-src="coverUrl(item.id, auth.token ?? '')"
           :progress="item.userMediaProgress?.progress ?? 0"
           @click="openDetail(item)"
@@ -169,7 +169,7 @@
       v-if="quickItem"
       :show="!!quickItem"
       :title="quickItem.media.metadata.title"
-      :author="(quickItem.media.metadata.authors ?? []).map(a => a.name).join(', ') || 'Unknown'"
+      :author="getAuthorDisplay(quickItem) || 'Unknown'"
       :cover-src="coverUrl(quickItem.id, auth.token ?? '')"
       :progress="quickItem.userMediaProgress?.progress ?? 0"
       @close="quickItem = null"
@@ -196,6 +196,7 @@ import BookDetailSheet from '@/components/sheets/BookDetailSheet.vue'
 import PodcastDetailSheet from '@/components/sheets/PodcastDetailSheet.vue'
 import QuickActionsSheet from '@/components/sheets/QuickActionsSheet.vue'
 import type { LibraryItem } from '@/api/types'
+import { getAuthorDisplay } from '@/utils/metadata'
 
 const progress = useProgressStore()
 const lib      = useLibraryStore()

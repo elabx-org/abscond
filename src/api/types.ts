@@ -28,10 +28,12 @@ export interface LibraryItemMedia {
   metadata: {
     title: string
     subtitle?: string | null
-    authors: Author[] | null
-    narrators: string[] | null
-    series: Series[] | null
-    genres: string[] | null
+    authors?: Author[] | null
+    authorName?: string | null
+    narrators?: string[] | null
+    narratorName?: string | null
+    series?: Series[] | null
+    genres?: string[] | null
     publishedYear?: string | null
     publisher?: string | null
     description?: string | null

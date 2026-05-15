@@ -166,7 +166,7 @@
                 :key="item.id"
                 :item-id="item.id"
                 :title="item.media.metadata.title"
-                :author="(item.media.metadata.authors ?? []).map(a => a.name).join(', ') || 'Unknown'"
+                :author="getAuthorDisplay(item) || 'Unknown'"
                 :cover-src="coverUrl(item.id, auth.token ?? '')"
                 :progress="item.userMediaProgress?.progress ?? 0"
                 @click="openBook(item)"
@@ -193,6 +193,7 @@ import PortraitCard from '@/components/cards/PortraitCard.vue'
 import type { SeriesDetail, AuthorDetail } from '@/api/browse'
 import type { LibraryItem } from '@/api/types'
 import { api } from '@/api/client'
+import { getAuthorDisplay } from '@/utils/metadata'
 
 const lib  = useLibraryStore()
 const auth = useAuthStore()

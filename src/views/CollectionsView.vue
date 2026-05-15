@@ -98,7 +98,7 @@
                   <img :src="coverUrl(b.id, auth.token ?? '')" class="col-book-thumb" />
                   <div class="col-book-info">
                     <p class="col-book-title">{{ b.media.metadata.title }}</p>
-                    <p class="col-book-author">{{ (b.media.metadata.authors ?? []).map(a => a.name).join(', ') || 'Unknown' }}</p>
+                    <p class="col-book-author">{{ getAuthorDisplay(b) || 'Unknown' }}</p>
                   </div>
                   <button class="col-book-del" @click.stop="removeBook(b.id)">
                     <v-icon size="14">mdi-close</v-icon>
@@ -164,10 +164,10 @@ import { getCollections, createCollection, deleteCollection, removeBookFromColle
 import { coverUrl } from '@/api/client'
 import { useAuthStore } from '@/stores/auth'
 import { useLibraryStore } from '@/stores/library'
-import PortraitCard from '@/components/cards/PortraitCard.vue'
 import BookDetailSheet from '@/components/sheets/BookDetailSheet.vue'
 import type { Collection } from '@/api/collections'
 import type { LibraryItem } from '@/api/types'
+import { getAuthorDisplay } from '@/utils/metadata'
 
 const auth = useAuthStore()
 const lib  = useLibraryStore()

@@ -240,7 +240,7 @@ const coverSrc = computed(() =>
 )
 
 const authorNames = computed(() =>
-  (player.currentItem?.media.metadata.authors ?? []).map(a => a.name).join(', ') || 'Unknown Author'
+  player.session?.displayAuthor || player.currentItem?.media.metadata.authorName || 'Unknown Author'
 )
 
 const chapters = computed(() => player.session?.chapters ?? [])

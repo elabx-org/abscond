@@ -58,7 +58,7 @@ const coverSrc = computed(() =>
 )
 
 const authorNames = computed(() =>
-  (player.currentItem?.media.metadata.authors ?? []).map(a => a.name).join(', ') || ''
+  player.session?.displayAuthor || player.currentItem?.media.metadata.authorName || ''
 )
 </script>
 

@@ -65,7 +65,7 @@ export const usePlayerStore = defineStore('player', () => {
     const token = localStorage.getItem('abs_token') ?? ''
     navigator.mediaSession.metadata = new MediaMetadata({
       title:  meta.title,
-      artist: (meta.authors ?? []).map((a: { name: string }) => a.name).join(', ') || '',
+      artist: session.value?.displayAuthor || (meta.authors ?? []).map((a: { name: string }) => a.name).join(', ') || (meta as Record<string, unknown>).authorName as string || '',
       album:  (meta.series ?? []).map((s: { name: string }) => s.name).join(', ') || '',
       artwork: [{ src: `${base}/api/items/${currentItem.value.id}/cover?token=${encodeURIComponent(token)}`, sizes: '512x512', type: 'image/jpeg' }],
     })

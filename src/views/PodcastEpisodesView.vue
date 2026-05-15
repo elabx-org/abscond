@@ -211,7 +211,7 @@ async function toggleFinished(ep: PodcastEpisode) {
   const isFinished = ep.userEpisodeProgress?.isFinished
   const progress   = isFinished ? 0 : 1
   await api.patch(`/me/progress/${item.value.id}/${ep.id}`, { isFinished: !isFinished, progress }).catch(() => {})
-  if (!ep.userEpisodeProgress) (ep as PodcastEpisode & { userEpisodeProgress: unknown }).userEpisodeProgress = {}
+  if (!ep.userEpisodeProgress) (ep as PodcastEpisode & { userEpisodeProgress: unknown }).userEpisodeProgress = { isFinished: false, progress: 0, currentTime: 0 }
   if (ep.userEpisodeProgress) {
     ep.userEpisodeProgress.isFinished = !isFinished
     ep.userEpisodeProgress.progress   = progress

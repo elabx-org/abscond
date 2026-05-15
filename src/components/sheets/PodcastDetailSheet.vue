@@ -21,7 +21,7 @@
               <img v-if="coverSrc" :src="coverSrc" class="pod-cover" :alt="item.media.metadata.title" />
               <div class="pod-meta">
                 <h2 class="pod-title">{{ item.media.metadata.title }}</h2>
-                <p class="pod-author">{{ (item.media.metadata.authors ?? []).map(a => a.name).join(', ') || 'Unknown' }}</p>
+                <p class="pod-author">{{ getAuthorDisplay(item) || 'Unknown' }}</p>
                 <p class="pod-count">{{ episodes.length }} episodes</p>
               </div>
             </div>
@@ -84,6 +84,7 @@ import { getPodcastItem } from '@/api/browse'
 import { getBaseUrl } from '@/api/client'
 import type { LibraryItem } from '@/api/types'
 import type { PodcastEpisode } from '@/api/browse'
+import { getAuthorDisplay } from '@/utils/metadata'
 
 const props = defineProps<{
   show: boolean

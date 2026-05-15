@@ -214,10 +214,10 @@ async function doSaveEdit() {
   try {
     const updated = await updateUser(editTarget.value.id, {
       isActive: editActive.value,
-      permissions: editPerms as Partial<AdminUserPermissions>,
+      permissions: editPerms as unknown as Partial<AdminUserPermissions>,
     })
     const idx = users.value.findIndex(u => u.id === editTarget.value!.id)
-    if (idx !== -1) users.value[idx] = { ...users.value[idx], ...updated, permissions: editPerms as AdminUserPermissions }
+    if (idx !== -1) users.value[idx] = { ...users.value[idx], ...updated, permissions: editPerms as unknown as AdminUserPermissions }
     editTarget.value = null
   } catch (e: unknown) {
     editError.value = e instanceof Error ? e.message : 'Failed to save'

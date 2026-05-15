@@ -30,21 +30,27 @@
             <h2 class="sheet-title">{{ item.media.metadata.title }}</h2>
             <p v-if="item.media.metadata.subtitle" class="sheet-subtitle">{{ item.media.metadata.subtitle }}</p>
             <div class="author-chips">
-              <button
-                v-for="a in (item.media.metadata.authors ?? [])"
-                :key="a.id"
-                class="author-chip"
-                @click.stop="openAuthor(a)"
-              >{{ a.name }}</button>
+              <template v-if="item.media.metadata.authors?.length">
+                <button
+                  v-for="a in item.media.metadata.authors"
+                  :key="a.id"
+                  class="author-chip"
+                  @click.stop="openAuthor(a)"
+                >{{ a.name }}</button>
+              </template>
+              <span v-else-if="item.media.metadata.authorName" class="author-chip-plain">{{ item.media.metadata.authorName }}</span>
             </div>
-            <div v-if="(item.media.metadata.narrators ?? []).length" class="narrator-chips">
+            <div v-if="(item.media.metadata.narrators ?? []).length || item.media.metadata.narratorName" class="narrator-chips">
               <span class="narrator-by">Read by</span>
+              <template v-if="item.media.metadata.narrators?.length">
               <button
-                v-for="n in (item.media.metadata.narrators ?? [])"
+                v-for="n in item.media.metadata.narrators"
                 :key="n"
                 class="author-chip"
                 @click.stop="openNarrator(n)"
               >{{ n }}</button>
+              </template>
+              <span v-else-if="item.media.metadata.narratorName" class="author-chip-plain">{{ item.media.metadata.narratorName }}</span>
             </div>
 
             <!-- Progress bar -->
@@ -353,12 +359,12 @@ const removingProgress  = ref(false)
 async function markFinished() {
   markingFinished.value = true
   try {
-    await api.patch(`/me/progress/${props.itemId}`, { isFinished: true, progress: 1, currentTime: props.item.media.duration })
+    await api.patch(`/me/progress/${props.item.id}`, { isFinished: true, progress: 1, currentTime: props.item.media.duration })
     if (props.item.userMediaProgress) {
       props.item.userMediaProgress.isFinished = true
       props.item.userMediaProgress.progress   = 1
     } else {
-      (props.item as typeof props.item & { userMediaProgress: unknown }).userMediaProgress = { isFinished: true, progress: 1 }
+      (props.item as typeof props.item & { userMediaProgress: unknown }).userMediaProgress = { isFinished: true, progress: 1, currentTime: 0, duration: 0, lastUpdate: 0 }
     }
   } catch { /* ignore */ }
   finally { markingFinished.value = false }
@@ -367,7 +373,7 @@ async function markFinished() {
 async function removeProgress() {
   removingProgress.value = true
   try {
-    await api.delete(`/me/progress/${props.itemId}`)
+    await api.delete(`/me/progress/${props.item.id}`)
     if (props.item.userMediaProgress) {
       props.item.userMediaProgress.isFinished = false
       props.item.userMediaProgress.progress   = 0
@@ -379,7 +385,7 @@ async function removeProgress() {
 async function doDeleteItem() {
   deleting.value = true
   try {
-    await api.delete(`/items/${props.itemId}`)
+    await api.delete(`/items/${props.item.id}`)
     emit('close')
   } catch { /* ignore */ }
   finally { deleting.value = false }
@@ -404,7 +410,7 @@ async function doQuickMatch() {
   matchLoading.value = true
   matchMsg.value     = ''
   try {
-    const result = await matchItem(props.itemId, matchProvider.value, editMeta.value.title, editMeta.value.authorNames || undefined)
+    const result = await matchItem(props.item.id, matchProvider.value, editMeta.value.title, editMeta.value.authorNames || undefined)
     matchOk.value  = result.updated
     matchMsg.value = result.updated ? 'Metadata updated from provider' : 'No match found'
   } catch {
@@ -429,9 +435,9 @@ async function doUpdateCover() {
     if (coverFile.value) {
       const form = new FormData()
       form.append('cover', coverFile.value)
-      await api.post(`/items/${props.itemId}/cover`, form, { headers: { 'Content-Type': 'multipart/form-data' } })
+      await api.post(`/items/${props.item.id}/cover`, form, { headers: { 'Content-Type': 'multipart/form-data' } })
     } else if (coverUrl_.value.trim()) {
-      await api.post(`/items/${props.itemId}/cover`, { url: coverUrl_.value.trim() })
+      await api.post(`/items/${props.item.id}/cover`, { url: coverUrl_.value.trim() })
     }
     coverUrl_.value  = ''
     coverFile.value  = null
@@ -578,8 +584,8 @@ function openEdit() {
   editMeta.value = {
     title:         m.title ?? '',
     subtitle:      m.subtitle ?? '',
-    authorNames:   (m.authors ?? []).map(a => a.name).join(', '),
-    narratorNames: (m.narrators ?? []).join(', '),
+    authorNames:   m.authors?.length ? m.authors.map(a => a.name).join(', ') : (m.authorName ?? ''),
+    narratorNames: m.narrators?.length ? m.narrators.join(', ') : (m.narratorName ?? ''),
     publishedYear: m.publishedYear ?? '',
     publisher:     m.publisher ?? '',
     genres:        (m.genres ?? []).join(', '),
@@ -678,6 +684,7 @@ async function doSaveMeta() {
   font-size: 12px; color: rgba(212,160,23,0.85); background: transparent;
   border: none; cursor: pointer; padding: 2px 0; text-decoration: underline; text-underline-offset: 2px;
 }
+.author-chip-plain { font-size: 12px; color: rgba(255,255,255,0.6); }
 .narrator-chips { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 4px; margin: 0 0 10px; }
 .narrator-by { font-size: 11px; color: rgba(255,255,255,0.3); }
 .sheet-progress-wrap {

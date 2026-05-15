@@ -28,7 +28,21 @@
         >{{ l.name }}</button>
       </div>
 
-      <!-- Sort chips -->
+      <!-- View mode tabs -->
+      <div class="view-tabs">
+        <button class="view-tab" :class="{ active: viewMode === 'library' }" @click="setViewMode('library')">
+          <v-icon size="13">mdi-bookshelf</v-icon> Library
+        </button>
+        <button class="view-tab" :class="{ active: viewMode === 'series' }" @click="setViewMode('series')">
+          <v-icon size="13">mdi-book-multiple</v-icon> Series
+        </button>
+        <button class="view-tab" :class="{ active: viewMode === 'authors' }" @click="setViewMode('authors')">
+          <v-icon size="13">mdi-account-multiple</v-icon> Authors
+        </button>
+      </div>
+
+      <!-- Sort chips (library view only) -->
+      <template v-if="viewMode === 'library'">
       <div class="sort-chips">
         <button class="sort-chip" :class="{ active: sortField === 'title' }" @click="setSort('title')">
           <v-icon size="12">mdi-sort-alphabetical-ascending</v-icon> Title
@@ -106,8 +120,11 @@
           <v-icon size="12">mdi-close</v-icon>
         </button>
       </div>
+      </template>
     </div>
 
+    <!-- Library view -->
+    <template v-if="viewMode === 'library'">
     <!-- Loading skeletons -->
     <div v-if="lib.loading && !items.length" class="grid">
       <div v-for="n in 12" :key="n" class="skeleton-card">
@@ -130,7 +147,7 @@
         :key="item.id"
         :item-id="item.id"
         :title="item.media.metadata.title"
-        :author="(item.media.metadata.authors ?? []).map(a => a.name).join(', ') || 'Unknown'"
+        :author="getAuthorDisplay(item) || 'Unknown'"
         :cover-src="coverUrl(item.id, auth.token ?? '')"
         :progress="item.userMediaProgress?.progress ?? 0"
         :selected="selectedIds.has(item.id)"
@@ -145,6 +162,59 @@
     <div v-if="hasMore && !lib.loading" class="load-more-wrap">
       <button class="load-more-btn" @click="loadMore">Load more</button>
     </div>
+    </template>
+
+    <!-- Series view -->
+    <template v-else-if="viewMode === 'series'">
+      <div v-if="loadingSeries" class="list-skeleton">
+        <div v-for="n in 8" :key="n" class="skel-row" />
+      </div>
+      <div v-else-if="!seriesList.length" class="empty-state">
+        <v-icon size="40" color="rgba(255,255,255,0.15)">mdi-book-multiple</v-icon>
+        <p>No series found</p>
+      </div>
+      <div v-else class="item-list">
+        <div
+          v-for="s in seriesList"
+          :key="s.id"
+          class="list-row"
+          @click="activeSeries = s"
+        >
+          <div class="row-icon"><v-icon size="18" color="#d4a017">mdi-book-multiple</v-icon></div>
+          <div class="row-info">
+            <p class="row-name">{{ s.name }}</p>
+            <p class="row-sub">{{ s.books?.length ?? 0 }} books</p>
+          </div>
+          <v-icon size="16" color="rgba(255,255,255,0.2)">mdi-chevron-right</v-icon>
+        </div>
+      </div>
+    </template>
+
+    <!-- Authors view -->
+    <template v-else-if="viewMode === 'authors'">
+      <div v-if="loadingAuthors" class="list-skeleton">
+        <div v-for="n in 8" :key="n" class="skel-row" />
+      </div>
+      <div v-else-if="!authorsList.length" class="empty-state">
+        <v-icon size="40" color="rgba(255,255,255,0.15)">mdi-account-multiple</v-icon>
+        <p>No authors found</p>
+      </div>
+      <div v-else class="item-list">
+        <div
+          v-for="a in authorsList"
+          :key="a.id"
+          class="list-row"
+          @click="activeAuthor = a"
+        >
+          <div class="author-avatar">{{ a.name[0]?.toUpperCase() }}</div>
+          <div class="row-info">
+            <p class="row-name">{{ a.name }}</p>
+            <p class="row-sub" v-if="a.libraryItems?.length">{{ a.libraryItems.length }} books</p>
+          </div>
+          <v-icon size="16" color="rgba(255,255,255,0.2)">mdi-chevron-right</v-icon>
+        </div>
+      </div>
+    </template>
 
     <!-- Batch select bar -->
     <Transition name="batch-bar">
@@ -201,7 +271,7 @@
       v-if="quickItem"
       :show="!!quickItem"
       :title="quickItem.media.metadata.title"
-      :author="(quickItem.media.metadata.authors ?? []).map(a => a.name).join(', ') || 'Unknown'"
+      :author="getAuthorDisplay(quickItem) || 'Unknown'"
       :cover-src="coverUrl(quickItem.id, auth.token ?? '')"
       :progress="quickItem.userMediaProgress?.progress ?? 0"
       @close="quickItem = null"
@@ -228,6 +298,22 @@
       :show="!!selectedItem"
       @close="selectedItem = null"
     />
+    <SeriesDetailSheet
+      v-if="activeSeries"
+      :show="!!activeSeries"
+      :series-id="activeSeries.id"
+      :series-name="activeSeries.name"
+      @close="activeSeries = null"
+      @open-book="openDetail"
+    />
+    <AuthorDetailSheet
+      v-if="activeAuthor"
+      :show="!!activeAuthor"
+      :author-id="activeAuthor.id"
+      :author-name="activeAuthor.name"
+      @close="activeAuthor = null"
+      @open-book="openDetail"
+    />
   </div>
 </template>
 
@@ -240,16 +326,46 @@ import PortraitCard from '@/components/cards/PortraitCard.vue'
 import BookDetailSheet from '@/components/sheets/BookDetailSheet.vue'
 import PodcastDetailSheet from '@/components/sheets/PodcastDetailSheet.vue'
 import QuickActionsSheet from '@/components/sheets/QuickActionsSheet.vue'
+import SeriesDetailSheet from '@/components/sheets/SeriesDetailSheet.vue'
+import AuthorDetailSheet from '@/components/sheets/AuthorDetailSheet.vue'
 import { getPlaylists, addItemToPlaylist } from '@/api/playlists'
 import type { Playlist } from '@/api/playlists'
 import type { LibraryItem } from '@/api/types'
 import { usePlayerStore } from '@/stores/player'
 import { useNotificationStore } from '@/stores/notifications'
+import { getLibrarySeriesList, getLibraryAuthors } from '@/api/browse'
+import type { SeriesDetail, AuthorDetail } from '@/api/browse'
+import { getAuthorDisplay } from '@/utils/metadata'
 
 const lib    = useLibraryStore()
 const auth   = useAuthStore()
 const player = usePlayerStore()
 const notify = useNotificationStore()
+
+type ViewMode = 'library' | 'series' | 'authors'
+const viewMode       = ref<ViewMode>('library')
+const seriesList     = ref<SeriesDetail[]>([])
+const authorsList    = ref<AuthorDetail[]>([])
+const loadingSeries  = ref(false)
+const loadingAuthors = ref(false)
+const activeSeries   = ref<SeriesDetail | null>(null)
+const activeAuthor   = ref<AuthorDetail | null>(null)
+
+async function setViewMode(mode: ViewMode) {
+  viewMode.value = mode
+  if (mode === 'series' && !seriesList.value.length && lib.activeLibraryId) {
+    loadingSeries.value = true
+    try { seriesList.value = await getLibrarySeriesList(lib.activeLibraryId) }
+    catch { seriesList.value = [] }
+    finally { loadingSeries.value = false }
+  }
+  if (mode === 'authors' && !authorsList.value.length && lib.activeLibraryId) {
+    loadingAuthors.value = true
+    try { authorsList.value = await getLibraryAuthors(lib.activeLibraryId) }
+    catch { authorsList.value = [] }
+    finally { loadingAuthors.value = false }
+  }
+}
 
 const ptr = ref({ pulling: false, refreshing: false, startY: 0 })
 
@@ -616,4 +732,32 @@ watch(() => lib.activeLibraryId, (id) => {
 .picker-name { flex: 1; font-size: 13px; }
 .picker-count { font-size: 11px; color: rgba(255,255,255,0.3); }
 .picker-empty { font-size: 12px; color: rgba(255,255,255,0.3); padding: 16px 0; text-align: center; }
+
+.view-tabs { display: flex; gap: 4px; margin-bottom: 12px; }
+.view-tab {
+  display: flex; align-items: center; gap: 5px;
+  font-size: 12px; padding: 6px 14px; border-radius: 20px; cursor: pointer;
+  background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08);
+  color: rgba(255,255,255,0.5); transition: all 0.15s; white-space: nowrap;
+}
+.view-tab.active { background: rgba(212,160,23,0.15); border-color: #d4a017; color: #d4a017; }
+
+.list-skeleton { display: flex; flex-direction: column; gap: 2px; }
+.skel-row { height: 52px; border-radius: 8px; background: linear-gradient(90deg, #1a1a1a 25%, #222 50%, #1a1a1a 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; }
+
+.item-list { display: flex; flex-direction: column; }
+.list-row {
+  display: flex; align-items: center; gap: 12px;
+  padding: 11px 4px; border-bottom: 1px solid rgba(255,255,255,0.04);
+  cursor: pointer;
+}
+.row-icon { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.author-avatar {
+  width: 32px; height: 32px; border-radius: 50%; background: rgba(212,160,23,0.15);
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  font-size: 14px; font-weight: 700; color: #d4a017;
+}
+.row-info { flex: 1; min-width: 0; }
+.row-name { font-size: 13px; font-weight: 600; color: rgba(255,255,255,0.85); margin: 0 0 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.row-sub { font-size: 11px; color: rgba(255,255,255,0.35); margin: 0; }
 </style>
