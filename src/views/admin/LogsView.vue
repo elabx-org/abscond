@@ -36,7 +36,8 @@ function formatEntry(entry: unknown): string {
   if (typeof entry === 'string') return entry
   if (typeof entry === 'object' && entry !== null) {
     const e = entry as Record<string, unknown>
-    const ts = e.timestamp ? new Date(e.timestamp as number).toLocaleTimeString() : ''
+    const rawTs = e.timestamp
+    const ts = typeof rawTs === 'string' ? (rawTs.split(' ')[1] ?? rawTs) : rawTs ? new Date(rawTs as number).toLocaleTimeString() : ''
     const msg = (e.message ?? e.msg ?? JSON.stringify(e)) as string
     return ts ? `[${ts}] ${msg}` : msg
   }
@@ -45,11 +46,11 @@ function formatEntry(entry: unknown): string {
 
 function levelClass(entry: unknown): string {
   if (typeof entry === 'object' && entry !== null) {
-    const lvl = (entry as Record<string, unknown>).level
-    if (lvl === 0 || lvl === 'debug') return 'debug'
-    if (lvl === 1 || lvl === 'info')  return 'info'
-    if (lvl === 2 || lvl === 'warn')  return 'warn'
-    if (lvl === 3 || lvl === 'error') return 'error'
+    const lvl = (entry as Record<string, unknown>).levelName
+    if (lvl === 'DEBUG') return 'debug'
+    if (lvl === 'INFO')  return 'info'
+    if (lvl === 'WARN')  return 'warn'
+    if (lvl === 'ERROR') return 'error'
   }
   return 'info'
 }

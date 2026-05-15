@@ -51,16 +51,6 @@
 
         <div class="setting-row">
           <div class="setting-info">
-            <p class="setting-name">Scan all file types</p>
-            <p class="setting-desc">Include non-audio files during scan</p>
-          </div>
-          <button class="toggle" :class="{ on: settings.scannerScanAllFileTypes }" @click="toggle('scannerScanAllFileTypes')">
-            <div class="toggle-thumb" />
-          </button>
-        </div>
-
-        <div class="setting-row">
-          <div class="setting-info">
             <p class="setting-name">Sorting ignores prefix</p>
             <p class="setting-desc">Ignore "The", "A", etc. when sorting</p>
           </div>
@@ -93,7 +83,7 @@
             <p class="setting-desc">How often to create automatic backups</p>
           </div>
           <select v-model="settings.backupSchedule" class="setting-select" @change="dirty = true">
-            <option value="">Off</option>
+            <option :value="false">Off</option>
             <option value="0 1 * * *">Daily</option>
             <option value="0 1 * * 0">Weekly</option>
           </select>
@@ -104,7 +94,7 @@
             <p class="setting-desc">Delete older backups beyond this count</p>
           </div>
           <input
-            v-model.number="settings.numBackupsToKeep"
+            v-model.number="settings.backupsToKeep"
             type="number" min="1" max="20"
             class="setting-input"
             @input="dirty = true"
@@ -167,23 +157,6 @@
           <button class="toggle" :class="{ on: settings.chromecastEnabled }" @click="toggle('chromecastEnabled')">
             <div class="toggle-thumb" />
           </button>
-        </div>
-      </div>
-
-      <!-- Security -->
-      <div class="settings-group">
-        <p class="group-label">Security</p>
-        <div class="setting-row">
-          <div class="setting-info">
-            <p class="setting-name">Session token age</p>
-            <p class="setting-desc">How long login tokens remain valid</p>
-          </div>
-          <select v-model="settings.authTokenAge" class="setting-select" @change="dirty = true">
-            <option value="1d">1 day</option>
-            <option value="7d">7 days</option>
-            <option value="30d">30 days</option>
-            <option value="1y">1 year</option>
-          </select>
         </div>
       </div>
 

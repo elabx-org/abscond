@@ -42,19 +42,16 @@ export interface ServerSettings {
   scannerFindCovers: boolean
   scannerCoverProvider: string
   scannerParseSubtitle: boolean
-  scannerScanAllFileTypes: boolean
-  coverAspectRatio: number
   bookshelfView: number
   sortingIgnorePrefix: boolean
   storeCoverWithItem: boolean
   chromecastEnabled: boolean
   logLevel: number
   version: string
-  numBackupsToKeep: number
-  backupSchedule: string
+  backupsToKeep: number
+  backupSchedule: string | false
   loggerDailyLogsToKeep: number
   loggerScannerLogsToKeep: number
-  authTokenAge: string
 }
 
 export interface AdminBackup {
@@ -113,12 +110,12 @@ export async function createLibrary(name: string, mediaType: 'book' | 'podcast',
 }
 
 export async function getServerSettings(): Promise<ServerSettings> {
-  const res = await api.get('/settings')
-  return res.data.settings ?? res.data
+  const res = await api.post('/authorize', {})
+  return res.data.serverSettings ?? res.data
 }
 
 export async function updateServerSettings(settings: Partial<ServerSettings>): Promise<void> {
-  await api.patch('/settings', { settings })
+  await api.patch('/settings', settings)
 }
 
 export async function getBackups(): Promise<AdminBackup[]> {
@@ -140,11 +137,8 @@ export async function applyBackup(id: string): Promise<void> {
 
 export async function getServerLogs(): Promise<unknown[]> {
   try {
-    const res = await api.get('/logs', { params: { level: 0, startCursor: 0, count: 100 } })
-    if (Array.isArray(res.data)) return res.data
-    if (Array.isArray(res.data?.logs)) return res.data.logs
-    if (Array.isArray(res.data?.data)) return res.data.data
-    return []
+    const res = await api.get('/logger-data')
+    return res.data.currentDailyLogs ?? []
   } catch { return [] }
 }
 
@@ -236,8 +230,8 @@ export interface PodcastEpisodeFile {
 
 export async function getServerInfo(): Promise<ServerInfo> {
   try {
-    const res = await api.get('/server/info')
-    return { version: res.data?.version ?? '—' }
+    const res = await api.post('/authorize', {})
+    return { version: res.data.serverSettings?.version ?? '—' }
   } catch {
     return { version: '—' }
   }
