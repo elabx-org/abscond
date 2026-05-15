@@ -20,9 +20,14 @@
         <p class="greeting-time">{{ timeOfDayLabel }}</p>
         <h1 class="greeting-name">{{ auth.user?.username ?? 'Reader' }}</h1>
       </div>
-      <button class="search-icon-btn" @click="$router.push({ name: 'search' })">
-        <v-icon size="22" color="rgba(255,255,255,0.6)">mdi-magnify</v-icon>
-      </button>
+      <div style="display:flex;gap:4px">
+        <button class="search-icon-btn" @click="showCustomize = true">
+          <v-icon size="20" color="rgba(255,255,255,0.45)">mdi-tune-variant</v-icon>
+        </button>
+        <button class="search-icon-btn" @click="$router.push({ name: 'search' })">
+          <v-icon size="22" color="rgba(255,255,255,0.6)">mdi-magnify</v-icon>
+        </button>
+      </div>
     </div>
 
     <!-- PWA install banner -->
@@ -36,7 +41,7 @@
     </div>
 
     <!-- Continue Listening -->
-    <section v-if="progress.inProgress.length || loadingProgress" class="section">
+    <section v-if="(progress.inProgress.length || loadingProgress) && !isSectionHidden('continue-listening')" class="section">
       <div class="section-header clickable" @click="sectionSheet = { title: 'Continue Listening', icon: 'mdi-play-circle-outline', items: progress.inProgress }">
         <v-icon size="16" color="rgba(255,255,255,0.35)">mdi-play-circle-outline</v-icon>
         <span class="section-label">Continue Listening</span>
@@ -66,7 +71,7 @@
     </section>
 
     <!-- Recently Added -->
-    <section class="section">
+    <section v-if="!isSectionHidden('recently-added')" class="section">
       <div class="section-header clickable" @click="sectionSheet = { title: 'Recently Added', icon: 'mdi-clock-outline', items: progress.recentlyAdded }">
         <v-icon size="16" color="rgba(255,255,255,0.35)">mdi-clock-outline</v-icon>
         <span class="section-label">Recently Added</span>
@@ -96,7 +101,7 @@
     </section>
 
     <!-- Recently Finished -->
-    <section v-if="progress.recentlyFinished.length || loadingFinished" class="section">
+    <section v-if="(progress.recentlyFinished.length || loadingFinished) && !isSectionHidden('recently-finished')" class="section">
       <div class="section-header">
         <v-icon size="16" color="rgba(255,255,255,0.35)">mdi-check-circle-outline</v-icon>
         <span class="section-label">Recently Finished</span>
@@ -123,7 +128,7 @@
     </section>
 
     <!-- Discover -->
-    <section v-if="progress.discover.length || loadingDiscover" class="section">
+    <section v-if="(progress.discover.length || loadingDiscover) && !isSectionHidden('discover')" class="section">
       <div class="section-header">
         <v-icon size="16" color="rgba(255,255,255,0.35)">mdi-shuffle-variant</v-icon>
         <span class="section-label">Discover</span>
@@ -187,6 +192,11 @@
     />
 
     <!-- Book detail sheet -->
+    <HomeCustomizeSheet
+      v-model="showCustomize"
+      :sections="HOME_SECTIONS"
+      @change="onCustomizeChange"
+    />
     <BookDetailSheet
       v-if="selectedItem && selectedItem.mediaType !== 'podcast'"
       :item="selectedItem"
@@ -263,6 +273,8 @@ import BookDetailSheet from '@/components/sheets/BookDetailSheet.vue'
 import PodcastDetailSheet from '@/components/sheets/PodcastDetailSheet.vue'
 import QuickActionsSheet from '@/components/sheets/QuickActionsSheet.vue'
 import SectionDetailSheet from '@/components/sheets/SectionDetailSheet.vue'
+import HomeCustomizeSheet from '@/components/sheets/HomeCustomizeSheet.vue'
+import type { HomeSection } from '@/components/sheets/HomeCustomizeSheet.vue'
 import type { LibraryItem } from '@/api/types'
 import { getAuthorDisplay } from '@/utils/metadata'
 import { getPlaylists, addItemToPlaylist } from '@/api/playlists'
@@ -282,6 +294,21 @@ const loadingRecent      = ref(false)
 const loadingFinished    = ref(false)
 const loadingDiscover    = ref(false)
 const allShelves         = ref<PersonalizedShelf[]>([])
+
+const HOME_SECTIONS: HomeSection[] = [
+  { id: 'continue-listening', label: 'Continue Listening', icon: 'mdi-play-circle-outline' },
+  { id: 'recently-added',     label: 'Recently Added',     icon: 'mdi-clock-outline' },
+  { id: 'recently-finished',  label: 'Recently Finished',  icon: 'mdi-check-circle-outline' },
+  { id: 'discover',           label: 'Discover',           icon: 'mdi-shuffle-variant' },
+]
+
+const showCustomize = ref(false)
+const hiddenSectionIds = ref<Set<string>>(new Set(JSON.parse(localStorage.getItem('abs_home_hidden_sections') ?? '[]')))
+
+function isSectionHidden(id: string) { return hiddenSectionIds.value.has(id) }
+function onCustomizeChange(_order: string[], hidden: string[]) {
+  hiddenSectionIds.value = new Set(hidden)
+}
 
 const BUILT_IN_SHELF_IDS = new Set(['continue-listening', 'recently-added', 'listen-again', 'downloaded-books'])
 const extraShelves = computed(() => allShelves.value.filter(s => !BUILT_IN_SHELF_IDS.has(s.id) && s.entities?.length > 0))
