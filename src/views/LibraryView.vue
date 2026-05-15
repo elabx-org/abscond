@@ -61,6 +61,22 @@
         >{{ f.label }}</button>
       </div>
 
+      <!-- Genre filter -->
+      <div v-if="availableGenres.length" class="filter-chips genre-chips">
+        <button
+          class="filter-chip"
+          :class="{ active: !genreFilter }"
+          @click="genreFilter = ''; page = 1"
+        >All genres</button>
+        <button
+          v-for="g in availableGenres"
+          :key="g"
+          class="filter-chip"
+          :class="{ active: genreFilter === g }"
+          @click="genreFilter = g; page = 1"
+        >{{ g }}</button>
+      </div>
+
       <!-- Inline search -->
       <div class="lib-search-wrap">
         <v-icon size="14" color="rgba(255,255,255,0.3)">mdi-magnify</v-icon>
@@ -261,10 +277,19 @@ const sortDesc     = ref(false)
 const pageSize     = 100
 const page         = ref(1)
 const searchQuery  = ref('')
+const genreFilter  = ref('')
 
 const items = computed(() =>
   lib.activeLibraryId ? lib.itemsFor(lib.activeLibraryId) : []
 )
+
+const availableGenres = computed(() => {
+  const genreSet = new Set<string>()
+  for (const item of items.value) {
+    for (const g of (item.media.metadata.genres ?? [])) genreSet.add(g)
+  }
+  return [...genreSet].sort()
+})
 
 const filteredItems = computed(() => {
   let all = items.value
@@ -274,6 +299,9 @@ const filteredItems = computed(() => {
       i.media.metadata.title.toLowerCase().includes(q) ||
       (i.media.metadata.authors ?? []).some(a => a.name.toLowerCase().includes(q))
     )
+  }
+  if (genreFilter.value) {
+    all = all.filter(i => (i.media.metadata.genres ?? []).includes(genreFilter.value))
   }
   if (progressFilter.value === 'all') return all
   if (progressFilter.value === 'in-progress') return all.filter(i => (i.userMediaProgress?.progress ?? 0) > 0 && !i.userMediaProgress?.isFinished)
@@ -331,6 +359,7 @@ async function init() {
 async function switchLibrary(id: string) {
   lib.setActiveLibrary(id)
   page.value = 1
+  genreFilter.value = ''
   if (!lib.itemsFor(id).length) await lib.fetchItems(id)
 }
 
