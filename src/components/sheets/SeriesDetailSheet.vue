@@ -9,11 +9,18 @@
               <button class="sheet-close" @click="$emit('close')">
                 <v-icon size="20">mdi-close</v-icon>
               </button>
-              <div class="series-icon">
-                <v-icon size="28" color="#d4a017">mdi-bookshelf</v-icon>
+              <div class="series-cover-head">
+                <img v-if="coverSrc && !loading" :src="coverSrc" class="series-cover-img" />
+                <div v-else class="series-icon">
+                  <v-icon size="28" color="#d4a017">mdi-bookshelf</v-icon>
+                </div>
               </div>
               <h3 class="series-name">{{ seriesName }}</h3>
               <p class="series-count">{{ books.length }} book{{ books.length !== 1 ? 's' : '' }}</p>
+              <button v-if="!loading && sortedBooks.length" class="play-all-btn" @click="playAll">
+                <v-icon size="14" color="#111">mdi-play</v-icon>
+                Play all
+              </button>
               <div v-if="!loading && books.length" class="series-progress-wrap">
                 <div class="series-progress-bar">
                   <div class="series-progress-fill" :style="{ width: `${finishedPct}%` }" />
@@ -29,9 +36,9 @@
               </div>
             </div>
 
-            <div v-else-if="books.length" class="book-grid">
+            <div v-else-if="sortedBooks.length" class="book-grid">
               <PortraitCard
-                v-for="b in books"
+                v-for="b in sortedBooks"
                 :key="b.id"
                 :item-id="b.id"
                 :title="b.media.metadata.title"
@@ -53,6 +60,7 @@ import { watch, ref, computed } from 'vue'
 import { coverUrl } from '@/api/client'
 import { useAuthStore } from '@/stores/auth'
 import { useLibraryStore } from '@/stores/library'
+import { usePlayerStore } from '@/stores/player'
 import { getSeriesBooks } from '@/api/browse'
 import PortraitCard from '@/components/cards/PortraitCard.vue'
 import type { LibraryItem } from '@/api/types'
@@ -69,10 +77,30 @@ defineEmits<{
   'open-book': [item: LibraryItem]
 }>()
 
-const auth  = useAuthStore()
-const lib   = useLibraryStore()
+const auth   = useAuthStore()
+const lib    = useLibraryStore()
+const player = usePlayerStore()
 const loading = ref(false)
 const books   = ref<LibraryItem[]>([])
+
+const sortedBooks = computed(() => {
+  return [...books.value].sort((a, b) => {
+    const seqA = parseFloat(a.media.metadata.series?.find((s: { id: string }) => s.id === props.seriesId)?.sequence ?? '999')
+    const seqB = parseFloat(b.media.metadata.series?.find((s: { id: string }) => s.id === props.seriesId)?.sequence ?? '999')
+    return seqA - seqB
+  })
+})
+
+const coverSrc = computed(() =>
+  sortedBooks.value[0] ? coverUrl(sortedBooks.value[0].id, auth.token ?? '') : ''
+)
+
+async function playAll() {
+  if (!sortedBooks.value.length) return
+  const [first, ...rest] = sortedBooks.value
+  await player.play(first)
+  rest.forEach(b => player.addToQueue(b))
+}
 
 const finishedCount = computed(() =>
   books.value.filter(b => b.userMediaProgress?.isFinished).length
@@ -104,7 +132,16 @@ watch(() => props.show, async (v) => {
 .sheet-content { flex: 1; overflow-y: auto; scrollbar-width: none; padding: 8px 16px 40px; }
 .sheet-close { background: transparent; border: none; cursor: pointer; color: rgba(255,255,255,0.5); padding: 4px; float: right; }
 .sheet-head { margin-bottom: 20px; text-align: center; padding-top: 8px; }
+.series-cover-head { margin: 0 auto 10px; clear: both; width: 80px; }
+.series-cover-img { width: 80px; height: 120px; border-radius: 8px; object-fit: cover; display: block; box-shadow: 0 4px 16px rgba(0,0,0,0.5); }
 .series-icon { width: 60px; height: 60px; border-radius: 50%; background: rgba(212,160,23,0.12); display: flex; align-items: center; justify-content: center; margin: 0 auto 10px; clear: both; }
+.play-all-btn {
+  display: inline-flex; align-items: center; gap: 5px;
+  background: #d4a017; border: none; border-radius: 20px;
+  padding: 7px 18px; font-size: 13px; font-weight: 600; color: #111;
+  cursor: pointer; margin: 8px auto 12px; transition: opacity 0.15s;
+}
+.play-all-btn:active { opacity: 0.8; }
 .series-name { font-size: 18px; font-weight: 700; color: rgba(255,255,255,0.9); margin: 0 0 4px; }
 .series-count { font-size: 12px; color: rgba(255,255,255,0.4); margin: 0 0 10px; }
 .series-progress-wrap { margin-top: 6px; }
