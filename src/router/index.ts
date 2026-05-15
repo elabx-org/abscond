@@ -20,16 +20,38 @@ const router = createRouter({
       redirect: '/home',
       component: () => import('@/components/shell/AppShell.vue'),
       children: [
-        { path: 'home',     name: 'home',     component: () => import('@/views/HomeView.vue') },
-        { path: 'library',  name: 'library',  component: () => import('@/views/LibraryView.vue') },
-        { path: 'player',   name: 'player',   component: () => import('@/views/PlayerView.vue') },
-        { path: 'search',   name: 'search',   component: () => import('@/views/SearchView.vue') },
-        { path: 'settings', name: 'settings', component: () => import('@/views/SettingsView.vue') },
+        { path: 'home',        name: 'home',        component: () => import('@/views/HomeView.vue') },
+        { path: 'library',     name: 'library',     component: () => import('@/views/LibraryView.vue') },
+        { path: 'player',      name: 'player',      component: () => import('@/views/PlayerView.vue') },
+        { path: 'search',      name: 'search',      component: () => import('@/views/SearchView.vue') },
+        { path: 'settings',    name: 'settings',    component: () => import('@/views/SettingsView.vue') },
+        { path: 'stats',       name: 'stats',       component: () => import('@/views/StatsView.vue') },
+        { path: 'collections', name: 'collections', component: () => import('@/views/CollectionsView.vue') },
+        {
+          path: 'admin',
+          component: () => import('@/views/admin/AdminLayout.vue'),
+          meta: { requiresAdmin: true },
+          children: [
+            { path: '',          redirect: 'libraries' },
+            { path: 'libraries', name: 'admin-libraries', component: () => import('@/views/admin/LibrariesView.vue') },
+            { path: 'users',     name: 'admin-users',     component: () => import('@/views/admin/UsersView.vue') },
+            { path: 'settings',  name: 'admin-settings',  component: () => import('@/views/admin/ServerSettingsView.vue') },
+            { path: 'backups',   name: 'admin-backups',   component: () => import('@/views/admin/BackupsView.vue') },
+            { path: 'logs',      name: 'admin-logs',      component: () => import('@/views/admin/LogsView.vue') },
+          ],
+        },
       ],
     },
   ],
 })
 
 router.beforeEach(createAuthGuard(() => useAuthStore()))
+
+router.beforeEach((to) => {
+  if (to.meta.requiresAdmin) {
+    const auth = useAuthStore()
+    if (!auth.user?.isAdminOrUp) return { name: 'settings' }
+  }
+})
 
 export default router

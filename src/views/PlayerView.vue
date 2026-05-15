@@ -75,13 +75,35 @@
           <button class="util-btn" @click="cycleSpeed">
             <span class="util-label">{{ player.playbackRate }}×</span>
           </button>
-          <button class="util-btn">
+          <button
+            class="util-btn"
+            :class="{ active: player.sleepMinsLeft !== null }"
+            @click="showSleepPicker = !showSleepPicker"
+          >
             <v-icon size="18">mdi-timer-outline</v-icon>
+            <span v-if="player.sleepMinsLeft" class="util-badge">{{ player.sleepMinsLeft }}m</span>
           </button>
           <button class="util-btn" @click="showChapters = !showChapters">
             <v-icon size="18">mdi-format-list-bulleted</v-icon>
           </button>
         </div>
+
+        <!-- Sleep timer picker -->
+        <Transition name="fade">
+          <div v-if="showSleepPicker" class="sleep-picker">
+            <p class="sleep-title">Sleep Timer</p>
+            <div class="sleep-opts">
+              <button
+                v-for="m in [5, 10, 15, 20, 30, 45, 60]"
+                :key="m"
+                class="sleep-opt"
+                :class="{ active: player.sleepMinsLeft === m }"
+                @click="setSleep(m)"
+              >{{ m }}m</button>
+              <button class="sleep-opt cancel" @click="setSleep(null)">Off</button>
+            </div>
+          </div>
+        </Transition>
 
         <!-- Chapter list -->
         <Transition name="fade">
@@ -113,9 +135,15 @@ import { coverUrl } from '@/api/client'
 const player = usePlayerStore()
 const auth   = useAuthStore()
 
-const showChapters = ref(false)
-const scrubberEl   = ref<HTMLElement | null>(null)
+const showChapters  = ref(false)
+const showSleepPicker = ref(false)
+const scrubberEl    = ref<HTMLElement | null>(null)
 let scrubbing = false
+
+function setSleep(mins: number | null) {
+  player.setSleepTimer(mins)
+  showSleepPicker.value = false
+}
 
 const coverSrc = computed(() =>
   player.currentItem ? coverUrl(player.currentItem.id, auth.token ?? '') : ''
@@ -277,6 +305,22 @@ function onChapterBarClick(e: MouseEvent) {
   cursor: pointer; color: rgba(255,255,255,0.6);
 }
 .util-label { font-size: 12px; font-weight: 600; }
+.util-btn.active { background: rgba(212,160,23,0.15); border-color: rgba(212,160,23,0.4); color: #d4a017; }
+.util-badge { font-size: 9px; margin-left: 2px; }
+
+.sleep-picker {
+  width: 100%; background: rgba(0,0,0,0.3); border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.06); padding: 12px 14px; margin-bottom: 12px;
+}
+.sleep-title { font-size: 11px; font-weight: 600; color: rgba(255,255,255,0.4); margin: 0 0 10px; text-transform: uppercase; }
+.sleep-opts { display: flex; flex-wrap: wrap; gap: 6px; }
+.sleep-opt {
+  font-size: 12px; padding: 5px 12px; border-radius: 20px; cursor: pointer;
+  background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.08);
+  color: rgba(255,255,255,0.6);
+}
+.sleep-opt.active { background: rgba(212,160,23,0.15); border-color: rgba(212,160,23,0.4); color: #d4a017; }
+.sleep-opt.cancel { color: rgba(255,255,255,0.35); }
 
 .chapters-wrap {
   width: 100%; max-height: 280px; overflow-y: auto; scrollbar-width: none;

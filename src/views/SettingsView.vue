@@ -113,9 +113,24 @@
       </div>
     </section>
 
+    <!-- Navigate -->
+    <section class="settings-section">
+      <p class="section-label">More</p>
+      <div class="settings-item" @click="router.push({ name: 'stats' })">
+        <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-chart-bar</v-icon>
+        <span class="item-label">Listening Stats</span>
+        <v-icon size="14" color="rgba(255,255,255,0.2)">mdi-chevron-right</v-icon>
+      </div>
+      <div class="settings-item" @click="router.push({ name: 'collections' })">
+        <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-bookmark-multiple-outline</v-icon>
+        <span class="item-label">Collections</span>
+        <v-icon size="14" color="rgba(255,255,255,0.2)">mdi-chevron-right</v-icon>
+      </div>
+    </section>
+
     <!-- Admin link -->
     <div v-if="auth.isAdmin" class="admin-link-wrap">
-      <button class="admin-link" @click="router.push('/admin')">
+      <button class="admin-link" @click="router.push({ name: 'admin-libraries' })">
         <v-icon size="18">mdi-shield-crown-outline</v-icon>
         Admin Panel
         <v-icon size="16" color="rgba(255,255,255,0.3)">mdi-chevron-right</v-icon>
