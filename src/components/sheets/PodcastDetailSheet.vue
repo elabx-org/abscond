@@ -22,15 +22,26 @@
               <div class="pod-meta">
                 <h2 class="pod-title">{{ item.media.metadata.title }}</h2>
                 <p class="pod-author">{{ getAuthorDisplay(item) || 'Unknown' }}</p>
-                <p class="pod-count">{{ episodes.length }} episodes</p>
+                <p class="pod-count">{{ rawEpisodes.length }} episodes</p>
               </div>
             </div>
 
-            <!-- View all link -->
-            <button class="view-all-btn" @click="viewAll">
-              <v-icon size="14">mdi-open-in-new</v-icon>
-              View all episodes
-            </button>
+            <!-- View all + controls -->
+            <div class="ep-controls">
+              <button class="view-all-btn" @click="viewAll">
+                <v-icon size="14">mdi-open-in-new</v-icon>
+                View all
+              </button>
+              <div class="ep-ctrl-right">
+                <button class="ep-ctrl-btn" :class="{ on: hideFinished }" @click="toggleHideFinished" title="Hide finished">
+                  <v-icon size="14">mdi-check-circle-outline</v-icon>
+                </button>
+                <button class="ep-ctrl-btn" @click="toggleSort" :title="newestFirst ? 'Newest first' : 'Oldest first'">
+                  <v-icon size="14">{{ newestFirst ? 'mdi-sort-descending' : 'mdi-sort-ascending' }}</v-icon>
+                  <span class="ep-ctrl-label">{{ newestFirst ? 'Newest' : 'Oldest' }}</span>
+                </button>
+              </div>
+            </div>
 
             <!-- Loading -->
             <div v-if="loading" class="ep-list">
@@ -76,7 +87,7 @@
 </template>
 
 <script setup lang="ts">
-import { watch, ref, computed } from 'vue'
+import { watch, ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { usePlayerStore } from '@/stores/player'
 import { useAuthStore } from '@/stores/auth'
@@ -97,8 +108,39 @@ defineEmits<{ close: [] }>()
 const router   = useRouter()
 const player   = usePlayerStore()
 const auth     = useAuthStore()
-const loading  = ref(false)
-const episodes = ref<PodcastEpisode[]>([])
+const loading      = ref(false)
+const rawEpisodes  = ref<PodcastEpisode[]>([])
+const newestFirst  = ref(true)
+const hideFinished = ref(false)
+
+const sortKey = computed(() => `podcast_sort_newest_${props.item.id}`)
+const hideKey = computed(() => `podcast_hide_finished_${props.item.id}`)
+
+onMounted(() => {
+  const s = localStorage.getItem(sortKey.value)
+  if (s !== null) newestFirst.value = s === 'true'
+  const h = localStorage.getItem(hideKey.value)
+  if (h !== null) hideFinished.value = h === 'true'
+})
+
+function toggleSort() {
+  newestFirst.value = !newestFirst.value
+  localStorage.setItem(sortKey.value, String(newestFirst.value))
+}
+
+function toggleHideFinished() {
+  hideFinished.value = !hideFinished.value
+  localStorage.setItem(hideKey.value, String(hideFinished.value))
+}
+
+const episodes = computed(() => {
+  let list = [...rawEpisodes.value]
+  if (hideFinished.value) list = list.filter(ep => !ep.userEpisodeProgress?.isFinished)
+  list.sort((a, b) => newestFirst.value
+    ? (b.publishedAt ?? 0) - (a.publishedAt ?? 0)
+    : (a.publishedAt ?? 0) - (b.publishedAt ?? 0))
+  return list
+})
 
 const activeEpisodeId = computed(() => player.session?.episodeId ?? null)
 
@@ -146,8 +188,8 @@ watch(() => props.show, async (v) => {
   loading.value = true
   try {
     const detail = await getPodcastItem(props.item.id)
-    episodes.value = (detail.media.episodes ?? []).sort((a, b) => (b.index ?? 0) - (a.index ?? 0))
-  } catch { episodes.value = [] }
+    rawEpisodes.value = detail.media.episodes ?? []
+  } catch { rawEpisodes.value = [] }
   finally { loading.value = false }
 }, { immediate: true })
 </script>
@@ -192,8 +234,21 @@ watch(() => props.show, async (v) => {
 .ep-play-btn { background: transparent; border: none; cursor: pointer; padding: 6px; flex-shrink: 0; }
 .ep-dl-btn  { background: transparent; border: none; cursor: pointer; padding: 6px; flex-shrink: 0; }
 
+.ep-controls {
+  display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;
+}
+.ep-ctrl-right { display: flex; align-items: center; gap: 6px; }
+.ep-ctrl-btn {
+  display: flex; align-items: center; gap: 4px; padding: 5px 10px;
+  background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 20px; cursor: pointer; color: rgba(255,255,255,0.45);
+  font-size: 10px; transition: all 0.15s;
+}
+.ep-ctrl-btn.on { background: rgba(212,160,23,0.12); border-color: rgba(212,160,23,0.3); color: #d4a017; }
+.ep-ctrl-label { font-size: 10px; }
+
 .view-all-btn {
-  display: flex; align-items: center; gap: 6px; margin: 0 0 16px;
+  display: flex; align-items: center; gap: 6px;
   font-size: 11px; color: rgba(212,160,23,0.8); background: transparent;
   border: none; cursor: pointer; padding: 0;
 }
