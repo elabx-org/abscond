@@ -1,6 +1,5 @@
 <template>
   <div class="admin-layout">
-    <!-- Admin top bar -->
     <div class="admin-topbar">
       <button class="back-btn" @click="router.push({ name: 'settings' })">
         <v-icon size="20">mdi-arrow-left</v-icon>
@@ -8,7 +7,6 @@
       <span class="admin-title">Admin Panel</span>
     </div>
 
-    <!-- Admin sub-nav -->
     <div class="admin-subnav">
       <button
         v-for="tab in tabs"
@@ -22,7 +20,6 @@
       </button>
     </div>
 
-    <!-- Content -->
     <div class="admin-content">
       <router-view />
     </div>
@@ -36,12 +33,14 @@ const route  = useRoute()
 const router = useRouter()
 
 const tabs = [
-  { name: 'admin-libraries', label: 'Libraries', icon: 'mdi-bookshelf' },
-  { name: 'admin-users',     label: 'Users',     icon: 'mdi-account-group' },
-  { name: 'admin-settings',  label: 'Settings',  icon: 'mdi-cog' },
-  { name: 'admin-backups',   label: 'Backups',   icon: 'mdi-backup-restore' },
-  { name: 'admin-logs',      label: 'Logs',      icon: 'mdi-text-box-outline' },
-  { name: 'admin-upload',    label: 'Upload',    icon: 'mdi-upload' },
+  { name: 'admin-overview',       label: 'Overview',       icon: 'mdi-view-dashboard-outline' },
+  { name: 'admin-libraries',      label: 'Libraries',      icon: 'mdi-bookshelf' },
+  { name: 'admin-users',          label: 'Users',          icon: 'mdi-account-group' },
+  { name: 'admin-settings',       label: 'Settings',       icon: 'mdi-cog' },
+  { name: 'admin-backups',        label: 'Backups',        icon: 'mdi-backup-restore' },
+  { name: 'admin-notifications',  label: 'Notifications',  icon: 'mdi-bell-outline' },
+  { name: 'admin-logs',           label: 'Logs',           icon: 'mdi-text-box-outline' },
+  { name: 'admin-upload',         label: 'Upload',         icon: 'mdi-upload' },
 ]
 </script>
 
@@ -50,9 +49,9 @@ const tabs = [
 
 .admin-topbar {
   display: flex; align-items: center; gap: 12px;
-  padding: 14px 12px; border-bottom: 1px solid rgba(255,255,255,0.06);
+  padding: 14px 16px; border-bottom: 1px solid rgba(255,255,255,0.06);
   position: sticky; top: 0; z-index: 10;
-  background: rgba(14,14,14,0.9); backdrop-filter: blur(12px);
+  background: rgba(14,14,14,0.92); backdrop-filter: blur(12px);
 }
 .back-btn {
   background: transparent; border: none; cursor: pointer;
@@ -63,7 +62,7 @@ const tabs = [
 .admin-subnav {
   display: flex; overflow-x: auto; scrollbar-width: none;
   border-bottom: 1px solid rgba(255,255,255,0.06);
-  padding: 0 12px;
+  padding: 0 16px;
 }
 .admin-subnav::-webkit-scrollbar { display: none; }
 .subnav-tab {
@@ -74,5 +73,16 @@ const tabs = [
 }
 .subnav-tab.active { color: #d4a017; border-bottom-color: #d4a017; }
 
-.admin-content { padding: 16px 12px 60px; }
+.admin-content { padding: 16px 16px 80px; }
+
+@media (min-width: 768px) {
+  .admin-topbar { padding: 14px 32px; }
+  .admin-subnav { padding: 0 32px; }
+  .admin-content { padding: 24px 32px 80px; max-width: 1100px; margin: 0 auto; }
+  .subnav-tab { padding: 12px 18px; font-size: 13px; }
+}
+
+@media (min-width: 1280px) {
+  .admin-content { max-width: 1200px; }
+}
 </style>
