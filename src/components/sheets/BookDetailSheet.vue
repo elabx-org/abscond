@@ -119,6 +119,22 @@
                 {{ coverSaving ? 'Updating…' : 'Update cover' }}
               </button>
 
+              <!-- Quick match -->
+              <div class="qmatch-row">
+                <select v-model="matchProvider" class="edit-input" style="flex:1;margin:0">
+                  <option value="audible">Audible</option>
+                  <option value="openlibrary">Open Library</option>
+                  <option value="itunes">iTunes</option>
+                  <option value="audible.ca">Audible CA</option>
+                  <option value="audible.uk">Audible UK</option>
+                </select>
+                <button class="qmatch-btn" :disabled="matchLoading" @click="doQuickMatch">
+                  <v-icon size="14">{{ matchLoading ? 'mdi-loading' : 'mdi-magnify' }}</v-icon>
+                  {{ matchLoading ? 'Matching…' : 'Quick Match' }}
+                </button>
+              </div>
+              <p v-if="matchMsg" class="match-msg" :class="{ ok: matchOk }">{{ matchMsg }}</p>
+
               <input v-model="editMeta.title" class="edit-input" placeholder="Title" />
               <input v-model="editMeta.subtitle" class="edit-input" placeholder="Subtitle" />
               <input v-model="editMeta.authorNames" class="edit-input" placeholder="Authors (comma-separated)" />
@@ -234,6 +250,7 @@ import type { Playlist } from '@/api/playlists'
 import { getCollections, addBookToCollection } from '@/api/collections'
 import type { Collection } from '@/api/collections'
 import { createShareLink, removeShareLink } from '@/api/share'
+import { matchItem } from '@/api/items'
 import type { ShareLink } from '@/api/share'
 import type { LibraryItem, Series, Author } from '@/api/types'
 
@@ -271,6 +288,24 @@ const showEdit          = ref(false)
 const editSaving        = ref(false)
 const editError         = ref('')
 const editMeta          = ref({ title: '', subtitle: '', authorNames: '', narratorNames: '', publishedYear: '', publisher: '', genres: '', tags: '', description: '' })
+const matchProvider     = ref('audible')
+const matchLoading      = ref(false)
+const matchMsg          = ref('')
+const matchOk           = ref(false)
+
+async function doQuickMatch() {
+  matchLoading.value = true
+  matchMsg.value     = ''
+  try {
+    const result = await matchItem(props.itemId, matchProvider.value, editMeta.value.title, editMeta.value.authorNames || undefined)
+    matchOk.value  = result.updated
+    matchMsg.value = result.updated ? 'Metadata updated from provider' : 'No match found'
+  } catch {
+    matchOk.value  = false
+    matchMsg.value = 'Match request failed'
+  } finally { matchLoading.value = false }
+}
+
 const coverUrl_         = ref('')
 const coverFile         = ref<File | null>(null)
 const coverFileInput    = ref<HTMLInputElement | null>(null)
@@ -611,6 +646,15 @@ async function doSaveMeta() {
 }
 .edit-input::placeholder { color: rgba(255,255,255,0.3); }
 .edit-textarea { height: 80px; resize: none; line-height: 1.5; }
+.qmatch-row { display: flex; gap: 8px; align-items: center; width: 100%; margin-bottom: 6px; }
+.qmatch-btn {
+  display: flex; align-items: center; gap: 5px; white-space: nowrap; padding: 8px 12px;
+  border-radius: 8px; background: rgba(212,160,23,0.12); border: 1px solid rgba(212,160,23,0.25);
+  color: #d4a017; font-size: 11px; cursor: pointer; flex-shrink: 0;
+}
+.qmatch-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.match-msg { font-size: 11px; color: rgba(255,255,255,0.4); margin: 0 0 6px; }
+.match-msg.ok { color: #22c55e; }
 .cover-update-row { display: flex; gap: 8px; align-items: center; width: 100%; }
 .cover-upload-btn {
   display: flex; align-items: center; justify-content: center;
