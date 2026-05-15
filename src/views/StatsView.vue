@@ -85,6 +85,7 @@
         </div>
         <div class="session-rows">
           <div v-for="s in sessions" :key="s.id" class="session-row">
+            <img :src="coverUrl(s.libraryItemId, auth.token ?? '')" class="session-cover" />
             <div class="session-meta">
               <p class="session-title">{{ s.displayTitle }}</p>
               <p class="session-sub">{{ s.displayAuthor }} · {{ formatDate(s.updatedAt) }}</p>
@@ -104,9 +105,12 @@
 import { onMounted, ref, computed } from 'vue'
 import { getUserStats, getLibraryStats, getListeningSessions } from '@/api/stats'
 import { useLibraryStore } from '@/stores/library'
+import { useAuthStore } from '@/stores/auth'
+import { coverUrl } from '@/api/client'
 import type { UserStats, LibraryStats, ListeningSession } from '@/api/stats'
 
-const lib     = useLibraryStore()
+const lib  = useLibraryStore()
+const auth = useAuthStore()
 const loading     = ref(true)
 const loadingMore = ref(false)
 const sessionPage = ref(0)
@@ -281,6 +285,7 @@ onMounted(async () => {
   padding: 10px 14px; border-bottom: 1px solid rgba(255,255,255,0.04);
 }
 .session-row:last-child { border-bottom: none; }
+.session-cover { width: 40px; height: 40px; border-radius: 6px; object-fit: cover; flex-shrink: 0; background: #1a1a1a; }
 .session-meta { flex: 1; min-width: 0; }
 .session-title {
   font-size: 12px; font-weight: 600; color: rgba(255,255,255,0.8);
