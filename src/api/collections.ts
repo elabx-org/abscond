@@ -22,3 +22,11 @@ export async function createCollection(name: string, description: string, librar
 export async function deleteCollection(id: string): Promise<void> {
   await api.delete(`/collections/${id}`)
 }
+
+export async function addBookToCollection(collectionId: string, bookId: string): Promise<void> {
+  await api.post(`/collections/${collectionId}/book`, { id: bookId })
+}
+
+export async function removeBookFromCollection(collectionId: string, bookId: string): Promise<void> {
+  await api.delete(`/collections/${collectionId}/book/${bookId}`)
+}

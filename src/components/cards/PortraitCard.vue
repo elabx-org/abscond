@@ -20,10 +20,13 @@
         <v-icon size="32" color="rgba(255,255,255,0.2)">mdi-book-open-variant</v-icon>
       </div>
       <div
-        v-if="(progress ?? 0) > 0"
+        v-if="(progress ?? 0) > 0 && (progress ?? 0) < 1"
         class="progress-bar"
         :style="{ width: `${Math.round((progress ?? 0) * 100)}%`, background: accent }"
       />
+      <div v-if="(progress ?? 0) >= 1" class="finished-badge">
+        <v-icon size="10" color="white">mdi-check</v-icon>
+      </div>
       <Transition name="check">
         <div v-if="selected" class="select-overlay">
           <v-icon size="20" color="white">mdi-check</v-icon>
@@ -87,6 +90,7 @@ function cancelLongPress() {
 .cover-img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .cover-placeholder { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; }
 .progress-bar { position: absolute; bottom: 0; left: 0; height: 3px; border-radius: 0 2px 0 0; transition: width 0.3s; }
+.finished-badge { position: absolute; top: 4px; right: 4px; width: 18px; height: 18px; border-radius: 50%; background: #22c55e; display: flex; align-items: center; justify-content: center; }
 .select-overlay {
   position: absolute; inset: 0; background: rgba(212,160,23,0.3);
   display: flex; align-items: center; justify-content: center;

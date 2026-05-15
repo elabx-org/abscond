@@ -87,6 +87,10 @@
                 <v-icon size="16">mdi-playlist-plus</v-icon>
                 Playlist
               </button>
+              <button class="action-btn" @click="showCollectionAdd = true">
+                <v-icon size="16">mdi-bookmark-plus-outline</v-icon>
+                Collection
+              </button>
             </div>
 
             <!-- Playlist picker -->
@@ -102,6 +106,21 @@
                 <p v-if="!playlists.length" class="pls-empty">No playlists — create one in the Playlists tab</p>
               </div>
               <button class="pls-cancel" @click="showPlaylistAdd = false">Cancel</button>
+            </div>
+
+            <!-- Collection picker -->
+            <div v-if="showCollectionAdd" class="playlist-inline">
+              <p class="playlist-inline-title">Add to collection</p>
+              <div v-if="loadingCols" class="pls-loading">Loading…</div>
+              <div v-else class="pls-list">
+                <button v-for="col in collections" :key="col.id" class="pls-row" @click="addToCollection(col.id)">
+                  <v-icon size="14" color="rgba(255,255,255,0.5)">mdi-bookmark-multiple-outline</v-icon>
+                  <span>{{ col.name }}</span>
+                  <span class="pls-count">{{ col.books.length }}</span>
+                </button>
+                <p v-if="!collections.length" class="pls-empty">No collections — create one in Collections</p>
+              </div>
+              <button class="pls-cancel" @click="showCollectionAdd = false">Cancel</button>
             </div>
 
             <!-- Description -->
@@ -151,6 +170,8 @@ import { getDirectDownloadUrl } from '@/api/downloads'
 import { getBaseUrl } from '@/api/client'
 import { getPlaylists, addItemToPlaylist } from '@/api/playlists'
 import type { Playlist } from '@/api/playlists'
+import { getCollections, addBookToCollection } from '@/api/collections'
+import type { Collection } from '@/api/collections'
 import type { LibraryItem, Series, Author } from '@/api/types'
 
 const props = defineProps<{
@@ -174,9 +195,12 @@ const activeSeriesId   = ref('')
 const activeSeriesName = ref('')
 const activeAuthorId   = ref('')
 const activeAuthorName = ref('')
-const showPlaylistAdd = ref(false)
-const playlists       = ref<Playlist[]>([])
-const loadingPls      = ref(false)
+const showPlaylistAdd  = ref(false)
+const playlists        = ref<Playlist[]>([])
+const loadingPls       = ref(false)
+const showCollectionAdd = ref(false)
+const collections       = ref<Collection[]>([])
+const loadingCols       = ref(false)
 
 function openSeries(s: Series) {
   activeSeriesId.value   = s.id
@@ -248,7 +272,7 @@ const durationLabel = computed(() => {
 const progress = computed(() => props.item.userMediaProgress?.progress ?? 0)
 
 watch(() => props.show, (v) => {
-  if (v) { descExpanded.value = false; showPlaylistAdd.value = false }
+  if (v) { descExpanded.value = false; showPlaylistAdd.value = false; showCollectionAdd.value = false }
 })
 
 watch(showPlaylistAdd, async (v) => {
@@ -262,6 +286,19 @@ watch(showPlaylistAdd, async (v) => {
 async function addToPlaylist(playlistId: string) {
   await addItemToPlaylist(playlistId, props.item.id).catch(() => {})
   showPlaylistAdd.value = false
+}
+
+watch(showCollectionAdd, async (v) => {
+  if (!v || collections.value.length) return
+  loadingCols.value = true
+  try { collections.value = await getCollections() }
+  catch { collections.value = [] }
+  finally { loadingCols.value = false }
+})
+
+async function addToCollection(collectionId: string) {
+  await addBookToCollection(collectionId, props.item.id).catch(() => {})
+  showCollectionAdd.value = false
 }
 </script>
 
