@@ -23,11 +23,18 @@ export const useProgressStore = defineStore('progress', () => {
   async function fetchRecentlyFinished(libraryId: string) {
     try {
       const res = await api.get(`/libraries/${libraryId}/items`, {
-        params: { limit: 20, sort: 'progress.finishedAt', desc: 1, filter: 'progress.finished-eq-true' },
+        params: { limit: 40, sort: 'addedAt', desc: 1, filter: 'progress.finished' },
       })
-      recentlyFinished.value = (res.data.results ?? []).filter(
+      // Sort by finishedAt client-side if available
+      const finished = (res.data.results ?? []).filter(
         (item: LibraryItem) => item.userMediaProgress?.isFinished
       )
+      finished.sort((a: LibraryItem, b: LibraryItem) => {
+        const ta = a.userMediaProgress?.finishedAt ?? 0
+        const tb = b.userMediaProgress?.finishedAt ?? 0
+        return tb - ta
+      })
+      recentlyFinished.value = finished.slice(0, 20)
     } catch {
       recentlyFinished.value = []
     }

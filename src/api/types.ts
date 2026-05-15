@@ -22,6 +22,7 @@ export interface MediaProgress {
   duration: number
   isFinished: boolean
   lastUpdate: number
+  finishedAt?: number
 }
 
 export interface LibraryItemMedia {
