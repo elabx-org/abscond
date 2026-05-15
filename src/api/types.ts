@@ -23,6 +23,7 @@ export interface MediaProgress {
   isFinished: boolean
   lastUpdate: number
   finishedAt?: number
+  rating?: number | null
 }
 
 export interface LibraryItemMedia {
