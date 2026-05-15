@@ -9,6 +9,11 @@
 
     <!-- Player (active or recent-only) -->
     <div v-else class="player-wrap">
+      <!-- Edge book progress bar -->
+      <div v-if="player.currentItem" class="edge-progress-bar">
+        <div class="edge-progress-fill" :style="{ width: `${player.progress * 100}%` }" />
+      </div>
+
       <!-- Blurred backdrop from active item or first recent -->
       <div class="player-backdrop">
         <Transition name="backdrop">
@@ -97,8 +102,9 @@
           </div>
 
           <div class="time-row">
-            <span class="time-label">{{ formatTime(player.currentTime) }}</span>
-            <span class="time-label">-{{ formatTime(player.duration - player.currentTime) }}</span>
+            <span class="time-label">{{ formatTime(speedAdjustedElapsed) }}</span>
+            <span class="time-pct">{{ progressPct }}%</span>
+            <span class="time-label">-{{ formatTime(speedAdjustedRemaining) }}</span>
           </div>
 
           <!-- Chapter nav row -->
@@ -414,6 +420,21 @@ const chapterMarkers = computed(() => {
     .map(ch => (ch.start / player.duration) * 100)
 })
 
+// ── Speed-adjusted time display ───────────────────────────────────────────────
+const speedAdjustedElapsed = computed(() => {
+  const rate = player.playbackRate || 1
+  return player.currentTime / rate
+})
+const speedAdjustedRemaining = computed(() => {
+  const rate = player.playbackRate || 1
+  return (player.duration - player.currentTime) / rate
+})
+const progressPct = computed(() =>
+  player.duration > 0
+    ? ((player.currentTime / player.duration) * 100).toFixed(1)
+    : '0.0'
+)
+
 // ── Controls ──────────────────────────────────────────────────────────────────
 function setSleep(mins: number | null) { player.setSleepTimer(mins); showSleepPicker.value = false }
 function setSleepEoc() { player.setSleepTimer(null, true); showSleepPicker.value = false }
@@ -482,6 +503,16 @@ function onChapterBarClick(e: MouseEvent) {
 
 /* ── Player wrap ─────────────────────────────────────────────────────────────── */
 .player-wrap { flex: 1; position: relative; overflow: hidden; min-height: 100vh; }
+
+/* Edge progress bar (thin strip at very top of player) */
+.edge-progress-bar {
+  position: absolute; top: 0; left: 0; right: 0; height: 3px;
+  background: rgba(255,255,255,0.07); z-index: 10;
+}
+.edge-progress-fill {
+  height: 100%; background: #d4a017;
+  transition: width 0.5s linear; border-radius: 0 2px 2px 0;
+}
 
 .player-backdrop { position: absolute; inset: 0; z-index: 0; }
 .backdrop-img {
@@ -582,8 +613,9 @@ function onChapterBarClick(e: MouseEvent) {
   background: rgba(0,0,0,0.5); pointer-events: none; border-radius: 1px;
 }
 
-.time-row { display: flex; justify-content: space-between; margin-top: 2px; margin-bottom: 8px; }
+.time-row { display: flex; justify-content: space-between; align-items: center; margin-top: 2px; margin-bottom: 8px; }
 .time-label { font-size: 11px; color: rgba(255,255,255,0.4); }
+.time-pct   { font-size: 11px; font-weight: 600; color: rgba(255,255,255,0.55); }
 
 .chapter-nav-row {
   display: flex; align-items: center; justify-content: space-between;
