@@ -345,7 +345,7 @@ const allSections = computed<HomeSection[]>(() => {
   return result
 })
 
-const BUILT_IN_SHELF_IDS = new Set(['continue-listening', 'recently-added', 'listen-again', 'downloaded-books'])
+const BUILT_IN_SHELF_IDS = new Set(['continue-listening', 'recently-added', 'downloaded-books'])
 
 const hideEbookOnly = ref(localStorage.getItem('abs_lib_hide_ebook') === 'true')
 function isEbookOnlyItem(item: LibraryItem): boolean {
