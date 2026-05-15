@@ -34,6 +34,17 @@
               <v-icon size="14">mdi-rss</v-icon>
               <span>Add</span>
             </button>
+            <button
+              v-if="lib.mediaType === 'podcast'"
+              class="scan-btn"
+              :class="{ scanning: checkingEpId === lib.id }"
+              :disabled="!!checkingEpId"
+              @click="checkEpisodes(lib.id)"
+              title="Check all podcasts for new episodes"
+            >
+              <v-icon size="16">{{ checkingEpId === lib.id ? 'mdi-loading' : 'mdi-refresh' }}</v-icon>
+              <span>{{ checkingEpId === lib.id ? `${checkEpProgress}/${checkEpTotal}` : 'Check' }}</span>
+            </button>
             <button class="scan-btn" :class="{ scanning: scanningId === lib.id }" @click="scan(lib.id)">
               <v-icon size="16">{{ scanningId === lib.id ? 'mdi-loading' : 'mdi-magnify-scan' }}</v-icon>
               <span>{{ scanningId === lib.id ? 'Scanning…' : 'Scan' }}</span>
@@ -192,7 +203,7 @@
 
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
-import { getAdminLibraries, scanLibrary, getPodcastFeed, addPodcast, createLibrary, updateLibrary, deleteLibrary } from '@/api/admin'
+import { getAdminLibraries, scanLibrary, getPodcastFeed, addPodcast, createLibrary, updateLibrary, deleteLibrary, checkNewPodcastEpisodes, getLibraryPodcastItems } from '@/api/admin'
 import type { AdminLibrary, PodcastFeedInfo } from '@/api/admin'
 import { useSocketStore } from '@/stores/socket'
 
@@ -200,7 +211,10 @@ const socket = useSocketStore()
 
 const loading    = ref(true)
 const libraries  = ref<AdminLibrary[]>([])
-const scanningId = ref<string | null>(null)
+const scanningId     = ref<string | null>(null)
+const checkingEpId   = ref<string | null>(null)
+const checkEpProgress = ref(0)
+const checkEpTotal    = ref(0)
 
 const showCreateLib = ref(false)
 const libName       = ref('')
@@ -235,6 +249,24 @@ async function scan(id: string) {
   scanningId.value = id
   try { await scanLibrary(id) } catch { /* ignore */ }
   finally { scanningId.value = null }
+}
+
+async function checkEpisodes(libId: string) {
+  checkingEpId.value    = libId
+  checkEpProgress.value = 0
+  try {
+    const items = await getLibraryPodcastItems(libId)
+    checkEpTotal.value = items.length
+    for (const item of items) {
+      if (!item.id) continue
+      try { await checkNewPodcastEpisodes(item.id) } catch { /* per-item errors are non-fatal */ }
+      checkEpProgress.value++
+    }
+  } finally {
+    checkingEpId.value = null
+    checkEpProgress.value = 0
+    checkEpTotal.value    = 0
+  }
 }
 
 function formatDate(ts: number) {

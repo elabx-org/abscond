@@ -162,3 +162,13 @@ export async function getPodcastFeed(feedUrl: string): Promise<PodcastFeedInfo> 
 export async function addPodcast(rssUrl: string, libraryId: string, folderId: string): Promise<void> {
   await api.post('/podcasts', { rssUrl, libraryId, folderId, autoDownloadEpisodes: true })
 }
+
+export async function checkNewPodcastEpisodes(itemId: string): Promise<number> {
+  const res = await api.get(`/podcasts/${itemId}/checknew`)
+  return (res.data?.episodes as unknown[])?.length ?? 0
+}
+
+export async function getLibraryPodcastItems(libraryId: string): Promise<{ id: string }[]> {
+  const res = await api.get(`/libraries/${libraryId}/items`, { params: { limit: 200, page: 0 } })
+  return (res.data?.results ?? []).map((r: { id?: string; libraryItem?: { id: string } }) => ({ id: r.id ?? r.libraryItem?.id ?? '' }))
+}
