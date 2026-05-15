@@ -422,7 +422,7 @@ async function resumeItem(item: LibraryItem) {
     if (!player.isPlaying) router.push({ name: 'player' })
     return
   }
-  await player.play(item)
+  await player.play(item, item.userMediaProgress?.episodeId ?? undefined)
   router.push({ name: 'player' })
 }
 
