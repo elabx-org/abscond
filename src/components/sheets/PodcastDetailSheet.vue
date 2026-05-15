@@ -63,6 +63,9 @@
                     {{ isEpPlaying(ep.id) ? 'mdi-pause' : 'mdi-play' }}
                   </v-icon>
                 </button>
+                <button class="ep-dl-btn" @click.stop="downloadEpisode(ep)">
+                  <v-icon size="16" color="rgba(255,255,255,0.35)">mdi-download-outline</v-icon>
+                </button>
               </div>
             </div>
           </div>
@@ -76,7 +79,9 @@
 import { watch, ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { usePlayerStore } from '@/stores/player'
+import { useAuthStore } from '@/stores/auth'
 import { getPodcastItem } from '@/api/browse'
+import { getBaseUrl } from '@/api/client'
 import type { LibraryItem } from '@/api/types'
 import type { PodcastEpisode } from '@/api/browse'
 
@@ -90,6 +95,7 @@ defineEmits<{ close: [] }>()
 
 const router   = useRouter()
 const player   = usePlayerStore()
+const auth     = useAuthStore()
 const loading  = ref(false)
 const episodes = ref<PodcastEpisode[]>([])
 
@@ -111,6 +117,16 @@ async function playEpisode(ep: PodcastEpisode) {
 
 function formatDate(ts: number) {
   return new Date(ts).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })
+}
+
+async function downloadEpisode(ep: PodcastEpisode) {
+  const base  = await getBaseUrl()
+  const token = auth.token ?? ''
+  const url   = `${base}/items/${props.item.id}/episode/${ep.id}/download?token=${encodeURIComponent(token)}`
+  const a     = document.createElement('a')
+  a.href      = url
+  a.download  = `${ep.title}.mp3`
+  a.click()
 }
 
 function formatDuration(secs: number) {
@@ -169,6 +185,7 @@ watch(() => props.show, async (v) => {
 .ep-progress-bar { height: 100%; background: #d4a017; }
 .ep-finished { font-size: 10px; color: #22c55e; margin: 2px 0 0; }
 .ep-play-btn { background: transparent; border: none; cursor: pointer; padding: 6px; flex-shrink: 0; }
+.ep-dl-btn  { background: transparent; border: none; cursor: pointer; padding: 6px; flex-shrink: 0; }
 
 .view-all-btn {
   display: flex; align-items: center; gap: 6px; margin: 0 0 16px;
