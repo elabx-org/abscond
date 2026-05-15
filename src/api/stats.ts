@@ -1,10 +1,20 @@
 import { api } from './client'
 
 export interface UserStats {
-  totalListeningTime: number
-  totalBooksFinished: number
-  totalPodcastsFinished: number
-  booksListeningStats: { totalTime: number }
+  totalTime: number
+  totalListeningTime?: number   // some ABS versions use this alias
+  totalBooksFinished?: number
+  booksListeningStats?: {
+    totalTime: number
+    completedBooks: number
+    numBooks: number
+    days?: Record<string, number>
+  }
+  podcastListeningStats?: {
+    totalTime: number
+    completedPodcasts: number
+    completedEpisodes: number
+  }
   days?: Record<string, number>
 }
 

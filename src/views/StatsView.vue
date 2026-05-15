@@ -14,7 +14,7 @@
           <p class="stat-label">Total listening</p>
         </div>
         <div class="stat-card">
-          <p class="stat-value">{{ userStats?.totalBooksFinished ?? 0 }}</p>
+          <p class="stat-value">{{ totalBooksFinished }}</p>
           <p class="stat-label">Books finished</p>
         </div>
         <div class="stat-card" v-if="libStats">
@@ -121,14 +121,20 @@ const sessions     = ref<ListeningSession[]>([])
 const sessionTotal = ref(0)
 
 const totalHours = computed(() => {
-  const secs = userStats.value?.totalListeningTime ?? 0
+  const secs = userStats.value?.totalTime ?? userStats.value?.totalListeningTime ?? 0
   return Math.round(secs / 3600)
 })
+
+const totalBooksFinished = computed(() =>
+  userStats.value?.booksListeningStats?.completedBooks
+  ?? userStats.value?.totalBooksFinished
+  ?? 0
+)
 
 const DAY_ABBR = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa']
 
 const chartData = computed(() => {
-  const days = userStats.value?.days
+  const days = userStats.value?.days ?? userStats.value?.booksListeningStats?.days
   if (!days) return []
   const now = Date.now()
   const todayKey = new Date().toISOString().slice(0, 10)

@@ -121,10 +121,12 @@ export interface SearchResult {
 }
 
 export interface UserStats {
-  totalListeningTime: number
-  totalBooksFinished: number
-  totalPodcastsFinished: number
-  booksListeningStats: { totalTime: number }
+  totalTime: number
+  totalListeningTime?: number
+  totalBooksFinished?: number
+  booksListeningStats?: { totalTime: number; completedBooks: number; numBooks: number; days?: Record<string, number> }
+  podcastListeningStats?: { totalTime: number; completedPodcasts: number; completedEpisodes: number }
+  days?: Record<string, number>
 }
 
 export interface UserListeningStat {
