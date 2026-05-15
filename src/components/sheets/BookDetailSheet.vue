@@ -107,6 +107,8 @@
               <span v-if="item.media.metadata.publisher" class="chip">{{ item.media.metadata.publisher }}</span>
               <span v-for="g in (item.media.metadata.genres ?? []).slice(0, 4)" :key="g" class="chip">{{ g }}</span>
               <span v-for="t in (item.tags ?? []).slice(0, 3)" :key="t" class="chip chip--tag">{{ t }}</span>
+              <span v-if="startedDateLabel" class="chip chip--date">▶ {{ startedDateLabel }}</span>
+              <span v-if="finishedDateLabel" class="chip chip--date chip--finished">✓ {{ finishedDateLabel }}</span>
             </div>
 
             <!-- Action row -->
@@ -655,6 +657,18 @@ const durationLabel = computed(() => {
 
 const progress = computed(() => props.item.userMediaProgress?.progress ?? 0)
 
+function _fmtDate(ms: number): string {
+  return new Date(ms).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })
+}
+const startedDateLabel  = computed(() => {
+  const t = props.item.userMediaProgress?.startedAt
+  return t ? _fmtDate(t) : ''
+})
+const finishedDateLabel = computed(() => {
+  const t = props.item.userMediaProgress?.finishedAt
+  return t ? _fmtDate(t) : ''
+})
+
 const userRating = ref(props.item.userMediaProgress?.rating ?? 0)
 
 async function setRating(stars: number) {
@@ -960,6 +974,8 @@ async function doSaveMeta() {
   color: rgba(255,255,255,0.55);
 }
 .chip--tag { background: rgba(212,160,23,0.08); border-color: rgba(212,160,23,0.2); color: rgba(212,160,23,0.8); }
+.chip--date { background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.08); color: rgba(255,255,255,0.4); }
+.chip--finished { color: rgba(34,197,94,0.7); border-color: rgba(34,197,94,0.2); background: rgba(34,197,94,0.06); }
 .chapters-section { margin: 12px 0 4px; }
 .chapters-toggle {
   display: flex; align-items: center; gap: 8px; width: 100%;

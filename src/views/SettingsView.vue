@@ -130,6 +130,17 @@
           >{{ s }}s</button>
         </div>
       </div>
+
+      <div class="settings-item" @click="toggleSleepFade">
+        <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-volume-minus</v-icon>
+        <div class="item-label-stack">
+          <span class="item-label">Fade volume before sleep</span>
+          <span class="item-sublabel">Gradually lower volume during the last 30 seconds</span>
+        </div>
+        <div class="toggle-pill" :class="{ on: sleepFadeEnabled }">
+          <div class="toggle-thumb" />
+        </div>
+      </div>
     </section>
 
     <!-- Server -->
@@ -490,6 +501,12 @@ const skipFwdSecs = computed({
 
 const skipIntervalOptions = [10, 15, 30, 45, 60]
 const rewindOptions = [5, 10, 20, 30, 60]
+
+const sleepFadeEnabled = ref(localStorage.getItem('abs_sleep_fade') !== 'false')
+function toggleSleepFade() {
+  sleepFadeEnabled.value = !sleepFadeEnabled.value
+  localStorage.setItem('abs_sleep_fade', String(sleepFadeEnabled.value))
+}
 
 function savePlaybackRate() {
   localStorage.setItem('abs_playback_rate', String(playbackRate.value))

@@ -43,6 +43,8 @@ export const usePlayerStore = defineStore('player', () => {
   let seekSyncTimer: ReturnType<typeof setTimeout> | null = null
   let sleepTimer: ReturnType<typeof setTimeout> | null = null
   let sleepCountdown: ReturnType<typeof setInterval> | null = null
+  let sleepFadeStartVol = 1
+  const SLEEP_FADE_SECS = 30
   let syncedAt = 0
   let timeListenedAccum = 0
   let trackStartOffset = 0
@@ -322,6 +324,7 @@ export const usePlayerStore = defineStore('player', () => {
   function _clearSleepTimers() {
     if (sleepTimer)    { clearTimeout(sleepTimer);    sleepTimer    = null }
     if (sleepCountdown){ clearInterval(sleepCountdown); sleepCountdown = null }
+    if (gainNode) gainNode.gain.value = volume.value
   }
 
   function setSleepTimer(mins: number | null, endOfChapter = false) {
@@ -337,6 +340,7 @@ export const usePlayerStore = defineStore('player', () => {
     sleepSecsLeft.value  = mins !== null ? mins * 60 : null
     sleepTotalSecs.value = mins !== null ? mins * 60 : null
     if (mins && mins > 0) {
+      sleepFadeStartVol = volume.value
       sleepTimer = setTimeout(() => {
         _clearSleepTimers()
         audio?.pause()
@@ -345,11 +349,14 @@ export const usePlayerStore = defineStore('player', () => {
         sleepTotalSecs.value = null
         useNotificationStore().show('Sleep timer — playback paused', 'info')
       }, mins * 60 * 1000)
-      // Countdown tick every second
+      const fadeEnabled = localStorage.getItem('abs_sleep_fade') !== 'false'
       sleepCountdown = setInterval(() => {
         if (sleepSecsLeft.value !== null && sleepSecsLeft.value > 0) {
           sleepSecsLeft.value--
           sleepMinsLeft.value = Math.ceil(sleepSecsLeft.value / 60)
+          if (fadeEnabled && gainNode && sleepSecsLeft.value <= SLEEP_FADE_SECS) {
+            gainNode.gain.value = sleepFadeStartVol * (sleepSecsLeft.value / SLEEP_FADE_SECS)
+          }
         }
       }, 1_000)
     }

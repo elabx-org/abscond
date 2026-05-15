@@ -22,7 +22,8 @@ export interface MediaProgress {
   duration: number
   isFinished: boolean
   lastUpdate: number
-  finishedAt?: number
+  startedAt?: number | null
+  finishedAt?: number | null
   rating?: number | null
 }
 
