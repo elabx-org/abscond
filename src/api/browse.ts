@@ -51,8 +51,16 @@ export interface PodcastItem extends LibraryItem {
 }
 
 export async function getSeriesBooks(libraryId: string, seriesId: string): Promise<SeriesDetail> {
-  const res = await api.get(`/libraries/${libraryId}/series/${seriesId}`)
-  return res.data
+  const [seriesRes, itemsRes] = await Promise.all([
+    api.get(`/series/${seriesId}`),
+    api.get(`/libraries/${libraryId}/items`, {
+      params: { filter: `series.${btoa(seriesId)}`, limit: 500, include: 'progress' },
+    }),
+  ])
+  return {
+    ...seriesRes.data,
+    books: itemsRes.data.results ?? itemsRes.data.libraryItems ?? [],
+  }
 }
 
 export async function getAuthorDetail(authorId: string, libraryId: string): Promise<AuthorDetail> {
