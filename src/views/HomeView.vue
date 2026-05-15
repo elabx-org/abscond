@@ -37,9 +37,10 @@
 
     <!-- Continue Listening -->
     <section v-if="progress.inProgress.length || loadingProgress" class="section">
-      <div class="section-header">
+      <div class="section-header clickable" @click="sectionSheet = { title: 'Continue Listening', icon: 'mdi-play-circle-outline', items: progress.inProgress }">
         <v-icon size="16" color="rgba(255,255,255,0.35)">mdi-play-circle-outline</v-icon>
         <span class="section-label">Continue Listening</span>
+        <v-icon size="12" color="rgba(255,255,255,0.2)">mdi-chevron-right</v-icon>
         <span class="section-count">{{ progress.inProgress.length }}</span>
       </div>
       <div class="h-scroll">
@@ -66,10 +67,11 @@
 
     <!-- Recently Added -->
     <section class="section">
-      <div class="section-header">
+      <div class="section-header clickable" @click="sectionSheet = { title: 'Recently Added', icon: 'mdi-clock-outline', items: progress.recentlyAdded }">
         <v-icon size="16" color="rgba(255,255,255,0.35)">mdi-clock-outline</v-icon>
         <span class="section-label">Recently Added</span>
-        <button class="section-link" @click="$router.push({ name: 'library' })">View all</button>
+        <v-icon size="12" color="rgba(255,255,255,0.2)">mdi-chevron-right</v-icon>
+        <button class="section-link" @click.stop="$router.push({ name: 'library' })">View all</button>
       </div>
       <div v-if="loadingRecent" class="h-scroll">
         <div v-for="n in 4" :key="n" class="h-card-skeleton">
@@ -152,9 +154,10 @@
 
     <!-- Dynamic personalized sections (series, newest episodes, etc.) -->
     <section v-for="shelf in extraShelves" :key="shelf.id" class="section">
-      <div class="section-header">
+      <div class="section-header clickable" @click="sectionSheet = { title: shelf.label, icon: shelfIcon(shelf.id, shelf.type), items: shelf.entities }">
         <v-icon size="16" color="rgba(255,255,255,0.35)">{{ shelfIcon(shelf.id, shelf.type) }}</v-icon>
         <span class="section-label">{{ shelf.label }}</span>
+        <v-icon size="12" color="rgba(255,255,255,0.2)">mdi-chevron-right</v-icon>
       </div>
       <div class="h-scroll">
         <PortraitCard
@@ -170,6 +173,18 @@
         />
       </div>
     </section>
+
+    <!-- Section detail sheet -->
+    <SectionDetailSheet
+      v-if="sectionSheet"
+      :show="!!sectionSheet"
+      :title="sectionSheet.title"
+      :icon="sectionSheet.icon"
+      :items="sectionSheet.items"
+      :token="auth.token ?? ''"
+      @close="sectionSheet = null"
+      @item-click="(item) => { sectionSheet = null; openDetail(item) }"
+    />
 
     <!-- Book detail sheet -->
     <BookDetailSheet
@@ -247,6 +262,7 @@ import ContinueListeningCard from '@/components/cards/ContinueListeningCard.vue'
 import BookDetailSheet from '@/components/sheets/BookDetailSheet.vue'
 import PodcastDetailSheet from '@/components/sheets/PodcastDetailSheet.vue'
 import QuickActionsSheet from '@/components/sheets/QuickActionsSheet.vue'
+import SectionDetailSheet from '@/components/sheets/SectionDetailSheet.vue'
 import type { LibraryItem } from '@/api/types'
 import { getAuthorDisplay } from '@/utils/metadata'
 import { getPlaylists, addItemToPlaylist } from '@/api/playlists'
@@ -291,6 +307,7 @@ async function fetchExtraShelves(libraryId: string) {
   allShelves.value = await getPersonalizedShelves(libraryId)
 }
 const showPlaylistPicker = ref(false)
+const sectionSheet       = ref<{ title: string; icon: string; items: typeof progress.inProgress } | null>(null)
 const playlists          = ref<Playlist[]>([])
 const loadingPlaylists   = ref(false)
 const playlistTarget     = ref<LibraryItem | null>(null)
@@ -487,6 +504,7 @@ watch(() => lib.activeLibraryId, async (id) => {
 
 .section { margin-bottom: 28px; }
 .section-header { display: flex; align-items: center; gap: 6px; margin-bottom: 12px; }
+.section-header.clickable { cursor: pointer; }
 .section-label { font-size: 12px; font-weight: 600; color: rgba(255,255,255,0.7); flex: 1; }
 .section-count { font-size: 11px; color: rgba(255,255,255,0.3); }
 .section-link { font-size: 11px; color: rgba(212,160,23,0.8); background: transparent; border: none; cursor: pointer; padding: 0; }
