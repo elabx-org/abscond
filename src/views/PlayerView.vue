@@ -442,6 +442,10 @@
       :item-title="displayTitle"
       accent="#d4a017"
     />
+    <MoreSheet
+      v-model="showMore"
+      @action="onMoreAction"
+    />
 
     <!-- Bookmark sheet -->
     <v-bottom-sheet v-model="showBookmarkSheet" :scrim="true">
@@ -494,6 +498,7 @@
 
 <script setup lang="ts">
 import { computed, ref, watch, nextTick } from 'vue'
+import { useRouter } from 'vue-router'
 import { usePlayerStore } from '@/stores/player'
 import { useAuthStore } from '@/stores/auth'
 import { useSettingsStore } from '@/stores/settings'
@@ -506,6 +511,7 @@ import BookDetailSheet from '@/components/sheets/BookDetailSheet.vue'
 import PodcastDetailSheet from '@/components/sheets/PodcastDetailSheet.vue'
 import EqualizerSheet from '@/components/sheets/EqualizerSheet.vue'
 import NotesSheet from '@/components/sheets/NotesSheet.vue'
+import MoreSheet from '@/components/sheets/MoreSheet.vue'
 import type { LibraryItem } from '@/api/types'
 import type { QueueEntry } from '@/stores/player'
 
@@ -514,6 +520,7 @@ const auth     = useAuthStore()
 const settings = useSettingsStore()
 const notify = useNotificationStore()
 const socket = useSocketStore()
+const router = useRouter()
 
 const showChapters     = ref(false)
 const chapterSearch    = ref('')
@@ -521,6 +528,7 @@ const showSleepPicker  = ref(false)
 const showSpeedPicker  = ref(false)
 const showQueue        = ref(false)
 const showMore         = ref(false) // wired to MoreSheet in Task 5
+const showHistory      = ref(false)
 const queueDragFrom    = ref(-1)
 const queueDragOver    = ref(-1)
 const queueListEl      = ref<HTMLElement | null>(null)
@@ -560,6 +568,36 @@ const sleepCountdownLabel = computed(() => {
   const s = secs % 60
   return s > 0 ? `${m}:${String(s).padStart(2, '0')}` : `${m}m`
 })
+
+function onMoreAction(actionId: string) {
+  switch (actionId) {
+    case 'details':
+      showItemDetail.value = true
+      break
+    case 'eq':
+      showEq.value = true
+      break
+    case 'history':
+      showHistory.value = true
+      break
+    case 'remove':
+      if (player.currentItem) {
+        const removedId = player.currentItem.id
+        player.recentItems = player.recentItems.filter((r: LibraryItem) => r.id !== removedId)
+        player.stop()
+      }
+      break
+    case 'car':
+      router.push({ name: 'car' })
+      break
+    case 'notes':
+      showNotes.value = true
+      break
+    case 'download':
+      notify.show('Download coming soon', 'info')
+      break
+  }
+}
 
 const REWIND_ICONS: Record<number, string> = { 10: 'mdi-rewind-10', 15: 'mdi-rewind-15', 30: 'mdi-rewind-30' }
 const FWD_ICONS:    Record<number, string> = { 10: 'mdi-fast-forward-10', 15: 'mdi-fast-forward-15', 30: 'mdi-fast-forward-30' }
