@@ -29,7 +29,7 @@
         >
           <div
             class="cover-track"
-            :style="{ transform: `translateX(calc(${-currentIndex * 100}% + ${swipeDx}px))`, transition: swipeDx !== 0 ? 'none' : 'transform 0.3s ease' }"
+            :style="trackStyle"
           >
             <div
               v-for="(item, i) in player.recentItems"
@@ -122,6 +122,7 @@
               min="0" max="1" step="0.02"
               :value="player.volume"
               @input="player.setVolume(+($event.target as HTMLInputElement).value)"
+              @change="player.setVolume(+($event.target as HTMLInputElement).value)"
             />
             <v-icon size="16" color="rgba(255,255,255,0.4)">mdi-volume-high</v-icon>
           </div>
@@ -284,26 +285,38 @@ const displayAuthor = computed(() =>
 
 let swipeStartX = 0
 let swipeStartY = 0
+let swipeTracking = false
 const swipeDx = ref(0)
+
+const trackStyle = computed(() => {
+  const offset = `calc(${-currentIndex.value} * 100vw + ${swipeDx.value}px)`
+  return {
+    transform: `translateX(${offset})`,
+    transition: swipeDx.value !== 0 ? 'none' : 'transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+  }
+})
 
 function onSwipeStart(e: TouchEvent) {
   swipeStartX = e.touches[0].clientX
   swipeStartY = e.touches[0].clientY
   swipeDx.value = 0
+  swipeTracking = true
 }
 
 function onSwipeMove(e: TouchEvent) {
+  if (!swipeTracking) return
   const dx = e.touches[0].clientX - swipeStartX
   const dy = e.touches[0].clientY - swipeStartY
-  if (Math.abs(dy) > Math.abs(dx)) return
+  if (Math.abs(dy) > Math.abs(dx) + 5) { swipeTracking = false; swipeDx.value = 0; return }
   swipeDx.value = dx
 }
 
 function onSwipeEnd(e: TouchEvent) {
+  swipeTracking = false
   const dx = e.changedTouches[0].clientX - swipeStartX
   const dy = e.changedTouches[0].clientY - swipeStartY
   swipeDx.value = 0
-  if (Math.abs(dy) > Math.abs(dx) || Math.abs(dx) < 50) return
+  if (Math.abs(dy) > Math.abs(dx) || Math.abs(dx) < 40) return
 
   const idx = currentIndex.value
   if (dx < 0 && idx < player.recentItems.length - 1) {
@@ -447,18 +460,21 @@ function onChapterBarClick(e: MouseEvent) {
 /* ── Carousel ────────────────────────────────────────────────────────────────── */
 .cover-carousel {
   width: 100%; overflow: hidden; margin-bottom: 12px;
-  touch-action: pan-y;
+  touch-action: pan-y; flex-shrink: 0;
 }
 .cover-track {
-  display: flex; width: 100%;
+  display: flex;
+  /* width grows to fit children; translateX handles sliding */
 }
 .cover-slide {
-  flex: 0 0 100%; display: flex; justify-content: center; align-items: center;
-  padding: 0 10px;
+  width: 100vw; flex-shrink: 0;
+  display: flex; justify-content: center; align-items: center;
+  padding: 0 24px;
 }
 .cover-img-wrap {
   position: relative;
-  width: min(220px, 60vw); height: min(330px, 90vw);
+  width: 100%; max-width: 220px;
+  aspect-ratio: 2 / 3;
   border-radius: 14px; overflow: hidden;
   box-shadow: 0 20px 60px rgba(0,0,0,0.8);
   transition: transform 0.2s, opacity 0.2s;

@@ -736,7 +736,7 @@ watch(() => lib.activeLibraryId, (id) => {
 
 .skeleton-card { display: flex; flex-direction: column; gap: 6px; }
 .skeleton-cover {
-  aspect-ratio: 1; border-radius: 8px;
+  aspect-ratio: 2 / 3; border-radius: 8px;
   background: linear-gradient(90deg, #1a1a1a 25%, #222 50%, #1a1a1a 75%);
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
@@ -813,8 +813,8 @@ watch(() => lib.activeLibraryId, (id) => {
 }
 
 .series-card { display: flex; flex-direction: column; gap: 5px; cursor: pointer; }
-.series-cover-wrap { position: relative; aspect-ratio: 1; border-radius: 8px; overflow: hidden; background: #1a1a1a; }
-.series-cover-wrap--circle { border-radius: 50%; }
+.series-cover-wrap { position: relative; aspect-ratio: 2 / 3; border-radius: 8px; overflow: hidden; background: #1a1a1a; }
+.series-cover-wrap--circle { border-radius: 50%; aspect-ratio: 1; }
 .series-cover { width: 100%; height: 100%; object-fit: cover; display: block; }
 .series-cover.author-img { object-position: top; }
 .series-cover-placeholder {

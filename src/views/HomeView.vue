@@ -378,7 +378,7 @@ watch(() => lib.activeLibraryId, async (id) => {
 .h-scroll::-webkit-scrollbar { display: none; }
 .h-card { width: 120px; flex-shrink: 0; }
 .h-card-skeleton { width: 120px; flex-shrink: 0; display: flex; flex-direction: column; gap: 6px; }
-.skeleton-cover { width: 120px; height: 120px; border-radius: 8px; background: linear-gradient(90deg, #1a1a1a 25%, #222 50%, #1a1a1a 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; }
+.skeleton-cover { width: 120px; height: 180px; border-radius: 8px; background: linear-gradient(90deg, #1a1a1a 25%, #222 50%, #1a1a1a 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; }
 .skeleton-line { height: 10px; border-radius: 4px; background: #1a1a1a; animation: shimmer 1.5s infinite; }
 .skeleton-line.short { width: 70%; }
 @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
