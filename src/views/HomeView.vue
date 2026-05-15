@@ -56,8 +56,10 @@
           :cover-src="coverUrl(item.id, auth.token ?? '')"
           :progress="item.userMediaProgress?.progress ?? 0"
           :duration="item.media.duration"
-          @click="openDetail(item)"
-          @long-press="openQuick(item)"
+          :is-playing="player.currentItem?.id === item.id && player.isPlaying"
+          :is-current="player.currentItem?.id === item.id"
+          @click="resumeItem(item)"
+          @long-press="openDetail(item)"
         />
       </div>
     </section>
@@ -301,6 +303,16 @@ const timeOfDayLabel = computed(() => {
 
 function openDetail(item: LibraryItem) { selectedItem.value = item }
 function openQuick(item: LibraryItem) { quickItem.value = item }
+
+async function resumeItem(item: LibraryItem) {
+  if (player.currentItem?.id === item.id) {
+    player.togglePlay()
+    if (!player.isPlaying) router.push({ name: 'player' })
+    return
+  }
+  await player.play(item)
+  router.push({ name: 'player' })
+}
 
 async function playQuick() {
   if (!quickItem.value) return

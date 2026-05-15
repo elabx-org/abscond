@@ -21,6 +21,10 @@
         <div v-if="imgError" class="cl-cover-placeholder">
           <v-icon size="28" color="rgba(255,255,255,0.25)">mdi-book-open-variant</v-icon>
         </div>
+        <!-- Now playing indicator -->
+        <div v-if="isCurrent && isPlaying" class="cl-playing-badge">
+          <v-icon size="12" color="white">mdi-graphic-eq</v-icon>
+        </div>
       </div>
     </div>
 
@@ -55,11 +59,8 @@ const props = defineProps<{
   coverSrc: string
   progress?: number
   duration?: number
-}>()
-
-defineEmits<{
-  click: [itemId: string]
-  'long-press': [itemId: string]
+  isPlaying?: boolean
+  isCurrent?: boolean
 }>()
 
 const imgRef   = ref<HTMLImageElement | null>(null)
@@ -115,11 +116,17 @@ const timeRemaining = computed(() => {
   return '<1m left'
 })
 
+const emit = defineEmits<{
+  click: [itemId: string]
+  'long-press': [itemId: string]
+}>()
+
 let longPressTimer: ReturnType<typeof setTimeout> | null = null
 
 function startLongPress(e: PointerEvent) {
   longPressTimer = setTimeout(() => {
     longPressTimer = null
+    emit('long-press', props.itemId)
     if (navigator.vibrate) navigator.vibrate(30)
   }, 500)
   void e
@@ -146,6 +153,7 @@ function cancelLongPress() {
 }
 
 .cl-cover-glow {
+  position: relative;
   border-radius: 10px;
   overflow: hidden;
   aspect-ratio: 1 / 1;
@@ -165,6 +173,19 @@ function cancelLongPress() {
   align-items: center;
   justify-content: center;
   background: rgba(255,255,255,0.05);
+}
+
+.cl-playing-badge {
+  position: absolute;
+  bottom: 6px;
+  right: 6px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: rgba(0,0,0,0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .cl-info {
