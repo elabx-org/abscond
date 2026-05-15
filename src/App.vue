@@ -2,12 +2,14 @@
   <v-app>
     <router-view />
     <ToastContainer />
+    <NotificationToast />
   </v-app>
 </template>
 
 <script setup lang="ts">
 import { watch, onMounted } from 'vue'
 import ToastContainer from '@/components/common/ToastContainer.vue'
+import NotificationToast from '@/components/shell/NotificationToast.vue'
 import { useAuthStore } from '@/stores/auth'
 import { useSocketStore } from '@/stores/socket'
 

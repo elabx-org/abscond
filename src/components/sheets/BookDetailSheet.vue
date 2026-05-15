@@ -77,6 +77,12 @@
               <span v-for="g in (item.media.metadata.genres ?? []).slice(0, 4)" :key="g" class="chip">{{ g }}</span>
             </div>
 
+            <!-- Download button -->
+            <button class="download-btn" @click="onDownload">
+              <v-icon size="16">mdi-download-outline</v-icon>
+              Download
+            </button>
+
             <!-- Description -->
             <div v-if="item.media.metadata.description" class="sheet-desc-wrap">
               <p class="sheet-desc" :class="{ expanded: descExpanded }">
@@ -117,8 +123,11 @@ import { useRouter } from 'vue-router'
 import { useDraggableSheet } from '@/composables/useDraggableSheet'
 import { useColorThief } from '@/composables/useColorThief'
 import { usePlayerStore } from '@/stores/player'
+import { useAuthStore } from '@/stores/auth'
 import SeriesDetailSheet from '@/components/sheets/SeriesDetailSheet.vue'
 import AuthorDetailSheet from '@/components/sheets/AuthorDetailSheet.vue'
+import { getDirectDownloadUrl } from '@/api/downloads'
+import { getBaseUrl } from '@/api/client'
 import type { LibraryItem, Series, Author } from '@/api/types'
 
 const props = defineProps<{
@@ -131,6 +140,7 @@ const emit = defineEmits<{ close: [] }>()
 
 const router = useRouter()
 const player = usePlayerStore()
+const auth   = useAuthStore()
 const sheet  = useDraggableSheet({ initial: 85, min: 30, max: 95 })
 
 const coverImgRef = ref<HTMLImageElement | null>(null)
@@ -169,6 +179,15 @@ const hasEbook = computed(() => {
   const m = props.item.media as unknown as Record<string, unknown>
   return !!(m.ebookFile || m.ebookFormat)
 })
+
+async function onDownload() {
+  const base = await getBaseUrl()
+  const url  = getDirectDownloadUrl(props.item.id, auth.token ?? '', base)
+  const a    = document.createElement('a')
+  a.href     = url
+  a.download = props.item.media.metadata.title + '.zip'
+  a.click()
+}
 
 function onReadPress() {
   emit('close')
@@ -287,6 +306,11 @@ watch(() => props.show, (v) => { if (v) descExpanded.value = false })
   font-size: 10px; color: rgba(255,255,255,0.45); background: rgba(255,255,255,0.06);
   border: 1px solid rgba(255,255,255,0.08); border-radius: 20px;
   padding: 3px 10px; cursor: pointer;
+}
+.download-btn {
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+  font-size: 12px; color: rgba(255,255,255,0.5); background: transparent;
+  border: none; cursor: pointer; padding: 6px 0; margin-bottom: 8px;
 }
 .read-btn {
   display: flex; align-items: center; justify-content: center; gap: 8px;

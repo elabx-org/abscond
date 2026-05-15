@@ -135,9 +135,11 @@ import { usePlayerStore } from '@/stores/player'
 import { useAuthStore } from '@/stores/auth'
 import { coverUrl } from '@/api/client'
 import { createBookmark } from '@/api/bookmarks'
+import { useNotificationStore } from '@/stores/notifications'
 
 const player = usePlayerStore()
 const auth   = useAuthStore()
+const notify = useNotificationStore()
 
 const showChapters  = ref(false)
 const showSleepPicker = ref(false)
@@ -174,7 +176,12 @@ const chapterProgressPct = computed(() => {
 async function addBookmark() {
   if (!player.currentItem) return
   const title = player.currentChapter?.title ?? formatTime(player.currentTime)
-  await createBookmark(player.currentItem.id, Math.floor(player.currentTime), title).catch(() => {})
+  try {
+    await createBookmark(player.currentItem.id, Math.floor(player.currentTime), title)
+    notify.show('Bookmark added', 'success')
+  } catch {
+    notify.show('Failed to add bookmark', 'error')
+  }
 }
 
 const SPEEDS = [0.5, 0.75, 1, 1.25, 1.5, 2]
