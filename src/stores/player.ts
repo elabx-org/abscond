@@ -32,12 +32,31 @@ export const usePlayerStore = defineStore('player', () => {
   const recentItems        = ref<LibraryItem[]>(_loadRecentItems())
 
   let audio: HTMLAudioElement | null = null
+  let audioCtx: AudioContext | null = null
+  let gainNode: GainNode | null = null
   let syncTimer: ReturnType<typeof setInterval> | null = null
   let sleepTimer: ReturnType<typeof setTimeout> | null = null
   let sleepCountdown: ReturnType<typeof setInterval> | null = null
   let syncedAt = 0
   let timeListenedAccum = 0
   let trackStartOffset = 0
+
+  function _ensureAudioGraph() {
+    if (!audio) return
+    if (!audioCtx) {
+      audioCtx = new AudioContext()
+      gainNode = audioCtx.createGain()
+      gainNode.connect(audioCtx.destination)
+    }
+    gainNode!.gain.value = volume.value
+    try {
+      const src = audioCtx.createMediaElementSource(audio)
+      src.connect(gainNode!)
+    } catch {
+      // MediaElementAudioSourceNode already created for this element — safe to ignore
+    }
+    if (audioCtx.state === 'suspended') audioCtx.resume().catch(() => {})
+  }
 
   // Flattened global time → position within a specific audio track
   const currentTrackIndex = computed(() => {
@@ -184,8 +203,8 @@ export const usePlayerStore = defineStore('player', () => {
 
       audio = new Audio()
       audio.playbackRate = playbackRate.value
-      audio.volume = volume.value
       _attachListeners()
+      _ensureAudioGraph()
 
       // Find the track for startTime
       const tracks = s.audioTracks
@@ -209,8 +228,12 @@ export const usePlayerStore = defineStore('player', () => {
 
   function togglePlay() {
     if (!audio) return
-    if (isPlaying.value) audio.pause()
-    else audio.play()
+    if (isPlaying.value) {
+      audio.pause()
+    } else {
+      if (audioCtx?.state === 'suspended') audioCtx.resume().catch(() => {})
+      audio.play()
+    }
   }
 
   function seek(time: number) {
@@ -240,7 +263,11 @@ export const usePlayerStore = defineStore('player', () => {
   function setVolume(vol: number) {
     volume.value = Math.max(0, Math.min(1, vol))
     localStorage.setItem('abs_volume', String(volume.value))
-    if (audio) audio.volume = volume.value
+    if (gainNode) {
+      gainNode.gain.value = volume.value
+    } else if (audio) {
+      audio.volume = volume.value
+    }
   }
 
   function _clearSleepTimers() {
