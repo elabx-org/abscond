@@ -129,6 +129,9 @@
             <v-icon size="12">mdi-close</v-icon>
           </button>
         </div>
+        <button class="grid-density-btn" @click="toggleRectangle" :title="rectangleCovers ? 'Square covers' : 'Portrait covers'">
+          <v-icon size="16" color="rgba(255,255,255,0.5)">{{ rectangleCovers ? 'mdi-image-outline' : 'mdi-image-frame' }}</v-icon>
+        </button>
         <button class="grid-density-btn" @click="toggleGridDensity" :title="gridDense ? 'Comfortable grid' : 'Compact grid'">
           <v-icon size="16" color="rgba(255,255,255,0.5)">{{ gridDense ? 'mdi-view-grid' : 'mdi-view-comfy' }}</v-icon>
         </button>
@@ -164,6 +167,7 @@
         :progress="item.userMediaProgress?.progress ?? 0"
         :selected="selectedIds.has(item.id)"
         :select-mode="selectMode"
+        :rectangle="rectangleCovers"
         @click="onCardClick(item)"
         @long-press="onLongPress(item)"
         @contextmenu.prevent="onLongPress(item)"
@@ -621,7 +625,8 @@ const progressFilters = [
   { key: 'in-series' as const,    label: 'In Series' },
 ]
 const sortDesc     = ref(localStorage.getItem('abs_lib_sort_desc') === 'true')
-const gridDense    = ref(localStorage.getItem('abs_lib_dense') === 'true')
+const gridDense       = ref(localStorage.getItem('abs_lib_dense') === 'true')
+const rectangleCovers = ref(localStorage.getItem('abs_lib_rect') === 'true')
 const pageSize     = 100
 const page         = ref(1)
 const searchQuery  = ref('')
@@ -631,6 +636,11 @@ const tagFilter    = ref('')
 function toggleGridDensity() {
   gridDense.value = !gridDense.value
   localStorage.setItem('abs_lib_dense', String(gridDense.value))
+}
+
+function toggleRectangle() {
+  rectangleCovers.value = !rectangleCovers.value
+  localStorage.setItem('abs_lib_rect', String(rectangleCovers.value))
 }
 
 const items = computed(() =>
