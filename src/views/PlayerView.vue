@@ -1485,8 +1485,9 @@ function queueDragEnd() {
   .player-left { order: 1; }
   .player-right { order: 2; }
 
-  /* Topbar is mobile-only; NavDrawer provides context on desktop */
-  .player-topbar { display: none; }
+  /* On desktop hide only the wordmark; keep stop + queue action buttons */
+  .player-wordmark { display: none; }
+  .player-topbar { justify-content: flex-end; margin-bottom: 16px; }
 
   /* On desktop, carousel is fixed-width, not full-vw */
   .cover-carousel { width: 320px; margin-left: 0; }
@@ -1508,8 +1509,20 @@ function queueDragEnd() {
     font-size: 9px; color: rgba(255,255,255,0.28); text-align: center;
   }
 
-  /* Hide screen title on desktop (nav drawer already anchors the page) */
-  .player-screen-title { display: none; }
+  /* Screen title ("Absconding" / "Recently Played") becomes a small eyebrow label */
+  .player-screen-title {
+    font-size: 10px; font-weight: 600; letter-spacing: 1.5px;
+    text-transform: uppercase; color: rgba(255,255,255,0.3);
+    margin-bottom: 8px;
+  }
+
+  /* Meta header — large title + stacked author on desktop */
+  .player-meta-header {
+    flex-direction: column; gap: 4px; margin-bottom: 24px; align-items: flex-start;
+  }
+  .pmh-title { font-size: 26px; font-weight: 700; color: rgba(255,255,255,0.92); max-width: 100%; }
+  .pmh-sep { display: none; }
+  .pmh-author { font-size: 14px; color: rgba(255,255,255,0.45); }
 }
 
 /* Mobile/tablet: layout divs are transparent pass-throughs */
