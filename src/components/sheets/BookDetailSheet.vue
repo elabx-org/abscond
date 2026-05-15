@@ -95,6 +95,30 @@
                 <v-icon size="16">mdi-share-outline</v-icon>
                 Share
               </button>
+              <button v-if="auth.isAdmin" class="action-btn" @click="openEdit">
+                <v-icon size="16">mdi-pencil-outline</v-icon>
+                Edit
+              </button>
+            </div>
+
+            <!-- Edit metadata panel -->
+            <div v-if="showEdit" class="playlist-inline edit-panel">
+              <p class="playlist-inline-title">Edit Metadata</p>
+              <input v-model="editMeta.title" class="edit-input" placeholder="Title" />
+              <input v-model="editMeta.subtitle" class="edit-input" placeholder="Subtitle" />
+              <input v-model="editMeta.authorNames" class="edit-input" placeholder="Authors (comma-separated)" />
+              <input v-model="editMeta.narratorNames" class="edit-input" placeholder="Narrators (comma-separated)" />
+              <input v-model="editMeta.publishedYear" class="edit-input" placeholder="Published year" />
+              <input v-model="editMeta.publisher" class="edit-input" placeholder="Publisher" />
+              <input v-model="editMeta.genres" class="edit-input" placeholder="Genres (comma-separated)" />
+              <textarea v-model="editMeta.description" class="edit-input edit-textarea" placeholder="Description" />
+              <p v-if="editError" class="form-error-sm">{{ editError }}</p>
+              <div class="share-actions">
+                <button class="pls-cancel" @click="showEdit = false">Cancel</button>
+                <button class="action-btn" :disabled="editSaving" style="flex:1;justify-content:center" @click="doSaveMeta">
+                  {{ editSaving ? 'Saving…' : 'Save' }}
+                </button>
+              </div>
             </div>
 
             <!-- Share panel -->
@@ -188,7 +212,7 @@ import { useAuthStore } from '@/stores/auth'
 import SeriesDetailSheet from '@/components/sheets/SeriesDetailSheet.vue'
 import AuthorDetailSheet from '@/components/sheets/AuthorDetailSheet.vue'
 import { getDirectDownloadUrl } from '@/api/downloads'
-import { getBaseUrl } from '@/api/client'
+import { getBaseUrl, api } from '@/api/client'
 import { getPlaylists, addItemToPlaylist } from '@/api/playlists'
 import type { Playlist } from '@/api/playlists'
 import { getCollections, addBookToCollection } from '@/api/collections'
@@ -227,6 +251,10 @@ const loadingCols       = ref(false)
 const showShare         = ref(false)
 const shareLink         = ref<ShareLink | null>(null)
 const shareLoading      = ref(false)
+const showEdit          = ref(false)
+const editSaving        = ref(false)
+const editError         = ref('')
+const editMeta          = ref({ title: '', subtitle: '', authorNames: '', narratorNames: '', publishedYear: '', publisher: '', genres: '', description: '' })
 const shareError        = ref('')
 const shareCopied       = ref(false)
 
@@ -306,6 +334,7 @@ watch(() => props.show, (v) => {
     showCollectionAdd.value = false
     showShare.value = false
     shareLink.value = null
+    showEdit.value  = false
   }
 })
 
@@ -359,6 +388,47 @@ async function doRemoveShare() {
   await removeShareLink(props.item.id).catch(() => {})
   shareLink.value = null
   showShare.value = false
+}
+
+function openEdit() {
+  const m = props.item.media.metadata
+  editMeta.value = {
+    title:         m.title ?? '',
+    subtitle:      m.subtitle ?? '',
+    authorNames:   (m.authors ?? []).map(a => a.name).join(', '),
+    narratorNames: (m.narrators ?? []).join(', '),
+    publishedYear: m.publishedYear ?? '',
+    publisher:     m.publisher ?? '',
+    genres:        (m.genres ?? []).join(', '),
+    description:   m.description ?? '',
+  }
+  editError.value = ''
+  showEdit.value  = true
+}
+
+async function doSaveMeta() {
+  editError.value  = ''
+  editSaving.value = true
+  try {
+    const payload = {
+      metadata: {
+        title:         editMeta.value.title.trim(),
+        subtitle:      editMeta.value.subtitle.trim() || null,
+        authorName:    editMeta.value.authorNames.trim(),
+        narratorName:  editMeta.value.narratorNames.trim() || null,
+        publishedYear: editMeta.value.publishedYear.trim() || null,
+        publisher:     editMeta.value.publisher.trim() || null,
+        genres:        editMeta.value.genres.split(',').map(g => g.trim()).filter(Boolean),
+        description:   editMeta.value.description.trim() || null,
+      }
+    }
+    await api.patch(`/items/${props.item.id}/media`, payload)
+    showEdit.value = false
+  } catch {
+    editError.value = 'Failed to save metadata'
+  } finally {
+    editSaving.value = false
+  }
 }
 </script>
 
@@ -488,6 +558,14 @@ async function doRemoveShare() {
 .share-actions { display: flex; gap: 8px; }
 .share-actions .pls-cancel { flex: 1; margin-top: 0; }
 .form-error-sm { font-size: 11px; color: #e05555; margin: 4px 0; }
+.edit-panel { gap: 8px; }
+.edit-input {
+  width: 100%; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 8px; padding: 8px 10px; font-size: 12px; color: rgba(255,255,255,0.85);
+  outline: none; box-sizing: border-box; font-family: inherit;
+}
+.edit-input::placeholder { color: rgba(255,255,255,0.3); }
+.edit-textarea { height: 80px; resize: none; line-height: 1.5; }
 .read-btn {
   display: flex; align-items: center; justify-content: center; gap: 8px;
   width: 100%; padding: 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.15);
