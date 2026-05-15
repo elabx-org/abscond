@@ -446,6 +446,12 @@
       v-model="showMore"
       @action="onMoreAction"
     />
+    <PlaybackHistorySheet
+      v-if="showHistory && player.currentItem"
+      v-model="showHistory"
+      :item-id="player.currentItem.id"
+      :item-title="displayTitle"
+    />
 
     <!-- Bookmark sheet -->
     <v-bottom-sheet v-model="showBookmarkSheet" :scrim="true">
@@ -512,6 +518,7 @@ import PodcastDetailSheet from '@/components/sheets/PodcastDetailSheet.vue'
 import EqualizerSheet from '@/components/sheets/EqualizerSheet.vue'
 import NotesSheet from '@/components/sheets/NotesSheet.vue'
 import MoreSheet from '@/components/sheets/MoreSheet.vue'
+import PlaybackHistorySheet from '@/components/sheets/PlaybackHistorySheet.vue'
 import type { LibraryItem } from '@/api/types'
 import type { QueueEntry } from '@/stores/player'
 
