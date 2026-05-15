@@ -171,6 +171,7 @@
         :author="getAuthorDisplay(item) || 'Unknown'"
         :cover-src="coverUrl(item.id, auth.token ?? '')"
         :progress="item.userMediaProgress?.progress ?? 0"
+        :explicit="item.media.metadata.explicit ?? false"
         :selected="selectedIds.has(item.id)"
         :select-mode="selectMode"
         :rectangle="rectangleCovers"

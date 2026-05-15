@@ -41,6 +41,7 @@ export interface LibraryItemMedia {
     publishedYear?: string | null
     publisher?: string | null
     description?: string | null
+    explicit?: boolean | null
   }
   coverPath?: string | null
   duration?: number

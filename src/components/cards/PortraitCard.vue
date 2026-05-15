@@ -31,6 +31,7 @@
       <div v-if="(progress ?? 0) >= 1" class="finished-badge">
         <v-icon size="10" color="white">mdi-check</v-icon>
       </div>
+      <div v-if="explicit && showExplicitBadge" class="explicit-badge">E</div>
       <Transition name="check">
         <div v-if="selected" class="select-overlay">
           <v-icon size="20" color="white">mdi-check</v-icon>
@@ -58,7 +59,10 @@ const props = defineProps<{
   selected?: boolean
   selectMode?: boolean
   rectangle?: boolean
+  explicit?: boolean
 }>()
+
+const showExplicitBadge = computed(() => localStorage.getItem('abs_show_explicit') !== 'false')
 
 const progressLabel = computed(() => {
   const p = props.progress ?? 0
@@ -114,6 +118,12 @@ function cancelLongPress() {
 .cover-placeholder { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; }
 .progress-bar { position: absolute; bottom: 0; left: 0; height: 3px; border-radius: 0 2px 0 0; transition: width 0.3s; }
 .finished-badge { position: absolute; top: 4px; right: 4px; width: 18px; height: 18px; border-radius: 50%; background: #22c55e; display: flex; align-items: center; justify-content: center; }
+.explicit-badge {
+  position: absolute; top: 4px; left: 4px;
+  background: rgba(239,68,68,0.85); color: white;
+  font-size: 8px; font-weight: 800; line-height: 1;
+  padding: 2px 4px; border-radius: 3px; letter-spacing: 0.02em;
+}
 .now-playing-badge {
   position: absolute; bottom: 6px; right: 6px;
   background: rgba(0,0,0,0.6); border-radius: 4px;

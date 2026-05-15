@@ -95,6 +95,7 @@
           :author="getAuthorDisplay(item) || 'Unknown'"
           :cover-src="coverUrl(item.id, auth.token ?? '')"
           :progress="item.userMediaProgress?.progress ?? 0"
+          :explicit="item.media.metadata.explicit ?? false"
           @click="openDetail(item)"
           @long-press="openQuick(item)"
         />
@@ -175,6 +176,7 @@
           :author="getShelfItemAuthor(item)"
           :cover-src="coverUrl(item.id, auth.token ?? '')"
           :progress="item.userMediaProgress?.progress ?? 0"
+          :explicit="(item.media.metadata as any).explicit ?? false"
           @click="openShelfItem(item)"
         />
       </div>

@@ -55,6 +55,17 @@
           >OLED</button>
         </div>
       </div>
+
+      <div class="settings-item" @click="toggleShowExplicit">
+        <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-alert-circle-outline</v-icon>
+        <div class="item-label-stack">
+          <span class="item-label">Show explicit badge</span>
+          <span class="item-sublabel">Show 'E' on covers marked explicit</span>
+        </div>
+        <div class="toggle-pill" :class="{ on: showExplicit }">
+          <div class="toggle-thumb" />
+        </div>
+      </div>
     </section>
 
     <!-- Playback -->
@@ -678,6 +689,12 @@ const eq = useEqualizerStore()
 
 declare const __APP_VERSION__: string
 const appVersion = __APP_VERSION__
+
+const showExplicit = ref(localStorage.getItem('abs_show_explicit') !== 'false')
+function toggleShowExplicit() {
+  showExplicit.value = !showExplicit.value
+  localStorage.setItem('abs_show_explicit', String(showExplicit.value))
+}
 
 const confirmLogout      = ref(false)
 const socketConnected    = computed(() => socketStore.connected)
