@@ -19,6 +19,10 @@
       <div v-if="imgError" class="cover-placeholder">
         <v-icon size="32" color="rgba(255,255,255,0.2)">mdi-book-open-variant</v-icon>
       </div>
+      <!-- Now-playing indicator -->
+      <div v-if="isNowPlaying" class="now-playing-badge">
+        <span v-for="n in 3" :key="n" class="np-bar" :style="`animation-delay:${(n-1)*0.15}s`" />
+      </div>
       <div
         v-if="(progress ?? 0) > 0 && (progress ?? 0) < 1"
         class="progress-bar"
@@ -42,6 +46,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { useColorThief } from '@/composables/useColorThief'
+import { usePlayerStore } from '@/stores/player'
 
 const props = defineProps<{
   itemId: string
@@ -71,9 +76,12 @@ const emit = defineEmits<{
   'long-press': [itemId: string]
 }>()
 
+const player   = usePlayerStore()
 const imgRef   = ref<HTMLImageElement | null>(null)
 const imgError = ref(false)
 const { accent, extract } = useColorThief(imgRef)
+
+const isNowPlaying = computed(() => player.currentItem?.id === props.itemId && player.isPlaying)
 
 let longPressTimer: ReturnType<typeof setTimeout> | null = null
 
@@ -106,6 +114,19 @@ function cancelLongPress() {
 .cover-placeholder { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; }
 .progress-bar { position: absolute; bottom: 0; left: 0; height: 3px; border-radius: 0 2px 0 0; transition: width 0.3s; }
 .finished-badge { position: absolute; top: 4px; right: 4px; width: 18px; height: 18px; border-radius: 50%; background: #22c55e; display: flex; align-items: center; justify-content: center; }
+.now-playing-badge {
+  position: absolute; bottom: 6px; right: 6px;
+  background: rgba(0,0,0,0.6); border-radius: 4px;
+  padding: 3px 5px; display: flex; align-items: flex-end; gap: 1.5px;
+}
+.np-bar {
+  width: 2px; background: #d4a017; border-radius: 1px;
+  animation: np-wave 0.7s ease-in-out infinite alternate;
+}
+.np-bar:nth-child(1) { height: 6px; }
+.np-bar:nth-child(2) { height: 10px; }
+.np-bar:nth-child(3) { height: 7px; }
+@keyframes np-wave { from { transform: scaleY(0.3); } to { transform: scaleY(1); } }
 .select-overlay {
   position: absolute; inset: 0; background: rgba(212,160,23,0.3);
   display: flex; align-items: center; justify-content: center;
