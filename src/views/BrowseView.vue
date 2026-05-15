@@ -31,55 +31,62 @@
 
     <!-- Series tab -->
     <div v-if="activeTab === 'series'">
-      <div v-if="loadingSeries" class="list-skeleton">
-        <div v-for="n in 8" :key="n" class="skel-row" />
+      <div class="sub-search-wrap">
+        <v-icon size="14" color="rgba(255,255,255,0.3)">mdi-magnify</v-icon>
+        <input v-model="seriesSearch" class="sub-search-input" placeholder="Search series…" />
+        <button v-if="seriesSearch" class="sub-search-clear" @click="seriesSearch = ''"><v-icon size="12">mdi-close</v-icon></button>
       </div>
-      <div v-else class="item-list">
-        <div
-          v-for="s in seriesList"
-          :key="s.id"
-          class="list-row"
-          @click="openSeries(s)"
-        >
-          <div class="row-icon"><v-icon size="18" color="#d4a017">mdi-bookshelf</v-icon></div>
-          <div class="row-info">
-            <p class="row-name">{{ s.name }}</p>
-            <p class="row-sub">{{ s.numBooks ?? s.books?.length ?? 0 }} books</p>
+      <div v-if="loadingSeries" class="thumb-grid">
+        <div v-for="n in 12" :key="n" class="skel-card"><div class="skel-cover" /><div class="skel-line" /></div>
+      </div>
+      <div v-else class="thumb-grid">
+        <div v-for="s in filteredSeries" :key="s.id" class="thumb-card" @click="openSeries(s)">
+          <div class="thumb-cover-wrap">
+            <img v-if="s.books && s.books.length" :src="coverUrl(s.books[0].id, auth.token ?? '')" class="thumb-cover" :alt="s.name" />
+            <div v-else class="thumb-placeholder"><v-icon size="28" color="rgba(255,255,255,0.2)">mdi-book-multiple</v-icon></div>
+            <div class="thumb-badge">{{ s.numBooks ?? s.books?.length ?? 0 }}</div>
           </div>
-          <v-icon size="16" color="rgba(255,255,255,0.2)">mdi-chevron-right</v-icon>
+          <p class="thumb-title">{{ s.name }}</p>
+          <p class="thumb-sub">{{ s.numBooks ?? s.books?.length ?? 0 }} books</p>
         </div>
       </div>
     </div>
 
     <!-- Authors tab -->
     <div v-else-if="activeTab === 'authors'">
-      <div v-if="loadingAuthors" class="list-skeleton">
-        <div v-for="n in 8" :key="n" class="skel-row" />
+      <div class="sub-search-wrap">
+        <v-icon size="14" color="rgba(255,255,255,0.3)">mdi-magnify</v-icon>
+        <input v-model="authorSearch" class="sub-search-input" placeholder="Search authors…" />
+        <button v-if="authorSearch" class="sub-search-clear" @click="authorSearch = ''"><v-icon size="12">mdi-close</v-icon></button>
       </div>
-      <div v-else class="item-list">
-        <div
-          v-for="a in authorsList"
-          :key="a.id"
-          class="list-row"
-          @click="openAuthor(a)"
-        >
-          <div class="author-avatar">{{ a.name[0]?.toUpperCase() }}</div>
-          <div class="row-info">
-            <p class="row-name">{{ a.name }}</p>
+      <div v-if="loadingAuthors" class="thumb-grid">
+        <div v-for="n in 12" :key="n" class="skel-card"><div class="skel-cover" /><div class="skel-line" /></div>
+      </div>
+      <div v-else class="thumb-grid">
+        <div v-for="a in filteredAuthors" :key="a.id" class="thumb-card" @click="openAuthor(a)">
+          <div class="thumb-cover-wrap">
+            <img v-if="a.imagePath" :src="authorImageUrl(a.id)" class="thumb-cover author-img" :alt="a.name" />
+            <div v-else class="thumb-initial"><span class="thumb-letter">{{ a.name[0]?.toUpperCase() }}</span></div>
           </div>
-          <v-icon size="16" color="rgba(255,255,255,0.2)">mdi-chevron-right</v-icon>
+          <p class="thumb-title">{{ a.name }}</p>
+          <p class="thumb-sub">{{ a.numBooks ?? 0 }} books</p>
         </div>
       </div>
     </div>
 
     <!-- Genres tab -->
     <div v-else-if="activeTab === 'genres'">
+      <div class="sub-search-wrap">
+        <v-icon size="14" color="rgba(255,255,255,0.3)">mdi-magnify</v-icon>
+        <input v-model="genreSearch" class="sub-search-input" placeholder="Search genres…" />
+        <button v-if="genreSearch" class="sub-search-clear" @click="genreSearch = ''"><v-icon size="12">mdi-close</v-icon></button>
+      </div>
       <div v-if="loadingGenres" class="list-skeleton">
         <div v-for="n in 6" :key="n" class="skel-row" />
       </div>
       <div v-else class="genre-grid">
         <button
-          v-for="g in genresList"
+          v-for="g in filteredGenres"
           :key="g"
           class="genre-chip"
           @click="browseGenre(g)"
@@ -89,12 +96,17 @@
 
     <!-- Narrators tab -->
     <div v-else-if="activeTab === 'narrators'">
+      <div class="sub-search-wrap">
+        <v-icon size="14" color="rgba(255,255,255,0.3)">mdi-magnify</v-icon>
+        <input v-model="narratorSearch" class="sub-search-input" placeholder="Search narrators…" />
+        <button v-if="narratorSearch" class="sub-search-clear" @click="narratorSearch = ''"><v-icon size="12">mdi-close</v-icon></button>
+      </div>
       <div v-if="loadingNarrators" class="list-skeleton">
         <div v-for="n in 8" :key="n" class="skel-row" />
       </div>
       <div v-else class="item-list">
         <div
-          v-for="n in narratorsList"
+          v-for="n in filteredNarrators"
           :key="n"
           class="list-row"
           @click="openNarrator(n)"
@@ -192,11 +204,40 @@ import BookDetailSheet from '@/components/sheets/BookDetailSheet.vue'
 import PortraitCard from '@/components/cards/PortraitCard.vue'
 import type { SeriesDetail, AuthorDetail } from '@/api/browse'
 import type { LibraryItem } from '@/api/types'
-import { api } from '@/api/client'
+import { api, getBaseUrl } from '@/api/client'
 import { getAuthorDisplay } from '@/utils/metadata'
+import { computed } from 'vue'
 
 const lib  = useLibraryStore()
 const auth = useAuthStore()
+
+let _baseUrl = ''
+getBaseUrl().then(u => { _baseUrl = u })
+function authorImageUrl(id: string) {
+  return `${_baseUrl}/authors/${id}/image?token=${encodeURIComponent(auth.token ?? '')}`
+}
+
+const seriesSearch   = ref('')
+const authorSearch   = ref('')
+const genreSearch    = ref('')
+const narratorSearch = ref('')
+
+const filteredSeries    = computed(() => {
+  const q = seriesSearch.value.toLowerCase()
+  return q ? seriesList.value.filter(s => s.name.toLowerCase().includes(q)) : seriesList.value
+})
+const filteredAuthors   = computed(() => {
+  const q = authorSearch.value.toLowerCase()
+  return q ? authorsList.value.filter(a => a.name.toLowerCase().includes(q)) : authorsList.value
+})
+const filteredGenres    = computed(() => {
+  const q = genreSearch.value.toLowerCase()
+  return q ? genresList.value.filter(g => g.toLowerCase().includes(q)) : genresList.value
+})
+const filteredNarrators = computed(() => {
+  const q = narratorSearch.value.toLowerCase()
+  return q ? narratorsList.value.filter(n => n.toLowerCase().includes(q)) : narratorsList.value
+})
 
 type TabKey = 'series' | 'authors' | 'genres' | 'narrators'
 const tabs = [
@@ -412,4 +453,21 @@ onMounted(async () => {
 
 .sheet-enter-active, .sheet-leave-active { transition: transform 0.3s ease, opacity 0.3s; }
 .sheet-enter-from, .sheet-leave-to { transform: translateY(100%); opacity: 0; }
+
+.sub-search-wrap { display: flex; align-items: center; gap: 6px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 6px 10px; margin-bottom: 14px; }
+.sub-search-input { flex: 1; background: transparent; border: none; outline: none; color: rgba(255,255,255,0.85); font-size: 12px; }
+.sub-search-input::placeholder { color: rgba(255,255,255,0.25); }
+.sub-search-clear { background: transparent; border: none; cursor: pointer; color: rgba(255,255,255,0.3); padding: 0; }
+
+.thumb-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 12px 10px; }
+.thumb-card { display: flex; flex-direction: column; gap: 5px; cursor: pointer; }
+.thumb-cover-wrap { position: relative; aspect-ratio: 1; border-radius: 8px; overflow: hidden; background: #1a1a1a; }
+.thumb-cover { width: 100%; height: 100%; object-fit: cover; display: block; }
+.thumb-cover.author-img { object-position: top; }
+.thumb-placeholder { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.04); }
+.thumb-initial { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: rgba(212,160,23,0.12); }
+.thumb-letter { font-size: 32px; font-weight: 800; color: #d4a017; }
+.thumb-badge { position: absolute; bottom: 5px; right: 5px; background: rgba(0,0,0,0.65); border-radius: 6px; padding: 2px 5px; font-size: 9px; font-weight: 700; color: rgba(255,255,255,0.8); }
+.thumb-title { font-size: 11px; font-weight: 600; color: rgba(255,255,255,0.85); margin: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.thumb-sub { font-size: 10px; color: rgba(255,255,255,0.35); margin: 0; }
 </style>
