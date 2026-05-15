@@ -138,10 +138,13 @@ export async function applyBackup(id: string): Promise<void> {
   await api.patch(`/backups/${id}/apply`)
 }
 
-export async function getServerLogs(): Promise<string[]> {
+export async function getServerLogs(): Promise<unknown[]> {
   try {
-    const res = await api.get('/logs', { params: { level: 2, startCursor: 0, count: 100 } })
-    return res.data.logs ?? []
+    const res = await api.get('/logs', { params: { level: 0, startCursor: 0, count: 100 } })
+    if (Array.isArray(res.data)) return res.data
+    if (Array.isArray(res.data?.logs)) return res.data.logs
+    if (Array.isArray(res.data?.data)) return res.data.data
+    return []
   } catch { return [] }
 }
 

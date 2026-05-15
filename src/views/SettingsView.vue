@@ -570,6 +570,32 @@
       </Transition>
     </section>
 
+    <!-- Abscond -->
+    <section class="settings-section">
+      <button class="section-toggle" @click="toggle('abscond')">
+        <span class="section-toggle-title">Abscond</span>
+        <v-icon class="section-chevron" :class="{ open: isOpen('abscond') }" size="16" color="rgba(255,255,255,0.3)">mdi-chevron-down</v-icon>
+      </button>
+
+      <Transition name="sect" @enter="onEnter" @after-enter="onAfterEnter" @leave="onLeave">
+        <div v-if="isOpen('abscond')">
+          <div class="settings-item" @click="showClearCacheConfirm = true">
+            <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-cached</v-icon>
+            <div class="item-label-stack">
+              <span class="item-label">Clear App Cache</span>
+              <span class="item-sublabel">Clears cached assets and reloads the app</span>
+            </div>
+            <v-icon size="14" color="rgba(255,255,255,0.2)">mdi-chevron-right</v-icon>
+          </div>
+          <div v-if="serverVersion" class="settings-item settings-item--info">
+            <v-icon size="18" color="rgba(255,255,255,0.3)">mdi-server-outline</v-icon>
+            <span class="item-label">Server version</span>
+            <span class="item-value-badge">{{ serverVersion }}</span>
+          </div>
+        </div>
+      </Transition>
+    </section>
+
     <!-- About -->
     <section class="settings-section">
       <button class="section-toggle" @click="toggle('about')">
@@ -627,32 +653,6 @@
             <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-bookmark-outline</v-icon>
             <span class="item-label">Bookmarks</span>
             <v-icon size="14" color="rgba(255,255,255,0.2)">mdi-chevron-right</v-icon>
-          </div>
-        </div>
-      </Transition>
-    </section>
-
-    <!-- Abscond -->
-    <section class="settings-section">
-      <button class="section-toggle" @click="toggle('abscond')">
-        <span class="section-toggle-title">Abscond</span>
-        <v-icon class="section-chevron" :class="{ open: isOpen('abscond') }" size="16" color="rgba(255,255,255,0.3)">mdi-chevron-down</v-icon>
-      </button>
-
-      <Transition name="sect" @enter="onEnter" @after-enter="onAfterEnter" @leave="onLeave">
-        <div v-if="isOpen('abscond')">
-          <div class="settings-item" @click="showClearCacheConfirm = true">
-            <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-cached</v-icon>
-            <div class="item-label-stack">
-              <span class="item-label">Clear App Cache</span>
-              <span class="item-sublabel">Clears cached assets and reloads the app</span>
-            </div>
-            <v-icon size="14" color="rgba(255,255,255,0.2)">mdi-chevron-right</v-icon>
-          </div>
-          <div v-if="serverVersion" class="settings-item settings-item--info">
-            <v-icon size="18" color="rgba(255,255,255,0.3)">mdi-server-outline</v-icon>
-            <span class="item-label">Server version</span>
-            <span class="item-value-badge">{{ serverVersion }}</span>
           </div>
         </div>
       </Transition>

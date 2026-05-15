@@ -4,6 +4,12 @@
       <div v-for="n in 7" :key="n" class="skel-row" />
     </div>
 
+    <div v-else-if="loadError" class="error-state">
+      <v-icon size="36" color="rgba(255,255,255,0.15)">mdi-alert-circle-outline</v-icon>
+      <p>Failed to load server settings.</p>
+      <button class="retry-btn" @click="loadSettings">Retry</button>
+    </div>
+
     <div v-else-if="settings" class="settings-content">
       <!-- Scanner -->
       <div class="settings-group">
@@ -202,10 +208,11 @@ import { onMounted, ref } from 'vue'
 import { getServerSettings, updateServerSettings } from '@/api/admin/index'
 import type { ServerSettings } from '@/api/admin/index'
 
-const loading  = ref(true)
-const settings = ref<ServerSettings | null>(null)
-const dirty    = ref(false)
-const saving   = ref(false)
+const loading   = ref(true)
+const loadError = ref(false)
+const settings  = ref<ServerSettings | null>(null)
+const dirty     = ref(false)
+const saving    = ref(false)
 
 function toggle(key: keyof ServerSettings) {
   if (!settings.value) return
@@ -223,10 +230,15 @@ async function doSave() {
   finally { saving.value = false }
 }
 
-onMounted(async () => {
-  try { settings.value = await getServerSettings() } catch { /* ignore */ }
+async function loadSettings() {
+  loading.value   = true
+  loadError.value = false
+  try { settings.value = await getServerSettings() }
+  catch { loadError.value = true }
   finally { loading.value = false }
-})
+}
+
+onMounted(loadSettings)
 </script>
 
 <style scoped>
@@ -239,6 +251,15 @@ onMounted(async () => {
   background-size: 200% 100%; animation: shimmer 1.5s infinite;
 }
 @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
+.error-state {
+  display: flex; flex-direction: column; align-items: center; gap: 12px;
+  padding: 48px 0; color: rgba(255,255,255,0.4); font-size: 13px; text-align: center;
+}
+.retry-btn {
+  padding: 8px 24px; border-radius: 10px; border: none; cursor: pointer;
+  background: rgba(212,160,23,0.12); color: #d4a017; font-size: 13px; font-weight: 600;
+}
 
 .settings-content { display: flex; flex-direction: column; gap: 24px; }
 .settings-group { display: flex; flex-direction: column; }

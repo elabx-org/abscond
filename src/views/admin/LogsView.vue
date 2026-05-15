@@ -29,7 +29,7 @@ import { nextTick, onMounted, ref } from 'vue'
 import { getServerLogs } from '@/api/admin'
 
 const loading = ref(true)
-const logs    = ref<unknown[]>([])
+const logs = ref<unknown[]>([])
 const logsEl  = ref<HTMLElement | null>(null)
 
 function formatEntry(entry: unknown): string {
