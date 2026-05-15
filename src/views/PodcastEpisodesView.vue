@@ -23,12 +23,29 @@
         </div>
       </div>
 
+      <!-- Episode filter -->
+      <div class="ep-filter-row">
+        <div class="ep-search-wrap">
+          <v-icon size="14" color="rgba(255,255,255,0.3)">mdi-magnify</v-icon>
+          <input v-model="epSearch" class="ep-search" placeholder="Search episodes…" />
+          <button v-if="epSearch" class="ep-search-clear" @click="epSearch = ''">
+            <v-icon size="12">mdi-close</v-icon>
+          </button>
+        </div>
+        <div class="ep-filter-chips">
+          <button class="ep-chip" :class="{ active: epFilter === 'all' }" @click="epFilter = 'all'">All</button>
+          <button class="ep-chip" :class="{ active: epFilter === 'unfinished' }" @click="epFilter = 'unfinished'">Unplayed</button>
+          <button class="ep-chip" :class="{ active: epFilter === 'finished' }" @click="epFilter = 'finished'">Played</button>
+        </div>
+      </div>
+
       <!-- Episode list -->
       <div class="ep-list">
         <div
-          v-for="ep in sortedEpisodes"
+          v-for="ep in filteredEpisodes"
           :key="ep.id"
           class="ep-row"
+          :class="{ finished: ep.userEpisodeProgress?.isFinished }"
         >
           <div class="ep-main">
             <div class="ep-num" v-if="ep.index">{{ ep.index }}</div>
@@ -37,9 +54,9 @@
               <p class="ep-sub">
                 <span v-if="ep.publishedAt">{{ formatDate(ep.publishedAt) }} · </span>
                 {{ formatDuration(ep.duration) }}
+                <span v-if="ep.userEpisodeProgress?.isFinished" class="ep-played-badge">· Played</span>
               </p>
-              <!-- Progress bar -->
-              <div v-if="(ep.userEpisodeProgress?.progress ?? 0) > 0" class="ep-progress-track">
+              <div v-if="(ep.userEpisodeProgress?.progress ?? 0) > 0 && !ep.userEpisodeProgress?.isFinished" class="ep-progress-track">
                 <div class="ep-progress-fill" :style="{ width: `${(ep.userEpisodeProgress?.progress ?? 0) * 100}%` }" />
               </div>
             </div>
@@ -48,8 +65,14 @@
                 {{ isPlayingEp(ep.id) && player.isPlaying ? 'mdi-pause-circle' : 'mdi-play-circle' }}
               </v-icon>
             </button>
+            <button class="ep-mark-btn" @click.stop="toggleFinished(ep)" :title="ep.userEpisodeProgress?.isFinished ? 'Mark unplayed' : 'Mark played'">
+              <v-icon size="16" :color="ep.userEpisodeProgress?.isFinished ? '#22c55e' : 'rgba(255,255,255,0.2)'">
+                {{ ep.userEpisodeProgress?.isFinished ? 'mdi-check-circle' : 'mdi-check-circle-outline' }}
+              </v-icon>
+            </button>
           </div>
         </div>
+        <div v-if="!filteredEpisodes.length" class="ep-empty">No episodes match your filter</div>
       </div>
     </div>
   </div>
@@ -60,7 +83,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { usePlayerStore } from '@/stores/player'
-import { coverUrl } from '@/api/client'
+import { coverUrl, api } from '@/api/client'
 import { getPodcastItem } from '@/api/browse'
 import type { PodcastItem, PodcastEpisode } from '@/api/browse'
 
@@ -69,10 +92,23 @@ const auth   = useAuthStore()
 const player = usePlayerStore()
 const loading = ref(false)
 const item    = ref<PodcastItem | null>(null)
+const epSearch = ref('')
+const epFilter = ref<'all' | 'unfinished' | 'finished'>('all')
 
 const sortedEpisodes = computed<PodcastEpisode[]>(() => {
   const eps = item.value?.media?.episodes ?? []
   return [...eps].sort((a, b) => (b.index ?? 0) - (a.index ?? 0))
+})
+
+const filteredEpisodes = computed(() => {
+  let eps = sortedEpisodes.value
+  if (epFilter.value === 'finished')   eps = eps.filter(e => e.userEpisodeProgress?.isFinished)
+  if (epFilter.value === 'unfinished') eps = eps.filter(e => !e.userEpisodeProgress?.isFinished)
+  if (epSearch.value.trim()) {
+    const q = epSearch.value.toLowerCase()
+    eps = eps.filter(e => e.title.toLowerCase().includes(q))
+  }
+  return eps
 })
 
 function isPlayingEp(episodeId: string) {
@@ -84,6 +120,18 @@ async function playEpisode(ep: PodcastEpisode) {
   if (isPlayingEp(ep.id) && player.isPlaying) { player.togglePlay(); return }
   if (isPlayingEp(ep.id) && !player.isPlaying) { player.togglePlay(); return }
   await player.play(item.value as unknown as import('@/api/types').LibraryItem, ep.id)
+}
+
+async function toggleFinished(ep: PodcastEpisode) {
+  if (!item.value) return
+  const isFinished = ep.userEpisodeProgress?.isFinished
+  const progress   = isFinished ? 0 : 1
+  await api.patch(`/me/progress/${item.value.id}/${ep.id}`, { isFinished: !isFinished, progress }).catch(() => {})
+  if (!ep.userEpisodeProgress) (ep as PodcastEpisode & { userEpisodeProgress: unknown }).userEpisodeProgress = {}
+  if (ep.userEpisodeProgress) {
+    ep.userEpisodeProgress.isFinished = !isFinished
+    ep.userEpisodeProgress.progress   = progress
+  }
 }
 
 function formatDate(ts: number): string {
@@ -125,6 +173,22 @@ onMounted(async () => {
 .podcast-info { flex: 1; }
 .podcast-desc { font-size: 12px; color: rgba(255,255,255,0.45); margin: 0; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; }
 
+.ep-filter-row { margin-bottom: 12px; }
+.ep-search-wrap {
+  display: flex; align-items: center; gap: 8px; margin-bottom: 8px;
+  background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 10px; padding: 8px 12px;
+}
+.ep-search { flex: 1; background: transparent; border: none; outline: none; font-size: 13px; color: rgba(255,255,255,0.85); }
+.ep-search::placeholder { color: rgba(255,255,255,0.3); }
+.ep-search-clear { background: transparent; border: none; cursor: pointer; color: rgba(255,255,255,0.4); padding: 0; }
+.ep-filter-chips { display: flex; gap: 6px; }
+.ep-chip {
+  font-size: 11px; padding: 4px 10px; border-radius: 16px;
+  background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08);
+  color: rgba(255,255,255,0.5); cursor: pointer;
+}
+.ep-chip.active { background: rgba(212,160,23,0.12); border-color: rgba(212,160,23,0.3); color: #d4a017; }
 .ep-list { display: flex; flex-direction: column; }
 .ep-row { border-bottom: 1px solid rgba(255,255,255,0.05); padding: 12px 0; }
 .ep-main { display: flex; align-items: center; gap: 10px; }
@@ -135,4 +199,8 @@ onMounted(async () => {
 .ep-progress-track { height: 2px; background: rgba(255,255,255,0.08); border-radius: 1px; }
 .ep-progress-fill { height: 100%; background: #d4a017; border-radius: 1px; }
 .ep-play-btn { background: transparent; border: none; cursor: pointer; padding: 4px; flex-shrink: 0; }
+.ep-mark-btn { background: transparent; border: none; cursor: pointer; padding: 4px; flex-shrink: 0; }
+.ep-played-badge { color: #22c55e; }
+.ep-row.finished .ep-title { color: rgba(255,255,255,0.45); }
+.ep-empty { font-size: 12px; color: rgba(255,255,255,0.25); padding: 20px 0; text-align: center; }
 </style>
