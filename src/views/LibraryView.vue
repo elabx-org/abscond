@@ -18,11 +18,17 @@
         <button class="sort-chip" :class="{ active: sortField === 'title' }" @click="setSort('title')">
           <v-icon size="12">mdi-sort-alphabetical-ascending</v-icon> Title
         </button>
+        <button class="sort-chip" :class="{ active: sortField === 'author' }" @click="setSort('author')">
+          <v-icon size="12">mdi-account-outline</v-icon> Author
+        </button>
         <button class="sort-chip" :class="{ active: sortField === 'addedAt' }" @click="setSort('addedAt')">
           <v-icon size="12">mdi-clock-outline</v-icon> Added
         </button>
         <button class="sort-chip" :class="{ active: sortField === 'duration' }" @click="setSort('duration')">
           <v-icon size="12">mdi-timer-outline</v-icon> Duration
+        </button>
+        <button class="sort-chip" :class="{ active: sortField === 'progress' }" @click="setSort('progress')">
+          <v-icon size="12">mdi-progress-check</v-icon> Progress
         </button>
         <button class="sort-chip sort-chip--dir" @click="toggleDir">
           <v-icon size="14">{{ sortDesc ? 'mdi-sort-descending' : 'mdi-sort-ascending' }}</v-icon>
@@ -202,7 +208,7 @@ const selectedIds       = ref(new Set<string>())
 const showPlaylistPicker = ref(false)
 const playlists         = ref<Playlist[]>([])
 const loadingPlaylists  = ref(false)
-const sortField      = ref<'title' | 'addedAt' | 'duration'>('title')
+const sortField      = ref<'title' | 'author' | 'addedAt' | 'duration' | 'progress'>('title')
 const progressFilter = ref<'all' | 'in-progress' | 'finished' | 'not-started'>('all')
 
 const progressFilters = [
@@ -242,9 +248,15 @@ const sortedItems = computed(() => {
     if (sortField.value === 'title') {
       va = a.media.metadata.title.toLowerCase()
       vb = b.media.metadata.title.toLowerCase()
+    } else if (sortField.value === 'author') {
+      va = (a.media.metadata.authors ?? [])[0]?.name?.toLowerCase() ?? ''
+      vb = (b.media.metadata.authors ?? [])[0]?.name?.toLowerCase() ?? ''
     } else if (sortField.value === 'duration') {
       va = a.media.duration ?? 0
       vb = b.media.duration ?? 0
+    } else if (sortField.value === 'progress') {
+      va = a.userMediaProgress?.progress ?? 0
+      vb = b.userMediaProgress?.progress ?? 0
     } else {
       va = a.addedAt
       vb = b.addedAt
@@ -258,7 +270,7 @@ const sortedItems = computed(() => {
 
 const hasMore = computed(() => filteredItems.value.length > page.value * pageSize)
 
-function setSort(field: typeof sortField.value) {
+function setSort(field: 'title' | 'author' | 'addedAt' | 'duration' | 'progress') {
   if (sortField.value === field) { sortDesc.value = !sortDesc.value } else {
     sortField.value = field; sortDesc.value = false
   }
