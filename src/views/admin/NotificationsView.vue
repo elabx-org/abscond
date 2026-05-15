@@ -76,7 +76,7 @@ import {
   patchNotification,
   testNotification,
 } from '@/api/admin/index'
-import type { NotificationEvent } from '@/api/admin/index'
+import type { NotificationEvent, NotificationSettings } from '@/api/admin/index'
 
 const loading         = ref(true)
 const appriseUrl      = ref('')
@@ -131,7 +131,7 @@ onMounted(async () => {
   loading.value = true
   try {
     const [nSettings, evs] = await Promise.all([
-      getNotificationSettings().catch(() => ({})),
+      getNotificationSettings().catch((): NotificationSettings => ({})),
       getNotifications().catch(() => []),
     ])
     appriseUrl.value      = nSettings.appriseApiUrl ?? ''
