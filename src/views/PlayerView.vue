@@ -337,11 +337,16 @@
 
           <!-- Chapters panel -->
           <Transition name="panel">
-            <div v-if="showChapters && chapters.length" class="panel-box chapters-panel">
+            <div v-if="showChapters" class="panel-box chapters-panel">
               <div class="chapters-panel-header">
                 <span class="panel-title" style="margin:0">Chapters</span>
                 <span class="chapters-count">{{ filteredChapters.length }}/{{ chapters.length }}</span>
               </div>
+              <div v-if="loadingChapters" class="chapters-loading-row">
+                <v-icon size="16" color="rgba(255,255,255,0.3)" class="spin">mdi-loading</v-icon>
+                <span>Loading chapters…</span>
+              </div>
+              <div v-else-if="!chapters.length" class="chapters-empty-row">No chapters available</div>
               <div v-if="chapters.length > 8" class="chapter-search-wrap">
                 <v-icon size="13" color="rgba(255,255,255,0.3)">mdi-magnify</v-icon>
                 <input v-model="chapterSearch" class="chapter-search-input" placeholder="Search chapters…" />
@@ -380,6 +385,13 @@
 
       </div>
     </div>
+
+    <!-- Panel scrim -->
+    <Teleport to="body">
+      <Transition name="scrim">
+        <div v-if="anyPanelOpen" class="panel-scrim" @click="closeAllPanels" />
+      </Transition>
+    </Teleport>
 
     <!-- Book / podcast detail sheet from player -->
     <BookDetailSheet
@@ -459,7 +471,7 @@ import { computed, ref, watch, nextTick } from 'vue'
 import { usePlayerStore } from '@/stores/player'
 import { useAuthStore } from '@/stores/auth'
 import { useSettingsStore } from '@/stores/settings'
-import { coverUrl } from '@/api/client'
+import { coverUrl, api } from '@/api/client'
 import { createBookmark, getBookmarks, deleteBookmark } from '@/api/bookmarks'
 import type { Bookmark } from '@/api/bookmarks'
 import { useNotificationStore } from '@/stores/notifications'
@@ -616,11 +628,15 @@ function onCoverTap() {
 }
 
 // ── Chapters / progress ───────────────────────────────────────────────────────
+const fetchedChapters = ref<import('@/api/types').Chapter[]>([])
+const loadingChapters = ref(false)
+
 const chapters = computed<import('@/api/types').Chapter[]>(() => {
   const sess = player.session?.chapters ?? []
   if (sess.length > 0) return sess
   const mediaChs = (player.currentItem?.media as any)?.chapters
-  return Array.isArray(mediaChs) ? mediaChs : []
+  if (Array.isArray(mediaChs) && mediaChs.length > 0) return mediaChs
+  return fetchedChapters.value
 })
 const filteredChapters = computed(() => {
   const q = chapterSearch.value.trim().toLowerCase()
@@ -811,8 +827,26 @@ function onChapterBarClick(e: MouseEvent) {
   if (ch) player.seek(ch.start + frac * chapterDuration.value)
 }
 
-watch(showChapters, (open) => {
-  if (open) nextTick(() => {
+const anyPanelOpen = computed(() => showSpeedPicker.value || showSleepPicker.value || showChapters.value || showQueue.value)
+function closeAllPanels() {
+  showSpeedPicker.value = false
+  showSleepPicker.value = false
+  showChapters.value = false
+  showQueue.value = false
+  chapterSearch.value = ''
+}
+
+watch(showChapters, async (open) => {
+  if (!open) return
+  if (chapters.value.length === 0 && player.currentItem && !loadingChapters.value) {
+    loadingChapters.value = true
+    try {
+      const res = await api.get(`/items/${player.currentItem.id}`, { params: { expanded: 1 } })
+      fetchedChapters.value = res.data?.media?.chapters ?? []
+    } catch { /* ignore */ }
+    finally { loadingChapters.value = false }
+  }
+  nextTick(() => {
     const el = chaptersListEl.value?.querySelector('.chapter-item.active') as HTMLElement | null
     el?.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
   })
@@ -1070,10 +1104,22 @@ function queueDragEnd() {
 .sleep-countdown { font-size: 10px; font-weight: 700; font-variant-numeric: tabular-nums; }
 
 /* ── Panels ──────────────────────────────────────────────────────────────────── */
-.panel-box {
-  width: 100%; background: rgba(20,20,20,0.95); border-radius: 14px;
-  border: 1px solid rgba(255,255,255,0.07); padding: 14px 16px; margin-bottom: 12px;
+.panel-scrim {
+  position: fixed; inset: 0; z-index: 98; background: rgba(0,0,0,0.45);
 }
+.scrim-enter-active, .scrim-leave-active { transition: opacity 0.2s; }
+.scrim-enter-from, .scrim-leave-to { opacity: 0; }
+.panel-box {
+  position: fixed; left: 0; right: 0;
+  bottom: calc(56px + env(safe-area-inset-bottom, 0px));
+  z-index: 99;
+  background: #1a1a1a; border-radius: 20px 20px 0 0;
+  border-top: 1px solid rgba(255,255,255,0.1);
+  padding: 14px 16px calc(16px + env(safe-area-inset-bottom, 0px));
+  box-shadow: 0 -8px 32px rgba(0,0,0,0.6);
+  max-height: 60vh; overflow-y: auto; scrollbar-width: none;
+}
+.panel-box::-webkit-scrollbar { display: none; }
 .panel-title {
   font-size: 10px; font-weight: 700; color: rgba(255,255,255,0.4);
   text-transform: uppercase; letter-spacing: 0.5px; margin: 0 0 10px;
@@ -1135,7 +1181,9 @@ function queueDragEnd() {
 .queue-item-del { background: transparent; border: none; cursor: pointer; padding: 4px; flex-shrink: 0; }
 
 /* Chapters panel */
-.chapters-panel { padding: 14px 0 0; }
+.chapters-panel { padding: 14px 0 0; max-height: 65vh; }
+.chapters-loading-row { display: flex; align-items: center; gap: 8px; padding: 12px 16px; font-size: 12px; color: rgba(255,255,255,0.35); }
+.chapters-empty-row { padding: 12px 16px; font-size: 12px; color: rgba(255,255,255,0.25); }
 .chapters-panel-header { display: flex; align-items: center; justify-content: space-between; padding: 0 16px 10px; }
 .chapters-count { font-size: 11px; color: rgba(255,255,255,0.25); }
 .chapter-search-wrap {
@@ -1169,8 +1217,8 @@ function queueDragEnd() {
 .recent-only-hint { font-size: 12px; color: rgba(255,255,255,0.3); margin: 0; }
 
 /* Transitions */
-.panel-enter-active, .panel-leave-active { transition: opacity 0.18s, transform 0.18s; }
-.panel-enter-from, .panel-leave-to { opacity: 0; transform: translateY(-6px); }
+.panel-enter-active, .panel-leave-active { transition: transform 0.25s cubic-bezier(0.32,0.72,0,1), opacity 0.2s; }
+.panel-enter-from, .panel-leave-to { transform: translateY(100%); opacity: 0; }
 .backdrop-enter-active { transition: opacity 0.5s ease; position: absolute; inset: 0; }
 .backdrop-leave-active { transition: opacity 0.5s ease; position: absolute; inset: 0; }
 .backdrop-enter-from, .backdrop-leave-to { opacity: 0; }
