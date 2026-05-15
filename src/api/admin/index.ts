@@ -73,7 +73,7 @@ export async function deleteUser(id: string): Promise<void> {
   await api.delete(`/users/${id}`)
 }
 
-export async function updateUser(id: string, data: { isActive?: boolean; permissions?: Partial<AdminUserPermissions> }): Promise<AdminUser> {
+export async function updateUser(id: string, data: { isActive?: boolean; permissions?: Partial<AdminUserPermissions>; password?: string }): Promise<AdminUser> {
   const res = await api.patch(`/users/${id}`, data)
   return res.data.updatedUser ?? res.data.user ?? res.data
 }

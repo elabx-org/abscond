@@ -94,6 +94,18 @@
                 </div>
               </div>
 
+              <div class="perm-divider" />
+
+              <!-- Password reset -->
+              <div class="pw-reset-section">
+                <p class="pw-reset-label">Reset Password</p>
+                <input v-model="newPw" class="form-input" type="password" placeholder="New password" autocomplete="new-password" />
+                <button class="pw-reset-btn" :disabled="!newPw.trim() || pwSaving" @click="doResetPw">
+                  {{ pwSaving ? 'Updating…' : 'Update Password' }}
+                </button>
+                <p v-if="pwError" class="form-error" style="margin-top:4px">{{ pwError }}</p>
+              </div>
+
               <p v-if="editError" class="form-error">{{ editError }}</p>
               <button class="save-btn" :disabled="editSaving" @click="doSaveEdit">
                 {{ editSaving ? 'Saving…' : 'Save Changes' }}
@@ -163,10 +175,28 @@ const permKeys = [
   { key: 'accessExplicitContent',label: 'Explicit Content',      desc: 'Access explicit items' },
 ]
 
+const newPw    = ref('')
+const pwSaving = ref(false)
+const pwError  = ref('')
+
+async function doResetPw() {
+  if (!editTarget.value || !newPw.value.trim()) return
+  pwSaving.value = true
+  pwError.value  = ''
+  try {
+    await updateUser(editTarget.value.id, { password: newPw.value })
+    newPw.value = ''
+  } catch (e: unknown) {
+    pwError.value = e instanceof Error ? e.message : 'Failed to update password'
+  } finally { pwSaving.value = false }
+}
+
 function openEdit(u: AdminUser) {
   editTarget.value = u
   editActive.value = u.isActive
   editError.value  = ''
+  newPw.value      = ''
+  pwError.value    = ''
   const p = u.permissions
   editPerms.download              = p?.download              ?? true
   editPerms.update                = p?.update                ?? true
@@ -333,4 +363,12 @@ onMounted(async () => {
   border-radius: 50%; background: white; transition: left 0.2s;
 }
 .toggle.on .toggle-thumb { left: 21px; }
+.pw-reset-section { padding: 8px 0; }
+.pw-reset-label { font-size: 11px; font-weight: 600; color: rgba(255,255,255,0.35); text-transform: uppercase; letter-spacing: 0.06em; margin: 0 0 8px; }
+.pw-reset-btn {
+  width: 100%; padding: 10px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1);
+  background: rgba(255,255,255,0.05); color: rgba(255,255,255,0.6); font-size: 13px; cursor: pointer;
+  margin-top: 6px;
+}
+.pw-reset-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 </style>
