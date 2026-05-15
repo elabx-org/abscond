@@ -18,6 +18,11 @@
         </div>
       </div>
 
+      <div class="settings-item" @click="openChangeUsername">
+        <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-account-edit-outline</v-icon>
+        <span class="item-label">Change Username</span>
+        <v-icon size="14" color="rgba(255,255,255,0.2)">mdi-chevron-right</v-icon>
+      </div>
       <div class="settings-item" @click="showChangePassword = true">
         <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-lock-outline</v-icon>
         <span class="item-label">Change Password</span>
@@ -84,7 +89,7 @@
     <section class="settings-section">
       <p class="section-label">Server</p>
 
-      <div class="settings-item">
+      <div class="settings-item" @click="openEditServer">
         <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-server</v-icon>
         <span class="item-label">ABS Server</span>
         <span class="item-value server-url">{{ serverUrl }}</span>
@@ -196,6 +201,53 @@
       </Transition>
     </Teleport>
 
+    <!-- Change username sheet -->
+    <Teleport to="body">
+      <Transition name="fade">
+        <div v-if="showChangeUsername" class="confirm-backdrop" @click.self="showChangeUsername = false">
+          <div class="confirm-sheet">
+            <p class="confirm-title">Change Username</p>
+            <input v-model="newUsername" class="form-input" placeholder="New username" autocomplete="off" />
+            <p v-if="usernameError" class="form-error">{{ usernameError }}</p>
+            <p v-if="usernameSuccess" class="form-success">Username updated</p>
+            <div class="confirm-btns">
+              <button class="confirm-cancel" @click="showChangeUsername = false">Cancel</button>
+              <button
+                class="confirm-logout"
+                style="background:rgba(212,160,23,0.12);color:#d4a017"
+                :disabled="changingUsername || !newUsername.trim()"
+                @click="doChangeUsername"
+              >
+                {{ changingUsername ? 'Saving…' : 'Save' }}
+              </button>
+            </div>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
+
+    <!-- Edit server URL sheet -->
+    <Teleport to="body">
+      <Transition name="fade">
+        <div v-if="showEditServer" class="confirm-backdrop" @click.self="showEditServer = false">
+          <div class="confirm-sheet">
+            <p class="confirm-title">Server URL</p>
+            <p class="confirm-sub" style="margin:0 0 12px;font-size:11px">Change requires re-login</p>
+            <input v-model="editServerUrl" class="form-input" placeholder="https://abs.example.com" autocomplete="off" />
+            <div class="confirm-btns">
+              <button class="confirm-cancel" @click="showEditServer = false">Cancel</button>
+              <button
+                class="confirm-logout"
+                style="background:rgba(212,160,23,0.12);color:#d4a017"
+                :disabled="!editServerUrl.trim()"
+                @click="doSaveServer"
+              >Save &amp; Re-login</button>
+            </div>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
+
     <!-- Logout confirmation -->
     <Teleport to="body">
       <Transition name="fade">
@@ -220,7 +272,7 @@ import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { useLibraryStore } from '@/stores/library'
 import { usePlayerStore } from '@/stores/player'
-import { updatePassword } from '@/api/auth'
+import { updatePassword, updateUsername } from '@/api/auth'
 
 const router  = useRouter()
 const auth    = useAuthStore()
@@ -253,7 +305,52 @@ async function doChangePassword() {
   } catch { pwError.value = 'Failed to change password. Check your current password.' }
   finally { changingPw.value = false }
 }
-const serverUrl = localStorage.getItem('abs_base_url') ?? '/api'
+const serverUrl = ref(localStorage.getItem('abs_base_url') ?? '/api')
+
+const showChangeUsername = ref(false)
+const newUsername        = ref('')
+const usernameError      = ref('')
+const usernameSuccess    = ref(false)
+const changingUsername   = ref(false)
+
+function openChangeUsername() {
+  newUsername.value     = auth.user?.username ?? ''
+  usernameError.value   = ''
+  usernameSuccess.value = false
+  showChangeUsername.value = true
+}
+
+async function doChangeUsername() {
+  if (!auth.user?.id || !newUsername.value.trim()) return
+  changingUsername.value = true
+  usernameError.value    = ''
+  usernameSuccess.value  = false
+  try {
+    await updateUsername(auth.user.id, newUsername.value.trim())
+    if (auth.user) auth.user.username = newUsername.value.trim()
+    usernameSuccess.value = true
+    setTimeout(() => { showChangeUsername.value = false }, 1000)
+  } catch { usernameError.value = 'Failed to update username' }
+  finally { changingUsername.value = false }
+}
+
+const showEditServer = ref(false)
+const editServerUrl  = ref('')
+
+function openEditServer() {
+  editServerUrl.value = serverUrl.value
+  showEditServer.value = true
+}
+
+function doSaveServer() {
+  const url = editServerUrl.value.trim().replace(/\/$/, '')
+  localStorage.setItem('abs_base_url', url)
+  serverUrl.value = url
+  showEditServer.value = false
+  // Force re-login with new server
+  auth.logout()
+  router.push({ name: 'login' })
+}
 
 const playbackRate = ref<number>(
   parseFloat(localStorage.getItem('abs_playback_rate') ?? '1')
