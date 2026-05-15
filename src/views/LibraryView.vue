@@ -43,6 +43,7 @@
       <template v-if="!isPodcast">
         <button class="view-tab" :class="{ active: viewMode === 'series' }" @click="setViewMode('series')">Series</button>
         <button class="view-tab" :class="{ active: viewMode === 'authors' }" @click="setViewMode('authors')">Authors</button>
+        <button class="view-tab" :class="{ active: viewMode === 'narrators' }" @click="setViewMode('narrators')">Narrators</button>
       </template>
     </div>
 
@@ -255,6 +256,41 @@
       </div>
     </template>
 
+    <!-- Narrators view -->
+    <template v-else-if="viewMode === 'narrators'">
+      <div class="sub-search-wrap">
+        <v-icon size="14" color="rgba(255,255,255,0.3)">mdi-magnify</v-icon>
+        <input v-model="narratorSearch" class="lib-search-input" placeholder="Search narrators…" />
+        <button v-if="narratorSearch" class="lib-search-clear" @click="narratorSearch = ''">
+          <v-icon size="12">mdi-close</v-icon>
+        </button>
+      </div>
+      <div v-if="loadingNarrators" class="grid">
+        <div v-for="n in 12" :key="n" class="skeleton-card">
+          <div class="skeleton-cover" /><div class="skeleton-line short" /><div class="skeleton-line" />
+        </div>
+      </div>
+      <div v-else-if="!filteredNarrators.length" class="empty-state">
+        <v-icon size="40" color="rgba(255,255,255,0.15)">mdi-microphone-outline</v-icon>
+        <p>No narrators found</p>
+      </div>
+      <div v-else class="grid">
+        <div
+          v-for="name in filteredNarrators"
+          :key="name"
+          class="series-card"
+          @click="activeNarrator = name"
+        >
+          <div class="series-cover-wrap series-cover-wrap--circle">
+            <div class="author-initial-cover">
+              <span class="author-initial">{{ name[0]?.toUpperCase() }}</span>
+            </div>
+          </div>
+          <p class="card-title">{{ name }}</p>
+        </div>
+      </div>
+    </template>
+
     <!-- Batch select bar -->
     <Transition name="batch-bar">
       <div v-if="selectMode" class="batch-bar">
@@ -388,6 +424,13 @@
       @close="activeAuthor = null"
       @open-book="openDetail"
     />
+    <NarratorDetailSheet
+      v-if="activeNarrator"
+      :show="!!activeNarrator"
+      :narrator-name="activeNarrator"
+      @close="activeNarrator = null"
+      @open-book="openDetail"
+    />
   </div>
 </template>
 
@@ -403,6 +446,7 @@ import PodcastDetailSheet from '@/components/sheets/PodcastDetailSheet.vue'
 import QuickActionsSheet from '@/components/sheets/QuickActionsSheet.vue'
 import SeriesDetailSheet from '@/components/sheets/SeriesDetailSheet.vue'
 import AuthorDetailSheet from '@/components/sheets/AuthorDetailSheet.vue'
+import NarratorDetailSheet from '@/components/sheets/NarratorDetailSheet.vue'
 import { getPlaylists, addItemToPlaylist } from '@/api/playlists'
 import { getCollections, addBookToCollection } from '@/api/collections'
 import type { Playlist } from '@/api/playlists'
@@ -410,7 +454,7 @@ import type { Collection } from '@/api/collections'
 import type { LibraryItem } from '@/api/types'
 import { usePlayerStore } from '@/stores/player'
 import { useNotificationStore } from '@/stores/notifications'
-import { getLibrarySeriesList, getLibraryAuthors } from '@/api/browse'
+import { getLibrarySeriesList, getLibraryAuthors, getLibraryNarrators } from '@/api/browse'
 import type { SeriesDetail, AuthorDetail } from '@/api/browse'
 import { getAuthorDisplay } from '@/utils/metadata'
 import { getBaseUrl } from '@/api/client'
@@ -424,16 +468,20 @@ const router = useRouter()
 const activeLibrary  = computed(() => lib.libraries.find(l => l.id === lib.activeLibraryId))
 const isPodcast      = computed(() => activeLibrary.value?.mediaType === 'podcast')
 
-type ViewMode = 'library' | 'series' | 'authors'
+type ViewMode = 'library' | 'series' | 'authors' | 'narrators'
 const viewMode       = ref<ViewMode>('library')
 const seriesList     = ref<SeriesDetail[]>([])
-const authorsList    = ref<AuthorDetail[]>([])
-const loadingSeries  = ref(false)
-const loadingAuthors = ref(false)
-const activeSeries   = ref<SeriesDetail | null>(null)
-const activeAuthor   = ref<AuthorDetail | null>(null)
-const seriesSearch   = ref('')
-const authorSearch   = ref('')
+const authorsList      = ref<AuthorDetail[]>([])
+const narratorsList    = ref<string[]>([])
+const loadingSeries    = ref(false)
+const loadingAuthors   = ref(false)
+const loadingNarrators = ref(false)
+const activeSeries     = ref<SeriesDetail | null>(null)
+const activeAuthor     = ref<AuthorDetail | null>(null)
+const activeNarrator   = ref<string | null>(null)
+const seriesSearch     = ref('')
+const authorSearch     = ref('')
+const narratorSearch   = ref('')
 let   _baseUrl       = ''
 getBaseUrl().then(u => { _baseUrl = u })
 
@@ -444,6 +492,10 @@ const filteredSeries  = computed(() => {
 const filteredAuthors = computed(() => {
   const q = authorSearch.value.toLowerCase()
   return q ? authorsList.value.filter(a => a.name.toLowerCase().includes(q)) : authorsList.value
+})
+const filteredNarrators = computed(() => {
+  const q = narratorSearch.value.toLowerCase()
+  return q ? narratorsList.value.filter(n => n.toLowerCase().includes(q)) : narratorsList.value
 })
 
 function authorImageUrl(authorId: string): string {
@@ -463,6 +515,12 @@ async function setViewMode(mode: ViewMode) {
     try { authorsList.value = await getLibraryAuthors(lib.activeLibraryId) }
     catch { authorsList.value = [] }
     finally { loadingAuthors.value = false }
+  }
+  if (mode === 'narrators' && !narratorsList.value.length && lib.activeLibraryId) {
+    loadingNarrators.value = true
+    try { narratorsList.value = await getLibraryNarrators(lib.activeLibraryId) }
+    catch { narratorsList.value = [] }
+    finally { loadingNarrators.value = false }
   }
 }
 
@@ -772,6 +830,10 @@ watch(sentinelEl, (el) => {
 watch(() => lib.activeLibraryId, (id) => {
   if (id && !lib.itemsFor(id).length) lib.fetchItems(id)
   if (isPodcast.value && viewMode.value !== 'library') viewMode.value = 'library'
+  // Reset secondary-tab data so switching library reloads
+  seriesList.value     = []
+  authorsList.value    = []
+  narratorsList.value  = []
 })
 </script>
 

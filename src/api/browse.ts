@@ -87,6 +87,14 @@ export async function getLibraryAuthors(libraryId: string): Promise<AuthorDetail
   return res.data.authors ?? []
 }
 
+export async function getLibraryNarrators(libraryId: string): Promise<string[]> {
+  try {
+    const res = await api.get(`/libraries/${libraryId}/filterdata`)
+    const raw: unknown[] = res.data?.narrators ?? []
+    return raw.map(n => String(n)).filter(Boolean).sort()
+  } catch { return [] }
+}
+
 export interface PersonalizedShelf {
   id: string
   label: string
