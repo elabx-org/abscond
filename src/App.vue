@@ -37,7 +37,7 @@ async function refreshUser() {
       auth.setSession(auth.token, {
         id:          u.id,
         username:    u.username,
-        isAdminOrUp: u.isAdminOrUp ?? false,
+        isAdminOrUp: u.isAdminOrUp ?? u.type === 'root' || u.type === 'admin',
         token:       auth.token,
       })
     }
