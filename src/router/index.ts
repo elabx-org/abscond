@@ -34,6 +34,7 @@ const router = createRouter({
         { path: 'home',        name: 'home',        component: () => import('@/views/HomeView.vue') },
         { path: 'library',     name: 'library',     component: () => import('@/views/LibraryView.vue') },
         { path: 'player',      name: 'player',      component: () => import('@/views/PlayerView.vue') },
+        { path: 'car',         name: 'car',         component: () => import('@/views/CarModeView.vue') },
         { path: 'search',      name: 'search',      component: () => import('@/views/SearchView.vue') },
         { path: 'settings',    name: 'settings',    component: () => import('@/views/SettingsView.vue') },
         { path: 'stats',       name: 'stats',       component: () => import('@/views/StatsView.vue') },

@@ -192,6 +192,9 @@
             <button class="util-btn" :class="{ active: eq.enabled }" @click="showEq = true">
               <v-icon size="18">mdi-equalizer</v-icon>
             </button>
+            <button class="util-btn" @click="$router.push({ name: 'car' })">
+              <v-icon size="18">mdi-car-outline</v-icon>
+            </button>
             <button class="util-btn" @click="showItemDetail = true">
               <v-icon size="18">mdi-information-outline</v-icon>
             </button>
