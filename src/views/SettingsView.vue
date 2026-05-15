@@ -246,6 +246,17 @@
         </div>
       </template>
 
+      <div class="settings-item" @click="togglePerItemSpeed">
+        <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-speedometer</v-icon>
+        <div class="item-label-stack">
+          <span class="item-label">Remember speed per book</span>
+          <span class="item-sublabel">Restore the last speed used for each title</span>
+        </div>
+        <div class="toggle-pill" :class="{ on: perItemSpeed }">
+          <div class="toggle-thumb" />
+        </div>
+      </div>
+
       <div class="settings-item" @click="toggleGoodreads">
         <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-bookshelf</v-icon>
         <div class="item-label-stack">
@@ -666,6 +677,12 @@ function fmtHour(h: number): string {
   if (h === 0) return '12am'
   if (h === 12) return '12pm'
   return h < 12 ? `${h}am` : `${h - 12}pm`
+}
+
+const perItemSpeed = ref(localStorage.getItem('abs_per_item_speed') !== 'false')
+function togglePerItemSpeed() {
+  perItemSpeed.value = !perItemSpeed.value
+  localStorage.setItem('abs_per_item_speed', String(perItemSpeed.value))
 }
 
 const showGoodreads = ref(localStorage.getItem('abs_show_goodreads') === 'true')

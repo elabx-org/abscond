@@ -293,6 +293,18 @@ export const usePlayerStore = defineStore('player', () => {
       audio.currentTime  = s.currentTime - tracks[startIdx].startOffset
       syncedAt = s.currentTime
 
+      // Restore per-item speed if saved
+      if (localStorage.getItem('abs_per_item_speed') !== 'false') {
+        const saved = localStorage.getItem(`abs_speed_${item.id}`)
+        if (saved) {
+          const r = parseFloat(saved)
+          if (!isNaN(r) && r !== playbackRate.value) {
+            playbackRate.value = r
+            audio.playbackRate = r
+          }
+        }
+      }
+
       await audio.play()
       _updateMediaSession()
       _startSync()
@@ -359,6 +371,10 @@ export const usePlayerStore = defineStore('player', () => {
     playbackRate.value = rate
     localStorage.setItem('abs_playback_rate', String(rate))
     if (audio) audio.playbackRate = rate
+    // Save per-item speed if per-item memory is enabled
+    if (localStorage.getItem('abs_per_item_speed') !== 'false' && currentItem.value) {
+      try { localStorage.setItem(`abs_speed_${currentItem.value.id}`, String(rate)) } catch {}
+    }
   }
 
   function setVolume(vol: number) {
