@@ -2,6 +2,7 @@ import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { startPlaySession, syncSession, closeSession } from '@/api/player'
 import { getPodcastItem } from '@/api/browse'
+import { api } from '@/api/client'
 import { useNotificationStore } from '@/stores/notifications'
 import { useSettingsStore } from '@/stores/settings'
 import { useEqualizerStore } from '@/stores/equalizer'
@@ -209,6 +210,8 @@ export const usePlayerStore = defineStore('player', () => {
         setTimeout(() => play(nextItem), 500)
       } else if (currentItem.value?.mediaType === 'podcast' && useSettingsStore().podcastAutoAdvance) {
         await _autoAdvancePodcast()
+      } else if (currentItem.value?.mediaType === 'book' && useSettingsStore().bookAutoAdvance) {
+        await _autoAdvanceBook()
       }
     }
   }
@@ -226,6 +229,25 @@ export const usePlayerStore = defineStore('player', () => {
       if (idx >= 0 && idx < eps.length - 1) {
         setTimeout(() => play(item, eps[idx + 1].id), 500)
       }
+    } catch {}
+  }
+
+  async function _autoAdvanceBook() {
+    const item = currentItem.value
+    if (!item) return
+    const seriesList = item.media.metadata.series
+    if (!seriesList?.length) return
+    const s = seriesList[0]
+    const seq = parseFloat(s.sequence ?? '0')
+    if (!s.id || isNaN(seq)) return
+    try {
+      const res = await api.get(`/libraries/${item.libraryId}/series/${s.id}`)
+      const books: LibraryItem[] = res.data?.books ?? res.data?.items ?? []
+      const sorted = books
+        .map(b => ({ book: b, seq: parseFloat((b.media.metadata.series?.find((x: any) => x.id === s.id)?.sequence) ?? '0') }))
+        .filter(x => !isNaN(x.seq) && x.seq > seq)
+        .sort((a, b) => a.seq - b.seq)
+      if (sorted.length) setTimeout(() => play(sorted[0].book), 800)
     } catch {}
   }
 

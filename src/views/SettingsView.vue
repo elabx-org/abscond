@@ -95,6 +95,17 @@
         </div>
       </div>
 
+      <div class="settings-item" @click="settingsStore.setBookAutoAdvance(!settingsStore.bookAutoAdvance)">
+        <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-book-arrow-right-outline</v-icon>
+        <div class="item-label-stack">
+          <span class="item-label">Auto-advance books</span>
+          <span class="item-sublabel">Automatically play next book in series</span>
+        </div>
+        <div class="toggle-pill" :class="{ on: settingsStore.bookAutoAdvance }">
+          <div class="toggle-thumb" />
+        </div>
+      </div>
+
       <div class="settings-item" @click="settingsStore.setPodcastAutoAdvance(!settingsStore.podcastAutoAdvance)">
         <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-skip-next-circle-outline</v-icon>
         <div class="item-label-stack">
