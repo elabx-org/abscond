@@ -217,10 +217,23 @@
               <p class="panel-title">Sleep Timer</p>
               <div class="panel-opts">
                 <button v-for="m in [5, 10, 15, 20, 30, 45, 60]" :key="m"
-                  class="panel-opt" :class="{ active: player.sleepMinsLeft === m }"
-                  @click="setSleep(m)">{{ m }}m</button>
-                <button class="panel-opt" :class="{ active: player.sleepEndOfChapter }" @click="setSleepEoc">End of Ch.</button>
-                <button class="panel-opt cancel" @click="setSleep(null)">Off</button>
+                  class="panel-opt" :class="{ active: player.sleepMinsLeft === m && !sleepCustomActive }"
+                  @click="setSleep(m); sleepCustomActive = false">{{ m }}m</button>
+                <button class="panel-opt" :class="{ active: player.sleepEndOfChapter }" @click="setSleepEoc; sleepCustomActive = false">End of Ch.</button>
+                <button class="panel-opt cancel" @click="setSleep(null); sleepCustomActive = false">Off</button>
+              </div>
+              <!-- Custom duration slider -->
+              <div class="sleep-custom">
+                <div class="sleep-custom-row">
+                  <span class="sleep-custom-label">Custom: {{ sleepCustomMins }}m</span>
+                  <button class="panel-opt" :class="{ active: sleepCustomActive }" @click="setSleep(sleepCustomMins); sleepCustomActive = true">Set</button>
+                </div>
+                <input
+                  type="range" min="1" max="120" step="1"
+                  v-model.number="sleepCustomMins"
+                  class="sleep-slider"
+                  @change="sleepCustomActive = false"
+                />
               </div>
             </div>
           </Transition>
@@ -320,12 +333,14 @@ const settings = useSettingsStore()
 const notify = useNotificationStore()
 const eq = useEqualizerStore()
 
-const showChapters    = ref(false)
-const showSleepPicker = ref(false)
-const showSpeedPicker = ref(false)
-const showQueue       = ref(false)
-const showItemDetail  = ref(false)
-const showEq          = ref(false)
+const showChapters     = ref(false)
+const showSleepPicker  = ref(false)
+const showSpeedPicker  = ref(false)
+const showQueue        = ref(false)
+const showItemDetail   = ref(false)
+const showEq           = ref(false)
+const sleepCustomMins  = ref(parseInt(localStorage.getItem('abs_sleep_custom') ?? '45'))
+const sleepCustomActive = ref(false)
 const scrubberEl      = ref<HTMLElement | null>(null)
 let scrubbing = false
 
@@ -498,7 +513,13 @@ const sleepCountdownLabel = computed(() => {
 })
 
 // ── Controls ──────────────────────────────────────────────────────────────────
-function setSleep(mins: number | null) { player.setSleepTimer(mins); showSleepPicker.value = false }
+function setSleep(mins: number | null) {
+  if (mins !== null && mins !== 5 && mins !== 10 && mins !== 15 && mins !== 20 && mins !== 30 && mins !== 45 && mins !== 60) {
+    localStorage.setItem('abs_sleep_custom', String(mins))
+  }
+  player.setSleepTimer(mins)
+  showSleepPicker.value = false
+}
 function setSleepEoc() { player.setSleepTimer(null, true); showSleepPicker.value = false }
 
 const SPEEDS = [0.5, 0.6, 0.75, 0.8, 1.0, 1.1, 1.25, 1.5, 1.75, 2.0, 2.5, 3.0]
@@ -749,6 +770,10 @@ function onChapterBarClick(e: MouseEvent) {
 }
 .panel-opt.active { background: rgba(212,160,23,0.15); border-color: rgba(212,160,23,0.4); color: #d4a017; }
 .panel-opt.cancel { color: rgba(255,255,255,0.35); }
+.sleep-custom { margin-top: 10px; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 10px; }
+.sleep-custom-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+.sleep-custom-label { font-size: 12px; color: rgba(255,255,255,0.5); }
+.sleep-slider { width: 100%; accent-color: #d4a017; }
 
 /* Queue panel */
 .queue-panel { padding: 14px 0; }

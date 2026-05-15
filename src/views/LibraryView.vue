@@ -68,6 +68,9 @@
         <button class="sort-chip" :class="{ active: sortField === 'lastPlayed' }" @click="setSort('lastPlayed')">
           <v-icon size="12">mdi-history</v-icon> Played
         </button>
+        <button class="sort-chip" :class="{ active: sortField === 'publishedYear' }" @click="setSort('publishedYear')">
+          <v-icon size="12">mdi-calendar-outline</v-icon> Year
+        </button>
         <button class="sort-chip sort-chip--dir" @click="toggleDir">
           <v-icon size="14">{{ sortDesc ? 'mdi-sort-descending' : 'mdi-sort-ascending' }}</v-icon>
         </button>
@@ -605,16 +608,17 @@ const loadingPlaylists     = ref(false)
 const showCollectionPicker = ref(false)
 const collections          = ref<Collection[]>([])
 const loadingCollections   = ref(false)
-const sortField      = ref<'title' | 'author' | 'addedAt' | 'duration' | 'progress' | 'lastPlayed'>(
-  (localStorage.getItem('abs_lib_sort') as 'title' | 'author' | 'addedAt' | 'duration' | 'progress' | 'lastPlayed') ?? 'title'
+const sortField      = ref<'title' | 'author' | 'addedAt' | 'duration' | 'progress' | 'lastPlayed' | 'publishedYear'>(
+  (localStorage.getItem('abs_lib_sort') as 'title' | 'author' | 'addedAt' | 'duration' | 'progress' | 'lastPlayed' | 'publishedYear') ?? 'title'
 )
-const progressFilter = ref<'all' | 'in-progress' | 'finished' | 'not-started'>('all')
+const progressFilter = ref<'all' | 'in-progress' | 'finished' | 'not-started' | 'in-series'>('all')
 
 const progressFilters = [
-  { key: 'all' as const,         label: 'All' },
-  { key: 'in-progress' as const, label: 'In Progress' },
-  { key: 'finished' as const,    label: 'Finished' },
-  { key: 'not-started' as const, label: 'Not Started' },
+  { key: 'all' as const,          label: 'All' },
+  { key: 'in-progress' as const,  label: 'In Progress' },
+  { key: 'finished' as const,     label: 'Finished' },
+  { key: 'not-started' as const,  label: 'Not Started' },
+  { key: 'in-series' as const,    label: 'In Series' },
 ]
 const sortDesc     = ref(localStorage.getItem('abs_lib_sort_desc') === 'true')
 const gridDense    = ref(localStorage.getItem('abs_lib_dense') === 'true')
@@ -667,6 +671,7 @@ const filteredItems = computed(() => {
   if (progressFilter.value === 'all') return all
   if (progressFilter.value === 'in-progress') return all.filter(i => (i.userMediaProgress?.progress ?? 0) > 0 && !i.userMediaProgress?.isFinished)
   if (progressFilter.value === 'finished')    return all.filter(i => i.userMediaProgress?.isFinished)
+  if (progressFilter.value === 'in-series')   return all.filter(i => (i.media.metadata.series ?? []).length > 0)
   return all.filter(i => !i.userMediaProgress || i.userMediaProgress.progress === 0)
 })
 
@@ -689,6 +694,9 @@ const sortedItems = computed(() => {
     } else if (sortField.value === 'lastPlayed') {
       va = a.userMediaProgress?.lastUpdate ?? 0
       vb = b.userMediaProgress?.lastUpdate ?? 0
+    } else if (sortField.value === 'publishedYear') {
+      va = parseInt(a.media.metadata.publishedYear ?? '0') || 0
+      vb = parseInt(b.media.metadata.publishedYear ?? '0') || 0
     } else {
       va = a.addedAt
       vb = b.addedAt
@@ -702,7 +710,7 @@ const sortedItems = computed(() => {
 
 const hasMore = computed(() => filteredItems.value.length > page.value * pageSize)
 
-function setSort(field: 'title' | 'author' | 'addedAt' | 'duration' | 'progress' | 'lastPlayed') {
+function setSort(field: 'title' | 'author' | 'addedAt' | 'duration' | 'progress' | 'lastPlayed' | 'publishedYear') {
   if (sortField.value === field) { sortDesc.value = !sortDesc.value } else {
     sortField.value = field; sortDesc.value = false
   }
