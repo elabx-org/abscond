@@ -108,6 +108,22 @@
                 <v-icon size="16">mdi-pencil-outline</v-icon>
                 Edit
               </button>
+              <button v-if="auth.isAdmin" class="action-btn action-btn--danger" @click="showDeleteConfirm = true">
+                <v-icon size="16">mdi-delete-outline</v-icon>
+                Delete
+              </button>
+            </div>
+
+            <!-- Delete confirm -->
+            <div v-if="showDeleteConfirm" class="playlist-inline">
+              <p class="playlist-inline-title">Delete Item</p>
+              <p class="confirm-text-sm">This will permanently delete <strong>{{ item.media.metadata.title }}</strong> from the library. Files on disk will also be deleted.</p>
+              <div class="share-actions">
+                <button class="pls-cancel" @click="showDeleteConfirm = false">Cancel</button>
+                <button class="action-btn action-btn--danger" style="flex:1;justify-content:center" :disabled="deleting" @click="doDeleteItem">
+                  {{ deleting ? 'Deleting…' : 'Delete' }}
+                </button>
+              </div>
             </div>
 
             <!-- Edit metadata panel -->
@@ -305,6 +321,18 @@ const showEdit          = ref(false)
 const editSaving        = ref(false)
 const editError         = ref('')
 const editMeta          = ref({ title: '', subtitle: '', authorNames: '', narratorNames: '', publishedYear: '', publisher: '', genres: '', tags: '', description: '' })
+const showDeleteConfirm = ref(false)
+const deleting          = ref(false)
+
+async function doDeleteItem() {
+  deleting.value = true
+  try {
+    await api.delete(`/items/${props.itemId}`)
+    emit('close')
+  } catch { /* ignore */ }
+  finally { deleting.value = false }
+}
+
 const matchProvider     = ref('audible')
 const matchLoading      = ref(false)
 const matchMsg          = ref('')
@@ -620,6 +648,10 @@ async function doSaveMeta() {
   border: 1px solid rgba(255,255,255,0.08); border-radius: 10px;
   cursor: pointer; padding: 8px 4px;
 }
+.action-btn--danger { color: rgba(239,68,68,0.7); border-color: rgba(239,68,68,0.2); background: rgba(239,68,68,0.05); }
+.action-btn--danger:disabled { opacity: 0.5; cursor: not-allowed; }
+.confirm-text-sm { font-size: 12px; color: rgba(255,255,255,0.55); margin: 0 0 12px; line-height: 1.5; }
+.confirm-text-sm strong { color: rgba(255,255,255,0.85); }
 .playlist-inline {
   background: rgba(255,255,255,0.04); border-radius: 10px;
   padding: 12px; margin-bottom: 12px; border: 1px solid rgba(255,255,255,0.07);
