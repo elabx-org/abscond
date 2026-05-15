@@ -182,6 +182,57 @@
                       <v-icon size="20" :color="nextChapter ? 'rgba(255,255,255,0.55)' : 'rgba(255,255,255,0.18)'">mdi-skip-next</v-icon>
                     </button>
                   </div>
+
+                  <!-- 2×2 action grid -->
+                  <div v-if="i === currentIndex && player.currentItem" class="card-action-grid">
+                    <div class="card-action-row">
+                      <button
+                        class="card-action-btn"
+                        :class="{ active: showChapters }"
+                        @click="showChapters = !showChapters; if (!showChapters) chapterSearch = ''; showQueue = false; showSleepPicker = false; showSpeedPicker = false"
+                      >
+                        <v-icon size="16" style="opacity:0.6">mdi-format-list-bulleted</v-icon>
+                        <span class="card-action-label">Chapters</span>
+                        <span v-if="chapters.length" class="card-action-badge">{{ chapters.length }}</span>
+                      </button>
+                      <button
+                        class="card-action-btn"
+                        :class="{ active: showSpeedPicker || player.playbackRate !== 1 }"
+                        @click="showSpeedPicker = !showSpeedPicker; showSleepPicker = false; showChapters = false; showQueue = false"
+                      >
+                        <v-icon size="16" style="opacity:0.6">mdi-speedometer</v-icon>
+                        <span class="card-action-label">{{ player.playbackRate }}×</span>
+                      </button>
+                    </div>
+                    <div class="card-action-row">
+                      <button
+                        class="card-action-btn sleep-btn"
+                        :class="{ active: player.sleepMinsLeft !== null || player.sleepEndOfChapter }"
+                        @click="showSleepPicker = !showSleepPicker; showSpeedPicker = false; showChapters = false; showQueue = false"
+                      >
+                        <div v-if="player.sleepMinsLeft !== null" class="sleep-fill" :style="{ width: `${sleepFillPct}%` }" />
+                        <v-icon size="16" style="position:relative;z-index:1;opacity:0.6">mdi-timer-outline</v-icon>
+                        <span class="card-action-label" style="position:relative;z-index:1">
+                          <template v-if="player.sleepMinsLeft !== null">{{ sleepCountdownLabel }}</template>
+                          <template v-else-if="player.sleepEndOfChapter">End of Ch.</template>
+                          <template v-else>Sleep</template>
+                        </span>
+                      </button>
+                      <button
+                        class="card-action-btn"
+                        @click="showBookmarkSheet = true"
+                      >
+                        <v-icon size="16" style="opacity:0.6">mdi-bookmark-plus-outline</v-icon>
+                        <span class="card-action-label">Bookmarks</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  <!-- ··· More pill -->
+                  <button v-if="i === currentIndex && player.currentItem" class="card-more-pill" @click="showMore = true">
+                    <span class="card-more-dots">···</span>
+                    <span class="card-more-label">More</span>
+                  </button>
                 </div>
               </div>
             </div>
@@ -469,6 +520,7 @@ const chapterSearch    = ref('')
 const showSleepPicker  = ref(false)
 const showSpeedPicker  = ref(false)
 const showQueue        = ref(false)
+const showMore         = ref(false)
 const queueDragFrom    = ref(-1)
 const queueDragOver    = ref(-1)
 const queueListEl      = ref<HTMLElement | null>(null)
@@ -492,6 +544,21 @@ const scrubTooltipSecs = computed(() => scrubTooltipFrac.value * player.duration
 
 const skipBackSecs = computed(() => settings.skipBackSecs)
 const skipFwdSecs  = computed(() => settings.skipFwdSecs)
+
+const sleepFillPct = computed(() => {
+  if (player.sleepMinsLeft === null || player.sleepMinsLeft <= 0) return 0
+  const totalSecs = player.sleepTotalSecs
+  if (!totalSecs) return 0
+  const remaining = player.sleepMinsLeft * 60
+  return Math.min(100, (1 - remaining / totalSecs) * 100)
+})
+
+const sleepCountdownLabel = computed(() => {
+  if (player.sleepMinsLeft === null) return ''
+  const m = Math.floor(player.sleepMinsLeft)
+  const s = Math.round((player.sleepMinsLeft - m) * 60)
+  return s > 0 ? `${m}:${String(s).padStart(2, '0')}` : `${m}m`
+})
 
 const REWIND_ICONS: Record<number, string> = { 10: 'mdi-rewind-10', 15: 'mdi-rewind-15', 30: 'mdi-rewind-30' }
 const FWD_ICONS:    Record<number, string> = { 10: 'mdi-fast-forward-10', 15: 'mdi-fast-forward-15', 30: 'mdi-fast-forward-30' }
@@ -1037,6 +1104,41 @@ function queueDragEnd() {
   box-shadow: 0 0 0 1px rgba(255,255,255,0.14), 0 4px 22px rgba(185,115,20,0.45), 0 0 40px rgba(185,115,20,0.18);
 }
 .card-play-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* 2×2 action grid */
+.card-action-grid { display: flex; flex-direction: column; gap: 7px; width: 100%; margin-bottom: 8px; }
+.card-action-row  { display: flex; gap: 7px; }
+.card-action-btn {
+  flex: 1; height: 38px; border-radius: 12px;
+  background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.09);
+  display: flex; align-items: center; justify-content: center;
+  gap: 6px; cursor: pointer; color: rgba(255,255,255,0.7);
+  overflow: hidden; position: relative;
+}
+.card-action-btn.active {
+  background: rgba(212,160,23,0.15); border-color: rgba(212,160,23,0.35); color: #d4a017;
+}
+.card-action-label { font-size: 12px; font-weight: 500; }
+.card-action-badge {
+  font-size: 9px; background: rgba(255,255,255,0.1);
+  padding: 1px 5px; border-radius: 10px; color: rgba(255,255,255,0.5);
+}
+
+/* Sleep button fill */
+.sleep-btn { overflow: hidden; position: relative; }
+.sleep-fill {
+  position: absolute; inset: 0; left: 0;
+  background: rgba(212,160,23,0.15); pointer-events: none;
+}
+
+/* More pill */
+.card-more-pill {
+  display: flex; align-items: center; justify-content: center; gap: 5px;
+  background: rgba(255,255,255,0.055); border: none; border-radius: 20px;
+  padding: 6px 24px; cursor: pointer; width: auto; align-self: center;
+}
+.card-more-dots { font-size: 13px; color: rgba(255,255,255,0.3); letter-spacing: 2px; }
+.card-more-label { font-size: 12px; color: rgba(255,255,255,0.4); }
 
 .barrier-banner {
   display: flex; align-items: center; gap: 8px; cursor: pointer;
