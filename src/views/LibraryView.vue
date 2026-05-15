@@ -70,6 +70,7 @@
         :select-mode="selectMode"
         @click="onCardClick(item)"
         @long-press="onLongPress(item)"
+        @contextmenu.prevent="onLongPress(item)"
       />
     </div>
 
@@ -128,6 +129,22 @@
       </Transition>
     </Teleport>
 
+    <!-- Quick actions sheet (long-press) -->
+    <QuickActionsSheet
+      v-if="quickItem"
+      :show="!!quickItem"
+      :title="quickItem.media.metadata.title"
+      :author="(quickItem.media.metadata.authors ?? []).map(a => a.name).join(', ') || 'Unknown'"
+      :cover-src="coverUrl(quickItem.id, auth.token ?? '')"
+      :progress="quickItem.userMediaProgress?.progress ?? 0"
+      @close="quickItem = null"
+      @play="playQuick"
+      @mark-finished="markFinishedQuick"
+      @clear-progress="clearProgressQuick"
+      @add-to-playlist="openPlaylistForQuick"
+      @view-detail="selectedItem = quickItem; quickItem = null"
+    />
+
     <!-- Book/Podcast detail sheet -->
     <BookDetailSheet
       v-if="selectedItem && selectedItem.mediaType !== 'podcast'"
@@ -154,14 +171,18 @@ import { coverUrl, api } from '@/api/client'
 import PortraitCard from '@/components/cards/PortraitCard.vue'
 import BookDetailSheet from '@/components/sheets/BookDetailSheet.vue'
 import PodcastDetailSheet from '@/components/sheets/PodcastDetailSheet.vue'
+import QuickActionsSheet from '@/components/sheets/QuickActionsSheet.vue'
 import { getPlaylists, addItemToPlaylist } from '@/api/playlists'
 import type { Playlist } from '@/api/playlists'
 import type { LibraryItem } from '@/api/types'
+import { usePlayerStore } from '@/stores/player'
 
-const lib  = useLibraryStore()
-const auth = useAuthStore()
+const lib    = useLibraryStore()
+const auth   = useAuthStore()
+const player = usePlayerStore()
 
 const selectedItem      = ref<LibraryItem | null>(null)
+const quickItem         = ref<LibraryItem | null>(null)
 const selectMode        = ref(false)
 const selectedIds       = ref(new Set<string>())
 const showPlaylistPicker = ref(false)
@@ -254,8 +275,36 @@ function onCardClick(item: LibraryItem) {
 }
 
 function onLongPress(item: LibraryItem) {
-  selectMode.value = true
-  selectedIds.value.add(item.id)
+  quickItem.value = item
+}
+
+async function playQuick() {
+  if (!quickItem.value) return
+  const item = quickItem.value
+  quickItem.value = null
+  await player.play(item)
+}
+
+async function markFinishedQuick() {
+  if (!quickItem.value) return
+  const id = quickItem.value.id
+  const isFinished = quickItem.value.userMediaProgress?.isFinished
+  await api.patch(`/me/progress/${id}`, { isFinished: !isFinished, progress: isFinished ? 0 : 1 })
+  quickItem.value = null
+}
+
+async function clearProgressQuick() {
+  if (!quickItem.value) return
+  const id = quickItem.value.id
+  await api.delete(`/me/progress/${id}`)
+  quickItem.value = null
+}
+
+async function openPlaylistForQuick() {
+  if (!quickItem.value) return
+  showPlaylistPicker.value = true
+  selectedIds.value.add(quickItem.value.id)
+  loadPlaylists()
 }
 
 function exitSelectMode() {
