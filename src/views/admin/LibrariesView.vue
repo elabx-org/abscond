@@ -2,6 +2,10 @@
   <div class="admin-libraries">
     <div class="section-header">
       <h3 class="section-title">Libraries</h3>
+      <button class="add-lib-btn" @click="showCreateLib = true">
+        <v-icon size="16">mdi-plus</v-icon>
+        Create
+      </button>
     </div>
 
     <div v-if="loading" class="loading-state">
@@ -45,6 +49,32 @@
         <p v-if="lib.lastScan" class="last-scan">Last scan {{ formatDate(lib.lastScan) }}</p>
       </div>
     </div>
+
+    <!-- Create library sheet -->
+    <Teleport to="body">
+      <Transition name="sheet">
+        <div v-if="showCreateLib" class="sheet-backdrop" @click.self="showCreateLib = false">
+          <div class="create-sheet">
+            <div class="drag-handle-area"><div class="drag-handle" /></div>
+            <div class="create-content">
+              <h3 class="create-title">New Library</h3>
+              <input v-model="libName" class="form-input" placeholder="Library name" />
+              <select v-model="libMediaType" class="form-input form-select">
+                <option value="book">Audiobooks</option>
+                <option value="podcast">Podcasts</option>
+              </select>
+              <input v-model="libFolder" class="form-input" placeholder="Folder path (e.g. /audiobooks)" />
+              <p class="form-hint">The folder must exist on the server and be accessible.</p>
+              <p v-if="libError" class="form-error">{{ libError }}</p>
+              <button class="save-btn" :disabled="!libName.trim() || !libFolder.trim() || creatingLib" @click="doCreateLib">
+                {{ creatingLib ? 'Creating…' : 'Create Library' }}
+              </button>
+              <button class="cancel-btn" @click="showCreateLib = false">Cancel</button>
+            </div>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
 
     <!-- Add Podcast sheet -->
     <Teleport to="body">
@@ -96,12 +126,33 @@
 
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
-import { getAdminLibraries, scanLibrary, getPodcastFeed, addPodcast } from '@/api/admin'
+import { getAdminLibraries, scanLibrary, getPodcastFeed, addPodcast, createLibrary } from '@/api/admin'
 import type { AdminLibrary, PodcastFeedInfo } from '@/api/admin'
 
 const loading    = ref(true)
 const libraries  = ref<AdminLibrary[]>([])
 const scanningId = ref<string | null>(null)
+
+const showCreateLib = ref(false)
+const libName       = ref('')
+const libMediaType  = ref<'book' | 'podcast'>('book')
+const libFolder     = ref('')
+const libError      = ref('')
+const creatingLib   = ref(false)
+
+async function doCreateLib() {
+  libError.value   = ''
+  creatingLib.value = true
+  try {
+    const lib = await createLibrary(libName.value.trim(), libMediaType.value, libFolder.value.trim())
+    libraries.value.push(lib)
+    showCreateLib.value = false
+    libName.value       = ''
+    libFolder.value     = ''
+  } catch (e: unknown) {
+    libError.value = (e instanceof Error ? e.message : null) ?? 'Failed to create library'
+  } finally { creatingLib.value = false }
+}
 
 const podcastTarget = ref<AdminLibrary | null>(null)
 const rssUrl        = ref('')
@@ -168,8 +219,11 @@ onMounted(async () => {
 
 <style scoped>
 .admin-libraries { padding: 4px 0; }
-.section-header { margin-bottom: 16px; }
+.section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
 .section-title { font-size: 14px; font-weight: 700; color: rgba(255,255,255,0.7); margin: 0; text-transform: uppercase; letter-spacing: 0.05em; }
+.add-lib-btn { display: flex; align-items: center; gap: 4px; font-size: 12px; padding: 5px 12px; border-radius: 8px; background: rgba(212,160,23,0.12); border: 1px solid rgba(212,160,23,0.25); color: #d4a017; cursor: pointer; }
+.form-hint { font-size: 11px; color: rgba(255,255,255,0.3); margin: -4px 0 10px; }
+.form-select { -webkit-appearance: none; appearance: none; }
 
 .loading-state { display: flex; flex-direction: column; gap: 10px; }
 .skel-row { height: 80px; border-radius: 10px; background: #1a1a1a; animation: shimmer 1.5s infinite; background-size: 200% 100%;

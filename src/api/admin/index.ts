@@ -71,6 +71,16 @@ export async function scanLibrary(libraryId: string): Promise<void> {
   await api.get(`/libraries/${libraryId}/scan`)
 }
 
+export async function createLibrary(name: string, mediaType: 'book' | 'podcast', folderPath: string): Promise<AdminLibrary> {
+  const res = await api.post('/libraries', {
+    name,
+    mediaType,
+    folders: [{ fullPath: folderPath }],
+    icon: mediaType === 'podcast' ? 'podcast' : 'headphones',
+  })
+  return res.data.library ?? res.data
+}
+
 export async function getServerSettings(): Promise<ServerSettings> {
   const res = await api.get('/settings')
   return res.data.settings ?? res.data
