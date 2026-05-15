@@ -31,6 +31,11 @@
             <span class="mini-skip-secs">{{ skipFwdSecs }}s</span>
           </span>
         </button>
+        <!-- Sleep timer indicator -->
+        <div v-if="player.sleepMinsLeft !== null || player.sleepEndOfChapter" class="mini-sleep" @click.stop="player.setSleepTimer(null)">
+          <v-icon size="12" color="rgba(212,160,23,0.8)">mdi-moon-waning-crescent</v-icon>
+          <span class="mini-sleep-label">{{ player.sleepEndOfChapter ? 'ch' : `${player.sleepMinsLeft}m` }}</span>
+        </div>
         <button class="mini-ctrl" @click.stop="player.stop()">
           <v-icon size="18" color="rgba(255,255,255,0.4)">mdi-close</v-icon>
         </button>
@@ -125,6 +130,11 @@ const displaySubtitle = computed(() => {
 }
 .mini-skip-custom { display: flex; flex-direction: column; align-items: center; gap: 1px; }
 .mini-skip-secs { font-size: 8px; font-weight: 700; color: rgba(255,255,255,0.6); line-height: 1; }
+.mini-sleep {
+  display: flex; flex-direction: column; align-items: center; gap: 1px;
+  padding: 4px 6px; cursor: pointer; flex-shrink: 0;
+}
+.mini-sleep-label { font-size: 8px; font-weight: 700; color: rgba(212,160,23,0.8); line-height: 1; }
 
 .mini-progress-track {
   position: absolute; bottom: 0; left: 0; right: 0; height: 3px;
