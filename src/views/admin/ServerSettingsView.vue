@@ -1,13 +1,14 @@
 <template>
   <div class="admin-settings">
     <div v-if="loading" class="loading-state">
-      <div v-for="n in 5" :key="n" class="skel-row" />
+      <div v-for="n in 7" :key="n" class="skel-row" />
     </div>
 
     <div v-else-if="settings" class="settings-content">
       <!-- Scanner -->
       <div class="settings-group">
         <p class="group-label">Scanner</p>
+
         <div class="setting-row">
           <div class="setting-info">
             <p class="setting-name">Find covers</p>
@@ -17,6 +18,21 @@
             <div class="toggle-thumb" />
           </button>
         </div>
+
+        <div class="setting-row">
+          <div class="setting-info">
+            <p class="setting-name">Cover provider</p>
+            <p class="setting-desc">Source used when auto-finding covers</p>
+          </div>
+          <select v-model="settings.scannerCoverProvider" class="setting-select" @change="dirty = true">
+            <option value="audible">Audible</option>
+            <option value="itunes">iTunes</option>
+            <option value="openlibrary">Open Library</option>
+            <option value="googlebooks">Google Books</option>
+            <option value="audiobookshelf">AudioBookShelf</option>
+          </select>
+        </div>
+
         <div class="setting-row">
           <div class="setting-info">
             <p class="setting-name">Parse subtitle</p>
@@ -26,6 +42,17 @@
             <div class="toggle-thumb" />
           </button>
         </div>
+
+        <div class="setting-row">
+          <div class="setting-info">
+            <p class="setting-name">Scan all file types</p>
+            <p class="setting-desc">Include non-audio files during scan</p>
+          </div>
+          <button class="toggle" :class="{ on: settings.scannerScanAllFileTypes }" @click="toggle('scannerScanAllFileTypes')">
+            <div class="toggle-thumb" />
+          </button>
+        </div>
+
         <div class="setting-row">
           <div class="setting-info">
             <p class="setting-name">Sorting ignores prefix</p>
@@ -51,6 +78,78 @@
         </div>
       </div>
 
+      <!-- Backups -->
+      <div class="settings-group">
+        <p class="group-label">Backups</p>
+        <div class="setting-row">
+          <div class="setting-info">
+            <p class="setting-name">Auto-backup schedule</p>
+            <p class="setting-desc">How often to create automatic backups</p>
+          </div>
+          <select v-model="settings.backupSchedule" class="setting-select" @change="dirty = true">
+            <option value="">Off</option>
+            <option value="0 1 * * *">Daily</option>
+            <option value="0 1 * * 0">Weekly</option>
+          </select>
+        </div>
+        <div class="setting-row">
+          <div class="setting-info">
+            <p class="setting-name">Backups to keep</p>
+            <p class="setting-desc">Delete older backups beyond this count</p>
+          </div>
+          <input
+            v-model.number="settings.numBackupsToKeep"
+            type="number" min="1" max="20"
+            class="setting-input"
+            @input="dirty = true"
+          />
+        </div>
+      </div>
+
+      <!-- Logs -->
+      <div class="settings-group">
+        <p class="group-label">Logs</p>
+        <div class="setting-row">
+          <div class="setting-info">
+            <p class="setting-name">Daily logs retention (days)</p>
+            <p class="setting-desc">How many days of daily logs to keep</p>
+          </div>
+          <input
+            v-model.number="settings.loggerDailyLogsToKeep"
+            type="number" min="1" max="365"
+            class="setting-input"
+            @input="dirty = true"
+          />
+        </div>
+        <div class="setting-row">
+          <div class="setting-info">
+            <p class="setting-name">Scanner logs retention (days)</p>
+            <p class="setting-desc">How many days of scanner logs to keep</p>
+          </div>
+          <input
+            v-model.number="settings.loggerScannerLogsToKeep"
+            type="number" min="1" max="365"
+            class="setting-input"
+            @input="dirty = true"
+          />
+        </div>
+      </div>
+
+      <!-- Library Display -->
+      <div class="settings-group">
+        <p class="group-label">Library Display</p>
+        <div class="setting-row">
+          <div class="setting-info">
+            <p class="setting-name">Default library view</p>
+            <p class="setting-desc">Server-default view mode for the library</p>
+          </div>
+          <select v-model.number="settings.bookshelfView" class="setting-select" @change="dirty = true">
+            <option :value="0">Bookshelf grid</option>
+            <option :value="1">List view</option>
+          </select>
+        </div>
+      </div>
+
       <!-- Playback -->
       <div class="settings-group">
         <p class="group-label">Playback</p>
@@ -62,6 +161,23 @@
           <button class="toggle" :class="{ on: settings.chromecastEnabled }" @click="toggle('chromecastEnabled')">
             <div class="toggle-thumb" />
           </button>
+        </div>
+      </div>
+
+      <!-- Security -->
+      <div class="settings-group">
+        <p class="group-label">Security</p>
+        <div class="setting-row">
+          <div class="setting-info">
+            <p class="setting-name">Session token age</p>
+            <p class="setting-desc">How long login tokens remain valid</p>
+          </div>
+          <select v-model="settings.authTokenAge" class="setting-select" @change="dirty = true">
+            <option value="1d">1 day</option>
+            <option value="7d">7 days</option>
+            <option value="30d">30 days</option>
+            <option value="1y">1 year</option>
+          </select>
         </div>
       </div>
 
@@ -83,8 +199,8 @@
 
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
-import { getServerSettings, updateServerSettings } from '@/api/admin'
-import type { ServerSettings } from '@/api/admin'
+import { getServerSettings, updateServerSettings } from '@/api/admin/index'
+import type { ServerSettings } from '@/api/admin/index'
 
 const loading  = ref(true)
 const settings = ref<ServerSettings | null>(null)
@@ -117,18 +233,25 @@ onMounted(async () => {
 .admin-settings { padding: 4px 0; }
 
 .loading-state { display: flex; flex-direction: column; gap: 10px; }
-.skel-row { height: 56px; border-radius: 10px; background: #1a1a1a; animation: shimmer 1.5s infinite;
-  background-image: linear-gradient(90deg, #1a1a1a 25%, #222 50%, #1a1a1a 75%); background-size: 200% 100%; }
+.skel-row {
+  height: 56px; border-radius: 10px;
+  background: linear-gradient(90deg, #1a1a1a 25%, #222 50%, #1a1a1a 75%);
+  background-size: 200% 100%; animation: shimmer 1.5s infinite;
+}
 @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
 
-.settings-content { display: flex; flex-direction: column; gap: 20px; }
-.settings-group { display: flex; flex-direction: column; gap: 0; }
-.group-label { font-size: 11px; font-weight: 700; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 0.07em; margin: 0 0 10px; }
+.settings-content { display: flex; flex-direction: column; gap: 24px; }
+.settings-group { display: flex; flex-direction: column; }
+.group-label {
+  font-size: 11px; font-weight: 700; color: rgba(255,255,255,0.4);
+  text-transform: uppercase; letter-spacing: 0.07em; margin: 0 0 8px;
+}
 
 .setting-row {
   display: flex; align-items: center; gap: 12px; padding: 12px 0;
   border-bottom: 1px solid rgba(255,255,255,0.05);
 }
+.setting-row:last-child { border-bottom: none; }
 .setting-info { flex: 1; }
 .setting-name { font-size: 13px; font-weight: 600; color: rgba(255,255,255,0.85); margin: 0 0 2px; }
 .setting-desc { font-size: 11px; color: rgba(255,255,255,0.35); margin: 0; }
@@ -144,7 +267,22 @@ onMounted(async () => {
 }
 .toggle.on .toggle-thumb { left: 22px; }
 
-.info-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
+.setting-select {
+  background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 8px; padding: 6px 10px; font-size: 12px;
+  color: rgba(255,255,255,0.8); outline: none; cursor: pointer; flex-shrink: 0;
+  appearance: none;
+}
+.setting-input {
+  width: 64px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 8px; padding: 6px 10px; font-size: 12px;
+  color: rgba(255,255,255,0.8); outline: none; text-align: right; flex-shrink: 0;
+}
+
+.info-row {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.05);
+}
 .info-key { font-size: 13px; color: rgba(255,255,255,0.5); }
 .info-val { font-size: 13px; color: rgba(255,255,255,0.85); font-weight: 600; }
 
@@ -153,4 +291,9 @@ onMounted(async () => {
   background: #d4a017; color: white; font-size: 15px; font-weight: 700;
 }
 .save-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+@media (min-width: 768px) {
+  .settings-content { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+  .save-btn { grid-column: 1 / -1; max-width: 320px; }
+}
 </style>
