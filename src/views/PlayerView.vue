@@ -690,19 +690,24 @@ let swipeTracking = false
 const swipeDx = ref(0)
 
 const carouselRef = ref<HTMLElement | null>(null)
-const slideWidthPx = ref(window.innerWidth)
+const slideWidthPx = ref(0)
 
 let _ro: ResizeObserver | null = null
-onMounted(() => {
-  if (carouselRef.value) {
-    slideWidthPx.value = carouselRef.value.clientWidth
-    _ro = new ResizeObserver(() => {
-      slideWidthPx.value = carouselRef.value?.clientWidth ?? window.innerWidth
-    })
-    _ro.observe(carouselRef.value)
-  }
-})
-onUnmounted(() => { _ro?.disconnect() })
+const _updateSlideWidth = () => {
+  if (!carouselRef.value) return
+  // Slides are 100vw on mobile (carousel has bleed margin making it wider than viewport).
+  // On desktop both carousel and slide are 320px. Use min to get the actual slide width.
+  slideWidthPx.value = Math.min(carouselRef.value.clientWidth, window.innerWidth)
+}
+const _attachObserver = (el: HTMLElement) => {
+  if (_ro) return
+  _updateSlideWidth()
+  _ro = new ResizeObserver(_updateSlideWidth)
+  _ro.observe(el)
+}
+onMounted(() => { if (carouselRef.value) _attachObserver(carouselRef.value) })
+watch(carouselRef, (el) => { if (el) _attachObserver(el) })
+onUnmounted(() => { _ro?.disconnect(); _ro = null })
 
 const trackStyle = computed(() => {
   const offset = `calc(${-currentIndex.value} * ${slideWidthPx.value}px + ${swipeDx.value}px)`
