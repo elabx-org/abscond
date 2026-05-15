@@ -40,8 +40,9 @@
       </button>
     </div>
 
+    <div class="sections-wrap">
     <!-- Continue Listening -->
-    <section v-if="(progress.inProgress.length || loadingProgress) && !isSectionHidden('continue-listening')" class="section">
+    <section v-if="(progress.inProgress.length || loadingProgress) && !isSectionHidden('continue-listening')" class="section" :style="{ order: getSectionOrder('continue-listening') }">
       <div class="section-header clickable" @click="sectionSheet = { title: 'Continue Listening', icon: 'mdi-play-circle-outline', items: progress.inProgress }">
         <v-icon size="16" color="rgba(255,255,255,0.35)">mdi-play-circle-outline</v-icon>
         <span class="section-label">Continue Listening</span>
@@ -71,7 +72,7 @@
     </section>
 
     <!-- Recently Added -->
-    <section v-if="!isSectionHidden('recently-added')" class="section">
+    <section v-if="!isSectionHidden('recently-added')" class="section" :style="{ order: getSectionOrder('recently-added') }">
       <div class="section-header clickable" @click="sectionSheet = { title: 'Recently Added', icon: 'mdi-clock-outline', items: progress.recentlyAdded }">
         <v-icon size="16" color="rgba(255,255,255,0.35)">mdi-clock-outline</v-icon>
         <span class="section-label">Recently Added</span>
@@ -101,7 +102,7 @@
     </section>
 
     <!-- Recently Finished -->
-    <section v-if="(progress.recentlyFinished.length || loadingFinished) && !isSectionHidden('recently-finished')" class="section">
+    <section v-if="(progress.recentlyFinished.length || loadingFinished) && !isSectionHidden('recently-finished')" class="section" :style="{ order: getSectionOrder('recently-finished') }">
       <div class="section-header">
         <v-icon size="16" color="rgba(255,255,255,0.35)">mdi-check-circle-outline</v-icon>
         <span class="section-label">Recently Finished</span>
@@ -128,7 +129,7 @@
     </section>
 
     <!-- Discover -->
-    <section v-if="(progress.discover.length || loadingDiscover) && !isSectionHidden('discover')" class="section">
+    <section v-if="(progress.discover.length || loadingDiscover) && !isSectionHidden('discover')" class="section" :style="{ order: getSectionOrder('discover') }">
       <div class="section-header">
         <v-icon size="16" color="rgba(255,255,255,0.35)">mdi-shuffle-variant</v-icon>
         <span class="section-label">Discover</span>
@@ -158,7 +159,7 @@
     </section>
 
     <!-- Dynamic personalized sections (series, newest episodes, etc.) -->
-    <section v-for="shelf in extraShelves" :key="shelf.id" class="section">
+    <section v-for="shelf in extraShelves" :key="shelf.id" class="section" :style="{ order: getSectionOrder(shelf.id) }">
       <div class="section-header clickable" @click="sectionSheet = { title: shelf.label, icon: shelfIcon(shelf.id, shelf.type), items: shelf.entities }">
         <v-icon size="16" color="rgba(255,255,255,0.35)">{{ shelfIcon(shelf.id, shelf.type) }}</v-icon>
         <span class="section-label">{{ shelf.label }}</span>
@@ -179,6 +180,8 @@
       </div>
     </section>
 
+    </div><!-- end sections-wrap -->
+
     <!-- Section detail sheet -->
     <SectionDetailSheet
       v-if="sectionSheet"
@@ -194,7 +197,7 @@
     <!-- Book detail sheet -->
     <HomeCustomizeSheet
       v-model="showCustomize"
-      :sections="HOME_SECTIONS"
+      :sections="allSections"
       @change="onCustomizeChange"
     />
     <BookDetailSheet
@@ -315,12 +318,29 @@ const HOME_SECTIONS: HomeSection[] = [
 ]
 
 const showCustomize = ref(false)
-const hiddenSectionIds = ref<Set<string>>(new Set(JSON.parse(localStorage.getItem('abs_home_hidden_sections') ?? '[]')))
+const hiddenSectionIds  = ref<Set<string>>(new Set(JSON.parse(localStorage.getItem('abs_home_hidden_sections') ?? '[]')))
+const sectionOrderIds   = ref<string[]>(JSON.parse(localStorage.getItem('abs_home_section_order') ?? '[]'))
 
 function isSectionHidden(id: string) { return hiddenSectionIds.value.has(id) }
-function onCustomizeChange(_order: string[], hidden: string[]) {
+function getSectionOrder(id: string): number {
+  if (!sectionOrderIds.value.length) return 0
+  const idx = sectionOrderIds.value.indexOf(id)
+  return idx === -1 ? sectionOrderIds.value.length : idx
+}
+function onCustomizeChange(order: string[], hidden: string[]) {
+  sectionOrderIds.value  = order
   hiddenSectionIds.value = new Set(hidden)
 }
+
+const allSections = computed<HomeSection[]>(() => {
+  const result = [...HOME_SECTIONS]
+  for (const shelf of extraShelves.value) {
+    if (!result.find(s => s.id === shelf.id)) {
+      result.push({ id: shelf.id, label: shelf.label, icon: shelfIcon(shelf.id, shelf.type) })
+    }
+  }
+  return result
+})
 
 const BUILT_IN_SHELF_IDS = new Set(['continue-listening', 'recently-added', 'listen-again', 'downloaded-books'])
 const extraShelves = computed(() => allShelves.value.filter(s => !BUILT_IN_SHELF_IDS.has(s.id) && s.entities?.length > 0))
@@ -543,6 +563,7 @@ watch(() => lib.activeLibraryId, async (id) => {
 
 <style scoped>
 .home-view { padding: 16px 12px 80px; min-height: 100vh; background: #0e0e0e; }
+.sections-wrap { display: flex; flex-direction: column; }
 
 .ptr-indicator {
   display: flex; justify-content: center; padding: 8px 0; margin-top: -8px; margin-bottom: 4px;
