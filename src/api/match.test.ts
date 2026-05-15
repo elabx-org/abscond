@@ -5,8 +5,6 @@ vi.mock('./client', () => ({
   api: {
     get: vi.fn(),
     post: vi.fn(),
-    patch: vi.fn(),
-    delete: vi.fn(),
   },
 }))
 
@@ -28,13 +26,13 @@ describe('searchCandidates', () => {
   })
 
   it('returns empty array when endpoint returns 404', async () => {
-    vi.mocked(api.get).mockRejectedValueOnce({ response: { status: 404 } })
+    vi.mocked(api.get).mockRejectedValueOnce({ response: { status: 404 }, isAxiosError: true })
     const result = await searchCandidates('Dune', 'Frank Herbert', 'audible')
     expect(result).toEqual([])
   })
 
   it('throws on non-404 errors', async () => {
-    vi.mocked(api.get).mockRejectedValueOnce({ response: { status: 500 } })
+    vi.mocked(api.get).mockRejectedValueOnce({ response: { status: 500 }, isAxiosError: true })
     await expect(searchCandidates('Dune', '', 'audible')).rejects.toBeDefined()
   })
 })

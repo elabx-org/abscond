@@ -1,5 +1,5 @@
+import axios from 'axios'
 import { api } from './client'
-import type { LibraryItem } from './types'
 
 export interface MatchCandidate {
   id?: string
@@ -17,7 +17,6 @@ export interface MatchCandidate {
 
 export interface ApplyMatchResult {
   updated: boolean
-  item?: LibraryItem
 }
 
 export async function searchCandidates(
@@ -28,8 +27,8 @@ export async function searchCandidates(
   try {
     const res = await api.get('/search/books', { params: { title, author, provider } })
     return res.data ?? []
-  } catch (err: any) {
-    if (err?.response?.status === 404) return []
+  } catch (err) {
+    if (axios.isAxiosError(err) && err.response?.status === 404) return []
     throw err
   }
 }
