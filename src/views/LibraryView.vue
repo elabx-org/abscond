@@ -39,6 +39,20 @@
           @click="progressFilter = f.key; page = 1"
         >{{ f.label }}</button>
       </div>
+
+      <!-- Inline search -->
+      <div class="lib-search-wrap">
+        <v-icon size="14" color="rgba(255,255,255,0.3)">mdi-magnify</v-icon>
+        <input
+          v-model="searchQuery"
+          class="lib-search-input"
+          placeholder="Filter by title or author…"
+          @input="page = 1"
+        />
+        <button v-if="searchQuery" class="lib-search-clear" @click="searchQuery = ''; page = 1">
+          <v-icon size="12">mdi-close</v-icon>
+        </button>
+      </div>
     </div>
 
     <!-- Loading skeletons -->
@@ -200,13 +214,21 @@ const progressFilters = [
 const sortDesc     = ref(false)
 const pageSize     = 100
 const page         = ref(1)
+const searchQuery  = ref('')
 
 const items = computed(() =>
   lib.activeLibraryId ? lib.itemsFor(lib.activeLibraryId) : []
 )
 
 const filteredItems = computed(() => {
-  const all = items.value
+  let all = items.value
+  if (searchQuery.value.trim()) {
+    const q = searchQuery.value.toLowerCase()
+    all = all.filter(i =>
+      i.media.metadata.title.toLowerCase().includes(q) ||
+      (i.media.metadata.authors ?? []).some(a => a.name.toLowerCase().includes(q))
+    )
+  }
   if (progressFilter.value === 'all') return all
   if (progressFilter.value === 'in-progress') return all.filter(i => (i.userMediaProgress?.progress ?? 0) > 0 && !i.userMediaProgress?.isFinished)
   if (progressFilter.value === 'finished')    return all.filter(i => i.userMediaProgress?.isFinished)
@@ -381,6 +403,18 @@ watch(() => lib.activeLibraryId, (id) => {
   color: rgba(255,255,255,0.45); transition: all 0.15s;
 }
 .filter-chip.active { background: rgba(212,160,23,0.12); border-color: rgba(212,160,23,0.4); color: #d4a017; }
+
+.lib-search-wrap {
+  display: flex; align-items: center; gap: 6px;
+  background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 10px; padding: 6px 10px; margin-top: 8px;
+}
+.lib-search-input {
+  flex: 1; background: transparent; border: none; outline: none;
+  color: rgba(255,255,255,0.85); font-size: 12px;
+}
+.lib-search-input::placeholder { color: rgba(255,255,255,0.25); }
+.lib-search-clear { background: transparent; border: none; cursor: pointer; color: rgba(255,255,255,0.3); padding: 0; }
 
 .load-more-wrap { display: flex; justify-content: center; padding: 20px 0; }
 .load-more-btn {
