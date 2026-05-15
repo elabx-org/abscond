@@ -75,9 +75,9 @@
 
         <!-- Title / author / chapter -->
         <div class="meta-area">
-          <p class="book-title">{{ displayItem?.media.metadata.title ?? '' }}</p>
+          <p class="book-title">{{ displayTitle }}</p>
           <p class="book-author">{{ displayAuthor }}</p>
-          <p v-if="player.currentChapter && player.currentItem" class="chapter-title">{{ player.currentChapter.title }}</p>
+          <p v-if="player.currentChapter && player.currentItem && !isPodcast" class="chapter-title">{{ player.currentChapter.title }}</p>
         </div>
 
         <!-- Progress — only when playing -->
@@ -352,9 +352,21 @@ const backdropSrc = computed(() =>
   displayItem.value ? coverUrl(displayItem.value.id, auth.token ?? '') : ''
 )
 
+const isPodcast = computed(() => player.currentItem?.mediaType === 'podcast')
+
+const displayTitle = computed(() => {
+  if (isPodcast.value && previewIndex.value < 0) {
+    return player.session?.displayTitle || displayItem.value?.media.metadata.title || ''
+  }
+  return displayItem.value?.media.metadata.title ?? ''
+})
+
 const displayAuthor = computed(() => {
   if (previewIndex.value >= 0) {
     return displayItem.value?.media.metadata.authorName || ''
+  }
+  if (isPodcast.value && player.currentItem) {
+    return player.session?.displayAuthor || player.currentItem.media.metadata.title || ''
   }
   return player.currentItem
     ? (player.session?.displayAuthor || player.currentItem.media.metadata.authorName || 'Unknown Author')
