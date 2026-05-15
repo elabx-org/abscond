@@ -1,6 +1,12 @@
 <template>
   <Transition name="miniplayer">
-    <div v-if="player.currentItem" class="mini-player" @click="router.push({ name: 'player' })">
+    <div
+      v-if="player.currentItem"
+      class="mini-player"
+      @click="router.push({ name: 'player' })"
+      @touchstart.passive="onTouchStart"
+      @touchend.passive="onTouchEnd"
+    >
       <!-- Blurred bg -->
       <div class="mini-bg">
         <img v-if="coverSrc" :src="coverSrc" class="mini-bg-img" aria-hidden="true" />
@@ -50,7 +56,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { usePlayerStore } from '@/stores/player'
 import { useAuthStore } from '@/stores/auth'
@@ -61,7 +67,31 @@ const player      = usePlayerStore()
 const auth        = useAuthStore()
 const router      = useRouter()
 const settings    = useSettingsStore()
-const skipFwdSecs = computed(() => settings.skipFwdSecs)
+const skipFwdSecs  = computed(() => settings.skipFwdSecs)
+const skipBackSecs = computed(() => settings.skipBackSecs)
+
+const _touchStart = ref<{ x: number; y: number } | null>(null)
+
+function onTouchStart(e: TouchEvent) {
+  const t = e.touches[0]
+  _touchStart.value = { x: t.clientX, y: t.clientY }
+}
+
+function onTouchEnd(e: TouchEvent) {
+  if (!_touchStart.value) return
+  const t = e.changedTouches[0]
+  const dx = t.clientX - _touchStart.value.x
+  const dy = t.clientY - _touchStart.value.y
+  _touchStart.value = null
+  if (Math.abs(dy) > Math.abs(dx) && dy < -40) {
+    // swipe up → open player
+    router.push({ name: 'player' })
+  } else if (Math.abs(dx) > 50 && Math.abs(dy) < 40) {
+    e.stopPropagation()
+    if (dx < 0) player.skipForward(skipFwdSecs.value)
+    else player.skipBack(skipBackSecs.value)
+  }
+}
 
 const coverSrc = computed(() =>
   player.currentItem ? coverUrl(player.currentItem.id, auth.token ?? '') : ''
