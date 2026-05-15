@@ -1,5 +1,15 @@
 <template>
-  <div class="upcoming-view">
+  <div
+    class="upcoming-view"
+    @touchstart.passive="onTouchStart"
+    @touchmove.passive="onTouchMove"
+    @touchend.passive="onTouchEnd"
+  >
+    <Transition name="ptr">
+      <div v-if="ptr.pulling" class="ptr-indicator">
+        <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-arrow-down</v-icon>
+      </div>
+    </Transition>
     <div class="view-header">
       <h2 class="screen-title">Upcoming</h2>
       <div class="header-actions">
@@ -148,6 +158,24 @@ import { scanUpcoming, loadCache, clearCache, type UpcomingBook, type ScanProgre
 
 const lib = useLibraryStore()
 
+const ptr = ref({ pulling: false, startY: 0 })
+
+function onTouchStart(e: TouchEvent) {
+  if (window.scrollY > 0) return
+  ptr.value.startY = e.touches[0].clientY
+}
+
+function onTouchMove(e: TouchEvent) {
+  if (!ptr.value.startY) return
+  ptr.value.pulling = e.touches[0].clientY - ptr.value.startY > 40
+}
+
+function onTouchEnd() {
+  if (ptr.value.pulling) startScan(true)
+  ptr.value.pulling = false
+  ptr.value.startY = 0
+}
+
 const books     = ref<UpcomingBook[]>([])
 const scanning  = ref(false)
 const firstLoad = ref(true)
@@ -254,6 +282,10 @@ onBeforeUnmount(() => { abortController?.abort() })
 
 <style scoped>
 .upcoming-view { min-height: 100vh; background: #0e0e0e; padding: 16px 12px 80px; }
+
+.ptr-indicator { position: fixed; top: 0; left: 0; right: 0; z-index: 100; display: flex; align-items: center; justify-content: center; padding: 8px; background: rgba(14,14,14,0.85); backdrop-filter: blur(4px); }
+.ptr-enter-active, .ptr-leave-active { transition: opacity 0.2s, transform 0.2s; }
+.ptr-enter-from, .ptr-leave-to { opacity: 0; transform: translateY(-100%); }
 
 .view-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
 .screen-title { font-size: 18px; font-weight: 700; color: rgba(255,255,255,0.9); margin: 0; }

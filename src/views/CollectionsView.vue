@@ -1,5 +1,17 @@
 <template>
-  <div class="collections-view">
+  <div
+    class="collections-view"
+    @touchstart.passive="onTouchStart"
+    @touchmove.passive="onTouchMove"
+    @touchend.passive="onTouchEnd"
+  >
+    <Transition name="ptr">
+      <div v-if="ptr.pulling || ptr.refreshing" class="ptr-indicator">
+        <v-icon size="18" color="rgba(255,255,255,0.5)" :class="{ spin: ptr.refreshing }">
+          {{ ptr.refreshing ? 'mdi-loading' : 'mdi-arrow-down' }}
+        </v-icon>
+      </div>
+    </Transition>
     <div class="view-header">
       <h2 class="screen-title">Collections</h2>
       <button class="add-btn" @click="showCreate = true">
@@ -172,6 +184,29 @@ import { getAuthorDisplay } from '@/utils/metadata'
 const auth = useAuthStore()
 const lib  = useLibraryStore()
 
+const ptr = ref({ pulling: false, refreshing: false, startY: 0 })
+
+function onTouchStart(e: TouchEvent) {
+  if (window.scrollY > 0) return
+  ptr.value.startY = e.touches[0].clientY
+}
+
+function onTouchMove(e: TouchEvent) {
+  if (!ptr.value.startY) return
+  ptr.value.pulling = e.touches[0].clientY - ptr.value.startY > 40
+}
+
+async function onTouchEnd() {
+  if (ptr.value.pulling) {
+    ptr.value.pulling = false
+    ptr.value.refreshing = true
+    try { collections.value = await getCollections() } catch { /* ignore */ }
+    finally { ptr.value.refreshing = false }
+  }
+  ptr.value.pulling = false
+  ptr.value.startY = 0
+}
+
 const loading     = ref(true)
 const collections = ref<Collection[]>([])
 const selectedCol = ref<Collection | null>(null)
@@ -240,6 +275,12 @@ onMounted(async () => {
 
 <style scoped>
 .collections-view { min-height: 100vh; background: #0e0e0e; padding: 16px 12px 60px; }
+
+.ptr-indicator { position: fixed; top: 0; left: 0; right: 0; z-index: 100; display: flex; align-items: center; justify-content: center; padding: 8px; background: rgba(14,14,14,0.85); backdrop-filter: blur(4px); }
+.ptr-enter-active, .ptr-leave-active { transition: opacity 0.2s, transform 0.2s; }
+.ptr-enter-from, .ptr-leave-to { opacity: 0; transform: translateY(-100%); }
+.spin { animation: spin 0.8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
 
 .view-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
 .screen-title { font-size: 18px; font-weight: 700; color: rgba(255,255,255,0.9); margin: 0; }
