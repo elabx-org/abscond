@@ -35,7 +35,7 @@
         :key="item.id"
         :item-id="item.id"
         :title="item.media.metadata.title"
-        :author="item.media.metadata.authors.map(a => a.name).join(', ') || 'Unknown'"
+        :author="(item.media.metadata.authors ?? []).map(a => a.name).join(', ') || 'Unknown'"
         :cover-src="coverUrl(item.id, auth.token ?? '')"
         :progress="item.userMediaProgress?.progress ?? 0"
         @click="openDetail(item)"

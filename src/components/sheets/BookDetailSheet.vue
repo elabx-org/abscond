@@ -46,7 +46,7 @@
             <div class="chip-row">
               <span v-if="durationLabel" class="chip">{{ durationLabel }}</span>
               <span v-if="item.media.metadata.publishedYear" class="chip">{{ item.media.metadata.publishedYear }}</span>
-              <span v-for="g in item.media.metadata.genres.slice(0, 3)" :key="g" class="chip">{{ g }}</span>
+              <span v-for="g in (item.media.metadata.genres ?? []).slice(0, 3)" :key="g" class="chip">{{ g }}</span>
             </div>
 
             <!-- Description -->
@@ -93,15 +93,15 @@ const { accent } = useColorThief(coverImgRef)
 const descExpanded = ref(false)
 
 const authorNames = computed(() =>
-  props.item.media.metadata.authors.map(a => a.name).join(', ') || 'Unknown Author'
+  (props.item.media.metadata.authors ?? []).map(a => a.name).join(', ') || 'Unknown Author'
 )
 
 const narratorNames = computed(() =>
-  props.item.media.metadata.narrators.join(', ')
+  (props.item.media.metadata.narrators ?? []).join(', ')
 )
 
 const seriesLabel = computed(() => {
-  const s = props.item.media.metadata.series[0]
+  const s = (props.item.media.metadata.series ?? [])[0]
   if (!s) return ''
   return s.sequence ? `${s.name} #${s.sequence}` : s.name
 })
