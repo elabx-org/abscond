@@ -38,3 +38,8 @@ export async function removeItemFromPlaylist(playlistId: string, libraryItemId: 
   const params = episodeId ? `?episodeId=${episodeId}` : ''
   await api.delete(`/playlists/${playlistId}/item/${libraryItemId}${params}`)
 }
+
+export async function updatePlaylist(playlistId: string, data: { name?: string; description?: string }): Promise<Playlist> {
+  const res = await api.patch(`/playlists/${playlistId}`, data)
+  return res.data.playlist ?? res.data
+}

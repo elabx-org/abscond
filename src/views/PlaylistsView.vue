@@ -59,10 +59,24 @@
                 </button>
                 <h3 class="sheet-title">{{ selected.name }}</h3>
                 <p v-if="selected.description" class="sheet-desc">{{ selected.description }}</p>
-                <button class="del-pl-btn" @click="confirmDeletePl(selected)">
-                  <v-icon size="14">mdi-delete-outline</v-icon>
-                  Delete playlist
-                </button>
+                <div class="sheet-actions">
+                  <button
+                    v-if="selected.items.length"
+                    class="play-all-btn"
+                    @click="playAll(selected)"
+                  >
+                    <v-icon size="14" color="#111">mdi-play</v-icon>
+                    Play all
+                  </button>
+                  <button class="rename-pl-btn" @click="openRename(selected)">
+                    <v-icon size="14">mdi-pencil-outline</v-icon>
+                    Rename
+                  </button>
+                  <button class="del-pl-btn" @click="confirmDeletePl(selected)">
+                    <v-icon size="14">mdi-delete-outline</v-icon>
+                    Delete
+                  </button>
+                </div>
               </div>
               <div v-if="!selected.items.length" class="empty-state">
                 <v-icon size="32" color="rgba(255,255,255,0.15)">mdi-playlist-music</v-icon>
@@ -128,6 +142,25 @@
       </Transition>
     </Teleport>
 
+    <!-- Rename playlist sheet -->
+    <Teleport to="body">
+      <Transition name="sheet">
+        <div v-if="renameTarget" class="sheet-backdrop" @click.self="renameTarget = null">
+          <div class="create-sheet">
+            <div class="drag-handle-area"><div class="drag-handle" /></div>
+            <div class="create-content">
+              <h3 class="create-title">Rename Playlist</h3>
+              <input v-model="renameValue" class="form-input" placeholder="Playlist name" />
+              <button class="save-btn" :disabled="!renameValue.trim() || renaming" @click="doRename">
+                {{ renaming ? 'Saving…' : 'Save' }}
+              </button>
+              <button class="cancel-btn" @click="renameTarget = null">Cancel</button>
+            </div>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
+
     <BookDetailSheet
       v-if="detailItem"
       :item="detailItem"
@@ -140,16 +173,20 @@
 
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
-import { getPlaylists, createPlaylist, deletePlaylist, removeItemFromPlaylist } from '@/api/playlists'
+import { getPlaylists, createPlaylist, deletePlaylist, removeItemFromPlaylist, updatePlaylist } from '@/api/playlists'
 import { coverUrl } from '@/api/client'
 import { useAuthStore } from '@/stores/auth'
 import { useLibraryStore } from '@/stores/library'
+import { usePlayerStore } from '@/stores/player'
+import { useRouter } from 'vue-router'
 import BookDetailSheet from '@/components/sheets/BookDetailSheet.vue'
 import type { Playlist, PlaylistItem } from '@/api/playlists'
 import type { LibraryItem } from '@/api/types'
 
-const auth = useAuthStore()
-const lib  = useLibraryStore()
+const auth   = useAuthStore()
+const lib    = useLibraryStore()
+const player = usePlayerStore()
+const router = useRouter()
 
 const loading    = ref(true)
 const playlists  = ref<Playlist[]>([])
@@ -158,13 +195,43 @@ const showCreate = ref(false)
 const newName    = ref('')
 const newDesc    = ref('')
 const saving     = ref(false)
-const detailItem = ref<LibraryItem | null>(null)
+const detailItem   = ref<LibraryItem | null>(null)
 const deleteTarget = ref<Playlist | null>(null)
 const deleting     = ref(false)
+const renameTarget = ref<Playlist | null>(null)
+const renameValue  = ref('')
+const renaming     = ref(false)
 
 function openItem(item: PlaylistItem) {
-  selected.value  = null
+  selected.value   = null
   detailItem.value = item.libraryItem
+}
+
+async function playAll(pl: Playlist) {
+  if (!pl.items.length) return
+  selected.value = null
+  const first = pl.items[0].libraryItem
+  // Queue the rest
+  player.clearQueue()
+  pl.items.slice(1).forEach(i => player.addToQueue(i.libraryItem))
+  await player.play(first)
+  router.push({ name: 'player' })
+}
+
+function openRename(pl: Playlist) {
+  renameTarget.value = pl
+  renameValue.value  = pl.name
+}
+
+async function doRename() {
+  if (!renameTarget.value || !renameValue.value.trim()) return
+  renaming.value = true
+  try {
+    await updatePlaylist(renameTarget.value.id, { name: renameValue.value.trim() })
+    renameTarget.value.name = renameValue.value.trim()
+    if (selected.value?.id === renameTarget.value.id) selected.value.name = renameValue.value.trim()
+    renameTarget.value = null
+  } finally { renaming.value = false }
 }
 
 function confirmDeletePl(pl: Playlist) {
@@ -251,7 +318,13 @@ onMounted(async () => {
 .sheet-head { margin-bottom: 16px; }
 .sheet-title { font-size: 17px; font-weight: 700; color: rgba(255,255,255,0.9); margin: 0 0 4px; clear: both; }
 .sheet-desc { font-size: 12px; color: rgba(255,255,255,0.4); margin: 0 0 10px; }
-.del-pl-btn { display: flex; align-items: center; gap: 5px; font-size: 11px; color: rgba(220,80,80,0.7); background: transparent; border: none; cursor: pointer; padding: 0; }
+.sheet-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px; }
+.play-all-btn {
+  display: flex; align-items: center; gap: 5px; font-size: 11px; padding: 6px 12px;
+  border-radius: 8px; background: #d4a017; border: none; cursor: pointer; color: #111; font-weight: 700;
+}
+.rename-pl-btn { display: flex; align-items: center; gap: 5px; font-size: 11px; color: rgba(255,255,255,0.5); background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 6px 12px; cursor: pointer; }
+.del-pl-btn { display: flex; align-items: center; gap: 5px; font-size: 11px; color: rgba(220,80,80,0.7); background: rgba(220,80,80,0.06); border: 1px solid rgba(220,80,80,0.15); border-radius: 8px; padding: 6px 12px; cursor: pointer; }
 
 .pl-item-list { display: flex; flex-direction: column; }
 .pl-item-row { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.05); cursor: pointer; }
