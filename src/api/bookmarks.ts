@@ -19,6 +19,11 @@ export async function createBookmark(itemId: string, time: number, title: string
   return res.data
 }
 
+export async function updateBookmark(itemId: string, time: number, title: string): Promise<Bookmark> {
+  const res = await api.post(`/me/item/${itemId}/bookmark`, { time, title })
+  return res.data
+}
+
 export async function deleteBookmark(itemId: string, time: number): Promise<void> {
   await api.delete(`/me/item/${itemId}/bookmark/${time}`)
 }
