@@ -44,9 +44,9 @@
       </div>
       <div class="h-scroll">
         <template v-if="loadingProgress">
-          <div v-for="n in 3" :key="n" class="wide-card-skeleton" />
+          <div v-for="n in 4" :key="n" class="cl-card-skeleton" />
         </template>
-        <WideCard
+        <ContinueListeningCard
           v-else
           v-for="item in progress.inProgress"
           :key="item.id"
@@ -218,7 +218,7 @@ import { usePlayerStore } from '@/stores/player'
 import { useNotificationStore } from '@/stores/notifications'
 import { coverUrl, api } from '@/api/client'
 import PortraitCard from '@/components/cards/PortraitCard.vue'
-import WideCard from '@/components/cards/WideCard.vue'
+import ContinueListeningCard from '@/components/cards/ContinueListeningCard.vue'
 import BookDetailSheet from '@/components/sheets/BookDetailSheet.vue'
 import PodcastDetailSheet from '@/components/sheets/PodcastDetailSheet.vue'
 import QuickActionsSheet from '@/components/sheets/QuickActionsSheet.vue'
@@ -437,7 +437,7 @@ watch(() => lib.activeLibraryId, async (id) => {
 .skeleton-cover { width: 120px; height: 120px; border-radius: 8px; background: linear-gradient(90deg, #1a1a1a 25%, #222 50%, #1a1a1a 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; }
 .skeleton-line { height: 10px; border-radius: 4px; background: #1a1a1a; animation: shimmer 1.5s infinite; }
 .skeleton-line.short { width: 70%; }
-.wide-card-skeleton { width: 300px; height: 110px; flex-shrink: 0; border-radius: 14px; background: linear-gradient(90deg, #1a1a1a 25%, #222 50%, #1a1a1a 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; }
+.cl-card-skeleton { width: 150px; height: 220px; flex-shrink: 0; border-radius: 14px; background: linear-gradient(90deg, #1a1a1a 25%, #222 50%, #1a1a1a 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; }
 @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
 .empty-row { font-size: 12px; color: rgba(255,255,255,0.25); padding: 8px 0; }
 
