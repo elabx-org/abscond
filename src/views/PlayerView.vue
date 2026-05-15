@@ -268,13 +268,15 @@
 import { computed, ref } from 'vue'
 import { usePlayerStore } from '@/stores/player'
 import { useAuthStore } from '@/stores/auth'
+import { useSettingsStore } from '@/stores/settings'
 import { coverUrl } from '@/api/client'
 import { createBookmark } from '@/api/bookmarks'
 import { useNotificationStore } from '@/stores/notifications'
 import type { LibraryItem } from '@/api/types'
 
-const player = usePlayerStore()
-const auth   = useAuthStore()
+const player   = usePlayerStore()
+const auth     = useAuthStore()
+const settings = useSettingsStore()
 const notify = useNotificationStore()
 
 const showChapters    = ref(false)
@@ -284,8 +286,8 @@ const showQueue       = ref(false)
 const scrubberEl      = ref<HTMLElement | null>(null)
 let scrubbing = false
 
-const skipBackSecs = parseInt(localStorage.getItem('abs_skip_back') ?? '30')
-const skipFwdSecs  = parseInt(localStorage.getItem('abs_skip_fwd')  ?? '30')
+const skipBackSecs = computed(() => settings.skipBackSecs)
+const skipFwdSecs  = computed(() => settings.skipFwdSecs)
 
 const REWIND_ICONS: Record<number, string> = { 10: 'mdi-rewind-10', 15: 'mdi-rewind-15', 30: 'mdi-rewind-30' }
 const FWD_ICONS:    Record<number, string> = { 10: 'mdi-fast-forward-10', 15: 'mdi-fast-forward-15', 30: 'mdi-fast-forward-30' }

@@ -273,13 +273,15 @@ import { useAuthStore } from '@/stores/auth'
 import { useLibraryStore } from '@/stores/library'
 import { usePlayerStore } from '@/stores/player'
 import { useSocketStore } from '@/stores/socket'
+import { useSettingsStore } from '@/stores/settings'
 import { updatePassword, updateUsername } from '@/api/auth'
 
-const router  = useRouter()
-const auth    = useAuthStore()
-const lib     = useLibraryStore()
-const player  = usePlayerStore()
-const socketStore = useSocketStore()
+const router    = useRouter()
+const auth      = useAuthStore()
+const lib       = useLibraryStore()
+const player    = usePlayerStore()
+const socketStore    = useSocketStore()
+const settingsStore  = useSettingsStore()
 
 declare const __APP_VERSION__: string
 const appVersion = __APP_VERSION__
@@ -360,12 +362,14 @@ function doSaveServer() {
 const playbackRate = ref<number>(
   parseFloat(localStorage.getItem('abs_playback_rate') ?? '1')
 )
-const skipBackSecs = ref<number>(
-  parseInt(localStorage.getItem('abs_skip_back') ?? '30')
-)
-const skipFwdSecs = ref<number>(
-  parseInt(localStorage.getItem('abs_skip_fwd') ?? '30')
-)
+const skipBackSecs = computed({
+  get: () => settingsStore.skipBackSecs,
+  set: (v: number) => settingsStore.setSkipBack(v),
+})
+const skipFwdSecs = computed({
+  get: () => settingsStore.skipFwdSecs,
+  set: (v: number) => settingsStore.setSkipFwd(v),
+})
 
 const skipIntervalOptions = [10, 15, 30, 45, 60]
 
@@ -374,15 +378,8 @@ function savePlaybackRate() {
   player.setRate(playbackRate.value)
 }
 
-function setSkipBack(s: number) {
-  skipBackSecs.value = s
-  localStorage.setItem('abs_skip_back', String(s))
-}
-
-function setSkipFwd(s: number) {
-  skipFwdSecs.value = s
-  localStorage.setItem('abs_skip_fwd', String(s))
-}
+function setSkipBack(s: number) { settingsStore.setSkipBack(s) }
+function setSkipFwd(s: number)  { settingsStore.setSkipFwd(s) }
 
 async function doLogout() {
   await player.stop()

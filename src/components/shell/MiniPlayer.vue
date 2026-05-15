@@ -52,12 +52,14 @@ import { computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { usePlayerStore } from '@/stores/player'
 import { useAuthStore } from '@/stores/auth'
+import { useSettingsStore } from '@/stores/settings'
 import { coverUrl } from '@/api/client'
 
-const player     = usePlayerStore()
-const auth       = useAuthStore()
-const router     = useRouter()
-const skipFwdSecs = parseInt(localStorage.getItem('abs_skip_fwd') ?? '30')
+const player      = usePlayerStore()
+const auth        = useAuthStore()
+const router      = useRouter()
+const settings    = useSettingsStore()
+const skipFwdSecs = computed(() => settings.skipFwdSecs)
 
 const coverSrc = computed(() =>
   player.currentItem ? coverUrl(player.currentItem.id, auth.token ?? '') : ''
