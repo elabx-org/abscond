@@ -83,13 +83,7 @@ const player = usePlayerStore()
 const loading = ref(false)
 const books   = ref<LibraryItem[]>([])
 
-const sortedBooks = computed(() => {
-  return [...books.value].sort((a, b) => {
-    const seqA = parseFloat(a.media.metadata.series?.find((s: { id: string }) => s.id === props.seriesId)?.sequence ?? '999')
-    const seqB = parseFloat(b.media.metadata.series?.find((s: { id: string }) => s.id === props.seriesId)?.sequence ?? '999')
-    return seqA - seqB
-  })
-})
+const sortedBooks = computed(() => books.value)
 
 const coverSrc = computed(() =>
   sortedBooks.value[0] ? coverUrl(sortedBooks.value[0].id, auth.token ?? '') : ''
