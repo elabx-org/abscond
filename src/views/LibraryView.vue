@@ -15,34 +15,26 @@
       </div>
     </Transition>
 
-    <!-- Header row -->
-    <div class="lib-header">
-      <!-- Library switcher (multi-lib) -->
-      <div v-if="lib.libraries.length > 1" class="lib-chips">
-        <button
-          v-for="l in lib.libraries"
-          :key="l.id"
-          class="lib-chip"
-          :class="{ active: lib.activeLibraryId === l.id }"
-          @click="switchLibrary(l.id)"
-        >{{ l.name }}</button>
-      </div>
+    <!-- Library switcher (multi-lib) -->
+    <div v-if="lib.libraries.length > 1" class="lib-chips">
+      <button
+        v-for="l in lib.libraries"
+        :key="l.id"
+        class="lib-chip"
+        :class="{ active: lib.activeLibraryId === l.id }"
+        @click="switchLibrary(l.id)"
+      >{{ l.name }}</button>
+    </div>
 
-      <!-- View mode tabs -->
-      <div class="view-tabs">
-        <button class="view-tab" :class="{ active: viewMode === 'library' }" @click="setViewMode('library')">
-          <v-icon size="13">mdi-bookshelf</v-icon> Library
-        </button>
-        <button class="view-tab" :class="{ active: viewMode === 'series' }" @click="setViewMode('series')">
-          <v-icon size="13">mdi-book-multiple</v-icon> Series
-        </button>
-        <button class="view-tab" :class="{ active: viewMode === 'authors' }" @click="setViewMode('authors')">
-          <v-icon size="13">mdi-account-multiple</v-icon> Authors
-        </button>
-      </div>
+    <!-- Tab bar -->
+    <div class="view-tab-bar">
+      <button class="view-tab" :class="{ active: viewMode === 'library' }" @click="setViewMode('library')">Library</button>
+      <button class="view-tab" :class="{ active: viewMode === 'series' }" @click="setViewMode('series')">Series</button>
+      <button class="view-tab" :class="{ active: viewMode === 'authors' }" @click="setViewMode('authors')">Authors</button>
+    </div>
 
-      <!-- Sort chips (library view only) -->
-      <template v-if="viewMode === 'library'">
+    <!-- Library controls -->
+    <div v-if="viewMode === 'library'" class="lib-controls">
       <div class="sort-chips">
         <button class="sort-chip" :class="{ active: sortField === 'title' }" @click="setSort('title')">
           <v-icon size="12">mdi-sort-alphabetical-ascending</v-icon> Title
@@ -64,7 +56,6 @@
         </button>
       </div>
 
-      <!-- Progress filter -->
       <div class="filter-chips">
         <button
           v-for="f in progressFilters"
@@ -75,7 +66,6 @@
         >{{ f.label }}</button>
       </div>
 
-      <!-- Tag filter -->
       <div v-if="availableTags.length" class="filter-chips">
         <button
           class="filter-chip"
@@ -91,8 +81,7 @@
         >{{ t }}</button>
       </div>
 
-      <!-- Genre filter -->
-      <div v-if="availableGenres.length" class="filter-chips genre-chips">
+      <div v-if="availableGenres.length" class="filter-chips">
         <button
           class="filter-chip"
           :class="{ active: !genreFilter }"
@@ -107,7 +96,6 @@
         >{{ g }}</button>
       </div>
 
-      <!-- Inline search -->
       <div class="lib-search-wrap">
         <v-icon size="14" color="rgba(255,255,255,0.3)">mdi-magnify</v-icon>
         <input
@@ -120,7 +108,6 @@
           <v-icon size="12">mdi-close</v-icon>
         </button>
       </div>
-      </template>
     </div>
 
     <!-- Library view -->
@@ -166,52 +153,85 @@
 
     <!-- Series view -->
     <template v-else-if="viewMode === 'series'">
-      <div v-if="loadingSeries" class="list-skeleton">
-        <div v-for="n in 8" :key="n" class="skel-row" />
+      <div class="sub-search-wrap">
+        <v-icon size="14" color="rgba(255,255,255,0.3)">mdi-magnify</v-icon>
+        <input v-model="seriesSearch" class="lib-search-input" placeholder="Search series…" />
+        <button v-if="seriesSearch" class="lib-search-clear" @click="seriesSearch = ''">
+          <v-icon size="12">mdi-close</v-icon>
+        </button>
       </div>
-      <div v-else-if="!seriesList.length" class="empty-state">
+      <div v-if="loadingSeries" class="grid">
+        <div v-for="n in 12" :key="n" class="skeleton-card">
+          <div class="skeleton-cover" /><div class="skeleton-line short" /><div class="skeleton-line" />
+        </div>
+      </div>
+      <div v-else-if="!filteredSeries.length" class="empty-state">
         <v-icon size="40" color="rgba(255,255,255,0.15)">mdi-book-multiple</v-icon>
         <p>No series found</p>
       </div>
-      <div v-else class="item-list">
+      <div v-else class="grid">
         <div
-          v-for="s in seriesList"
+          v-for="s in filteredSeries"
           :key="s.id"
-          class="list-row"
+          class="series-card"
           @click="activeSeries = s"
         >
-          <div class="row-icon"><v-icon size="18" color="#d4a017">mdi-book-multiple</v-icon></div>
-          <div class="row-info">
-            <p class="row-name">{{ s.name }}</p>
-            <p class="row-sub">{{ s.numBooks ?? s.books?.length ?? 0 }} books</p>
+          <div class="series-cover-wrap">
+            <img
+              v-if="s.books && s.books.length"
+              :src="coverUrl(s.books[0].id, auth.token ?? '')"
+              class="series-cover"
+              :alt="s.name"
+            />
+            <div v-else class="series-cover-placeholder">
+              <v-icon size="28" color="rgba(255,255,255,0.2)">mdi-book-multiple</v-icon>
+            </div>
+            <div class="series-count-badge">{{ s.numBooks ?? s.books?.length ?? 0 }}</div>
           </div>
-          <v-icon size="16" color="rgba(255,255,255,0.2)">mdi-chevron-right</v-icon>
+          <p class="card-title">{{ s.name }}</p>
+          <p class="card-sub">{{ s.numBooks ?? s.books?.length ?? 0 }} books</p>
         </div>
       </div>
     </template>
 
     <!-- Authors view -->
     <template v-else-if="viewMode === 'authors'">
-      <div v-if="loadingAuthors" class="list-skeleton">
-        <div v-for="n in 8" :key="n" class="skel-row" />
+      <div class="sub-search-wrap">
+        <v-icon size="14" color="rgba(255,255,255,0.3)">mdi-magnify</v-icon>
+        <input v-model="authorSearch" class="lib-search-input" placeholder="Search authors…" />
+        <button v-if="authorSearch" class="lib-search-clear" @click="authorSearch = ''">
+          <v-icon size="12">mdi-close</v-icon>
+        </button>
       </div>
-      <div v-else-if="!authorsList.length" class="empty-state">
+      <div v-if="loadingAuthors" class="grid">
+        <div v-for="n in 12" :key="n" class="skeleton-card">
+          <div class="skeleton-cover" /><div class="skeleton-line short" /><div class="skeleton-line" />
+        </div>
+      </div>
+      <div v-else-if="!filteredAuthors.length" class="empty-state">
         <v-icon size="40" color="rgba(255,255,255,0.15)">mdi-account-multiple</v-icon>
         <p>No authors found</p>
       </div>
-      <div v-else class="item-list">
+      <div v-else class="grid">
         <div
-          v-for="a in authorsList"
+          v-for="a in filteredAuthors"
           :key="a.id"
-          class="list-row"
+          class="series-card"
           @click="activeAuthor = a"
         >
-          <div class="author-avatar">{{ a.name[0]?.toUpperCase() }}</div>
-          <div class="row-info">
-            <p class="row-name">{{ a.name }}</p>
-            <p class="row-sub">{{ a.numBooks ?? a.libraryItems?.length ?? 0 }} books</p>
+          <div class="series-cover-wrap">
+            <img
+              v-if="a.imagePath"
+              :src="authorImageUrl(a.id)"
+              class="series-cover author-img"
+              :alt="a.name"
+            />
+            <div v-else class="author-initial-cover">
+              <span class="author-initial">{{ a.name[0]?.toUpperCase() }}</span>
+            </div>
           </div>
-          <v-icon size="16" color="rgba(255,255,255,0.2)">mdi-chevron-right</v-icon>
+          <p class="card-title">{{ a.name }}</p>
+          <p class="card-sub">{{ a.numBooks ?? a.libraryItems?.length ?? 0 }} books</p>
         </div>
       </div>
     </template>
@@ -336,6 +356,7 @@ import { useNotificationStore } from '@/stores/notifications'
 import { getLibrarySeriesList, getLibraryAuthors } from '@/api/browse'
 import type { SeriesDetail, AuthorDetail } from '@/api/browse'
 import { getAuthorDisplay } from '@/utils/metadata'
+import { getBaseUrl } from '@/api/client'
 
 const lib    = useLibraryStore()
 const auth   = useAuthStore()
@@ -350,6 +371,23 @@ const loadingSeries  = ref(false)
 const loadingAuthors = ref(false)
 const activeSeries   = ref<SeriesDetail | null>(null)
 const activeAuthor   = ref<AuthorDetail | null>(null)
+const seriesSearch   = ref('')
+const authorSearch   = ref('')
+let   _baseUrl       = ''
+getBaseUrl().then(u => { _baseUrl = u })
+
+const filteredSeries  = computed(() => {
+  const q = seriesSearch.value.toLowerCase()
+  return q ? seriesList.value.filter(s => s.name.toLowerCase().includes(q)) : seriesList.value
+})
+const filteredAuthors = computed(() => {
+  const q = authorSearch.value.toLowerCase()
+  return q ? authorsList.value.filter(a => a.name.toLowerCase().includes(q)) : authorsList.value
+})
+
+function authorImageUrl(authorId: string): string {
+  return `${_baseUrl}/authors/${authorId}/image?token=${encodeURIComponent(auth.token ?? '')}`
+}
 
 async function setViewMode(mode: ViewMode) {
   viewMode.value = mode
@@ -614,16 +652,14 @@ watch(() => lib.activeLibraryId, (id) => {
 </script>
 
 <style scoped>
-.library-view { padding: 12px; min-height: 100vh; background: #0e0e0e; }
+.library-view { padding: 12px 12px 80px; min-height: 100vh; background: #0e0e0e; }
 .ptr-indicator { display: flex; justify-content: center; padding: 8px 0; margin-top: -8px; margin-bottom: 4px; }
 .ptr-enter-active, .ptr-leave-active { transition: opacity 0.2s; }
 .ptr-enter-from, .ptr-leave-to { opacity: 0; }
 .spin { animation: spin 0.8s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
-.lib-header { margin-bottom: 12px; }
-
-.lib-chips { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
+.lib-chips { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
 .lib-chip {
   font-size: 12px; padding: 5px 14px; border-radius: 20px; cursor: pointer;
   background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.08);
@@ -733,31 +769,44 @@ watch(() => lib.activeLibraryId, (id) => {
 .picker-count { font-size: 11px; color: rgba(255,255,255,0.3); }
 .picker-empty { font-size: 12px; color: rgba(255,255,255,0.3); padding: 16px 0; text-align: center; }
 
-.view-tabs { display: flex; gap: 4px; margin-bottom: 12px; }
+.view-tab-bar {
+  display: flex; overflow-x: auto; scrollbar-width: none;
+  border-bottom: 1px solid rgba(255,255,255,0.06); margin-bottom: 14px;
+}
+.view-tab-bar::-webkit-scrollbar { display: none; }
 .view-tab {
-  display: flex; align-items: center; gap: 5px;
-  font-size: 12px; padding: 6px 14px; border-radius: 20px; cursor: pointer;
+  flex-shrink: 0; padding: 10px 18px; font-size: 13px; font-weight: 600;
+  background: transparent; border: none; border-bottom: 2px solid transparent;
+  cursor: pointer; color: rgba(255,255,255,0.4); transition: all 0.15s; white-space: nowrap;
+}
+.view-tab.active { color: #d4a017; border-bottom-color: #d4a017; }
+
+.lib-controls { margin-bottom: 12px; }
+
+.sub-search-wrap {
+  display: flex; align-items: center; gap: 6px;
   background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08);
-  color: rgba(255,255,255,0.5); transition: all 0.15s; white-space: nowrap;
+  border-radius: 10px; padding: 6px 10px; margin-bottom: 14px;
 }
-.view-tab.active { background: rgba(212,160,23,0.15); border-color: #d4a017; color: #d4a017; }
 
-.list-skeleton { display: flex; flex-direction: column; gap: 2px; }
-.skel-row { height: 52px; border-radius: 8px; background: linear-gradient(90deg, #1a1a1a 25%, #222 50%, #1a1a1a 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; }
-
-.item-list { display: flex; flex-direction: column; }
-.list-row {
-  display: flex; align-items: center; gap: 12px;
-  padding: 11px 4px; border-bottom: 1px solid rgba(255,255,255,0.04);
-  cursor: pointer;
+.series-card { display: flex; flex-direction: column; gap: 5px; cursor: pointer; }
+.series-cover-wrap { position: relative; aspect-ratio: 1; border-radius: 8px; overflow: hidden; background: #1a1a1a; }
+.series-cover { width: 100%; height: 100%; object-fit: cover; display: block; }
+.series-cover.author-img { object-position: top; }
+.series-cover-placeholder {
+  width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;
+  background: rgba(255,255,255,0.04);
 }
-.row-icon { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-.author-avatar {
-  width: 32px; height: 32px; border-radius: 50%; background: rgba(212,160,23,0.15);
-  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
-  font-size: 14px; font-weight: 700; color: #d4a017;
+.author-initial-cover {
+  width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;
+  background: rgba(212,160,23,0.12);
 }
-.row-info { flex: 1; min-width: 0; }
-.row-name { font-size: 13px; font-weight: 600; color: rgba(255,255,255,0.85); margin: 0 0 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.row-sub { font-size: 11px; color: rgba(255,255,255,0.35); margin: 0; }
+.author-initial { font-size: 32px; font-weight: 800; color: #d4a017; }
+.series-count-badge {
+  position: absolute; bottom: 5px; right: 5px;
+  background: rgba(0,0,0,0.65); border-radius: 6px;
+  padding: 2px 5px; font-size: 9px; font-weight: 700; color: rgba(255,255,255,0.8);
+}
+.card-title { font-size: 11px; font-weight: 600; color: rgba(255,255,255,0.85); margin: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.card-sub { font-size: 10px; color: rgba(255,255,255,0.35); margin: 0; }
 </style>
