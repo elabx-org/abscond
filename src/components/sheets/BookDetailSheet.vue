@@ -120,6 +120,10 @@
                 <v-icon size="16">mdi-pencil-outline</v-icon>
                 Edit
               </button>
+              <button v-if="auth.isAdmin" class="action-btn" :disabled="scanning" @click="doScan">
+                <v-icon size="16" :class="{ spin: scanning }">{{ scanning ? 'mdi-loading' : 'mdi-magnify-scan' }}</v-icon>
+                {{ scanning ? 'Scanning…' : 'Scan' }}
+              </button>
               <button v-if="auth.isAdmin" class="action-btn action-btn--danger" @click="showDeleteConfirm = true">
                 <v-icon size="16">mdi-delete-outline</v-icon>
                 Delete
@@ -342,6 +346,7 @@ const editError         = ref('')
 const editMeta          = ref({ title: '', subtitle: '', authorNames: '', narratorNames: '', publishedYear: '', publisher: '', genres: '', tags: '', description: '' })
 const showDeleteConfirm = ref(false)
 const deleting          = ref(false)
+const scanning          = ref(false)
 const markingFinished   = ref(false)
 const removingProgress  = ref(false)
 
@@ -378,6 +383,16 @@ async function doDeleteItem() {
     emit('close')
   } catch { /* ignore */ }
   finally { deleting.value = false }
+}
+
+async function doScan() {
+  scanning.value = true
+  try {
+    await api.post(`/items/${props.item.id}/scan`)
+    notify.show('Scan triggered', 'success')
+  } catch {
+    notify.show('Scan failed', 'error')
+  } finally { scanning.value = false }
 }
 
 const matchProvider     = ref('audible')

@@ -79,9 +79,12 @@
 
       <!-- Recent sessions -->
       <section v-if="sessions.length" class="section">
-        <p class="section-label">Recent sessions</p>
+        <div class="section-row-header">
+          <p class="section-label" style="margin:0">Listening History</p>
+          <span class="session-total-count">{{ sessionTotal }} sessions</span>
+        </div>
         <div class="session-rows">
-          <div v-for="s in sessions.slice(0, 15)" :key="s.id" class="session-row">
+          <div v-for="s in sessions" :key="s.id" class="session-row">
             <div class="session-meta">
               <p class="session-title">{{ s.displayTitle }}</p>
               <p class="session-sub">{{ s.displayAuthor }} · {{ formatDate(s.updatedAt) }}</p>
@@ -89,6 +92,9 @@
             <span class="session-dur">{{ formatMinutes(s.duration) }}</span>
           </div>
         </div>
+        <button v-if="sessions.length < sessionTotal" class="load-more-btn" :disabled="loadingMore" @click="loadMore">
+          {{ loadingMore ? 'Loading…' : `Load more (${sessionTotal - sessions.length} remaining)` }}
+        </button>
       </section>
     </template>
   </div>
@@ -101,11 +107,14 @@ import { useLibraryStore } from '@/stores/library'
 import type { UserStats, LibraryStats, ListeningSession } from '@/api/stats'
 
 const lib     = useLibraryStore()
-const loading = ref(true)
+const loading     = ref(true)
+const loadingMore = ref(false)
+const sessionPage = ref(0)
 
-const userStats = ref<UserStats | null>(null)
-const libStats  = ref<LibraryStats | null>(null)
-const sessions  = ref<ListeningSession[]>([])
+const userStats    = ref<UserStats | null>(null)
+const libStats     = ref<LibraryStats | null>(null)
+const sessions     = ref<ListeningSession[]>([])
+const sessionTotal = ref(0)
 
 const totalHours = computed(() => {
   const secs = userStats.value?.totalListeningTime ?? 0
@@ -161,16 +170,27 @@ function formatDate(ts: number): string {
   return new Date(ts * 1000).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })
 }
 
+async function loadMore() {
+  loadingMore.value = true
+  try {
+    sessionPage.value++
+    const more = await getListeningSessions(sessionPage.value)
+    sessions.value.push(...more.sessions)
+  } catch { /* ignore */ }
+  finally { loadingMore.value = false }
+}
+
 onMounted(async () => {
   if (!lib.libraries.length) await lib.fetchLibraries()
   loading.value = true
   try {
     const [uStats, sess] = await Promise.all([
       getUserStats(),
-      getListeningSessions(),
+      getListeningSessions(0),
     ])
     userStats.value = uStats
     sessions.value  = sess.sessions
+    sessionTotal.value = sess.total
     if (lib.activeLibraryId) {
       libStats.value = await getLibraryStats(lib.activeLibraryId)
     }
@@ -270,4 +290,15 @@ onMounted(async () => {
   font-size: 10px; color: rgba(255,255,255,0.35); margin: 0;
 }
 .session-dur { font-size: 11px; color: rgba(255,255,255,0.4); white-space: nowrap; }
+
+.section-row-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+.session-total-count { font-size: 10px; color: rgba(255,255,255,0.25); }
+
+.load-more-btn {
+  width: 100%; margin-top: 8px; padding: 10px; border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.08); background: rgba(255,255,255,0.03);
+  color: rgba(255,255,255,0.5); font-size: 12px; cursor: pointer;
+}
+.load-more-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.load-more-btn:not(:disabled):hover { background: rgba(255,255,255,0.06); }
 </style>

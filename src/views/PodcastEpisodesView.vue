@@ -125,6 +125,11 @@
                 {{ ep.userEpisodeProgress?.isFinished ? 'mdi-check-circle' : 'mdi-check-circle-outline' }}
               </v-icon>
             </button>
+            <button class="ep-dl-btn" :disabled="downloadingEps.has(ep.id)" @click.stop="downloadEpisode(ep)" title="Download episode">
+              <v-icon size="15" :color="downloadingEps.has(ep.id) ? '#d4a017' : 'rgba(255,255,255,0.2)'">
+                {{ downloadingEps.has(ep.id) ? 'mdi-loading' : 'mdi-download-outline' }}
+              </v-icon>
+            </button>
           </div>
         </div>
         <div v-if="!filteredEpisodes.length" class="ep-empty">No episodes match your filter</div>
@@ -138,6 +143,7 @@ import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { usePlayerStore } from '@/stores/player'
+import { useNotificationStore } from '@/stores/notifications'
 import { coverUrl, api } from '@/api/client'
 import { getPodcastItem } from '@/api/browse'
 import type { PodcastItem, PodcastEpisode } from '@/api/browse'
@@ -145,10 +151,12 @@ import type { PodcastItem, PodcastEpisode } from '@/api/browse'
 const route  = useRoute()
 const auth   = useAuthStore()
 const player = usePlayerStore()
+const notify = useNotificationStore()
 const loading        = ref(false)
 const refreshing     = ref(false)
 const showSettings   = ref(false)
 const savingSettings = ref(false)
+const downloadingEps = ref(new Set<string>())
 const item    = ref<PodcastItem | null>(null)
 const epSearch     = ref('')
 const epFilter     = ref<'all' | 'unfinished' | 'finished'>('all')
@@ -241,6 +249,19 @@ async function saveSettings() {
     showSettings.value = false
   } catch { /* ignore */ }
   finally { savingSettings.value = false }
+}
+
+async function downloadEpisode(ep: PodcastEpisode) {
+  if (!item.value) return
+  downloadingEps.value.add(ep.id)
+  try {
+    await api.post(`/podcasts/${item.value.id}/download-episodes`, { episodeIds: [ep.id] })
+    notify.show(`Downloading "${ep.title}"`, 'success')
+  } catch {
+    notify.show('Download failed', 'error')
+  } finally {
+    downloadingEps.value.delete(ep.id)
+  }
 }
 
 function formatDate(ts: number): string {
@@ -347,6 +368,8 @@ onMounted(async () => {
 .ep-progress-fill { height: 100%; background: #d4a017; border-radius: 1px; }
 .ep-play-btn { background: transparent; border: none; cursor: pointer; padding: 4px; flex-shrink: 0; }
 .ep-mark-btn { background: transparent; border: none; cursor: pointer; padding: 4px; flex-shrink: 0; }
+.ep-dl-btn { background: transparent; border: none; cursor: pointer; padding: 4px; flex-shrink: 0; }
+.ep-dl-btn:disabled { cursor: default; }
 .ep-expand-btn { background: transparent; border: none; cursor: pointer; padding: 4px; flex-shrink: 0; }
 .ep-desc { font-size: 11px; color: rgba(255,255,255,0.4); line-height: 1.5; margin-top: 6px; display: -webkit-box; -webkit-line-clamp: 6; -webkit-box-orient: vertical; overflow: hidden; }
 .ep-played-badge { color: #22c55e; }
