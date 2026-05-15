@@ -107,6 +107,25 @@ export const useSocketStore = defineStore('socket', () => {
       if (libId && libId === ls.activeLibraryId) ls.fetchItems(libId)
     }))
 
+    cleanups.push(onSocketEvent('podcast_episode_added', (data: unknown) => {
+      if (!data || typeof data !== 'object') return
+      const d = data as Record<string, unknown>
+      const ep = d.episode as Record<string, unknown> | undefined
+      const ns = useNotificationStore()
+      const title = ep?.title as string | undefined
+      ns.show(title ? `New episode: ${title}` : 'New podcast episode added', 'success')
+    }))
+
+    cleanups.push(onSocketEvent('episode_download_complete', (data: unknown) => {
+      if (!data || typeof data !== 'object') return
+      const d = data as Record<string, unknown>
+      const ns = useNotificationStore()
+      const ep = d.episode as Record<string, unknown> | undefined
+      const ok = d.success !== false
+      if (ok) ns.show(ep?.title ? `Downloaded: ${ep.title}` : 'Episode downloaded', 'success')
+      else    ns.show('Episode download failed', 'error')
+    }))
+
     cleanups.push(onSocketEvent('item_removed', (data: unknown) => {
       if (!data || typeof data !== 'object') return
       const d = data as Record<string, unknown>
