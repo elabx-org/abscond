@@ -32,7 +32,7 @@
             :style="trackStyle"
           >
             <div
-              v-for="(item, i) in player.recentItems"
+              v-for="(item, i) in carouselItems"
               :key="item.id"
               class="cover-slide"
             >
@@ -46,19 +46,23 @@
                 <div v-if="!player.currentItem || i !== currentIndex" class="cover-play-overlay" @click="switchToItem(item)">
                   <v-icon size="40" color="white">mdi-play-circle</v-icon>
                 </div>
+                <!-- "Up Next" badge for queued items not yet played -->
+                <div v-if="player.queue.some(q => q.id === item.id) && i !== currentIndex" class="upnext-badge">
+                  Up Next
+                </div>
               </div>
             </div>
           </div>
         </div>
 
         <!-- Page dots -->
-        <div v-if="player.recentItems.length > 1" class="page-dots">
+        <div v-if="carouselItems.length > 1" class="page-dots">
           <div
-            v-for="(_, i) in player.recentItems"
+            v-for="(_, i) in carouselItems"
             :key="i"
             class="page-dot"
             :class="{ active: i === currentIndex }"
-            @click="switchToItem(player.recentItems[i])"
+            @click="switchToItem(carouselItems[i])"
           />
         </div>
 
@@ -263,14 +267,21 @@ const skipBackSecs = parseInt(localStorage.getItem('abs_skip_back') ?? '30')
 const skipFwdSecs  = parseInt(localStorage.getItem('abs_skip_fwd')  ?? '30')
 
 // ── Carousel / swipe ──────────────────────────────────────────────────────────
+// Carousel shows recently played books PLUS any queued items (deduped)
+const carouselItems = computed(() => {
+  const recent = player.recentItems
+  const extra  = player.queue.filter(q => !recent.some(r => r.id === q.id))
+  return [...recent, ...extra]
+})
+
 const currentIndex = computed(() => {
   if (!player.currentItem) return 0
-  const idx = player.recentItems.findIndex(i => i.id === player.currentItem?.id)
+  const idx = carouselItems.value.findIndex(i => i.id === player.currentItem?.id)
   return idx >= 0 ? idx : 0
 })
 
 const displayItem = computed(() =>
-  player.recentItems[currentIndex.value] ?? player.currentItem
+  carouselItems.value[currentIndex.value] ?? player.currentItem
 )
 
 const backdropSrc = computed(() =>
@@ -319,8 +330,8 @@ function onSwipeEnd(e: TouchEvent) {
   if (Math.abs(dy) > Math.abs(dx) || Math.abs(dx) < 40) return
 
   const idx = currentIndex.value
-  if (dx < 0 && idx < player.recentItems.length - 1) switchToItem(player.recentItems[idx + 1])
-  else if (dx > 0 && idx > 0) switchToItem(player.recentItems[idx - 1])
+  if (dx < 0 && idx < carouselItems.value.length - 1) switchToItem(carouselItems.value[idx + 1])
+  else if (dx > 0 && idx > 0) switchToItem(carouselItems.value[idx - 1])
 }
 
 function switchToItem(item: LibraryItem) {
@@ -440,7 +451,7 @@ function onChapterBarClick(e: MouseEvent) {
 .player-content {
   position: relative; z-index: 1;
   display: flex; flex-direction: column; align-items: center;
-  padding: 20px 20px 48px; min-height: 100vh;
+  padding: 20px 20px 48px;
 }
 
 .recently-played-label {
@@ -478,6 +489,12 @@ function onChapterBarClick(e: MouseEvent) {
   position: absolute; inset: 0; background: rgba(0,0,0,0.45);
   display: flex; align-items: center; justify-content: center;
   cursor: pointer;
+}
+.upnext-badge {
+  position: absolute; top: 8px; left: 8px;
+  background: rgba(212,160,23,0.85); color: #111;
+  font-size: 9px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.04em; padding: 3px 7px; border-radius: 10px;
 }
 
 /* ── Page dots ───────────────────────────────────────────────────────────────── */
