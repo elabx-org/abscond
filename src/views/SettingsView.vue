@@ -130,7 +130,7 @@
       <div class="settings-item">
         <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-information-outline</v-icon>
         <span class="item-label">Version</span>
-        <span class="item-value">1.0.0</span>
+        <span class="item-value">{{ appVersion }}</span>
       </div>
 
       <div class="settings-item">
@@ -280,6 +280,9 @@ const auth    = useAuthStore()
 const lib     = useLibraryStore()
 const player  = usePlayerStore()
 const socketStore = useSocketStore()
+
+declare const __APP_VERSION__: string
+const appVersion = __APP_VERSION__
 
 const confirmLogout      = ref(false)
 const socketConnected    = computed(() => socketStore.connected)

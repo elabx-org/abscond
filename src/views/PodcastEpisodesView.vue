@@ -6,7 +6,7 @@
       </button>
       <div class="header-meta">
         <h2 class="screen-title">{{ item?.media.metadata.title ?? 'Podcast' }}</h2>
-        <p class="screen-sub" v-if="item">{{ (item.media.metadata.authors ?? []).map(a => a.name).join(', ') }}</p>
+        <p class="screen-sub" v-if="item">{{ getAuthorDisplay(item) }}</p>
       </div>
     </div>
 
@@ -147,6 +147,7 @@ import { useNotificationStore } from '@/stores/notifications'
 import { coverUrl, api } from '@/api/client'
 import { getPodcastItem } from '@/api/browse'
 import type { PodcastItem, PodcastEpisode } from '@/api/browse'
+import { getAuthorDisplay } from '@/utils/metadata'
 
 const route  = useRoute()
 const auth   = useAuthStore()

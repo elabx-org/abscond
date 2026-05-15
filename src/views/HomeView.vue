@@ -184,7 +184,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { useProgressStore } from '@/stores/progress'
 import { useLibraryStore } from '@/stores/library'
 import { useAuthStore } from '@/stores/auth'
@@ -319,6 +319,18 @@ onMounted(async () => {
     lib.activeLibraryId
       ? progress.fetchDiscover(lib.activeLibraryId).finally(() => { loadingDiscover.value = false })
       : Promise.resolve().then(() => { loadingDiscover.value = false }),
+  ])
+})
+
+watch(() => lib.activeLibraryId, async (id) => {
+  if (!id) return
+  loadingRecent.value   = true
+  loadingFinished.value = true
+  loadingDiscover.value = true
+  await Promise.allSettled([
+    progress.fetchRecentlyAdded(id).finally(() => { loadingRecent.value = false }),
+    progress.fetchRecentlyFinished(id).finally(() => { loadingFinished.value = false }),
+    progress.fetchDiscover(id).finally(() => { loadingDiscover.value = false }),
   ])
 })
 </script>

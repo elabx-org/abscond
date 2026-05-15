@@ -4,7 +4,8 @@ import type { LibraryItem } from '@/api/types'
 export interface SeriesDetail {
   id: string
   name: string
-  books: LibraryItem[]
+  books?: LibraryItem[]
+  numBooks?: number
 }
 
 export interface AuthorDetail {
@@ -12,7 +13,8 @@ export interface AuthorDetail {
   name: string
   description?: string | null
   imagePath?: string | null
-  libraryItems: LibraryItem[]
+  numBooks?: number
+  libraryItems?: LibraryItem[]
 }
 
 export interface PodcastEpisode {
