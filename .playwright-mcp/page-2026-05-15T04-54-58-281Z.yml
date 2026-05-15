@@ -1,0 +1,1065 @@
+- generic [ref=e2]:
+  - generic [ref=e3]:
+    - link "Skip to content" [ref=e4] [cursor=pointer]:
+      - /url: "#start-of-content"
+    - banner [ref=e6]:
+      - heading "Navigation Menu" [level=2] [ref=e7]
+      - generic [ref=e9]:
+        - button "Toggle navigation" [ref=e11] [cursor=pointer]
+        - link "Homepage" [ref=e17] [cursor=pointer]:
+          - /url: /
+          - img [ref=e18]
+        - generic [ref=e20]:
+          - link "Sign in" [ref=e21] [cursor=pointer]:
+            - /url: /login?return_to=https%3A%2F%2Fgithub.com%2Fadvplyr%2Faudiobookshelf-app%2Fdiscussions
+          - button "Appearance settings" [ref=e24] [cursor=pointer]:
+            - img
+  - main [ref=e28]:
+    - generic [ref=e29]:
+      - generic [ref=e30]:
+        - generic [ref=e32]:
+          - img [ref=e33]
+          - link "advplyr" [ref=e36] [cursor=pointer]:
+            - /url: /advplyr
+          - generic [ref=e37]: /
+          - strong [ref=e38]:
+            - link "audiobookshelf-app" [ref=e39] [cursor=pointer]:
+              - /url: /advplyr/audiobookshelf-app
+          - generic [ref=e40]: Public
+        - generic [ref=e41]:
+          - list:
+            - listitem [ref=e42]:
+              - link "You must be signed in to change notification settings" [ref=e43] [cursor=pointer]:
+                - /url: /login?return_to=%2Fadvplyr%2Faudiobookshelf-app
+                - img [ref=e44]
+                - text: Notifications
+            - listitem [ref=e46]:
+              - link "Fork 359" [ref=e47] [cursor=pointer]:
+                - /url: /login?return_to=%2Fadvplyr%2Faudiobookshelf-app
+                - img [ref=e48]
+                - text: Fork
+                - generic "359" [ref=e50]
+            - listitem [ref=e51]:
+              - link "You must be signed in to star a repository" [ref=e53] [cursor=pointer]:
+                - /url: /login?return_to=%2Fadvplyr%2Faudiobookshelf-app
+                - img [ref=e54]
+                - text: Star
+                - generic "2476 users starred this repository" [ref=e56]: 2.5k
+      - navigation "Repository" [ref=e57]:
+        - list [ref=e58]:
+          - listitem [ref=e59]:
+            - link "Code" [ref=e60] [cursor=pointer]:
+              - /url: /advplyr/audiobookshelf-app
+              - img [ref=e61]
+              - generic [ref=e63]: Code
+          - listitem [ref=e64]:
+            - link "Issues 397" [ref=e65] [cursor=pointer]:
+              - /url: /advplyr/audiobookshelf-app/issues
+              - img [ref=e66]
+              - generic [ref=e69]: Issues
+              - generic "397" [ref=e70]
+          - listitem [ref=e71]:
+            - link "Pull requests 57" [ref=e72] [cursor=pointer]:
+              - /url: /advplyr/audiobookshelf-app/pulls
+              - img [ref=e73]
+              - generic [ref=e75]: Pull requests
+              - generic "57" [ref=e76]
+          - listitem [ref=e77]:
+            - link "Discussions" [ref=e78] [cursor=pointer]:
+              - /url: /advplyr/audiobookshelf-app/discussions
+              - img [ref=e79]
+              - generic [ref=e81]: Discussions
+          - listitem [ref=e82]:
+            - link "Actions" [ref=e83] [cursor=pointer]:
+              - /url: /advplyr/audiobookshelf-app/actions
+              - img [ref=e84]
+              - generic [ref=e86]: Actions
+          - listitem [ref=e87]
+          - listitem [ref=e88]
+          - listitem [ref=e89]
+        - button "Additional navigation options" [ref=e93] [cursor=pointer]:
+          - img
+    - generic [ref=e96]:
+      - heading "advplyr audiobookshelf-app Discussions" [level=1] [ref=e97]
+      - generic [ref=e99]:
+        - heading "Pinned Discussions" [level=2] [ref=e100]
+        - list "Pinned Discussions" [ref=e101]:
+          - listitem [ref=e102]:
+            - generic [ref=e105] [cursor=pointer]:
+              - img [ref=e106]
+              - heading "ios / cross platform coming?" [level=3] [ref=e107]:
+                - link "ios / cross platform coming?" [ref=e108]:
+                  - /url: /advplyr/audiobookshelf-app/discussions/60
+              - generic [ref=e109]:
+                - link "General (category)" [ref=e110]:
+                  - /url: /advplyr/audiobookshelf-app/discussions?discussions_q=category%3A%22General%22
+                  - img [ref=e113]
+                  - text: General
+                - generic [ref=e114]: ·
+                - link "cyclingwithelephants (author)" [ref=e115]:
+                  - /url: /cyclingwithelephants
+                  - text: cyclingwithelephants
+      - generic [ref=e116]:
+        - generic [ref=e120]:
+          - generic [ref=e121]: Search all discussions
+          - generic [ref=e122]:
+            - img [ref=e124]
+            - generic [ref=e126]:
+              - generic [ref=e128]: is:open
+              - combobox "Search all discussions" [ref=e131]: is:open
+            - generic [ref=e132]:
+              - generic [ref=e133]: Clear
+              - button "Clear Search all discussions" [ref=e134] [cursor=pointer]:
+                - img
+        - generic [ref=e136]:
+          - group [ref=e138]:
+            - 'button "Sort by: Latest activity" [ref=e139] [cursor=pointer]':
+              - generic [ref=e142]: "Sort by: Latest activity"
+              - generic:
+                - img
+          - button "Filter labels" [ref=e146] [cursor=pointer]:
+            - generic [ref=e148]: Label
+            - generic:
+              - img
+          - 'button "Filter: Open" [ref=e152] [cursor=pointer]':
+            - generic [ref=e154]: "Filter: Open"
+            - generic:
+              - img
+      - generic [ref=e155]:
+        - generic [ref=e157]:
+          - heading "Categories, most helpful, and community links" [level=2] [ref=e158]
+          - generic [ref=e159]:
+            - heading "Categories" [level=3] [ref=e161]
+            - generic "Categories" [ref=e162]:
+              - navigation "Categories" [ref=e163]:
+                - list [ref=e164]:
+                  - listitem [ref=e165]:
+                    - link "View all discussions" [ref=e166] [cursor=pointer]:
+                      - /url: /advplyr/audiobookshelf-app/discussions
+                      - generic:
+                        - img
+                      - generic [ref=e167]: View all discussions
+                  - listitem [ref=e168]:
+                    - link "Announcements" [ref=e169] [cursor=pointer]:
+                      - /url: /advplyr/audiobookshelf-app/discussions/categories/announcements
+                      - generic:
+                        - generic:
+                          - generic:
+                            - img
+                      - generic [ref=e170]: Announcements
+                  - listitem [ref=e171]:
+                    - link "General" [ref=e172] [cursor=pointer]:
+                      - /url: /advplyr/audiobookshelf-app/discussions/categories/general
+                      - generic:
+                        - generic:
+                          - generic:
+                            - img
+                      - generic [ref=e173]: General
+                  - listitem [ref=e174]:
+                    - link "Ideas" [ref=e175] [cursor=pointer]:
+                      - /url: /advplyr/audiobookshelf-app/discussions/categories/ideas
+                      - generic:
+                        - generic:
+                          - generic:
+                            - img
+                      - generic [ref=e176]: Ideas
+                  - listitem [ref=e177]:
+                    - link "Polls" [ref=e178] [cursor=pointer]:
+                      - /url: /advplyr/audiobookshelf-app/discussions/categories/polls
+                      - generic:
+                        - generic:
+                          - generic:
+                            - img
+                      - generic [ref=e179]: Polls
+                  - listitem [ref=e180]:
+                    - link "Q&A" [ref=e181] [cursor=pointer]:
+                      - /url: /advplyr/audiobookshelf-app/discussions/categories/q-a
+                      - generic:
+                        - generic:
+                          - generic:
+                            - img
+                      - generic [ref=e182]: Q&A
+                  - listitem [ref=e183]:
+                    - link "Show and tell" [ref=e184] [cursor=pointer]:
+                      - /url: /advplyr/audiobookshelf-app/discussions/categories/show-and-tell
+                      - generic:
+                        - generic:
+                          - generic:
+                            - img
+                      - generic [ref=e185]: Show and tell
+          - generic [ref=e187]:
+            - generic [ref=e188]:
+              - heading "Most helpful" [level=3] [ref=e189]
+              - generic [ref=e190]: Last 30 days
+            - list [ref=e191]:
+              - listitem [ref=e192]:
+                - link "@gravityrebel" [ref=e193] [cursor=pointer]:
+                  - /url: /gravityrebel
+                  - img "@gravityrebel" [ref=e194]
+                - link "gravityrebel" [ref=e196] [cursor=pointer]:
+                  - /url: /gravityrebel
+                - img [ref=e198]
+                - generic [ref=e200]: "1"
+          - heading "Community links" [level=3] [ref=e201]
+          - list [ref=e202]:
+            - listitem [ref=e203]:
+              - link "Community guidelines" [ref=e204] [cursor=pointer]:
+                - /url: https://docs.github.com/articles/github-community-guidelines
+                - img [ref=e206]
+                - generic [ref=e208]: Community guidelines
+            - listitem [ref=e209]:
+              - link "audiobookshelf.org" [ref=e210] [cursor=pointer]:
+                - /url: https://audiobookshelf.org
+                - img [ref=e212]
+                - generic [ref=e214]: audiobookshelf.org
+        - generic [ref=e215]:
+          - heading "Discussions" [level=2] [ref=e216]
+          - list "Discussions" [ref=e217]:
+            - listitem [ref=e218]:
+              - generic [ref=e220]:
+                - generic [ref=e221]:
+                  - 'button "Upvote: 1" [disabled] [ref=e225]':
+                    - img [ref=e226]
+                    - generic [ref=e228]: "1"
+                  - img [ref=e232]
+                - generic [ref=e233]:
+                  - generic [ref=e234]:
+                    - heading "Docker build environment for CI/CD pipeline" [level=3] [ref=e235]:
+                      - link "Docker build environment for CI/CD pipeline" [ref=e236] [cursor=pointer]:
+                        - /url: /advplyr/audiobookshelf-app/discussions/1349
+                    - generic [ref=e237]:
+                      - link "mattheys (author)" [ref=e238] [cursor=pointer]:
+                        - /url: /mattheys
+                        - text: mattheys
+                      - text: started Oct 14, 2024on Oct 14, 2024 in
+                      - link "General (category)" [ref=e239] [cursor=pointer]:
+                        - /url: /advplyr/audiobookshelf-app/discussions/categories/general?discussions_q=is%3Aopen+category%3AGeneral
+                        - text: General
+                  - generic [ref=e240]:
+                    - generic [ref=e243]:
+                      - link "mattheys (participant)" [ref=e244] [cursor=pointer]:
+                        - /url: /mattheys
+                        - img "mattheys (participant)" [ref=e245]
+                      - link "nrjohnstone (participant)" [ref=e246] [cursor=pointer]:
+                        - /url: /nrjohnstone
+                        - img "nrjohnstone (participant)" [ref=e247]
+                      - link "advplyr (participant)" [ref=e248] [cursor=pointer]:
+                        - /url: /advplyr
+                        - img "advplyr (participant)" [ref=e249]
+                    - 'link "5 comments: mattheys, 04:05PM on October 14, 2024" [ref=e251] [cursor=pointer]':
+                      - /url: /advplyr/audiobookshelf-app/discussions/1349
+                      - img [ref=e252]
+                      - text: "5"
+            - listitem [ref=e254]:
+              - generic [ref=e256]:
+                - generic [ref=e257]:
+                  - 'button "Upvote: 1" [disabled] [ref=e261]':
+                    - img [ref=e262]
+                    - generic [ref=e264]: "1"
+                  - img [ref=e268]
+                - generic [ref=e269]:
+                  - generic [ref=e270]:
+                    - heading "iOS app for older iPhone?" [level=3] [ref=e271]:
+                      - link "iOS app for older iPhone?" [ref=e272] [cursor=pointer]:
+                        - /url: /advplyr/audiobookshelf-app/discussions/1857
+                    - generic [ref=e273]:
+                      - link "Cantello (author)" [ref=e274] [cursor=pointer]:
+                        - /url: /Cantello
+                        - text: Cantello
+                      - text: asked Apr 28, 20262 weeks ago in
+                      - link "Q&A (category)" [ref=e275] [cursor=pointer]:
+                        - /url: /advplyr/audiobookshelf-app/discussions/categories/q-a?discussions_q=is%3Aopen+category%3AQ%26A
+                        - text: Q&A
+                      - generic [ref=e276]: · Answered
+                  - generic [ref=e277]:
+                    - generic [ref=e280]:
+                      - link "Cantello (participant)" [ref=e281] [cursor=pointer]:
+                        - /url: /Cantello
+                        - img "Cantello (participant)" [ref=e282]
+                      - link "gravityrebel (participant)" [ref=e283] [cursor=pointer]:
+                        - /url: /gravityrebel
+                        - img "gravityrebel (participant)" [ref=e284]
+                    - 'link "2 comments: Cantello, 09:38AM on April 28" [ref=e286] [cursor=pointer]':
+                      - /url: /advplyr/audiobookshelf-app/discussions/1857
+                      - img [ref=e287]
+                      - text: "2"
+            - listitem [ref=e289]:
+              - generic [ref=e291]:
+                - generic [ref=e292]:
+                  - 'button "Upvote: 1" [disabled] [ref=e296]':
+                    - img [ref=e297]
+                    - generic [ref=e299]: "1"
+                  - img [ref=e303]
+                - generic [ref=e304]:
+                  - generic [ref=e305]:
+                    - heading "Option to delete local file after book/podcast completed" [level=3] [ref=e306]:
+                      - link "Option to delete local file after book/podcast completed" [ref=e307] [cursor=pointer]:
+                        - /url: /advplyr/audiobookshelf-app/discussions/1844
+                    - generic [ref=e308]:
+                      - link "nate-griff (author)" [ref=e309] [cursor=pointer]:
+                        - /url: /nate-griff
+                        - text: nate-griff
+                      - text: started Apr 12, 2026on Apr 12 in
+                      - link "Ideas (category)" [ref=e310] [cursor=pointer]:
+                        - /url: /advplyr/audiobookshelf-app/discussions/categories/ideas?discussions_q=is%3Aopen+category%3AIdeas
+                        - text: Ideas
+                  - generic [ref=e311]:
+                    - link "nate-griff (participant)" [ref=e315] [cursor=pointer]:
+                      - /url: /nate-griff
+                      - img "nate-griff (participant)" [ref=e316]
+                    - 'link "0 comments: nate-griff, 05:49PM on April 12" [ref=e318] [cursor=pointer]':
+                      - /url: /advplyr/audiobookshelf-app/discussions/1844
+                      - img [ref=e319]
+                      - text: "0"
+            - listitem [ref=e321]:
+              - generic [ref=e323]:
+                - generic [ref=e324]:
+                  - 'button "Upvote: 5" [disabled] [ref=e328]':
+                    - img [ref=e329]
+                    - generic [ref=e331]: "5"
+                  - img [ref=e335]
+                - generic [ref=e336]:
+                  - generic [ref=e337]:
+                    - heading "Obtainium Download?" [level=3] [ref=e338]:
+                      - link "Obtainium Download?" [ref=e339] [cursor=pointer]:
+                        - /url: /advplyr/audiobookshelf-app/discussions/1729
+                    - generic [ref=e340]:
+                      - link "dafunks (author)" [ref=e341] [cursor=pointer]:
+                        - /url: /dafunks
+                        - text: dafunks
+                      - text: started Nov 17, 2025on Nov 17, 2025 in
+                      - link "Ideas (category)" [ref=e342] [cursor=pointer]:
+                        - /url: /advplyr/audiobookshelf-app/discussions/categories/ideas?discussions_q=is%3Aopen+category%3AIdeas
+                        - text: Ideas
+                  - generic [ref=e343]:
+                    - generic [ref=e346]:
+                      - link "dafunks (participant)" [ref=e347] [cursor=pointer]:
+                        - /url: /dafunks
+                        - img "dafunks (participant)" [ref=e348]
+                      - link "eleetblock (participant)" [ref=e349] [cursor=pointer]:
+                        - /url: /eleetblock
+                        - img "eleetblock (participant)" [ref=e350]
+                    - 'link "1 comment: dafunks, 09:55AM on November 17, 2025" [ref=e352] [cursor=pointer]':
+                      - /url: /advplyr/audiobookshelf-app/discussions/1729
+                      - img [ref=e353]
+                      - text: "1"
+            - listitem [ref=e355]:
+              - generic [ref=e357]:
+                - generic [ref=e358]:
+                  - 'button "Upvote: 6" [disabled] [ref=e362]':
+                    - img [ref=e363]
+                    - generic [ref=e365]: "6"
+                  - img [ref=e369]
+                - generic [ref=e370]:
+                  - generic [ref=e371]:
+                    - heading "Tasker/ ADB intents" [level=3] [ref=e372]:
+                      - link "Tasker/ ADB intents" [ref=e373] [cursor=pointer]:
+                        - /url: /advplyr/audiobookshelf-app/discussions/694
+                    - generic [ref=e374]:
+                      - link "itkfilelor (author)" [ref=e375] [cursor=pointer]:
+                        - /url: /itkfilelor
+                        - text: itkfilelor
+                      - text: started Apr 30, 2023on Apr 30, 2023 in
+                      - link "Ideas (category)" [ref=e376] [cursor=pointer]:
+                        - /url: /advplyr/audiobookshelf-app/discussions/categories/ideas?discussions_q=is%3Aopen+category%3AIdeas
+                        - text: Ideas
+                  - generic [ref=e377]:
+                    - generic [ref=e380]:
+                      - link "itkfilelor (participant)" [ref=e381] [cursor=pointer]:
+                        - /url: /itkfilelor
+                        - img "itkfilelor (participant)" [ref=e382]
+                      - link "HStep20 (participant)" [ref=e383] [cursor=pointer]:
+                        - /url: /HStep20
+                        - img "HStep20 (participant)" [ref=e384]
+                      - link "WhiteSockedDancer (participant)" [ref=e385] [cursor=pointer]:
+                        - /url: /WhiteSockedDancer
+                        - img "WhiteSockedDancer (participant)" [ref=e386]
+                    - 'link "3 comments: itkfilelor, 04:04PM on April 30, 2023" [ref=e388] [cursor=pointer]':
+                      - /url: /advplyr/audiobookshelf-app/discussions/694
+                      - img [ref=e389]
+                      - text: "3"
+            - listitem [ref=e391]:
+              - generic [ref=e393]:
+                - generic [ref=e394]:
+                  - 'button "Upvote: 1" [disabled] [ref=e398]':
+                    - img [ref=e399]
+                    - generic [ref=e401]: "1"
+                  - img [ref=e405]
+                - generic [ref=e406]:
+                  - generic [ref=e407]:
+                    - heading "Intents and homescreen shortcuts/widgets for switching to/starting a specific audiobook" [level=3] [ref=e408]:
+                      - link "Intents and homescreen shortcuts/widgets for switching to/starting a specific audiobook" [ref=e409] [cursor=pointer]:
+                        - /url: /advplyr/audiobookshelf-app/discussions/1818
+                    - generic [ref=e410]:
+                      - link "WhiteSockedDancer (author)" [ref=e411] [cursor=pointer]:
+                        - /url: /WhiteSockedDancer
+                        - text: WhiteSockedDancer
+                      - text: started Mar 3, 2026on Mar 3 in
+                      - link "Ideas (category)" [ref=e412] [cursor=pointer]:
+                        - /url: /advplyr/audiobookshelf-app/discussions/categories/ideas?discussions_q=is%3Aopen+category%3AIdeas
+                        - text: Ideas
+                  - generic [ref=e413]:
+                    - link "WhiteSockedDancer (participant)" [ref=e417] [cursor=pointer]:
+                      - /url: /WhiteSockedDancer
+                      - img "WhiteSockedDancer (participant)" [ref=e418]
+                    - 'link "0 comments: WhiteSockedDancer, 09:35PM on March 03" [ref=e420] [cursor=pointer]':
+                      - /url: /advplyr/audiobookshelf-app/discussions/1818
+                      - img [ref=e421]
+                      - text: "0"
+            - listitem [ref=e423]:
+              - generic [ref=e425]:
+                - generic [ref=e426]:
+                  - 'button "Upvote: 1" [disabled] [ref=e430]':
+                    - img [ref=e431]
+                    - generic [ref=e433]: "1"
+                  - img [ref=e437]
+                - generic [ref=e438]:
+                  - generic [ref=e439]:
+                    - heading "Book is streaming even if downloaded" [level=3] [ref=e440]:
+                      - link "Book is streaming even if downloaded" [ref=e441] [cursor=pointer]:
+                        - /url: /advplyr/audiobookshelf-app/discussions/1813
+                    - generic [ref=e442]:
+                      - link "Nordlicht-13 (author)" [ref=e443] [cursor=pointer]:
+                        - /url: /Nordlicht-13
+                        - text: Nordlicht-13
+                      - text: asked Feb 25, 2026on Feb 25 in
+                      - link "Q&A (category)" [ref=e444] [cursor=pointer]:
+                        - /url: /advplyr/audiobookshelf-app/discussions/categories/q-a?discussions_q=is%3Aopen+category%3AQ%26A
+                        - text: Q&A
+                      - generic [ref=e445]: · Unanswered
+                  - generic [ref=e446]:
+                    - link "Nordlicht-13 (participant)" [ref=e450] [cursor=pointer]:
+                      - /url: /Nordlicht-13
+                      - img "Nordlicht-13 (participant)" [ref=e451]
+                    - 'link "0 comments: Nordlicht-13, 10:39PM on February 25" [ref=e453] [cursor=pointer]':
+                      - /url: /advplyr/audiobookshelf-app/discussions/1813
+                      - img [ref=e454]
+                      - text: "0"
+            - listitem [ref=e456]:
+              - generic [ref=e458]:
+                - generic [ref=e459]:
+                  - 'button "Upvote: 1" [disabled] [ref=e463]':
+                    - img [ref=e464]
+                    - generic [ref=e466]: "1"
+                  - img [ref=e470]
+                - generic [ref=e471]:
+                  - generic [ref=e472]:
+                    - heading "iOS App - Downloaded items progress sync" [level=3] [ref=e473]:
+                      - link "iOS App - Downloaded items progress sync" [ref=e474] [cursor=pointer]:
+                        - /url: /advplyr/audiobookshelf-app/discussions/1803
+                    - generic [ref=e475]:
+                      - link "MrSimmo (author)" [ref=e476] [cursor=pointer]:
+                        - /url: /MrSimmo
+                        - text: MrSimmo
+                      - text: started Feb 12, 2026on Feb 12 in
+                      - link "Ideas (category)" [ref=e477] [cursor=pointer]:
+                        - /url: /advplyr/audiobookshelf-app/discussions/categories/ideas?discussions_q=is%3Aopen+category%3AIdeas
+                        - text: Ideas
+                  - generic [ref=e478]:
+                    - generic [ref=e481]:
+                      - link "MrSimmo (participant)" [ref=e482] [cursor=pointer]:
+                        - /url: /MrSimmo
+                        - img "MrSimmo (participant)" [ref=e483]
+                      - link "nichwall (participant)" [ref=e484] [cursor=pointer]:
+                        - /url: /nichwall
+                        - img "nichwall (participant)" [ref=e485]
+                    - 'link "1 comment: MrSimmo, 09:37AM on February 12" [ref=e487] [cursor=pointer]':
+                      - /url: /advplyr/audiobookshelf-app/discussions/1803
+                      - img [ref=e488]
+                      - text: "1"
+            - listitem [ref=e490]:
+              - generic [ref=e492]:
+                - generic [ref=e493]:
+                  - 'button "Upvote: 5" [disabled] [ref=e497]':
+                    - img [ref=e498]
+                    - generic [ref=e500]: "5"
+                  - img [ref=e504]
+                - generic [ref=e505]:
+                  - generic [ref=e506]:
+                    - heading "Podcast Autodownload" [level=3] [ref=e507]:
+                      - link "Podcast Autodownload" [ref=e508] [cursor=pointer]:
+                        - /url: /advplyr/audiobookshelf-app/discussions/896
+                    - generic [ref=e509]:
+                      - link "truthsword (author)" [ref=e510] [cursor=pointer]:
+                        - /url: /truthsword
+                        - text: truthsword
+                      - text: started Oct 2, 2023on Oct 2, 2023 in
+                      - link "Ideas (category)" [ref=e511] [cursor=pointer]:
+                        - /url: /advplyr/audiobookshelf-app/discussions/categories/ideas?discussions_q=is%3Aopen+category%3AIdeas
+                        - text: Ideas
+                  - generic [ref=e512]:
+                    - generic [ref=e515]:
+                      - link "truthsword (participant)" [ref=e516] [cursor=pointer]:
+                        - /url: /truthsword
+                        - img "truthsword (participant)" [ref=e517]
+                      - link "pippo73 (participant)" [ref=e518] [cursor=pointer]:
+                        - /url: /pippo73
+                        - img "pippo73 (participant)" [ref=e519]
+                      - link "politas (participant)" [ref=e520] [cursor=pointer]:
+                        - /url: /politas
+                        - img "politas (participant)" [ref=e521]
+                    - 'link "6 comments: truthsword, 02:35PM on October 02, 2023" [ref=e523] [cursor=pointer]':
+                      - /url: /advplyr/audiobookshelf-app/discussions/896
+                      - img [ref=e524]
+                      - text: "6"
+            - listitem [ref=e526]:
+              - generic [ref=e528]:
+                - generic [ref=e529]:
+                  - 'button "Upvote: 1" [disabled] [ref=e533]':
+                    - img [ref=e534]
+                    - generic [ref=e536]: "1"
+                  - img [ref=e540]
+                - generic [ref=e541]:
+                  - generic [ref=e542]:
+                    - heading "Player doesn't reopen my current book at startup, should it?" [level=3] [ref=e543]:
+                      - link "Player doesn't reopen my current book at startup, should it?" [ref=e544] [cursor=pointer]:
+                        - /url: /advplyr/audiobookshelf-app/discussions/1795
+                    - generic [ref=e545]:
+                      - link "dsjstc (author)" [ref=e546] [cursor=pointer]:
+                        - /url: /dsjstc
+                        - text: dsjstc
+                      - text: asked Feb 3, 2026on Feb 3 in
+                      - link "Q&A (category)" [ref=e547] [cursor=pointer]:
+                        - /url: /advplyr/audiobookshelf-app/discussions/categories/q-a?discussions_q=is%3Aopen+category%3AQ%26A
+                        - text: Q&A
+                      - generic [ref=e548]: · Unanswered
+                  - generic [ref=e549]:
+                    - generic [ref=e552]:
+                      - link "dsjstc (participant)" [ref=e553] [cursor=pointer]:
+                        - /url: /dsjstc
+                        - img "dsjstc (participant)" [ref=e554]
+                      - link "nichwall (participant)" [ref=e555] [cursor=pointer]:
+                        - /url: /nichwall
+                        - img "nichwall (participant)" [ref=e556]
+                    - 'link "3 comments: dsjstc, 06:34PM on February 03" [ref=e558] [cursor=pointer]':
+                      - /url: /advplyr/audiobookshelf-app/discussions/1795
+                      - img [ref=e559]
+                      - text: "3"
+            - listitem [ref=e561]:
+              - generic [ref=e563]:
+                - generic [ref=e564]:
+                  - 'button "Upvote: 1" [disabled] [ref=e568]':
+                    - img [ref=e569]
+                    - generic [ref=e571]: "1"
+                  - img [ref=e575]
+                - generic [ref=e576]:
+                  - generic [ref=e577]:
+                    - 'heading "[Enhancement]: A collection of UX suggestions with video inside" [level=3] [ref=e578]':
+                      - 'link "[Enhancement]: A collection of UX suggestions with video inside" [ref=e579] [cursor=pointer]':
+                        - /url: /advplyr/audiobookshelf-app/discussions/1792
+                    - link "enhancement" [ref=e581] [cursor=pointer]:
+                      - /url: /advplyr/audiobookshelf-app/discussions?discussions_q=is%3Aopen+label%3Aenhancement
+                    - generic [ref=e582]:
+                      - link "xelu (author)" [ref=e583] [cursor=pointer]:
+                        - /url: /xelu
+                        - text: xelu
+                      - text: started Jan 30, 2026on Jan 30 in
+                      - link "Ideas (category)" [ref=e584] [cursor=pointer]:
+                        - /url: /advplyr/audiobookshelf-app/discussions/categories/ideas?discussions_q=is%3Aopen+category%3AIdeas
+                        - text: Ideas
+                  - generic [ref=e585]:
+                    - link "xelu (participant)" [ref=e589] [cursor=pointer]:
+                      - /url: /xelu
+                      - img "xelu (participant)" [ref=e590]
+                    - 'link "0 comments: xelu, 06:53PM on January 30" [ref=e592] [cursor=pointer]':
+                      - /url: /advplyr/audiobookshelf-app/discussions/1792
+                      - img [ref=e593]
+                      - text: "0"
+            - listitem [ref=e595]:
+              - generic [ref=e597]:
+                - generic [ref=e598]:
+                  - 'button "Upvote: 1" [disabled] [ref=e602]':
+                    - img [ref=e603]
+                    - generic [ref=e605]: "1"
+                  - img [ref=e609]
+                - generic [ref=e610]:
+                  - generic [ref=e611]:
+                    - heading "UI for Android App" [level=3] [ref=e612]:
+                      - link "UI for Android App" [ref=e613] [cursor=pointer]:
+                        - /url: /advplyr/audiobookshelf-app/discussions/1769
+                    - generic [ref=e614]:
+                      - link "hainekomew (author)" [ref=e615] [cursor=pointer]:
+                        - /url: /hainekomew
+                        - text: hainekomew
+                      - text: started Dec 31, 2025on Dec 31, 2025 in
+                      - link "Ideas (category)" [ref=e616] [cursor=pointer]:
+                        - /url: /advplyr/audiobookshelf-app/discussions/categories/ideas?discussions_q=is%3Aopen+category%3AIdeas
+                        - text: Ideas
+                  - generic [ref=e617]:
+                    - link "hainekomew (participant)" [ref=e621] [cursor=pointer]:
+                      - /url: /hainekomew
+                      - img "hainekomew (participant)" [ref=e622]
+                    - 'link "0 comments: hainekomew, 06:05AM on December 31, 2025" [ref=e624] [cursor=pointer]':
+                      - /url: /advplyr/audiobookshelf-app/discussions/1769
+                      - img [ref=e625]
+                      - text: "0"
+            - listitem [ref=e627]:
+              - generic [ref=e629]:
+                - generic [ref=e630]:
+                  - 'button "Upvote: 1" [disabled] [ref=e634]':
+                    - img [ref=e635]
+                    - generic [ref=e637]: "1"
+                  - img [ref=e641]
+                - generic [ref=e642]:
+                  - generic [ref=e643]:
+                    - heading "More PDF reader support" [level=3] [ref=e644]:
+                      - link "More PDF reader support" [ref=e645] [cursor=pointer]:
+                        - /url: /advplyr/audiobookshelf-app/discussions/1725
+                    - generic [ref=e646]:
+                      - link "beazt123 (author)" [ref=e647] [cursor=pointer]:
+                        - /url: /beazt123
+                        - text: beazt123
+                      - text: started Nov 11, 2025on Nov 11, 2025 in
+                      - link "Ideas (category)" [ref=e648] [cursor=pointer]:
+                        - /url: /advplyr/audiobookshelf-app/discussions/categories/ideas?discussions_q=is%3Aopen+category%3AIdeas
+                        - text: Ideas
+                  - generic [ref=e649]:
+                    - link "beazt123 (participant)" [ref=e653] [cursor=pointer]:
+                      - /url: /beazt123
+                      - img "beazt123 (participant)" [ref=e654]
+                    - 'link "0 comments: beazt123, 12:40AM on November 11, 2025" [ref=e656] [cursor=pointer]':
+                      - /url: /advplyr/audiobookshelf-app/discussions/1725
+                      - img [ref=e657]
+                      - text: "0"
+            - listitem [ref=e659]:
+              - generic [ref=e661]:
+                - generic [ref=e662]:
+                  - 'button "Upvote: 2" [disabled] [ref=e666]':
+                    - img [ref=e667]
+                    - generic [ref=e669]: "2"
+                  - img [ref=e673]
+                - generic [ref=e674]:
+                  - generic [ref=e675]:
+                    - heading "Android Automotive OS" [level=3] [ref=e676]:
+                      - link "Android Automotive OS" [ref=e677] [cursor=pointer]:
+                        - /url: /advplyr/audiobookshelf-app/discussions/1724
+                    - generic [ref=e678]:
+                      - link "bhboyle (author)" [ref=e679] [cursor=pointer]:
+                        - /url: /bhboyle
+                        - text: bhboyle
+                      - text: started Nov 10, 2025on Nov 10, 2025 in
+                      - link "General (category)" [ref=e680] [cursor=pointer]:
+                        - /url: /advplyr/audiobookshelf-app/discussions/categories/general?discussions_q=is%3Aopen+category%3AGeneral
+                        - text: General
+                  - generic [ref=e681]:
+                    - generic [ref=e684]:
+                      - link "bhboyle (participant)" [ref=e685] [cursor=pointer]:
+                        - /url: /bhboyle
+                        - img "bhboyle (participant)" [ref=e686]
+                      - link "nichwall (participant)" [ref=e687] [cursor=pointer]:
+                        - /url: /nichwall
+                        - img "nichwall (participant)" [ref=e688]
+                    - 'link "2 comments: bhboyle, 03:33PM on November 10, 2025" [ref=e690] [cursor=pointer]':
+                      - /url: /advplyr/audiobookshelf-app/discussions/1724
+                      - img [ref=e691]
+                      - text: "2"
+            - listitem [ref=e693]:
+              - generic [ref=e695]:
+                - generic [ref=e696]:
+                  - 'button "Upvote: 1" [disabled] [ref=e700]':
+                    - img [ref=e701]
+                    - generic [ref=e703]: "1"
+                  - img [ref=e707]
+                - generic [ref=e708]:
+                  - generic [ref=e709]:
+                    - heading "App Offline mode, browse downloaded content, Metadata for offline mode and playlist support" [level=3] [ref=e710]:
+                      - link "App Offline mode, browse downloaded content, Metadata for offline mode and playlist support" [ref=e711] [cursor=pointer]:
+                        - /url: /advplyr/audiobookshelf-app/discussions/1705
+                    - generic [ref=e712]:
+                      - link "amontemar (author)" [ref=e713] [cursor=pointer]:
+                        - /url: /amontemar
+                        - text: amontemar
+                      - text: started Oct 22, 2025on Oct 22, 2025 in
+                      - link "Ideas (category)" [ref=e714] [cursor=pointer]:
+                        - /url: /advplyr/audiobookshelf-app/discussions/categories/ideas?discussions_q=is%3Aopen+category%3AIdeas
+                        - text: Ideas
+                  - generic [ref=e715]:
+                    - generic [ref=e718]:
+                      - link "amontemar (participant)" [ref=e719] [cursor=pointer]:
+                        - /url: /amontemar
+                        - img "amontemar (participant)" [ref=e720]
+                      - link "nichwall (participant)" [ref=e721] [cursor=pointer]:
+                        - /url: /nichwall
+                        - img "nichwall (participant)" [ref=e722]
+                    - 'link "1 comment: amontemar, 07:18PM on October 22, 2025" [ref=e724] [cursor=pointer]':
+                      - /url: /advplyr/audiobookshelf-app/discussions/1705
+                      - img [ref=e725]
+                      - text: "1"
+            - listitem [ref=e727]:
+              - generic [ref=e729]:
+                - generic [ref=e730]:
+                  - 'button "Upvote: 1" [disabled] [ref=e734]':
+                    - img [ref=e735]
+                    - generic [ref=e737]: "1"
+                  - img [ref=e741]
+                - generic [ref=e742]:
+                  - generic [ref=e743]:
+                    - 'heading "[Bug]: I''m very confused why I''m unable to login on the app" [level=3] [ref=e744]':
+                      - 'link "[Bug]: I''m very confused why I''m unable to login on the app" [ref=e745] [cursor=pointer]':
+                        - /url: /advplyr/audiobookshelf-app/discussions/1354
+                    - link "bug" [ref=e747] [cursor=pointer]:
+                      - /url: /advplyr/audiobookshelf-app/discussions?discussions_q=is%3Aopen+label%3Abug
+                    - generic [ref=e748]:
+                      - link "LadyHaywood (author)" [ref=e749] [cursor=pointer]:
+                        - /url: /LadyHaywood
+                        - text: LadyHaywood
+                      - text: asked Oct 26, 2024on Oct 26, 2024 in
+                      - link "Q&A (category)" [ref=e750] [cursor=pointer]:
+                        - /url: /advplyr/audiobookshelf-app/discussions/categories/q-a?discussions_q=is%3Aopen+category%3AQ%26A
+                        - text: Q&A
+                      - generic [ref=e751]: · Unanswered
+                  - generic [ref=e752]:
+                    - generic [ref=e755]:
+                      - link "LadyHaywood (participant)" [ref=e756] [cursor=pointer]:
+                        - /url: /LadyHaywood
+                        - img "LadyHaywood (participant)" [ref=e757]
+                      - link "nichwall (participant)" [ref=e758] [cursor=pointer]:
+                        - /url: /nichwall
+                        - img "nichwall (participant)" [ref=e759]
+                      - link "romainiac (participant)" [ref=e760] [cursor=pointer]:
+                        - /url: /romainiac
+                        - img "romainiac (participant)" [ref=e761]
+                    - 'link "6 comments: LadyHaywood, 06:49AM on October 26, 2024" [ref=e763] [cursor=pointer]':
+                      - /url: /advplyr/audiobookshelf-app/discussions/1354
+                      - img [ref=e764]
+                      - text: "6"
+            - listitem [ref=e766]:
+              - generic [ref=e768]:
+                - generic [ref=e769]:
+                  - 'button "Upvote: 2" [disabled] [ref=e773]':
+                    - img [ref=e774]
+                    - generic [ref=e776]: "2"
+                  - img [ref=e780]
+                - generic [ref=e781]:
+                  - generic [ref=e782]:
+                    - heading "Recognize existing downloaded media" [level=3] [ref=e783]:
+                      - link "Recognize existing downloaded media" [ref=e784] [cursor=pointer]:
+                        - /url: /advplyr/audiobookshelf-app/discussions/1659
+                    - generic [ref=e785]:
+                      - link "petenun (author)" [ref=e786] [cursor=pointer]:
+                        - /url: /petenun
+                        - text: petenun
+                      - text: started Aug 13, 2025on Aug 13, 2025 in
+                      - link "Ideas (category)" [ref=e787] [cursor=pointer]:
+                        - /url: /advplyr/audiobookshelf-app/discussions/categories/ideas?discussions_q=is%3Aopen+category%3AIdeas
+                        - text: Ideas
+                  - generic [ref=e788]:
+                    - link "petenun (participant)" [ref=e792] [cursor=pointer]:
+                      - /url: /petenun
+                      - img "petenun (participant)" [ref=e793]
+                    - 'link "0 comments: petenun, 05:26PM on August 13, 2025" [ref=e795] [cursor=pointer]':
+                      - /url: /advplyr/audiobookshelf-app/discussions/1659
+                      - img [ref=e796]
+                      - text: "0"
+            - listitem [ref=e798]:
+              - generic [ref=e800]:
+                - generic [ref=e801]:
+                  - 'button "Upvote: 1" [disabled] [ref=e805]':
+                    - img [ref=e806]
+                    - generic [ref=e808]: "1"
+                  - img [ref=e812]
+                - generic [ref=e813]:
+                  - generic [ref=e814]:
+                    - heading "Implement HEOS" [level=3] [ref=e815]:
+                      - link "Implement HEOS" [ref=e816] [cursor=pointer]:
+                        - /url: /advplyr/audiobookshelf-app/discussions/1644
+                    - generic [ref=e817]:
+                      - link "huggenknubbel (author)" [ref=e818] [cursor=pointer]:
+                        - /url: /huggenknubbel
+                        - text: huggenknubbel
+                      - text: started Jul 26, 2025on Jul 26, 2025 in
+                      - link "Ideas (category)" [ref=e819] [cursor=pointer]:
+                        - /url: /advplyr/audiobookshelf-app/discussions/categories/ideas?discussions_q=is%3Aopen+category%3AIdeas
+                        - text: Ideas
+                  - generic [ref=e820]:
+                    - generic [ref=e823]:
+                      - link "huggenknubbel (participant)" [ref=e824] [cursor=pointer]:
+                        - /url: /huggenknubbel
+                        - img "huggenknubbel (participant)" [ref=e825]
+                      - link "jimmyfitz (participant)" [ref=e826] [cursor=pointer]:
+                        - /url: /jimmyfitz
+                        - img "jimmyfitz (participant)" [ref=e827]
+                    - 'link "2 comments: huggenknubbel, 10:23AM on July 26, 2025" [ref=e829] [cursor=pointer]':
+                      - /url: /advplyr/audiobookshelf-app/discussions/1644
+                      - img [ref=e830]
+                      - text: "2"
+            - listitem [ref=e832]:
+              - generic [ref=e834]:
+                - generic [ref=e835]:
+                  - 'button "Upvote: 10" [disabled] [ref=e839]':
+                    - img [ref=e840]
+                    - generic [ref=e842]: "10"
+                  - img [ref=e846]
+                - generic [ref=e847]:
+                  - generic [ref=e848]:
+                    - heading "Can we have the app in Fdroid?" [level=3] [ref=e849]:
+                      - link "Can we have the app in Fdroid?" [ref=e850] [cursor=pointer]:
+                        - /url: /advplyr/audiobookshelf-app/discussions/171
+                    - generic [ref=e851]:
+                      - link "ticoombs (author)" [ref=e852] [cursor=pointer]:
+                        - /url: /ticoombs
+                        - text: ticoombs
+                      - text: started May 6, 2022on May 6, 2022 in
+                      - link "General (category)" [ref=e853] [cursor=pointer]:
+                        - /url: /advplyr/audiobookshelf-app/discussions/categories/general?discussions_q=is%3Aopen+category%3AGeneral
+                        - text: General
+                  - generic [ref=e854]:
+                    - generic [ref=e857]:
+                      - link "ticoombs (participant)" [ref=e858] [cursor=pointer]:
+                        - /url: /ticoombs
+                        - img "ticoombs (participant)" [ref=e859]
+                      - link "10leej (participant)" [ref=e860] [cursor=pointer]:
+                        - /url: /10leej
+                        - img "10leej (participant)" [ref=e861]
+                      - link "advplyr (participant)" [ref=e862] [cursor=pointer]:
+                        - /url: /advplyr
+                        - img "advplyr (participant)" [ref=e863]
+                    - 'link "2 comments: ticoombs, 08:32AM on May 06, 2022" [ref=e865] [cursor=pointer]':
+                      - /url: /advplyr/audiobookshelf-app/discussions/171
+                      - img [ref=e866]
+                      - text: "2"
+            - listitem [ref=e868]:
+              - generic [ref=e870]:
+                - generic [ref=e871]:
+                  - 'button "Upvote: 5" [disabled] [ref=e875]':
+                    - img [ref=e876]
+                    - generic [ref=e878]: "5"
+                  - img [ref=e882]
+                - generic [ref=e883]:
+                  - generic [ref=e884]:
+                    - heading "Show latest podcasts in Android Auto" [level=3] [ref=e885]:
+                      - link "Show latest podcasts in Android Auto" [ref=e886] [cursor=pointer]:
+                        - /url: /advplyr/audiobookshelf-app/discussions/1414
+                    - generic [ref=e887]:
+                      - link "osimon72 (author)" [ref=e888] [cursor=pointer]:
+                        - /url: /osimon72
+                        - text: osimon72
+                      - text: started Dec 19, 2024on Dec 19, 2024 in
+                      - link "Ideas (category)" [ref=e889] [cursor=pointer]:
+                        - /url: /advplyr/audiobookshelf-app/discussions/categories/ideas?discussions_q=is%3Aopen+category%3AIdeas
+                        - text: Ideas
+                  - generic [ref=e890]:
+                    - generic [ref=e893]:
+                      - link "osimon72 (participant)" [ref=e894] [cursor=pointer]:
+                        - /url: /osimon72
+                        - img "osimon72 (participant)" [ref=e895]
+                      - link "bobloadmire (participant)" [ref=e896] [cursor=pointer]:
+                        - /url: /bobloadmire
+                        - img "bobloadmire (participant)" [ref=e897]
+                      - link "huggenknubbel (participant)" [ref=e898] [cursor=pointer]:
+                        - /url: /huggenknubbel
+                        - img "huggenknubbel (participant)" [ref=e899]
+                    - 'link "2 comments: osimon72, 08:20AM on December 19, 2024" [ref=e901] [cursor=pointer]':
+                      - /url: /advplyr/audiobookshelf-app/discussions/1414
+                      - img [ref=e902]
+                      - text: "2"
+            - listitem [ref=e904]:
+              - generic [ref=e906]:
+                - generic [ref=e907]:
+                  - 'button "Upvote: 1" [disabled] [ref=e911]':
+                    - img [ref=e912]
+                    - generic [ref=e914]: "1"
+                  - img [ref=e918]
+                - generic [ref=e919]:
+                  - generic [ref=e920]:
+                    - heading "Link to in-app items from rich text descriptions instead of browser" [level=3] [ref=e921]:
+                      - link "Link to in-app items from rich text descriptions instead of browser" [ref=e922] [cursor=pointer]:
+                        - /url: /advplyr/audiobookshelf-app/discussions/1606
+                    - generic [ref=e923]:
+                      - link "averageyogi (author)" [ref=e924] [cursor=pointer]:
+                        - /url: /averageyogi
+                        - text: averageyogi
+                      - text: started Jun 17, 2025on Jun 17, 2025 in
+                      - link "Ideas (category)" [ref=e925] [cursor=pointer]:
+                        - /url: /advplyr/audiobookshelf-app/discussions/categories/ideas?discussions_q=is%3Aopen+category%3AIdeas
+                        - text: Ideas
+                  - generic [ref=e926]:
+                    - link "averageyogi (participant)" [ref=e930] [cursor=pointer]:
+                      - /url: /averageyogi
+                      - img "averageyogi (participant)" [ref=e931]
+                    - 'link "0 comments: averageyogi, 03:11AM on June 17, 2025" [ref=e933] [cursor=pointer]':
+                      - /url: /advplyr/audiobookshelf-app/discussions/1606
+                      - img [ref=e934]
+                      - text: "0"
+            - listitem [ref=e936]:
+              - generic [ref=e938]:
+                - generic [ref=e939]:
+                  - 'button "Upvote: 1" [disabled] [ref=e943]':
+                    - img [ref=e944]
+                    - generic [ref=e946]: "1"
+                  - img [ref=e950]
+                - generic [ref=e951]:
+                  - generic [ref=e952]:
+                    - heading "iOS sync" [level=3] [ref=e953]:
+                      - link "iOS sync" [ref=e954] [cursor=pointer]:
+                        - /url: /advplyr/audiobookshelf-app/discussions/639
+                    - generic [ref=e955]:
+                      - link "lukethehawk (author)" [ref=e956] [cursor=pointer]:
+                        - /url: /lukethehawk
+                        - text: lukethehawk
+                      - text: started Mar 22, 2023on Mar 22, 2023 in
+                      - link "General (category)" [ref=e957] [cursor=pointer]:
+                        - /url: /advplyr/audiobookshelf-app/discussions/categories/general?discussions_q=is%3Aopen+category%3AGeneral
+                        - text: General
+                  - generic [ref=e958]:
+                    - generic [ref=e961]:
+                      - link "lukethehawk (participant)" [ref=e962] [cursor=pointer]:
+                        - /url: /lukethehawk
+                        - img "lukethehawk (participant)" [ref=e963]
+                      - link "Eragos (participant)" [ref=e964] [cursor=pointer]:
+                        - /url: /Eragos
+                        - img "Eragos (participant)" [ref=e965]
+                      - link "hobesman (participant)" [ref=e966] [cursor=pointer]:
+                        - /url: /hobesman
+                        - img "hobesman (participant)" [ref=e967]
+                    - 'link "5 comments: lukethehawk, 08:33AM on March 22, 2023" [ref=e969] [cursor=pointer]':
+                      - /url: /advplyr/audiobookshelf-app/discussions/639
+                      - img [ref=e970]
+                      - text: "5"
+            - listitem [ref=e972]:
+              - generic [ref=e974]:
+                - generic [ref=e975]:
+                  - 'button "Upvote: 1" [disabled] [ref=e979]':
+                    - img [ref=e980]
+                    - generic [ref=e982]: "1"
+                  - img [ref=e986]
+                - generic [ref=e987]:
+                  - generic [ref=e988]:
+                    - heading "Download episode from client app" [level=3] [ref=e989]:
+                      - link "Download episode from client app" [ref=e990] [cursor=pointer]:
+                        - /url: /advplyr/audiobookshelf-app/discussions/1572
+                    - generic [ref=e991]:
+                      - link "ShahOdin (author)" [ref=e992] [cursor=pointer]:
+                        - /url: /ShahOdin
+                        - text: ShahOdin
+                      - text: asked May 11, 2025on May 11, 2025 in
+                      - link "Q&A (category)" [ref=e993] [cursor=pointer]:
+                        - /url: /advplyr/audiobookshelf-app/discussions/categories/q-a?discussions_q=is%3Aopen+category%3AQ%26A
+                        - text: Q&A
+                      - generic [ref=e994]: · Unanswered
+                  - generic [ref=e995]:
+                    - link "ShahOdin (participant)" [ref=e999] [cursor=pointer]:
+                      - /url: /ShahOdin
+                      - img "ShahOdin (participant)" [ref=e1000]
+                    - 'link "0 comments: ShahOdin, 06:00PM on May 11, 2025" [ref=e1002] [cursor=pointer]':
+                      - /url: /advplyr/audiobookshelf-app/discussions/1572
+                      - img [ref=e1003]
+                      - text: "0"
+            - listitem [ref=e1005]:
+              - generic [ref=e1007]:
+                - generic [ref=e1008]:
+                  - 'button "Upvote: 1" [disabled] [ref=e1012]':
+                    - img [ref=e1013]
+                    - generic [ref=e1015]: "1"
+                  - img [ref=e1019]
+                - generic [ref=e1020]:
+                  - generic [ref=e1021]:
+                    - heading "\"Start from x seconds\" on mobile app" [level=3] [ref=e1022]:
+                      - link "\"Start from x seconds\" on mobile app" [ref=e1023] [cursor=pointer]:
+                        - /url: /advplyr/audiobookshelf-app/discussions/1558
+                    - generic [ref=e1024]:
+                      - link "chadneu (author)" [ref=e1025] [cursor=pointer]:
+                        - /url: /chadneu
+                        - text: chadneu
+                      - text: started Apr 26, 2025on Apr 26, 2025 in
+                      - link "Ideas (category)" [ref=e1026] [cursor=pointer]:
+                        - /url: /advplyr/audiobookshelf-app/discussions/categories/ideas?discussions_q=is%3Aopen+category%3AIdeas
+                        - text: Ideas
+                  - generic [ref=e1027]:
+                    - generic [ref=e1030]:
+                      - link "chadneu (participant)" [ref=e1031] [cursor=pointer]:
+                        - /url: /chadneu
+                        - img "chadneu (participant)" [ref=e1032]
+                      - link "nichwall (participant)" [ref=e1033] [cursor=pointer]:
+                        - /url: /nichwall
+                        - img "nichwall (participant)" [ref=e1034]
+                    - 'link "1 comment: chadneu, 10:50PM on April 26, 2025" [ref=e1036] [cursor=pointer]':
+                      - /url: /advplyr/audiobookshelf-app/discussions/1558
+                      - img [ref=e1037]
+                      - text: "1"
+            - listitem [ref=e1039]:
+              - generic [ref=e1041]:
+                - generic [ref=e1042]:
+                  - 'button "Upvote: 1" [disabled] [ref=e1046]':
+                    - img [ref=e1047]
+                    - generic [ref=e1049]: "1"
+                  - img [ref=e1053]
+                - generic [ref=e1054]:
+                  - generic [ref=e1055]:
+                    - heading "Offline Mode" [level=3] [ref=e1056]:
+                      - link "Offline Mode" [ref=e1057] [cursor=pointer]:
+                        - /url: /advplyr/audiobookshelf-app/discussions/1487
+                    - generic [ref=e1058]:
+                      - link "JuggedHareBoy89 (author)" [ref=e1059] [cursor=pointer]:
+                        - /url: /JuggedHareBoy89
+                        - text: JuggedHareBoy89
+                      - text: started Feb 21, 2025on Feb 21, 2025 in
+                      - link "Ideas (category)" [ref=e1060] [cursor=pointer]:
+                        - /url: /advplyr/audiobookshelf-app/discussions/categories/ideas?discussions_q=is%3Aopen+category%3AIdeas
+                        - text: Ideas
+                  - generic [ref=e1061]:
+                    - generic [ref=e1064]:
+                      - link "JuggedHareBoy89 (participant)" [ref=e1065] [cursor=pointer]:
+                        - /url: /JuggedHareBoy89
+                        - img "JuggedHareBoy89 (participant)" [ref=e1066]
+                      - link "rogue9whistler (participant)" [ref=e1067] [cursor=pointer]:
+                        - /url: /rogue9whistler
+                        - img "rogue9whistler (participant)" [ref=e1068]
+                      - link "Vito0912 (participant)" [ref=e1069] [cursor=pointer]:
+                        - /url: /Vito0912
+                        - img "Vito0912 (participant)" [ref=e1070]
+                    - 'link "4 comments: JuggedHareBoy89, 06:07AM on February 21, 2025" [ref=e1072] [cursor=pointer]':
+                      - /url: /advplyr/audiobookshelf-app/discussions/1487
+                      - img [ref=e1073]
+                      - text: "4"
+          - navigation "Pagination" [ref=e1078]:
+            - link "Previous page" [disabled] [ref=e1079]: Previous
+            - emphasis [ref=e1080] [cursor=pointer]: "1"
+            - link "Page 2" [ref=e1081] [cursor=pointer]:
+              - /url: /advplyr/audiobookshelf-app/discussions?page=2
+              - text: "2"
+            - link "Page 3" [ref=e1082] [cursor=pointer]:
+              - /url: /advplyr/audiobookshelf-app/discussions?page=3
+              - text: "3"
+            - link "Page 4" [ref=e1083] [cursor=pointer]:
+              - /url: /advplyr/audiobookshelf-app/discussions?page=4
+              - text: "4"
+            - link "Next page" [ref=e1084] [cursor=pointer]:
+              - /url: /advplyr/audiobookshelf-app/discussions?page=2
+              - text: Next
+  - contentinfo [ref=e1085]:
+    - heading "Footer" [level=2] [ref=e1086]
+    - generic [ref=e1087]:
+      - generic [ref=e1088]:
+        - link "GitHub Homepage" [ref=e1089] [cursor=pointer]:
+          - /url: https://github.com
+          - img [ref=e1090]
+        - generic [ref=e1092]: © 2026 GitHub, Inc.
+      - navigation "Footer" [ref=e1093]:
+        - heading "Footer navigation" [level=3] [ref=e1094]
+        - list "Footer navigation" [ref=e1095]:
+          - listitem [ref=e1096]:
+            - link "Terms" [ref=e1097] [cursor=pointer]:
+              - /url: https://docs.github.com/site-policy/github-terms/github-terms-of-service
+          - listitem [ref=e1098]:
+            - link "Privacy" [ref=e1099] [cursor=pointer]:
+              - /url: https://docs.github.com/site-policy/privacy-policies/github-privacy-statement
+          - listitem [ref=e1100]:
+            - link "Security" [ref=e1101] [cursor=pointer]:
+              - /url: https://github.com/security
+          - listitem [ref=e1102]:
+            - link "Status" [ref=e1103] [cursor=pointer]:
+              - /url: https://www.githubstatus.com/
+          - listitem [ref=e1104]:
+            - link "Community" [ref=e1105] [cursor=pointer]:
+              - /url: https://github.community/
+          - listitem [ref=e1106]:
+            - link "Docs" [ref=e1107] [cursor=pointer]:
+              - /url: https://docs.github.com/
+          - listitem [ref=e1108]:
+            - link "Contact" [ref=e1109] [cursor=pointer]:
+              - /url: https://support.github.com?tags=dotcom-footer
+          - listitem [ref=e1110]:
+            - button "Manage cookies" [ref=e1112] [cursor=pointer]
+          - listitem [ref=e1113]:
+            - button "Do not share my personal information" [ref=e1115] [cursor=pointer]

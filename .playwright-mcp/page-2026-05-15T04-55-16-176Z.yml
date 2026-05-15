@@ -1,0 +1,470 @@
+- generic [ref=e2]:
+  - generic [ref=e3]:
+    - link "Skip to content" [ref=e4] [cursor=pointer]:
+      - /url: "#start-of-content"
+    - banner [ref=e6]:
+      - heading "Navigation Menu" [level=2] [ref=e7]
+      - generic [ref=e9]:
+        - button "Toggle navigation" [ref=e11] [cursor=pointer]
+        - link "Homepage" [ref=e17] [cursor=pointer]:
+          - /url: /
+          - img [ref=e18]
+        - generic [ref=e20]:
+          - link "Sign in" [ref=e21] [cursor=pointer]:
+            - /url: /login?return_to=https%3A%2F%2Fgithub.com%2Fadvplyr%2Faudiobookshelf-app%2Fissues%3Fq%3Dplayer%2Brecently%2Bplayed
+          - button "Appearance settings" [ref=e24] [cursor=pointer]:
+            - img
+  - main [ref=e28]:
+    - generic [ref=e29]:
+      - generic [ref=e30]:
+        - generic [ref=e32]:
+          - img [ref=e33]
+          - link "advplyr" [ref=e36] [cursor=pointer]:
+            - /url: /advplyr
+          - generic [ref=e37]: /
+          - strong [ref=e38]:
+            - link "audiobookshelf-app" [ref=e39] [cursor=pointer]:
+              - /url: /advplyr/audiobookshelf-app
+          - generic [ref=e40]: Public
+        - generic [ref=e41]:
+          - list:
+            - listitem [ref=e42]:
+              - link "You must be signed in to change notification settings" [ref=e43] [cursor=pointer]:
+                - /url: /login?return_to=%2Fadvplyr%2Faudiobookshelf-app
+                - img [ref=e44]
+                - text: Notifications
+            - listitem [ref=e46]:
+              - link "Fork 359" [ref=e47] [cursor=pointer]:
+                - /url: /login?return_to=%2Fadvplyr%2Faudiobookshelf-app
+                - img [ref=e48]
+                - text: Fork
+                - generic "359" [ref=e50]
+            - listitem [ref=e51]:
+              - link "You must be signed in to star a repository" [ref=e53] [cursor=pointer]:
+                - /url: /login?return_to=%2Fadvplyr%2Faudiobookshelf-app
+                - img [ref=e54]
+                - text: Star
+                - generic "2476 users starred this repository" [ref=e56]: 2.5k
+      - navigation "Repository" [ref=e57]:
+        - list [ref=e58]:
+          - listitem [ref=e59]:
+            - link "Code" [ref=e60] [cursor=pointer]:
+              - /url: /advplyr/audiobookshelf-app
+              - img [ref=e61]
+              - generic [ref=e63]: Code
+          - listitem [ref=e64]:
+            - link "Issues 397" [ref=e65] [cursor=pointer]:
+              - /url: /advplyr/audiobookshelf-app/issues
+              - img [ref=e66]
+              - generic [ref=e69]: Issues
+              - generic "397" [ref=e70]
+          - listitem [ref=e71]:
+            - link "Pull requests 57" [ref=e72] [cursor=pointer]:
+              - /url: /advplyr/audiobookshelf-app/pulls
+              - img [ref=e73]
+              - generic [ref=e75]: Pull requests
+              - generic "57" [ref=e76]
+          - listitem [ref=e77]:
+            - link "Discussions" [ref=e78] [cursor=pointer]:
+              - /url: /advplyr/audiobookshelf-app/discussions
+              - img [ref=e79]
+              - generic [ref=e81]: Discussions
+          - listitem [ref=e82]:
+            - link "Actions" [ref=e83] [cursor=pointer]:
+              - /url: /advplyr/audiobookshelf-app/actions
+              - img [ref=e84]
+              - generic [ref=e86]: Actions
+          - listitem [ref=e87]
+          - listitem [ref=e88]
+          - listitem [ref=e89]
+        - button "Additional navigation options" [ref=e93] [cursor=pointer]:
+          - img
+    - generic [ref=e105]:
+      - list "Drag and drop pinned issues list." [ref=e107]:
+        - listitem [ref=e108]:
+          - generic [ref=e111]:
+            - link "View iOS App Store Release Checklist" [ref=e113] [cursor=pointer]:
+              - /url: https://github.com/advplyr/audiobookshelf-app/issues/541
+              - 'img "Status: Open." [ref=e115]'
+              - text: iOS App Store Release Checklist
+            - generic [ref=e118]:
+              - generic [ref=e119]:
+                - text: "#541 ·"
+                - link "View benonymity profile" [ref=e120] [cursor=pointer]:
+                  - /url: https://github.com/benonymity
+                  - text: benonymity
+                - text: opened
+                - generic "Feb 1, 2023, 8:32 PM UTC" [ref=e121]: on Feb 1, 2023on Feb 1, 2023
+              - generic [ref=e122]:
+                - img "96 comments" [ref=e123]
+                - generic [ref=e125]: "96"
+      - generic [ref=e126]:
+        - heading "Issues" [level=1] [ref=e127]
+        - generic [ref=e128]:
+          - generic [ref=e130]:
+            - form "Search Issues" [ref=e132]:
+              - generic [ref=e133]: Search Issues
+              - generic [ref=e135]:
+                - generic [ref=e137]:
+                  - generic [ref=e138]:
+                    - generic [ref=e139]: player
+                    - generic [ref=e141]: recently
+                    - generic [ref=e143]: played
+                  - combobox "Search Issues" [ref=e145]: player recently played
+                - button "Search" [ref=e146] [cursor=pointer]:
+                  - img [ref=e147]
+            - generic [ref=e149]:
+              - link "Labels" [ref=e150] [cursor=pointer]:
+                - /url: /advplyr/audiobookshelf-app/labels
+                - generic [ref=e151]:
+                  - generic:
+                    - img
+                  - generic [ref=e152]: Labels
+              - link "Milestones" [ref=e153] [cursor=pointer]:
+                - /url: /advplyr/audiobookshelf-app/milestones
+                - generic [ref=e154]:
+                  - generic:
+                    - img
+                  - generic [ref=e155]: Milestones
+              - link "New issue" [ref=e156] [cursor=pointer]:
+                - /url: /login?return_to=https://github.com/advplyr/audiobookshelf-app/issues?q=player+recently+played
+                - generic [ref=e158]: New issue
+          - generic [ref=e162]:
+            - heading "Search results" [level=2] [ref=e163]
+            - generic [ref=e164]:
+              - generic [ref=e165]:
+                - link "Open" [ref=e166] [cursor=pointer]:
+                  - /url: ""
+                  - generic [ref=e167]: Open
+                - link "Closed" [ref=e169] [cursor=pointer]:
+                  - /url: ""
+                  - generic [ref=e170]: Closed
+              - toolbar "Actions" [ref=e172]:
+                - generic [ref=e173]:
+                  - button "Filter by author" [ref=e175] [cursor=pointer]:
+                    - generic [ref=e176]:
+                      - generic [ref=e177]: Author
+                      - generic:
+                        - img
+                  - button "Filter by label" [ref=e179] [cursor=pointer]:
+                    - generic [ref=e180]:
+                      - generic [ref=e181]: Labels
+                      - generic:
+                        - img
+                  - button "Filter by project" [ref=e183] [cursor=pointer]:
+                    - generic [ref=e184]:
+                      - generic [ref=e185]: Projects
+                      - generic:
+                        - img
+                - button "More Actions" [ref=e186] [cursor=pointer]:
+                  - img [ref=e187]
+            - list "Search results" [ref=e189]:
+              - 'listitem "[Bug]: Android battery usage: Status: Closed (completed). #1446 In advplyr/audiobookshelf-app;· by faulker was closed on Aug 31, 2025. More information available below." [ref=e192]':
+                - generic [ref=e193]:
+                  - 'heading "[Bug]: Android battery usage" [level=3] [ref=e194]':
+                    - 'link "[Bug]: Android battery usage" [ref=e195] [cursor=pointer]':
+                      - /url: /advplyr/audiobookshelf-app/issues/1446
+                      - generic [ref=e196]: "[Bug]: Android battery usage"
+                  - link "bug Something isn't working" [ref=e200] [cursor=pointer]:
+                    - /url: /advplyr/audiobookshelf-app/issues?q=player%20recently%20played%20label%3Abug
+                    - generic [ref=e202]: bug
+                    - generic [ref=e203]: Something isn't working
+                - generic [ref=e207]:
+                  - img [ref=e209]
+                  - generic [ref=e212]: "Status: Closed (completed)."
+                - generic [ref=e216]:
+                  - generic [ref=e217]:
+                    - generic [ref=e218]: "#1446"
+                    - generic [ref=e219]: In advplyr/audiobookshelf-app;
+                  - generic [ref=e220]:
+                    - text: · by
+                    - link "faulker" [ref=e221] [cursor=pointer]:
+                      - /url: /advplyr/audiobookshelf-app/issues?q=player%20recently%20played%20author%3Afaulker
+                    - text: was closed
+                    - generic "Aug 31, 2025, 8:12 PM UTC" [ref=e222]: on Aug 31, 2025on Aug 31, 2025
+              - 'listitem "[Bug]: Download complete but failed to create library item: Status: Open. #1273 In advplyr/audiobookshelf-app;· mark-monteiro opened on Jul 29, 2024. More information available below." [ref=e226]':
+                - generic [ref=e227]:
+                  - 'heading "[Bug]: Download complete but failed to create library item" [level=3] [ref=e228]':
+                    - 'link "[Bug]: Download complete but failed to create library item" [ref=e229] [cursor=pointer]':
+                      - /url: /advplyr/audiobookshelf-app/issues/1273
+                      - generic [ref=e230]: "[Bug]: Download complete but failed to create library item"
+                  - generic [ref=e232]:
+                    - link "android This issue is Android specific" [ref=e234] [cursor=pointer]:
+                      - /url: /advplyr/audiobookshelf-app/issues?q=player%20recently%20played%20label%3Aandroid
+                      - generic [ref=e236]: android
+                      - generic [ref=e237]: This issue is Android specific
+                    - link "bug Something isn't working" [ref=e239] [cursor=pointer]:
+                      - /url: /advplyr/audiobookshelf-app/issues?q=player%20recently%20played%20label%3Abug
+                      - generic [ref=e241]: bug
+                      - generic [ref=e242]: Something isn't working
+                - generic [ref=e246]:
+                  - img [ref=e248]
+                  - generic [ref=e251]: "Status: Open."
+                - generic [ref=e255]:
+                  - generic [ref=e256]:
+                    - generic [ref=e257]: "#1273"
+                    - generic [ref=e258]: In advplyr/audiobookshelf-app;
+                  - generic [ref=e259]:
+                    - text: ·
+                    - link "mark-monteiro" [ref=e260] [cursor=pointer]:
+                      - /url: /advplyr/audiobookshelf-app/issues?q=player%20recently%20played%20author%3Amark-monteiro
+                    - text: opened
+                    - generic "Jul 29, 2024, 3:36 PM UTC" [ref=e261]: on Jul 29, 2024on Jul 29, 2024
+              - 'listitem "Pausing book (local or streamed) randomly chooses where playback will resume (forward or backwards from actual paused point): Status: Closed (completed). #804 In advplyr/audiobookshelf-app;· by falchonhand was closed on Dec 10, 2023. More information available below." [ref=e265]':
+                - generic [ref=e266]:
+                  - heading "Pausing book (local or streamed) randomly chooses where playback will resume (forward or backwards from actual paused point)" [level=3] [ref=e267]:
+                    - link "Pausing book (local or streamed) randomly chooses where playback will resume (forward or backwards from actual paused point)" [ref=e268] [cursor=pointer]:
+                      - /url: /advplyr/audiobookshelf-app/issues/804
+                      - generic [ref=e269]: Pausing book (local or streamed) randomly chooses where playback will resume (forward or backwards from actual paused point)
+                  - link "bug Something isn't working" [ref=e273] [cursor=pointer]:
+                    - /url: /advplyr/audiobookshelf-app/issues?q=player%20recently%20played%20label%3Abug
+                    - generic [ref=e275]: bug
+                    - generic [ref=e276]: Something isn't working
+                - generic [ref=e280]:
+                  - img [ref=e282]
+                  - generic [ref=e285]: "Status: Closed (completed)."
+                - generic [ref=e289]:
+                  - generic [ref=e290]:
+                    - generic [ref=e291]: "#804"
+                    - generic [ref=e292]: In advplyr/audiobookshelf-app;
+                  - generic [ref=e293]:
+                    - text: · by
+                    - link "falchonhand" [ref=e294] [cursor=pointer]:
+                      - /url: /advplyr/audiobookshelf-app/issues?q=player%20recently%20played%20author%3Afalchonhand
+                    - text: was closed
+                    - generic "Dec 10, 2023, 7:13 PM UTC" [ref=e295]: on Dec 10, 2023on Dec 10, 2023
+              - 'listitem "Automatically download next book in line and delete the previous: Status: Open. #774 In advplyr/audiobookshelf-app;· WickedSquirrel opened on Jul 6, 2023. More information available below." [ref=e299]':
+                - generic [ref=e300]:
+                  - heading "Automatically download next book in line and delete the previous" [level=3] [ref=e301]:
+                    - link "Automatically download next book in line and delete the previous" [ref=e302] [cursor=pointer]:
+                      - /url: /advplyr/audiobookshelf-app/issues/774
+                      - generic [ref=e303]: Automatically download next book in line and delete the previous
+                  - link "enhancement New feature or request" [ref=e307] [cursor=pointer]:
+                    - /url: /advplyr/audiobookshelf-app/issues?q=player%20recently%20played%20label%3Aenhancement
+                    - generic [ref=e309]: enhancement
+                    - generic [ref=e310]: New feature or request
+                - generic [ref=e314]:
+                  - img [ref=e316]
+                  - generic [ref=e319]: "Status: Open."
+                - generic [ref=e323]:
+                  - generic [ref=e324]:
+                    - generic [ref=e325]: "#774"
+                    - generic [ref=e326]: In advplyr/audiobookshelf-app;
+                  - generic [ref=e327]:
+                    - text: ·
+                    - link "WickedSquirrel" [ref=e328] [cursor=pointer]:
+                      - /url: /advplyr/audiobookshelf-app/issues?q=player%20recently%20played%20author%3AWickedSquirrel
+                    - text: opened
+                    - generic "Jul 6, 2023, 8:57 AM UTC" [ref=e329]: on Jul 6, 2023on Jul 6, 2023
+              - 'listitem "Wear OS Support: Status: Open. #676 In advplyr/audiobookshelf-app;· Protarios opened on Apr 18, 2023. More information available below." [ref=e333]':
+                - generic [ref=e334]:
+                  - heading "Wear OS Support" [level=3] [ref=e335]:
+                    - link "Wear OS Support" [ref=e336] [cursor=pointer]:
+                      - /url: /advplyr/audiobookshelf-app/issues/676
+                      - generic [ref=e337]: Wear OS Support
+                  - generic [ref=e339]:
+                    - link "enhancement New feature or request" [ref=e341] [cursor=pointer]:
+                      - /url: /advplyr/audiobookshelf-app/issues?q=player%20recently%20played%20label%3Aenhancement
+                      - generic [ref=e343]: enhancement
+                      - generic [ref=e344]: New feature or request
+                    - link "iOS This issue is iOS specific" [ref=e346] [cursor=pointer]:
+                      - /url: /advplyr/audiobookshelf-app/issues?q=player%20recently%20played%20label%3AiOS
+                      - generic [ref=e348]: iOS
+                      - generic [ref=e349]: This issue is iOS specific
+                - generic [ref=e353]:
+                  - img [ref=e355]
+                  - generic [ref=e358]: "Status: Open."
+                - generic [ref=e362]:
+                  - generic [ref=e363]:
+                    - generic [ref=e364]: "#676"
+                    - generic [ref=e365]: In advplyr/audiobookshelf-app;
+                  - generic [ref=e366]:
+                    - text: ·
+                    - link "Protarios" [ref=e367] [cursor=pointer]:
+                      - /url: /advplyr/audiobookshelf-app/issues?q=player%20recently%20played%20author%3AProtarios
+                    - text: opened
+                    - generic "Apr 18, 2023, 8:05 AM UTC" [ref=e368]: on Apr 18, 2023on Apr 18, 2023
+              - 'listitem "[Bug]: Android Client seemingly unable to download or play any books: Status: Not planned (skipped). #579 In advplyr/audiobookshelf-app;· by ljlongwing was closed on Feb 13, 2023. More information available below." [ref=e372]':
+                - generic [ref=e373]:
+                  - 'heading "[Bug]: Android Client seemingly unable to download or play any books" [level=3] [ref=e374]':
+                    - 'link "[Bug]: Android Client seemingly unable to download or play any books" [ref=e375] [cursor=pointer]':
+                      - /url: /advplyr/audiobookshelf-app/issues/579
+                      - generic [ref=e376]: "[Bug]: Android Client seemingly unable to download or play any books"
+                  - link "bug Something isn't working" [ref=e380] [cursor=pointer]:
+                    - /url: /advplyr/audiobookshelf-app/issues?q=player%20recently%20played%20label%3Abug
+                    - generic [ref=e382]: bug
+                    - generic [ref=e383]: Something isn't working
+                - generic [ref=e387]:
+                  - img [ref=e389]
+                  - generic [ref=e391]: "Status: Not planned (skipped)."
+                - generic [ref=e395]:
+                  - generic [ref=e396]:
+                    - generic [ref=e397]: "#579"
+                    - generic [ref=e398]: In advplyr/audiobookshelf-app;
+                  - generic [ref=e399]:
+                    - text: · by
+                    - link "ljlongwing" [ref=e400] [cursor=pointer]:
+                      - /url: /advplyr/audiobookshelf-app/issues?q=player%20recently%20played%20author%3Aljlongwing
+                    - text: was closed
+                    - generic "Feb 13, 2023, 5:16 PM UTC" [ref=e401]: on Feb 13, 2023on Feb 13, 2023
+              - 'listitem "Resuming playback sometimes jumps to wrong time: Status: Closed (completed). #578 In advplyr/audiobookshelf-app;· by JakobTischler was closed on Mar 10, 2023. More information available below." [ref=e405]':
+                - generic [ref=e406]:
+                  - heading "Resuming playback sometimes jumps to wrong time" [level=3] [ref=e407]:
+                    - link "Resuming playback sometimes jumps to wrong time" [ref=e408] [cursor=pointer]:
+                      - /url: /advplyr/audiobookshelf-app/issues/578
+                      - generic [ref=e409]: Resuming playback sometimes jumps to wrong time
+                  - link "bug Something isn't working" [ref=e413] [cursor=pointer]:
+                    - /url: /advplyr/audiobookshelf-app/issues?q=player%20recently%20played%20label%3Abug
+                    - generic [ref=e415]: bug
+                    - generic [ref=e416]: Something isn't working
+                - generic [ref=e420]:
+                  - img [ref=e422]
+                  - generic [ref=e425]: "Status: Closed (completed)."
+                - generic [ref=e429]:
+                  - generic [ref=e430]:
+                    - generic [ref=e431]: "#578"
+                    - generic [ref=e432]: In advplyr/audiobookshelf-app;
+                  - generic [ref=e433]:
+                    - text: · by
+                    - link "JakobTischler" [ref=e434] [cursor=pointer]:
+                      - /url: /advplyr/audiobookshelf-app/issues?q=player%20recently%20played%20author%3AJakobTischler
+                    - text: was closed
+                    - generic "Mar 10, 2023, 11:11 PM UTC" [ref=e435]: on Mar 10, 2023on Mar 10, 2023
+              - 'listitem "iOS App Store Release Checklist: Status: Open. #541 In advplyr/audiobookshelf-app;· benonymity opened on Feb 1, 2023. More information available below." [ref=e439]':
+                - generic [ref=e440]:
+                  - heading "iOS App Store Release Checklist" [level=3] [ref=e441]:
+                    - link "iOS App Store Release Checklist" [ref=e442] [cursor=pointer]:
+                      - /url: /advplyr/audiobookshelf-app/issues/541
+                      - generic [ref=e443]: iOS App Store Release Checklist
+                  - link "enhancement New feature or request" [ref=e447] [cursor=pointer]:
+                    - /url: /advplyr/audiobookshelf-app/issues?q=player%20recently%20played%20label%3Aenhancement
+                    - generic [ref=e449]: enhancement
+                    - generic [ref=e450]: New feature or request
+                - generic [ref=e454]:
+                  - img [ref=e456]
+                  - generic [ref=e459]: "Status: Open."
+                - generic [ref=e463]:
+                  - generic [ref=e464]:
+                    - generic [ref=e465]: "#541"
+                    - generic [ref=e466]: In advplyr/audiobookshelf-app;
+                  - generic [ref=e467]:
+                    - text: ·
+                    - link "benonymity" [ref=e468] [cursor=pointer]:
+                      - /url: /advplyr/audiobookshelf-app/issues?q=player%20recently%20played%20author%3Abenonymity
+                    - text: opened
+                    - generic "Feb 1, 2023, 8:32 PM UTC" [ref=e469]: on Feb 1, 2023on Feb 1, 2023
+              - 'listitem "[Bug]: Listening position / time sync not working correctly with Android Auto: Status: Closed (completed). #486 In advplyr/audiobookshelf-app;· by Mega-Volti was closed on Jan 2, 2024. More information available below." [ref=e473]':
+                - generic [ref=e474]:
+                  - 'heading "[Bug]: Listening position / time sync not working correctly with Android Auto" [level=3] [ref=e475]':
+                    - 'link "[Bug]: Listening position / time sync not working correctly with Android Auto" [ref=e476] [cursor=pointer]':
+                      - /url: /advplyr/audiobookshelf-app/issues/486
+                      - generic [ref=e477]: "[Bug]: Listening position / time sync not working correctly with Android Auto"
+                  - link "bug Something isn't working" [ref=e481] [cursor=pointer]:
+                    - /url: /advplyr/audiobookshelf-app/issues?q=player%20recently%20played%20label%3Abug
+                    - generic [ref=e483]: bug
+                    - generic [ref=e484]: Something isn't working
+                - generic [ref=e488]:
+                  - img [ref=e490]
+                  - generic [ref=e493]: "Status: Closed (completed)."
+                - generic [ref=e497]:
+                  - generic [ref=e498]:
+                    - generic [ref=e499]: "#486"
+                    - generic [ref=e500]: In advplyr/audiobookshelf-app;
+                  - generic [ref=e501]:
+                    - text: · by
+                    - link "Mega-Volti" [ref=e502] [cursor=pointer]:
+                      - /url: /advplyr/audiobookshelf-app/issues?q=player%20recently%20played%20author%3AMega-Volti
+                    - text: was closed
+                    - generic "Jan 2, 2024, 7:52 PM UTC" [ref=e503]: on Jan 2, 2024on Jan 2, 2024
+              - 'listitem "Position not remembered for locally downloaded audiobooks: Status: Closed (completed). #290 In advplyr/audiobookshelf-app;· by elementalest was closed on Jul 22, 2022. More information available below." [ref=e507]':
+                - generic [ref=e508]:
+                  - heading "Position not remembered for locally downloaded audiobooks" [level=3] [ref=e509]:
+                    - link "Position not remembered for locally downloaded audiobooks" [ref=e510] [cursor=pointer]:
+                      - /url: /advplyr/audiobookshelf-app/issues/290
+                      - generic [ref=e511]: Position not remembered for locally downloaded audiobooks
+                  - generic [ref=e513]:
+                    - link "bug Something isn't working" [ref=e515] [cursor=pointer]:
+                      - /url: /advplyr/audiobookshelf-app/issues?q=player%20recently%20played%20label%3Abug
+                      - generic [ref=e517]: bug
+                      - generic [ref=e518]: Something isn't working
+                    - link "waiting Waiting for OP" [ref=e520] [cursor=pointer]:
+                      - /url: /advplyr/audiobookshelf-app/issues?q=player%20recently%20played%20label%3Awaiting
+                      - generic [ref=e522]: waiting
+                      - generic [ref=e523]: Waiting for OP
+                - generic [ref=e527]:
+                  - img [ref=e529]
+                  - generic [ref=e532]: "Status: Closed (completed)."
+                - generic [ref=e536]:
+                  - generic [ref=e537]:
+                    - generic [ref=e538]: "#290"
+                    - generic [ref=e539]: In advplyr/audiobookshelf-app;
+                  - generic [ref=e540]:
+                    - text: · by
+                    - link "elementalest" [ref=e541] [cursor=pointer]:
+                      - /url: /advplyr/audiobookshelf-app/issues?q=player%20recently%20played%20author%3Aelementalest
+                    - text: was closed
+                    - generic "Jul 22, 2022, 4:47 PM UTC" [ref=e542]: on Jul 22, 2022on Jul 22, 2022
+              - 'listitem "(Android) Stop button on notification player: Status: Closed (completed). #268 In advplyr/audiobookshelf-app;· by skyzuma was closed on Jul 30, 2022. More information available below." [ref=e546]':
+                - generic [ref=e547]:
+                  - heading "(Android) Stop button on notification player" [level=3] [ref=e548]:
+                    - link "(Android) Stop button on notification player" [ref=e549] [cursor=pointer]:
+                      - /url: /advplyr/audiobookshelf-app/issues/268
+                      - generic [ref=e550]: (Android) Stop button on notification player
+                  - generic [ref=e552]:
+                    - link "bug Something isn't working" [ref=e554] [cursor=pointer]:
+                      - /url: /advplyr/audiobookshelf-app/issues?q=player%20recently%20played%20label%3Abug
+                      - generic [ref=e556]: bug
+                      - generic [ref=e557]: Something isn't working
+                    - link "waiting Waiting for OP" [ref=e559] [cursor=pointer]:
+                      - /url: /advplyr/audiobookshelf-app/issues?q=player%20recently%20played%20label%3Awaiting
+                      - generic [ref=e561]: waiting
+                      - generic [ref=e562]: Waiting for OP
+                - generic [ref=e566]:
+                  - img [ref=e568]
+                  - generic [ref=e571]: "Status: Closed (completed)."
+                - generic [ref=e575]:
+                  - generic [ref=e576]:
+                    - generic [ref=e577]: "#268"
+                    - generic [ref=e578]: In advplyr/audiobookshelf-app;
+                  - generic [ref=e579]:
+                    - text: · by
+                    - link "skyzuma" [ref=e580] [cursor=pointer]:
+                      - /url: /advplyr/audiobookshelf-app/issues?q=player%20recently%20played%20author%3Askyzuma
+                    - text: was closed
+                    - generic "Jul 30, 2022, 5:53 PM UTC" [ref=e581]: on Jul 30, 2022on Jul 30, 2022
+  - contentinfo [ref=e583]:
+    - heading "Footer" [level=2] [ref=e584]
+    - generic [ref=e585]:
+      - generic [ref=e586]:
+        - link "GitHub Homepage" [ref=e587] [cursor=pointer]:
+          - /url: https://github.com
+          - img [ref=e588]
+        - generic [ref=e590]: © 2026 GitHub, Inc.
+      - navigation "Footer" [ref=e591]:
+        - heading "Footer navigation" [level=3] [ref=e592]
+        - list "Footer navigation" [ref=e593]:
+          - listitem [ref=e594]:
+            - link "Terms" [ref=e595] [cursor=pointer]:
+              - /url: https://docs.github.com/site-policy/github-terms/github-terms-of-service
+          - listitem [ref=e596]:
+            - link "Privacy" [ref=e597] [cursor=pointer]:
+              - /url: https://docs.github.com/site-policy/privacy-policies/github-privacy-statement
+          - listitem [ref=e598]:
+            - link "Security" [ref=e599] [cursor=pointer]:
+              - /url: https://github.com/security
+          - listitem [ref=e600]:
+            - link "Status" [ref=e601] [cursor=pointer]:
+              - /url: https://www.githubstatus.com/
+          - listitem [ref=e602]:
+            - link "Community" [ref=e603] [cursor=pointer]:
+              - /url: https://github.community/
+          - listitem [ref=e604]:
+            - link "Docs" [ref=e605] [cursor=pointer]:
+              - /url: https://docs.github.com/
+          - listitem [ref=e606]:
+            - link "Contact" [ref=e607] [cursor=pointer]:
+              - /url: https://support.github.com?tags=dotcom-footer
+          - listitem [ref=e608]:
+            - button "Manage cookies" [ref=e610] [cursor=pointer]
+          - listitem [ref=e611]:
+            - button "Do not share my personal information" [ref=e613] [cursor=pointer]
