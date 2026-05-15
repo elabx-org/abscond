@@ -50,16 +50,18 @@ function navigate(name: string) {
 <style scoped>
 .bottom-nav {
   position: fixed; bottom: 0; left: 0; right: 0; z-index: 100;
-  height: 56px; padding-bottom: env(safe-area-inset-bottom);
+  height: calc(56px + env(safe-area-inset-bottom));
+  padding-bottom: env(safe-area-inset-bottom);
   background: rgba(14,14,14,0.82); backdrop-filter: blur(20px);
   border-top: 1px solid rgba(255,255,255,0.06);
-  display: flex; align-items: center; justify-content: space-around;
+  display: flex; align-items: flex-start; justify-content: space-around;
+  padding-top: 0;
 }
 .nav-item {
   display: flex; flex-direction: column; align-items: center; gap: 2px;
   background: transparent; border: none; cursor: pointer;
   padding: 4px 8px; flex: 1; color: rgba(255,255,255,0.4);
-  transition: color 0.15s;
+  transition: color 0.15s; height: 56px; justify-content: center;
 }
 .nav-item.active { color: #d4a017; }
 .nav-icon { display: flex; align-items: center; justify-content: center; height: 22px; }

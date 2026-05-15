@@ -70,8 +70,8 @@ const shellClass = computed(() => ({
 
 const contentStyle = computed(() => {
   if (isMobile.value) {
-    const pb = player.currentItem ? '116px' : '56px'
-    return { paddingBottom: pb }
+    const base = player.currentItem ? '116px' : '56px'
+    return { paddingBottom: `calc(${base} + env(safe-area-inset-bottom))` }
   }
   if (isTablet.value)  return { paddingLeft: '72px' }
   return { paddingLeft: '200px' }

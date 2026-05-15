@@ -93,16 +93,14 @@
             <span class="session-dur">{{ formatMinutes(s.duration) }}</span>
           </div>
         </div>
-        <button v-if="sessions.length < sessionTotal" class="load-more-btn" :disabled="loadingMore" @click="loadMore">
-          {{ loadingMore ? 'Loading…' : `Load more (${sessionTotal - sessions.length} remaining)` }}
-        </button>
+        <div ref="sessionSentinel" class="session-sentinel" />
       </section>
     </template>
   </div>
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref, computed } from 'vue'
+import { onMounted, onBeforeUnmount, ref, computed, watch } from 'vue'
 import { getUserStats, getLibraryStats, getListeningSessions } from '@/api/stats'
 import { useLibraryStore } from '@/stores/library'
 import { useAuthStore } from '@/stores/auth'
@@ -114,6 +112,8 @@ const auth = useAuthStore()
 const loading     = ref(true)
 const loadingMore = ref(false)
 const sessionPage = ref(0)
+const sessionSentinel = ref<HTMLElement | null>(null)
+let sessionObserver: IntersectionObserver | null = null
 
 const userStats    = ref<UserStats | null>(null)
 const libStats     = ref<LibraryStats | null>(null)
@@ -181,6 +181,7 @@ function formatDate(ts: number): string {
 }
 
 async function loadMore() {
+  if (loadingMore.value || sessions.value.length >= sessionTotal.value) return
   loadingMore.value = true
   try {
     sessionPage.value++
@@ -190,7 +191,18 @@ async function loadMore() {
   finally { loadingMore.value = false }
 }
 
+onBeforeUnmount(() => { sessionObserver?.disconnect() })
+
+watch(sessionSentinel, (el) => {
+  if (el && sessionObserver) sessionObserver.observe(el)
+})
+
 onMounted(async () => {
+  sessionObserver = new IntersectionObserver((entries) => {
+    if (entries[0]?.isIntersecting && sessions.value.length < sessionTotal.value && !loadingMore.value) {
+      loadMore()
+    }
+  }, { rootMargin: '200px' })
   if (!lib.libraries.length) await lib.fetchLibraries()
   loading.value = true
   try {
@@ -205,7 +217,10 @@ onMounted(async () => {
       libStats.value = await getLibraryStats(lib.activeLibraryId)
     }
   } catch { /* silently ignore */ }
-  finally { loading.value = false }
+  finally {
+    loading.value = false
+    if (sessionSentinel.value) sessionObserver?.observe(sessionSentinel.value)
+  }
 })
 </script>
 
@@ -305,11 +320,5 @@ onMounted(async () => {
 .section-row-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
 .session-total-count { font-size: 10px; color: rgba(255,255,255,0.25); }
 
-.load-more-btn {
-  width: 100%; margin-top: 8px; padding: 10px; border-radius: 10px;
-  border: 1px solid rgba(255,255,255,0.08); background: rgba(255,255,255,0.03);
-  color: rgba(255,255,255,0.5); font-size: 12px; cursor: pointer;
-}
-.load-more-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-.load-more-btn:not(:disabled):hover { background: rgba(255,255,255,0.06); }
+.session-sentinel { height: 1px; }
 </style>

@@ -64,7 +64,9 @@ const authorNames = computed(() =>
 
 <style scoped>
 .mini-player {
-  position: fixed; bottom: 56px; left: 0; right: 0; z-index: 99;
+  position: fixed;
+  bottom: calc(56px + env(safe-area-inset-bottom));
+  left: 0; right: 0; z-index: 99;
   height: 60px; cursor: pointer;
   border-top: 1px solid rgba(255,255,255,0.06);
   overflow: hidden;
