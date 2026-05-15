@@ -77,6 +77,17 @@
           <div class="toggle-thumb" />
         </div>
       </div>
+
+      <div class="settings-item" @click="toggleHideEbookOnly">
+        <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-headphones</v-icon>
+        <div class="item-label-stack">
+          <span class="item-label">Hide eBook-only titles</span>
+          <span class="item-sublabel">{{ hideEbookOnly ? 'Books with no audio files are hidden' : 'Off — all library items shown' }}</span>
+        </div>
+        <div class="toggle-pill" :class="{ on: hideEbookOnly }">
+          <div class="toggle-thumb" />
+        </div>
+      </div>
     </section>
 
     <!-- Playback -->
@@ -711,6 +722,12 @@ const rectangleCovers = ref(localStorage.getItem('abs_lib_rect') === 'true')
 function toggleRectangleCovers() {
   rectangleCovers.value = !rectangleCovers.value
   localStorage.setItem('abs_lib_rect', String(rectangleCovers.value))
+}
+
+const hideEbookOnly = ref(localStorage.getItem('abs_lib_hide_ebook') === 'true')
+function toggleHideEbookOnly() {
+  hideEbookOnly.value = !hideEbookOnly.value
+  localStorage.setItem('abs_lib_hide_ebook', String(hideEbookOnly.value))
 }
 
 const confirmLogout      = ref(false)
