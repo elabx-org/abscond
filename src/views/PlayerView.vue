@@ -300,14 +300,20 @@
               <div class="chapters-list">
                 <div
                   v-for="ch in filteredChapters" :key="ch.id"
-                  class="chapter-item" :class="{ active: player.currentChapter?.id === ch.id }"
+                  class="chapter-item"
+                  :class="{
+                    active: player.currentChapter?.id === ch.id,
+                    finished: player.currentTime > ch.end && player.currentChapter?.id !== ch.id
+                  }"
                   @click="player.seek(ch.start)"
                 >
-                  <v-icon size="14" :color="player.currentChapter?.id === ch.id ? '#d4a017' : 'rgba(255,255,255,0.3)'">
-                    {{ player.currentChapter?.id === ch.id ? 'mdi-volume-high' : 'mdi-play' }}
-                  </v-icon>
+                  <span class="chapter-item-num">
+                    <v-icon v-if="player.currentChapter?.id === ch.id" size="12" color="#d4a017">mdi-volume-high</v-icon>
+                    <v-icon v-else-if="player.currentTime > ch.end" size="12" color="rgba(255,255,255,0.2)">mdi-check</v-icon>
+                    <span v-else class="ch-num-label">{{ chapters.indexOf(ch) + 1 }}</span>
+                  </span>
                   <span class="chapter-item-name">{{ ch.title }}</span>
-                  <span class="chapter-item-time">{{ formatTime(ch.start) }}</span>
+                  <span class="chapter-item-dur">{{ formatTime(ch.end - ch.start) }}</span>
                 </div>
                 <p v-if="!filteredChapters.length" class="chapters-no-match">No chapters match</p>
               </div>
@@ -982,9 +988,12 @@ function queueDragEnd() {
 }
 .chapter-item:last-child { border-bottom: none; }
 .chapter-item.active { background: rgba(212,160,23,0.05); }
+.chapter-item.finished { opacity: 0.4; }
+.chapter-item-num { width: 20px; text-align: center; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
+.ch-num-label { font-size: 10px; color: rgba(255,255,255,0.35); font-weight: 600; }
 .chapter-item-name { flex: 1; font-size: 12px; color: rgba(255,255,255,0.75); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.chapter-item.active .chapter-item-name { color: #d4a017; }
-.chapter-item-time { font-size: 11px; color: rgba(255,255,255,0.3); flex-shrink: 0; }
+.chapter-item.active .chapter-item-name { color: #d4a017; font-weight: 600; }
+.chapter-item-dur { font-size: 11px; color: rgba(255,255,255,0.3); flex-shrink: 0; font-variant-numeric: tabular-nums; }
 
 /* Recent-only */
 .recent-only-prompt { text-align: center; padding: 8px 0; }
