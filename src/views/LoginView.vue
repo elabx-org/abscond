@@ -339,6 +339,7 @@ function goToSlide(n: number) {
   flex:1; background:#0e0e0e;
   display:flex; flex-direction:column; align-items:center; justify-content:center;
   padding:2.5rem; overflow-y:auto;
+  position:relative; z-index:1;
 }
 .mobile-logo {
   width:100%; display:flex; flex-direction:column; align-items:center; gap:8px;
