@@ -337,7 +337,7 @@
                   <v-icon size="11">mdi-close</v-icon>
                 </button>
               </div>
-              <div class="chapters-list">
+              <div ref="chaptersListEl" class="chapters-list">
                 <div
                   v-for="ch in filteredChapters" :key="ch.id"
                   class="chapter-item"
@@ -436,7 +436,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, watch, nextTick } from 'vue'
 import { usePlayerStore } from '@/stores/player'
 import { useAuthStore } from '@/stores/auth'
 import { useSettingsStore } from '@/stores/settings'
@@ -464,6 +464,7 @@ const showQueue        = ref(false)
 const queueDragFrom    = ref(-1)
 const queueDragOver    = ref(-1)
 const queueListEl      = ref<HTMLElement | null>(null)
+const chaptersListEl   = ref<HTMLElement | null>(null)
 const showItemDetail   = ref(false)
 const showEq           = ref(false)
 const showBookmarkSheet = ref(false)
@@ -782,6 +783,13 @@ function onChapterBarClick(e: MouseEvent) {
   const ch = player.currentChapter
   if (ch) player.seek(ch.start + frac * chapterDuration.value)
 }
+
+watch(showChapters, (open) => {
+  if (open) nextTick(() => {
+    const el = chaptersListEl.value?.querySelector('.chapter-item.active') as HTMLElement | null
+    el?.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
+  })
+})
 
 function queueDragStart(e: PointerEvent, idx: number) {
   queueDragFrom.value = idx
