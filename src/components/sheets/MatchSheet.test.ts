@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { mount } from '@vue/test-utils'
+import { mount, flushPromises } from '@vue/test-utils'
 import MatchSheet from './MatchSheet.vue'
 import type { LibraryItem } from '@/api/types'
 
@@ -79,5 +79,159 @@ describe('MatchSheet — search step', () => {
     })
     await wrapper.find('.match-search-btn').trigger('click')
     expect(searchCandidates).toHaveBeenCalledWith('Dune', 'Frank Herbert', 'audible')
+  })
+})
+
+describe('MatchSheet — providers', () => {
+  it('renders all 6 provider chips', () => {
+    const wrapper = mount(MatchSheet, {
+      props: { modelValue: true, item: mockItem },
+      global: { stubs: { Teleport: true } },
+    })
+    const chips = wrapper.findAll('.provider-chip')
+    expect(chips).toHaveLength(6)
+    const labels = chips.map(c => c.text())
+    expect(labels).toContain('Audible')
+    expect(labels).toContain('Audible CA')
+    expect(labels).toContain('Open Library')
+    expect(labels).toContain('iTunes')
+  })
+})
+
+describe('MatchSheet — close and reset', () => {
+  it('emits update:modelValue false when close button clicked', async () => {
+    const wrapper = mount(MatchSheet, {
+      props: { modelValue: true, item: mockItem },
+      global: { stubs: { Teleport: true } },
+    })
+    await wrapper.find('.sheet-close-btn').trigger('click')
+    expect(wrapper.emitted('update:modelValue')).toBeTruthy()
+    expect(wrapper.emitted('update:modelValue')![0]).toEqual([false])
+  })
+
+  it('resets step and candidates when modelValue becomes false', async () => {
+    vi.mocked(searchCandidates).mockResolvedValueOnce([])
+    const wrapper = mount(MatchSheet, {
+      props: { modelValue: true, item: mockItem },
+      global: { stubs: { Teleport: true } },
+    })
+    // simulate advancing to candidates step
+    await wrapper.find('.match-search-btn').trigger('click')
+    await flushPromises()
+    // close
+    await wrapper.setProps({ modelValue: false })
+    // re-open
+    await wrapper.setProps({ modelValue: true })
+    // should be back on search step
+    expect(wrapper.find('.match-search-btn').exists()).toBe(true)
+    expect(wrapper.find('.results-count').exists()).toBe(false)
+  })
+})
+
+describe('MatchSheet — candidates step', () => {
+  const candidates = [
+    { title: 'Dune', author: 'Frank Herbert', provider: 'audible', id: 'c1' },
+    { title: 'Dune Messiah', author: 'Frank Herbert', provider: 'audible', id: 'c2' },
+  ]
+
+  it('shows result count and candidate rows after search', async () => {
+    vi.mocked(searchCandidates).mockResolvedValueOnce(candidates)
+    const wrapper = mount(MatchSheet, {
+      props: { modelValue: true, item: mockItem },
+      global: { stubs: { Teleport: true } },
+    })
+    await wrapper.find('.match-search-btn').trigger('click')
+    await flushPromises()
+    expect(wrapper.find('.results-count').exists()).toBe(true)
+    expect(wrapper.findAll('.candidate-row')).toHaveLength(2)
+  })
+
+  it('selects a candidate on click', async () => {
+    vi.mocked(searchCandidates).mockResolvedValueOnce(candidates)
+    const wrapper = mount(MatchSheet, {
+      props: { modelValue: true, item: mockItem },
+      global: { stubs: { Teleport: true } },
+    })
+    await wrapper.find('.match-search-btn').trigger('click')
+    await flushPromises()
+    await wrapper.findAll('.candidate-row')[0].trigger('click')
+    await wrapper.vm.$nextTick()
+    expect(wrapper.findAll('.candidate-row')[0].classes()).toContain('selected')
+  })
+
+  it('Preview Match button is disabled until candidate selected', async () => {
+    vi.mocked(searchCandidates).mockResolvedValueOnce(candidates)
+    const wrapper = mount(MatchSheet, {
+      props: { modelValue: true, item: mockItem },
+      global: { stubs: { Teleport: true } },
+    })
+    await wrapper.find('.match-search-btn').trigger('click')
+    await flushPromises()
+    // find the Preview Match button (last .match-search-btn on candidates step)
+    const previewBtn = wrapper.find('.match-search-btn')
+    expect(previewBtn.attributes('disabled')).toBeDefined()
+  })
+
+  it('shows empty state when no candidates returned', async () => {
+    vi.mocked(searchCandidates).mockResolvedValueOnce([])
+    const wrapper = mount(MatchSheet, {
+      props: { modelValue: true, item: mockItem },
+      global: { stubs: { Teleport: true } },
+    })
+    await wrapper.find('.match-search-btn').trigger('click')
+    await flushPromises()
+    expect(wrapper.find('.no-results').exists()).toBe(true)
+  })
+})
+
+describe('MatchSheet — apply step', () => {
+  const candidate = {
+    title: 'Dune',
+    subtitle: 'A Saga',
+    author: 'Frank Herbert',
+    provider: 'audible',
+    id: 'c1',
+    narrator: 'Simon Vance',
+    publishedYear: '1965',
+  }
+
+  async function mountAtDiff() {
+    vi.mocked(searchCandidates).mockResolvedValueOnce([candidate])
+    const wrapper = mount(MatchSheet, {
+      props: { modelValue: true, item: mockItem },
+      global: { stubs: { Teleport: true } },
+    })
+    // search
+    await wrapper.find('.match-search-btn').trigger('click')
+    await flushPromises()
+    // select candidate
+    await wrapper.find('.candidate-row').trigger('click')
+    // preview
+    await wrapper.find('.match-search-btn').trigger('click')
+    await flushPromises()
+    return wrapper
+  }
+
+  it('shows Review Changes header on diff step', async () => {
+    const wrapper = await mountAtDiff()
+    expect(wrapper.text()).toContain('Review Changes')
+  })
+
+  it('calls applyMatch and emits matched on Apply Changes click', async () => {
+    vi.mocked(applyMatch).mockResolvedValueOnce({ updated: true })
+    const wrapper = await mountAtDiff()
+    await wrapper.find('.match-search-btn').trigger('click')
+    await flushPromises()
+    expect(applyMatch).toHaveBeenCalledWith('li1', 'audible', 'Dune', 'Frank Herbert')
+    expect(wrapper.emitted('matched')).toBeTruthy()
+    expect(wrapper.emitted('matched')![0]).toEqual(['li1'])
+  })
+
+  it('shows error on apply failure', async () => {
+    vi.mocked(applyMatch).mockRejectedValueOnce(new Error('network'))
+    const wrapper = await mountAtDiff()
+    await wrapper.find('.match-search-btn').trigger('click')
+    await flushPromises()
+    expect(wrapper.find('.match-error').exists()).toBe(true)
   })
 })
