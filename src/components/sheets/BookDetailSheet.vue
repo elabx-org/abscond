@@ -25,31 +25,43 @@
             <div class="author-chips">
               <template v-if="item.media.metadata.authors?.length">
                 <button
-                  v-for="a in item.media.metadata.authors"
+                  v-for="a in visibleAuthors"
                   :key="a.id"
                   class="author-chip"
                   @click.stop="openAuthor(a)"
                 >{{ a.name }}</button>
+                <button
+                  v-if="hiddenAuthorCount > 0"
+                  class="author-more-chip"
+                  @click="authorsExpanded = true"
+                >and {{ hiddenAuthorCount }} more</button>
               </template>
               <span v-else-if="item.media.metadata.authorName" class="author-chip-plain">{{ item.media.metadata.authorName }}</span>
             </div>
             <div v-if="(item.media.metadata.narrators ?? []).length || item.media.metadata.narratorName" class="narrator-chips">
               <span class="narrator-by">Read by</span>
               <template v-if="item.media.metadata.narrators?.length">
-              <button
-                v-for="n in item.media.metadata.narrators"
-                :key="n"
-                class="author-chip"
-                @click.stop="openNarrator(n)"
-              >{{ n }}</button>
+                <button
+                  v-for="n in visibleNarrators"
+                  :key="n"
+                  class="author-chip"
+                  @click.stop="openNarrator(n)"
+                >{{ n }}</button>
+                <button
+                  v-if="hiddenNarratorCount > 0"
+                  class="author-more-chip"
+                  @click="narratorsExpanded = true"
+                >and {{ hiddenNarratorCount }} more</button>
               </template>
               <span v-else-if="item.media.metadata.narratorName" class="author-chip-plain">{{ item.media.metadata.narratorName }}</span>
             </div>
 
             <!-- Progress bar -->
             <div v-if="progress > 0 && progress < 1" class="sheet-progress-wrap">
-              <div class="sheet-progress-bar" :style="{ width: `${Math.round(progress * 100)}%` }" />
-              <span class="progress-pct">{{ Math.round(progress * 100) }}%</span>
+              <div class="sheet-progress-track">
+                <div class="sheet-progress-fill" :style="{ width: `${Math.round(progress * 100)}%`, background: accentHex }" />
+              </div>
+              <span class="progress-remaining">{{ remainingLabel }}</span>
             </div>
             <p v-if="progress >= 1" class="finished-badge">✓ Finished</p>
 
@@ -95,13 +107,13 @@
             <!-- Metadata chips -->
             <div class="chip-row">
               <span v-if="durationLabel" class="chip">{{ durationLabel }}</span>
-              <span v-if="item.media.numChapters" class="chip">{{ item.media.numChapters }} chapters</span>
+              <span v-if="item.media.numChapters" class="chip">{{ item.media.numChapters }} ch.</span>
               <span v-if="item.media.metadata.publishedYear" class="chip">{{ item.media.metadata.publishedYear }}</span>
               <span v-if="item.media.metadata.publisher" class="chip">{{ item.media.metadata.publisher }}</span>
-              <span v-for="g in (item.media.metadata.genres ?? []).slice(0, 4)" :key="g" class="chip">{{ g }}</span>
-              <span v-for="t in (item.tags ?? []).slice(0, 3)" :key="t" class="chip chip--tag">{{ t }}</span>
               <span v-if="startedDateLabel" class="chip chip--date">▶ {{ startedDateLabel }}</span>
               <span v-if="finishedDateLabel" class="chip chip--date chip--finished">✓ {{ finishedDateLabel }}</span>
+              <span v-for="g in (item.media.metadata.genres ?? []).slice(0, 4)" :key="g" class="chip chip--genre">{{ g }}</span>
+              <span v-for="t in (item.tags ?? []).slice(0, 3)" :key="t" class="chip chip--tag">{{ t }}</span>
             </div>
 
             <!-- Primary action row -->
@@ -409,6 +421,29 @@ const accentHex = computed(() => {
   return a
 })
 
+const MAX_VISIBLE_AUTHORS   = 2
+const MAX_VISIBLE_NARRATORS = 1
+const authorsExpanded   = ref(false)
+const narratorsExpanded = ref(false)
+
+const visibleAuthors = computed(() => {
+  const authors = props.item.media.metadata.authors ?? []
+  return authorsExpanded.value ? authors : authors.slice(0, MAX_VISIBLE_AUTHORS)
+})
+const hiddenAuthorCount = computed(() => {
+  const count = props.item.media.metadata.authors?.length ?? 0
+  return authorsExpanded.value ? 0 : Math.max(0, count - MAX_VISIBLE_AUTHORS)
+})
+
+const visibleNarrators = computed(() => {
+  const narrators = props.item.media.metadata.narrators ?? []
+  return narratorsExpanded.value ? narrators : narrators.slice(0, MAX_VISIBLE_NARRATORS)
+})
+const hiddenNarratorCount = computed(() => {
+  const count = props.item.media.metadata.narrators?.length ?? 0
+  return narratorsExpanded.value ? 0 : Math.max(0, count - MAX_VISIBLE_NARRATORS)
+})
+
 const descExpanded    = ref(false)
 const showNotes       = ref(false)
 const activeSeriesId   = ref('')
@@ -672,6 +707,16 @@ const durationLabel = computed(() => {
 
 const progress = computed(() => props.item.userMediaProgress?.progress ?? 0)
 
+const remainingLabel = computed(() => {
+  const d = props.item.media.duration
+  const p = progress.value
+  if (!d || p <= 0 || p >= 1) return ''
+  const secs = d * (1 - p)
+  const h = Math.floor(secs / 3600)
+  const m = Math.floor((secs % 3600) / 60)
+  return h > 0 ? `${h}h ${m}m left` : `${m}m left`
+})
+
 function _fmtDate(ms: number): string {
   return new Date(ms).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })
 }
@@ -717,6 +762,8 @@ watch(() => props.show, async (v) => {
     shareLink.value       = null
     showEdit.value        = false
     showActions.value      = false
+    authorsExpanded.value   = false
+    narratorsExpanded.value = false
     chaptersExpanded.value = false
     chapters.value         = []
     bookmarksExpanded.value = false
@@ -899,20 +946,23 @@ async function doSaveMeta() {
   border: none; cursor: pointer; padding: 2px 0; text-decoration: underline; text-underline-offset: 2px;
 }
 .author-chip-plain { font-size: 12px; color: rgba(255,255,255,0.6); }
+.author-more-chip {
+  font-size: 11px; color: rgba(255,255,255,0.4); background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1); border-radius: 20px;
+  padding: 2px 10px; cursor: pointer;
+}
 .narrator-chips { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 4px; margin: 0 0 10px; }
 .narrator-by { font-size: 11px; color: rgba(255,255,255,0.3); }
-.sheet-progress-wrap {
-  display: flex; align-items: center; gap: 8px; margin: 8px 0;
+.sheet-progress-wrap { margin: 8px 0 4px; }
+.sheet-progress-track {
+  height: 4px; background: rgba(255,255,255,0.1); border-radius: 3px; position: relative; margin-bottom: 4px;
 }
-.sheet-progress-wrap .sheet-progress-bar {
-  flex: 1; height: 3px; border-radius: 2px; background: #d4a017; transition: width 0.3s;
+.sheet-progress-fill {
+  position: absolute; left: 0; top: 0; height: 100%; border-radius: 3px; transition: width 0.3s;
 }
-/* wrapper bg */
-.sheet-progress-wrap { background: rgba(255,255,255,0.1); border-radius: 2px; position: relative; }
-.sheet-progress-wrap .sheet-progress-bar {
-  position: absolute; left: 0; top: 0; height: 100%;
+.progress-remaining {
+  font-size: 10px; color: rgba(255,255,255,0.4); text-align: center; display: block;
 }
-.progress-pct { font-size: 10px; color: rgba(255,255,255,0.4); white-space: nowrap; }
 .finished-badge {
   font-size: 11px; color: #22c55e; text-align: center; margin: 4px 0 8px;
 }
@@ -1010,7 +1060,7 @@ async function doSaveMeta() {
 }
 .play-btn {
   display: flex; align-items: center; justify-content: center; gap: 8px;
-  width: 100%; padding: 14px; border-radius: 12px; border: none;
+  width: 100%; height: 52px; border-radius: 12px; border: none;
   font-size: 15px; font-weight: 700; color: white; cursor: pointer;
   background: #d4a017; margin: 4px 0 8px;
 }
@@ -1021,6 +1071,7 @@ async function doSaveMeta() {
   color: rgba(255,255,255,0.55);
 }
 .chip--tag { background: rgba(212,160,23,0.08); border-color: rgba(212,160,23,0.2); color: rgba(212,160,23,0.8); }
+.chip--genre { background: rgba(212,160,23,0.07); border-color: rgba(212,160,23,0.18); color: rgba(212,160,23,0.75); }
 .chip--date { background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.08); color: rgba(255,255,255,0.4); }
 .chip--finished { color: rgba(34,197,94,0.7); border-color: rgba(34,197,94,0.2); background: rgba(34,197,94,0.06); }
 .chapters-section { margin: 12px 0 4px; }

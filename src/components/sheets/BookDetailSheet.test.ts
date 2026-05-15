@@ -83,3 +83,64 @@ describe('BookDetailSheet — redesigned layout', () => {
     expect(actionRow.text()).not.toContain('Playlist')
   })
 })
+
+const multiAuthorItem: LibraryItem = {
+  ...mockItem,
+  media: {
+    ...mockItem.media,
+    metadata: {
+      ...mockItem.media.metadata,
+      authors: [
+        { id: 'a1', name: 'Author One' },
+        { id: 'a2', name: 'Author Two' },
+        { id: 'a3', name: 'Author Three' },
+      ],
+    },
+  },
+}
+
+describe('BookDetailSheet — author collapse', () => {
+  it('shows all authors when there are 2 or fewer', () => {
+    const item = { ...mockItem, media: { ...mockItem.media, metadata: { ...mockItem.media.metadata, authors: [{ id: 'a1', name: 'Alpha' }, { id: 'a2', name: 'Beta' }] } } }
+    const wrapper = mount(BookDetailSheet, mountOpts({ item, coverSrc: '/cover.jpg', show: true }))
+    expect(wrapper.text()).toContain('Alpha')
+    expect(wrapper.text()).toContain('Beta')
+    expect(wrapper.find('.author-more-chip').exists()).toBe(false)
+  })
+
+  it('shows "and 1 more" chip when there are 3 authors', () => {
+    const wrapper = mount(BookDetailSheet, mountOpts({ item: multiAuthorItem, coverSrc: '/cover.jpg', show: true }))
+    expect(wrapper.find('.author-more-chip').exists()).toBe(true)
+    expect(wrapper.find('.author-more-chip').text()).toContain('and 1 more')
+  })
+
+  it('expands all authors when "and N more" is clicked', async () => {
+    const wrapper = mount(BookDetailSheet, mountOpts({ item: multiAuthorItem, coverSrc: '/cover.jpg', show: true }))
+    await wrapper.find('.author-more-chip').trigger('click')
+    expect(wrapper.text()).toContain('Author Three')
+    expect(wrapper.find('.author-more-chip').exists()).toBe(false)
+  })
+})
+
+describe('BookDetailSheet — remaining time', () => {
+  it('shows remaining time when progress is between 0 and 1', () => {
+    const item = { ...mockItem, userMediaProgress: { libraryItemId: 'li1', progress: 0.5, currentTime: 18000, duration: 36000, isFinished: false, lastUpdate: 0 } }
+    const wrapper = mount(BookDetailSheet, mountOpts({ item, coverSrc: '/cover.jpg', show: true }))
+    expect(wrapper.find('.progress-remaining').exists()).toBe(true)
+    expect(wrapper.find('.progress-remaining').text()).toContain('left')
+  })
+
+  it('does not show remaining time when no progress', () => {
+    const wrapper = mount(BookDetailSheet, mountOpts({ item: mockItem, coverSrc: '/cover.jpg', show: true }))
+    expect(wrapper.find('.progress-remaining').exists()).toBe(false)
+  })
+})
+
+describe('BookDetailSheet — chip grouping', () => {
+  it('genre chips have chip--genre class', () => {
+    const wrapper = mount(BookDetailSheet, mountOpts({ item: mockItem, coverSrc: '/cover.jpg', show: true }))
+    const genreChips = wrapper.findAll('.chip--genre')
+    expect(genreChips.length).toBeGreaterThan(0)
+    expect(genreChips[0].text()).toBe('Fantasy')
+  })
+})
