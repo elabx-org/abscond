@@ -540,7 +540,7 @@ async function markFinished() {
       props.item.userMediaProgress.isFinished = true
       props.item.userMediaProgress.progress   = 1
     } else {
-      (props.item as typeof props.item & { userMediaProgress: unknown }).userMediaProgress = { isFinished: true, progress: 1, currentTime: 0, duration: 0, lastUpdate: 0 }
+      (props.item as typeof props.item & { userMediaProgress: unknown }).userMediaProgress = { libraryItemId: props.item.id, isFinished: true, progress: 1, currentTime: 0, duration: 0, lastUpdate: 0 }
     }
   } catch { /* ignore */ }
   finally { markingFinished.value = false }

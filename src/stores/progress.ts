@@ -11,23 +11,28 @@ export const useProgressStore = defineStore('progress', () => {
   const recentlyFinished = ref<LibraryItem[]>([])
   const discover         = ref<LibraryItem[]>([])
 
-  async function fetchInProgress(libraryId?: string) {
-    if (libraryId) {
-      try {
-        const res = await api.get(`/libraries/${libraryId}/items`, {
-          params: { limit: 25, sort: 'updatedAt', desc: 1, filter: btoa('progress.in-progress') },
-        })
-        const items: LibraryItem[] = (res.data.results ?? []).filter(
-          (item: LibraryItem) => !item.userMediaProgress?.isFinished
-        )
-        items.sort((a, b) => (b.userMediaProgress?.lastUpdate ?? 0) - (a.userMediaProgress?.lastUpdate ?? 0))
-        if (items.length > 0) {
-          inProgress.value = items
-          return
-        }
-      } catch { /* fall through */ }
+  async function fetchInProgress(_libraryId?: string) {
+    // ABS's /me/items-in-progress uses toOldJSONMinified() which does NOT embed
+    // userMediaProgress. Progress lives in /api/me → mediaProgress[]. Fetch both
+    // and merge, exactly as Absorb (github.com/pounat/absorb) does it.
+    const [items, meRes] = await Promise.allSettled([
+      getItemsInProgress(),
+      api.get('/me'),
+    ])
+
+    const rawItems: LibraryItem[] = items.status === 'fulfilled' ? items.value : []
+
+    if (meRes.status === 'fulfilled') {
+      const progressList: import('@/api/types').MediaProgress[] = meRes.value.data?.mediaProgress ?? []
+      const progressMap = new Map(progressList.map(p => [p.libraryItemId + (p.episodeId ? `-${p.episodeId}` : ''), p]))
+      inProgress.value = rawItems.map(item => {
+        const mp = progressMap.get(item.id) ?? progressMap.get(`${item.id}-`)
+        return mp ? { ...item, userMediaProgress: mp } : item
+      }).filter(item => item.userMediaProgress && !item.userMediaProgress.isFinished)
+        .sort((a, b) => (b.userMediaProgress?.lastUpdate ?? 0) - (a.userMediaProgress?.lastUpdate ?? 0))
+    } else {
+      inProgress.value = rawItems
     }
-    inProgress.value = await getItemsInProgress()
   }
 
   async function fetchRecentlyAdded(libraryId: string) {

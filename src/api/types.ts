@@ -17,6 +17,7 @@ export interface Series {
 }
 
 export interface MediaProgress {
+  libraryItemId: string
   progress: number
   currentTime: number
   duration: number
