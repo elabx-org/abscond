@@ -83,9 +83,11 @@
           v-for="n in narratorsList"
           :key="n"
           class="list-row"
+          @click="openNarrator(n)"
         >
           <div class="row-icon"><v-icon size="18" color="rgba(255,255,255,0.4)">mdi-microphone</v-icon></div>
           <p class="row-name" style="flex:1">{{ n }}</p>
+          <v-icon size="16" color="rgba(255,255,255,0.2)">mdi-chevron-right</v-icon>
         </div>
       </div>
     </div>
@@ -110,6 +112,15 @@
       @open-book="openBook"
     />
 
+    <!-- Narrator detail sheet -->
+    <NarratorDetailSheet
+      v-if="activeNarrator"
+      :show="!!activeNarrator"
+      :narrator-name="activeNarrator"
+      @close="activeNarrator = null"
+      @open-book="openBook"
+    />
+
     <!-- Book detail sheet -->
     <BookDetailSheet
       v-if="selectedBook"
@@ -118,6 +129,39 @@
       :show="!!selectedBook"
       @close="selectedBook = null"
     />
+
+    <!-- Genre filter sheet -->
+    <Teleport to="body">
+      <Transition name="sheet">
+        <div v-if="activeGenre" class="sheet-backdrop" @click.self="activeGenre = null">
+          <div class="sheet-panel">
+            <div class="drag-handle" />
+            <div class="genre-sheet-header">
+              <v-icon size="18" color="#d4a017">mdi-tag-outline</v-icon>
+              <h3 class="genre-sheet-title">{{ activeGenre }}</h3>
+              <span class="genre-sheet-count" v-if="!loadingGenreItems">{{ genreItems.length }} books</span>
+            </div>
+            <div v-if="loadingGenreItems" class="skel-genre-grid">
+              <div v-for="n in 6" :key="n" class="skel-card">
+                <div class="skel-cover" /><div class="skel-line" />
+              </div>
+            </div>
+            <div v-else class="books-grid">
+              <PortraitCard
+                v-for="item in genreItems"
+                :key="item.id"
+                :item-id="item.id"
+                :title="item.media.metadata.title"
+                :author="(item.media.metadata.authors ?? []).map(a => a.name).join(', ') || 'Unknown'"
+                :cover-src="coverUrl(item.id, auth.token ?? '')"
+                :progress="item.userMediaProgress?.progress ?? 0"
+                @click="openBook(item)"
+              />
+            </div>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
   </div>
 </template>
 
@@ -129,7 +173,9 @@ import { coverUrl } from '@/api/client'
 import { getLibrarySeriesList, getLibraryAuthors } from '@/api/browse'
 import SeriesDetailSheet from '@/components/sheets/SeriesDetailSheet.vue'
 import AuthorDetailSheet from '@/components/sheets/AuthorDetailSheet.vue'
+import NarratorDetailSheet from '@/components/sheets/NarratorDetailSheet.vue'
 import BookDetailSheet from '@/components/sheets/BookDetailSheet.vue'
+import PortraitCard from '@/components/cards/PortraitCard.vue'
 import type { SeriesDetail, AuthorDetail } from '@/api/browse'
 import type { LibraryItem } from '@/api/types'
 import { api } from '@/api/client'
@@ -156,21 +202,39 @@ const loadingAuthors   = ref(false)
 const loadingGenres    = ref(false)
 const loadingNarrators = ref(false)
 
-const activeSeries = ref<SeriesDetail | null>(null)
-const activeAuthor = ref<AuthorDetail | null>(null)
-const selectedBook = ref<LibraryItem | null>(null)
+const activeSeries  = ref<SeriesDetail | null>(null)
+const activeAuthor  = ref<AuthorDetail | null>(null)
+const activeNarrator = ref<string | null>(null)
+const activeGenre   = ref<string | null>(null)
+const selectedBook  = ref<LibraryItem | null>(null)
+const genreItems    = ref<LibraryItem[]>([])
+const loadingGenreItems = ref(false)
 
 function openSeries(s: SeriesDetail) { activeSeries.value = s }
 function openAuthor(a: AuthorDetail) { activeAuthor.value = a }
+function openNarrator(n: string) { activeNarrator.value = n }
 function openBook(item: LibraryItem) {
-  activeSeries.value = null
-  activeAuthor.value = null
-  selectedBook.value = item
+  activeSeries.value  = null
+  activeAuthor.value  = null
+  activeNarrator.value = null
+  selectedBook.value  = item
 }
 
-async function browseGenre(_genre: string) {
-  // genre browsing: filter library items by genre — navigate to library
-  // TODO: pass genre filter to LibraryView when filter UI is added
+async function browseGenre(genre: string) {
+  activeGenre.value = genre
+  if (!lib.activeLibraryId) return
+  loadingGenreItems.value = true
+  try {
+    const encoded = encodeURIComponent(`genres.${genre}`)
+    const res = await api.get(`/libraries/${lib.activeLibraryId}/items`, {
+      params: { limit: 100, filter: encoded }
+    })
+    genreItems.value = res.data.results ?? []
+  } catch {
+    genreItems.value = []
+  } finally {
+    loadingGenreItems.value = false
+  }
 }
 
 async function loadSeries() {
@@ -269,4 +333,37 @@ onMounted(async () => {
   color: rgba(255,255,255,0.7);
 }
 .genre-chip:active { background: rgba(212,160,23,0.15); color: #d4a017; }
+
+.sheet-backdrop {
+  position: fixed; inset: 0; z-index: 200;
+  background: rgba(0,0,0,0.6); backdrop-filter: blur(4px);
+  display: flex; align-items: flex-end;
+}
+.sheet-panel {
+  width: 100%; max-height: 88vh; overflow-y: auto;
+  background: #111; border-radius: 24px 24px 0 0;
+  border-top: 1px solid rgba(255,255,255,0.08);
+  padding: 0 16px 48px;
+}
+.drag-handle {
+  width: 36px; height: 4px; border-radius: 2px;
+  background: rgba(255,255,255,0.15); margin: 12px auto 20px;
+}
+.genre-sheet-header {
+  display: flex; align-items: center; gap: 10px; margin-bottom: 20px;
+}
+.genre-sheet-title { font-size: 18px; font-weight: 700; color: rgba(255,255,255,0.95); margin: 0; flex: 1; }
+.genre-sheet-count { font-size: 12px; color: rgba(255,255,255,0.35); }
+.books-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  gap: 12px 10px;
+}
+.skel-genre-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+.skel-card { display: flex; flex-direction: column; gap: 6px; }
+.skel-cover { aspect-ratio: 1; border-radius: 8px; background: linear-gradient(90deg, #1a1a1a 25%, #222 50%, #1a1a1a 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; }
+.skel-line { height: 10px; border-radius: 4px; width: 70%; background: #1a1a1a; animation: shimmer 1.5s infinite; }
+
+.sheet-enter-active, .sheet-leave-active { transition: transform 0.3s ease, opacity 0.3s; }
+.sheet-enter-from, .sheet-leave-to { transform: translateY(100%); opacity: 0; }
 </style>

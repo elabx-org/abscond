@@ -11,7 +11,7 @@ export const usePlayerStore = defineStore('player', () => {
   const isPlaying     = ref(false)
   const currentTime   = ref(0)
   const duration      = ref(0)
-  const playbackRate  = ref(1)
+  const playbackRate  = ref<number>(parseFloat(localStorage.getItem('abs_playback_rate') ?? '1'))
   const isLoading     = ref(false)
   const error         = ref<string | null>(null)
   const sleepMinsLeft = ref<number | null>(null)
@@ -52,12 +52,37 @@ export const usePlayerStore = defineStore('player', () => {
     return `${url}?token=${encodeURIComponent(token)}`
   }
 
+  function _updateMediaSession() {
+    if (!('mediaSession' in navigator) || !currentItem.value) return
+    const meta = currentItem.value.media.metadata
+    const base = localStorage.getItem('abs_base_url') ?? ''
+    const token = localStorage.getItem('abs_token') ?? ''
+    navigator.mediaSession.metadata = new MediaMetadata({
+      title:  meta.title,
+      artist: (meta.authors ?? []).map((a: { name: string }) => a.name).join(', ') || '',
+      album:  (meta.series ?? []).map((s: { name: string }) => s.name).join(', ') || '',
+      artwork: [{ src: `${base}/api/items/${currentItem.value.id}/cover?token=${encodeURIComponent(token)}`, sizes: '512x512', type: 'image/jpeg' }],
+    })
+    navigator.mediaSession.setActionHandler('play',           () => { audio?.play() })
+    navigator.mediaSession.setActionHandler('pause',          () => { audio?.pause() })
+    navigator.mediaSession.setActionHandler('seekbackward',   (d) => skipBack(d?.seekOffset ?? 30))
+    navigator.mediaSession.setActionHandler('seekforward',    (d) => skipForward(d?.seekOffset ?? 30))
+    navigator.mediaSession.setActionHandler('previoustrack',  () => skipBack(30))
+    navigator.mediaSession.setActionHandler('nexttrack',      () => skipForward(30))
+  }
+
   function _attachListeners() {
     if (!audio) return
     audio.addEventListener('timeupdate', _onTimeUpdate)
     audio.addEventListener('ended', _onTrackEnded)
-    audio.addEventListener('play', () => { isPlaying.value = true })
-    audio.addEventListener('pause', () => { isPlaying.value = false })
+    audio.addEventListener('play', () => {
+      isPlaying.value = true
+      if ('mediaSession' in navigator) navigator.mediaSession.playbackState = 'playing'
+    })
+    audio.addEventListener('pause', () => {
+      isPlaying.value = false
+      if ('mediaSession' in navigator) navigator.mediaSession.playbackState = 'paused'
+    })
     audio.addEventListener('error', () => { error.value = 'Playback error' })
   }
 
@@ -135,6 +160,7 @@ export const usePlayerStore = defineStore('player', () => {
       syncedAt = s.currentTime
 
       await audio.play()
+      _updateMediaSession()
       _startSync()
     } catch (e: unknown) {
       error.value = e instanceof Error ? e.message : 'Failed to start playback'
@@ -169,6 +195,7 @@ export const usePlayerStore = defineStore('player', () => {
 
   function setRate(rate: number) {
     playbackRate.value = rate
+    localStorage.setItem('abs_playback_rate', String(rate))
     if (audio) audio.playbackRate = rate
   }
 

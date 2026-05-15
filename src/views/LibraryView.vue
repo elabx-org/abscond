@@ -85,16 +85,48 @@
           <v-icon size="18">mdi-close</v-icon>
         </button>
         <span class="batch-count">{{ selectedIds.size }} selected</span>
+        <button class="batch-action" @click="showPlaylistPicker = true; loadPlaylists()">
+          <v-icon size="16">mdi-playlist-plus</v-icon>
+          Add to playlist
+        </button>
         <button class="batch-action" @click="batchMarkFinished">
           <v-icon size="16">mdi-check-all</v-icon>
-          Mark finished
+          Finished
         </button>
         <button class="batch-action batch-action--danger" @click="batchClearProgress">
           <v-icon size="16">mdi-restore</v-icon>
-          Clear progress
+          Clear
         </button>
       </div>
     </Transition>
+
+    <!-- Playlist picker sheet -->
+    <Teleport to="body">
+      <Transition name="batch-bar">
+        <div v-if="showPlaylistPicker" class="playlist-picker-backdrop" @click.self="showPlaylistPicker = false">
+          <div class="playlist-picker-sheet">
+            <div class="drag-handle" />
+            <p class="picker-title">Add {{ selectedIds.size }} book{{ selectedIds.size !== 1 ? 's' : '' }} to playlist</p>
+            <div v-if="loadingPlaylists" class="picker-loading">
+              <v-icon size="20" color="rgba(255,255,255,0.3)">mdi-loading</v-icon>
+            </div>
+            <div v-else class="picker-list">
+              <button
+                v-for="pl in playlists"
+                :key="pl.id"
+                class="picker-row"
+                @click="addBatchToPlaylist(pl.id)"
+              >
+                <v-icon size="16" color="rgba(255,255,255,0.5)">mdi-playlist-music</v-icon>
+                <span class="picker-name">{{ pl.name }}</span>
+                <span class="picker-count">{{ pl.items.length }}</span>
+              </button>
+              <div v-if="!playlists.length" class="picker-empty">No playlists yet</div>
+            </div>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
 
     <!-- Book/Podcast detail sheet -->
     <BookDetailSheet
@@ -122,14 +154,19 @@ import { coverUrl, api } from '@/api/client'
 import PortraitCard from '@/components/cards/PortraitCard.vue'
 import BookDetailSheet from '@/components/sheets/BookDetailSheet.vue'
 import PodcastDetailSheet from '@/components/sheets/PodcastDetailSheet.vue'
+import { getPlaylists, addItemToPlaylist } from '@/api/playlists'
+import type { Playlist } from '@/api/playlists'
 import type { LibraryItem } from '@/api/types'
 
 const lib  = useLibraryStore()
 const auth = useAuthStore()
 
-const selectedItem   = ref<LibraryItem | null>(null)
-const selectMode     = ref(false)
-const selectedIds    = ref(new Set<string>())
+const selectedItem      = ref<LibraryItem | null>(null)
+const selectMode        = ref(false)
+const selectedIds       = ref(new Set<string>())
+const showPlaylistPicker = ref(false)
+const playlists         = ref<Playlist[]>([])
+const loadingPlaylists  = ref(false)
 const sortField      = ref<'title' | 'addedAt' | 'duration'>('title')
 const progressFilter = ref<'all' | 'in-progress' | 'finished' | 'not-started'>('all')
 
@@ -242,6 +279,21 @@ async function batchClearProgress() {
   exitSelectMode()
 }
 
+async function loadPlaylists() {
+  if (playlists.value.length) return
+  loadingPlaylists.value = true
+  try { playlists.value = await getPlaylists() }
+  catch { playlists.value = [] }
+  finally { loadingPlaylists.value = false }
+}
+
+async function addBatchToPlaylist(playlistId: string) {
+  const ids = [...selectedIds.value]
+  await Promise.allSettled(ids.map(id => addItemToPlaylist(playlistId, id)))
+  showPlaylistPicker.value = false
+  exitSelectMode()
+}
+
 onMounted(init)
 
 watch(() => lib.activeLibraryId, (id) => {
@@ -329,4 +381,26 @@ watch(() => lib.activeLibraryId, (id) => {
 .batch-action--danger { background: rgba(220,80,80,0.1); border-color: rgba(220,80,80,0.3); color: #e05555; }
 .batch-bar-enter-active, .batch-bar-leave-active { transition: transform 0.2s; }
 .batch-bar-enter-from, .batch-bar-leave-to { transform: translateY(100%); }
+
+.playlist-picker-backdrop {
+  position: fixed; inset: 0; z-index: 200;
+  background: rgba(0,0,0,0.55); display: flex; align-items: flex-end;
+}
+.playlist-picker-sheet {
+  width: 100%; background: #131313;
+  border-radius: 20px 20px 0 0; border-top: 1px solid rgba(255,255,255,0.08);
+  padding: 0 16px 40px; max-height: 70vh; overflow-y: auto;
+}
+.drag-handle { width: 36px; height: 4px; background: rgba(255,255,255,0.15); border-radius: 2px; margin: 12px auto 16px; }
+.picker-title { font-size: 14px; font-weight: 700; color: rgba(255,255,255,0.8); margin: 0 0 16px; }
+.picker-loading { padding: 20px 0; display: flex; justify-content: center; }
+.picker-list { display: flex; flex-direction: column; }
+.picker-row {
+  display: flex; align-items: center; gap: 10px; padding: 12px 4px;
+  border-bottom: 1px solid rgba(255,255,255,0.04); background: transparent; border-left: none; border-right: none; border-top: none;
+  cursor: pointer; color: rgba(255,255,255,0.8); text-align: left;
+}
+.picker-name { flex: 1; font-size: 13px; }
+.picker-count { font-size: 11px; color: rgba(255,255,255,0.3); }
+.picker-empty { font-size: 12px; color: rgba(255,255,255,0.3); padding: 16px 0; text-align: center; }
 </style>
