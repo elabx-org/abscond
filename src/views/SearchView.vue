@@ -74,7 +74,7 @@
       <!-- Series -->
       <div v-if="seriesResults.length" class="result-group">
         <p class="group-label">Series</p>
-        <div v-for="s in seriesResults" :key="s.id" class="result-row">
+        <div v-for="s in seriesResults" :key="s.id" class="result-row" @click="openSeries(s)">
           <div class="result-cover series-icon">
             <v-icon size="24" color="rgba(255,255,255,0.4)">mdi-book-multiple</v-icon>
           </div>
@@ -82,13 +82,14 @@
             <p class="result-title">{{ s.name }}</p>
             <p class="result-sub">{{ s.books.length }} books</p>
           </div>
+          <v-icon size="14" color="rgba(255,255,255,0.2)">mdi-chevron-right</v-icon>
         </div>
       </div>
 
       <!-- Authors -->
       <div v-if="authorResults.length" class="result-group">
         <p class="group-label">Authors</p>
-        <div v-for="a in authorResults" :key="a.id" class="result-row">
+        <div v-for="a in authorResults" :key="a.id" class="result-row" @click="openAuthor(a)">
           <div class="result-cover author-icon">
             <v-icon size="24" color="rgba(255,255,255,0.4)">mdi-account</v-icon>
           </div>
@@ -96,17 +97,41 @@
             <p class="result-title">{{ a.name }}</p>
             <p class="result-sub">{{ a.numBooks }} books</p>
           </div>
+          <v-icon size="14" color="rgba(255,255,255,0.2)">mdi-chevron-right</v-icon>
         </div>
       </div>
     </div>
 
-    <!-- Book detail sheet -->
+    <!-- Detail sheets -->
     <BookDetailSheet
-      v-if="selectedItem"
+      v-if="selectedItem && selectedItem.mediaType !== 'podcast'"
       :item="selectedItem"
       :cover-src="coverUrl(selectedItem.id, auth.token ?? '')"
       :show="!!selectedItem"
       @close="selectedItem = null"
+    />
+    <PodcastDetailSheet
+      v-if="selectedItem && selectedItem.mediaType === 'podcast'"
+      :item="selectedItem"
+      :cover-src="coverUrl(selectedItem.id, auth.token ?? '')"
+      :show="!!selectedItem"
+      @close="selectedItem = null"
+    />
+    <SeriesDetailSheet
+      v-if="activeSeries"
+      :show="!!activeSeries"
+      :series-id="activeSeries.id"
+      :series-name="activeSeries.name"
+      @close="activeSeries = null"
+      @open-book="openDetail"
+    />
+    <AuthorDetailSheet
+      v-if="activeAuthor"
+      :show="!!activeAuthor"
+      :author-id="activeAuthor.id"
+      :author-name="activeAuthor.name"
+      @close="activeAuthor = null"
+      @open-book="openDetail"
     />
   </div>
 </template>
@@ -118,6 +143,9 @@ import { coverUrl } from '@/api/client'
 import { useLibraryStore } from '@/stores/library'
 import { useAuthStore } from '@/stores/auth'
 import BookDetailSheet from '@/components/sheets/BookDetailSheet.vue'
+import PodcastDetailSheet from '@/components/sheets/PodcastDetailSheet.vue'
+import SeriesDetailSheet from '@/components/sheets/SeriesDetailSheet.vue'
+import AuthorDetailSheet from '@/components/sheets/AuthorDetailSheet.vue'
 import type { LibraryItem, SearchResult } from '@/api/types'
 
 const lib     = useLibraryStore()
@@ -127,6 +155,8 @@ const results = ref<SearchResult | null>(null)
 const loading = ref(false)
 const recents = ref<string[]>(JSON.parse(localStorage.getItem('abs_recent_searches') ?? '[]'))
 const selectedItem = ref<LibraryItem | null>(null)
+const activeSeries = ref<{ id: string; name: string; books: LibraryItem[] } | null>(null)
+const activeAuthor = ref<{ id: string; name: string; numBooks: number } | null>(null)
 const inputEl = ref<HTMLInputElement | null>(null)
 
 let debounceTimer: ReturnType<typeof setTimeout> | null = null
@@ -174,6 +204,14 @@ function clearRecents() {
 
 function openDetail(item: LibraryItem) {
   selectedItem.value = item
+}
+
+function openSeries(s: { id: string; name: string; books: LibraryItem[] }) {
+  activeSeries.value = s
+}
+
+function openAuthor(a: { id: string; name: string; numBooks: number }) {
+  activeAuthor.value = a
 }
 
 onMounted(() => {

@@ -16,7 +16,10 @@
 
         <div class="mini-meta">
           <p class="mini-title">{{ player.currentItem.media.metadata.title }}</p>
-          <p class="mini-author">{{ authorNames }}</p>
+          <p class="mini-author">
+            <span v-if="player.currentChapter">{{ player.currentChapter.title }}</span>
+            <span v-else>{{ authorNames }}</span>
+          </p>
         </div>
 
         <button class="mini-ctrl" @click.stop="player.togglePlay()">
@@ -24,6 +27,9 @@
         </button>
         <button class="mini-ctrl" @click.stop="player.skipForward(30)">
           <v-icon size="20" color="rgba(255,255,255,0.7)">mdi-fast-forward-30</v-icon>
+        </button>
+        <button class="mini-ctrl" @click.stop="player.stop()">
+          <v-icon size="18" color="rgba(255,255,255,0.4)">mdi-close</v-icon>
         </button>
       </div>
 
