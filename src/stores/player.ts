@@ -157,6 +157,11 @@ export const usePlayerStore = defineStore('player', () => {
       if (ch && currentTime.value >= ch.end - 0.5) {
         audio.pause()
         sleepEndOfChapter.value = false
+        const rewindSecs = parseInt(localStorage.getItem('abs_sleep_rewind') ?? '0')
+        if (rewindSecs > 0) {
+          audio.currentTime = Math.max(0, audio.currentTime - rewindSecs)
+          currentTime.value = audio.currentTime + trackStartOffset
+        }
         useNotificationStore().show('Sleep timer — end of chapter', 'info')
       }
     }
@@ -344,6 +349,11 @@ export const usePlayerStore = defineStore('player', () => {
       sleepTimer = setTimeout(() => {
         _clearSleepTimers()
         audio?.pause()
+        const rewindSecs = parseInt(localStorage.getItem('abs_sleep_rewind') ?? '0')
+        if (rewindSecs > 0 && audio) {
+          audio.currentTime = Math.max(0, audio.currentTime - rewindSecs)
+          currentTime.value = audio.currentTime + trackStartOffset
+        }
         sleepMinsLeft.value  = null
         sleepSecsLeft.value  = null
         sleepTotalSecs.value = null

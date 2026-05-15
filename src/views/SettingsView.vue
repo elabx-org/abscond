@@ -141,6 +141,31 @@
           <div class="toggle-thumb" />
         </div>
       </div>
+
+      <div class="settings-item">
+        <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-rewind</v-icon>
+        <span class="item-label">Sleep rewind</span>
+        <div class="interval-chips">
+          <button
+            v-for="s in sleepRewindOptions"
+            :key="s"
+            class="interval-chip"
+            :class="{ active: sleepRewindSecs === s }"
+            @click.stop="setSleepRewind(s)"
+          >{{ s === 0 ? 'Off' : `${s}s` }}</button>
+        </div>
+      </div>
+
+      <div class="settings-item" @click="toggleGoodreads">
+        <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-bookshelf</v-icon>
+        <div class="item-label-stack">
+          <span class="item-label">Show Goodreads button</span>
+          <span class="item-sublabel">Search Goodreads from book detail sheet</span>
+        </div>
+        <div class="toggle-pill" :class="{ on: showGoodreads }">
+          <div class="toggle-thumb" />
+        </div>
+      </div>
     </section>
 
     <!-- Server -->
@@ -506,6 +531,19 @@ const sleepFadeEnabled = ref(localStorage.getItem('abs_sleep_fade') !== 'false')
 function toggleSleepFade() {
   sleepFadeEnabled.value = !sleepFadeEnabled.value
   localStorage.setItem('abs_sleep_fade', String(sleepFadeEnabled.value))
+}
+
+const sleepRewindOptions = [0, 15, 30, 45, 60]
+const sleepRewindSecs = ref(parseInt(localStorage.getItem('abs_sleep_rewind') ?? '0'))
+function setSleepRewind(s: number) {
+  sleepRewindSecs.value = s
+  localStorage.setItem('abs_sleep_rewind', String(s))
+}
+
+const showGoodreads = ref(localStorage.getItem('abs_show_goodreads') === 'true')
+function toggleGoodreads() {
+  showGoodreads.value = !showGoodreads.value
+  localStorage.setItem('abs_show_goodreads', String(showGoodreads.value))
 }
 
 function savePlaybackRate() {

@@ -157,6 +157,10 @@
                 <v-icon size="16">mdi-delete-outline</v-icon>
                 Delete
               </button>
+              <button v-if="goodreadsEnabled" class="action-btn" @click="openGoodreads">
+                <v-icon size="16">mdi-bookshelf</v-icon>
+                Goodreads
+              </button>
             </div>
 
             <!-- Delete confirm -->
@@ -659,6 +663,17 @@ const progress = computed(() => props.item.userMediaProgress?.progress ?? 0)
 
 function _fmtDate(ms: number): string {
   return new Date(ms).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })
+}
+
+const goodreadsEnabled = ref(localStorage.getItem('abs_show_goodreads') === 'true')
+
+function openGoodreads() {
+  const title  = props.item.media.metadata.title
+  const author = props.item.media.metadata.authors?.[0]?.name
+    ?? props.item.media.metadata.authorName
+    ?? ''
+  const q = encodeURIComponent(`${title} ${author}`.trim())
+  window.open(`https://www.goodreads.com/search?q=${q}`, '_blank', 'noopener')
 }
 const startedDateLabel  = computed(() => {
   const t = props.item.userMediaProgress?.startedAt
