@@ -459,17 +459,18 @@ function onChapterBarClick(e: MouseEvent) {
 
 /* ── Carousel ────────────────────────────────────────────────────────────────── */
 .cover-carousel {
-  width: 100%; overflow: hidden; margin-bottom: 12px;
+  /* break out of player-content's 20px side padding */
+  width: 100vw; margin-left: -20px;
+  overflow: hidden; margin-bottom: 12px;
   touch-action: pan-y; flex-shrink: 0;
 }
 .cover-track {
   display: flex;
-  /* width grows to fit children; translateX handles sliding */
 }
 .cover-slide {
   width: 100vw; flex-shrink: 0;
   display: flex; justify-content: center; align-items: center;
-  padding: 0 24px;
+  padding: 0 32px;
 }
 .cover-img-wrap {
   position: relative;
