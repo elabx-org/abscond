@@ -317,7 +317,7 @@
                 <button v-for="m in [5, 10, 15, 20, 30, 45, 60]" :key="m"
                   class="panel-opt" :class="{ active: player.sleepMinsLeft === m && !sleepCustomActive }"
                   @click="setSleep(m); sleepCustomActive = false">{{ m }}m</button>
-                <button class="panel-opt" :class="{ active: player.sleepEndOfChapter }" @click="setSleepEoc; sleepCustomActive = false">End of Ch.</button>
+                <button class="panel-opt" :class="{ active: player.sleepEndOfChapter }" @click="setSleepEoc(); sleepCustomActive = false">End of Ch.</button>
                 <button class="panel-opt cancel" @click="setSleep(null); sleepCustomActive = false">Off</button>
               </div>
               <!-- Custom duration slider -->

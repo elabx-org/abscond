@@ -30,8 +30,7 @@
 
 <script setup lang="ts">
 import { ref, watch } from 'vue'
-import { api } from '@/api/client'
-import type { ListeningSession } from '@/api/types'
+import { getItemListeningSessions, type ListeningSession } from '@/api/stats'
 
 const props = defineProps<{
   modelValue: boolean
@@ -40,21 +39,18 @@ const props = defineProps<{
 }>()
 const emit = defineEmits<{ 'update:modelValue': [val: boolean] }>()
 const open = ref(props.modelValue)
-watch(() => props.modelValue, v => { open.value = v })
 watch(open, v => emit('update:modelValue', v))
 
 const sessions = ref<ListeningSession[]>([])
 const loading  = ref(false)
 
 watch(() => props.modelValue, async (v) => {
+  open.value = v
   if (!v) return
   loading.value = true
   sessions.value = []
   try {
-    const res = await api.get('/me/listening-sessions', { params: { itemsPerPage: 50 } })
-    sessions.value = (res.data?.sessions ?? []).filter(
-      (s: ListeningSession) => s.libraryItemId === props.itemId
-    )
+    sessions.value = await getItemListeningSessions(props.itemId)
   } catch {
     sessions.value = []
   } finally {
