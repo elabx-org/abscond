@@ -37,8 +37,10 @@
     <!-- Tab bar -->
     <div class="view-tab-bar">
       <button class="view-tab" :class="{ active: viewMode === 'library' }" @click="setViewMode('library')">Library</button>
-      <button class="view-tab" :class="{ active: viewMode === 'series' }" @click="setViewMode('series')">Series</button>
-      <button class="view-tab" :class="{ active: viewMode === 'authors' }" @click="setViewMode('authors')">Authors</button>
+      <template v-if="!isPodcast">
+        <button class="view-tab" :class="{ active: viewMode === 'series' }" @click="setViewMode('series')">Series</button>
+        <button class="view-tab" :class="{ active: viewMode === 'authors' }" @click="setViewMode('authors')">Authors</button>
+      </template>
     </div>
 
     <!-- Library controls -->
@@ -373,6 +375,9 @@ const player = usePlayerStore()
 const notify = useNotificationStore()
 const router = useRouter()
 
+const activeLibrary  = computed(() => lib.libraries.find(l => l.id === lib.activeLibraryId))
+const isPodcast      = computed(() => activeLibrary.value?.mediaType === 'podcast')
+
 type ViewMode = 'library' | 'series' | 'authors'
 const viewMode       = ref<ViewMode>('library')
 const seriesList     = ref<SeriesDetail[]>([])
@@ -658,6 +663,7 @@ onMounted(init)
 
 watch(() => lib.activeLibraryId, (id) => {
   if (id && !lib.itemsFor(id).length) lib.fetchItems(id)
+  if (isPodcast.value && viewMode.value !== 'library') viewMode.value = 'library'
 })
 </script>
 
