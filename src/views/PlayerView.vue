@@ -65,6 +65,103 @@
           <span class="pmh-author">{{ displayAuthor }}</span>
         </div>
 
+        <!-- Desktop controls — hidden on mobile via CSS, shown ≥1280px -->
+        <div v-if="player.currentItem" class="dt-controls">
+          <!-- Stats -->
+          <div class="dt-stats">
+            <span class="card-stat">{{ formatTime(speedAdjustedElapsed) }}</span>
+            <span class="card-stat card-stat--mid">{{ progressPct }}%</span>
+            <span class="card-stat">-{{ formatTime(speedAdjustedRemaining) }}</span>
+          </div>
+
+          <!-- Scrubber -->
+          <div class="dt-scrubber-wrap" ref="dtScrubberEl"
+            @pointerdown="startScrub" @pointermove="moveScrub" @pointerup="endScrub">
+            <div v-if="isScrubbing" class="scrub-tooltip" :style="{ left: `${scrubTooltipPct}%` }">
+              {{ formatTime(scrubTooltipSecs) }}
+            </div>
+            <div class="card-scrubber-track">
+              <div class="card-scrubber-fill" :style="{ width: `${player.progress * 100}%` }" />
+              <div v-for="(pct, ci) in chapterMarkers" :key="ci" class="chapter-tick" :style="{ left: `${pct}%` }" />
+              <div class="card-scrubber-thumb" :style="{ left: `${player.progress * 100}%` }" />
+            </div>
+          </div>
+
+          <!-- Chapter info -->
+          <div v-if="player.currentChapter" class="dt-chapter-row">
+            <span class="card-chapter-name">{{ player.currentChapter.title }}</span>
+            <div class="dt-chapter-times">
+              <span class="card-ch-time">{{ formatTime(player.currentTime - player.currentChapter.start) }}</span>
+              <span class="card-ch-time">-{{ formatTime(Math.max(0, player.currentChapter.end - player.currentTime)) }}</span>
+            </div>
+          </div>
+
+          <!-- Transport controls -->
+          <div class="dt-transport">
+            <button class="card-ctrl-btn" :disabled="!prevChapter" @click="prevChapter && player.seek(prevChapter.start)">
+              <v-icon size="22" :color="prevChapter ? 'rgba(255,255,255,0.55)' : 'rgba(255,255,255,0.18)'">mdi-skip-previous</v-icon>
+            </button>
+            <button class="card-ctrl-btn" @click="player.skipBack(skipBackSecs)">
+              <span v-if="REWIND_ICONS[skipBackSecs]" class="skip-icon-only">
+                <v-icon size="28">{{ REWIND_ICONS[skipBackSecs] }}</v-icon>
+              </span>
+              <span v-else class="skip-icon-labeled">
+                <v-icon size="22">mdi-rewind</v-icon>
+                <span class="skip-secs-label">{{ skipBackSecs }}s</span>
+              </span>
+            </button>
+            <button class="card-play-btn" :disabled="player.isLoading" @click="player.togglePlay()">
+              <v-icon v-if="player.isPlaying" size="42" color="#111">mdi-pause</v-icon>
+              <v-icon v-else size="42" color="#111">mdi-play</v-icon>
+            </button>
+            <button class="card-ctrl-btn" @click="player.skipForward(skipFwdSecs)">
+              <span v-if="FWD_ICONS[skipFwdSecs]" class="skip-icon-only">
+                <v-icon size="28">{{ FWD_ICONS[skipFwdSecs] }}</v-icon>
+              </span>
+              <span v-else class="skip-icon-labeled">
+                <v-icon size="22">mdi-fast-forward</v-icon>
+                <span class="skip-secs-label">{{ skipFwdSecs }}s</span>
+              </span>
+            </button>
+            <button class="card-ctrl-btn" :disabled="!nextChapter" @click="nextChapter && player.seek(nextChapter.start)">
+              <v-icon size="22" :color="nextChapter ? 'rgba(255,255,255,0.55)' : 'rgba(255,255,255,0.18)'">mdi-skip-next</v-icon>
+            </button>
+          </div>
+
+          <!-- Action row -->
+          <div class="dt-action-row">
+            <button class="card-action-btn" :class="{ active: showChapters }"
+              @click="showChapters = !showChapters; if (!showChapters) chapterSearch = ''; showQueue = false; showSleepPicker = false; showSpeedPicker = false">
+              <v-icon size="16" style="opacity:0.6">mdi-format-list-bulleted</v-icon>
+              <span class="card-action-label">Chapters</span>
+              <span v-if="chapters.length" class="card-action-badge">{{ chapters.length }}</span>
+            </button>
+            <button class="card-action-btn" :class="{ active: showSpeedPicker || player.playbackRate !== 1 }"
+              @click="showSpeedPicker = !showSpeedPicker; showSleepPicker = false; showChapters = false; showQueue = false">
+              <v-icon size="16" style="opacity:0.6">mdi-speedometer</v-icon>
+              <span class="card-action-label">{{ player.playbackRate }}×</span>
+            </button>
+            <button class="card-action-btn sleep-btn" :class="{ active: player.sleepMinsLeft !== null || player.sleepEndOfChapter }"
+              @click="showSleepPicker = !showSleepPicker; showSpeedPicker = false; showChapters = false; showQueue = false">
+              <div v-if="player.sleepMinsLeft !== null" class="sleep-fill" :style="{ width: `${sleepFillPct}%` }" />
+              <v-icon size="16" style="position:relative;z-index:1;opacity:0.6">mdi-timer-outline</v-icon>
+              <span class="card-action-label" style="position:relative;z-index:1">
+                <template v-if="player.sleepMinsLeft !== null">{{ sleepCountdownLabel }}</template>
+                <template v-else-if="player.sleepEndOfChapter">End of Ch.</template>
+                <template v-else>Sleep</template>
+              </span>
+            </button>
+            <button class="card-action-btn" @click="showBookmarkSheet = true">
+              <v-icon size="16" style="opacity:0.6">mdi-bookmark-plus-outline</v-icon>
+              <span class="card-action-label">Bookmarks</span>
+            </button>
+            <button class="card-action-btn" @click="showMore = true">
+              <v-icon size="16" style="opacity:0.6">mdi-dots-horizontal</v-icon>
+              <span class="card-action-label">More</span>
+            </button>
+          </div>
+        </div>
+
           <!-- Speed picker -->
           <Transition name="panel">
             <div v-if="showSpeedPicker" class="panel-box" @touchmove.stop>
@@ -580,6 +677,7 @@ const sleepCustomMins   = ref(parseInt(localStorage.getItem('abs_sleep_custom') 
 const sleepCustomActive = ref(false)
 const sleepRewindSecs    = ref(parseInt(localStorage.getItem('abs_sleep_rewind') ?? '0'))
 const scrubberEl      = ref<HTMLElement | null>(null)
+const dtScrubberEl    = ref<HTMLElement | null>(null)
 let scrubbing = false
 const isScrubbing      = ref(false)
 const scrubTooltipFrac = ref(0)
@@ -900,9 +998,19 @@ function formatTime(secs: number): string {
   return `${m}:${String(s).padStart(2, '0')}`
 }
 
+function activeScrubberEl(): HTMLElement | null {
+  // On desktop the dt scrubber is visible; on mobile the card scrubber is
+  if (dtScrubberEl.value) {
+    const r = dtScrubberEl.value.getBoundingClientRect()
+    if (r.width > 0) return dtScrubberEl.value
+  }
+  return scrubberEl.value
+}
+
 function scrubFraction(e: PointerEvent): number {
-  if (!scrubberEl.value) return 0
-  const rect = scrubberEl.value.getBoundingClientRect()
+  const el = activeScrubberEl()
+  if (!el) return 0
+  const rect = el.getBoundingClientRect()
   return Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width))
 }
 
@@ -1529,5 +1637,53 @@ function queueDragEnd() {
 @media (max-width: 1279px) {
   .player-left, .player-right { display: contents; }
   .desktop-thumbs, .desktop-thumbs-label { display: none; }
+  .dt-controls { display: none; }
+}
+
+/* ── Desktop controls (right column) ────────────────────────────────────────── */
+.dt-controls { display: none; } /* shown only in ≥1280px block below */
+
+@media (min-width: 1280px) {
+  .dt-controls {
+    display: flex; flex-direction: column; gap: 20px;
+    width: 100%; padding-bottom: 8px;
+  }
+
+  /* Stats row */
+  .dt-stats {
+    display: flex; align-items: center; justify-content: space-between; width: 100%;
+  }
+
+  /* Scrubber */
+  .dt-scrubber-wrap {
+    position: relative; padding: 10px 0; cursor: pointer; width: 100%;
+  }
+
+  /* Chapter row */
+  .dt-chapter-row {
+    display: flex; align-items: center; justify-content: space-between;
+    font-size: 11px; gap: 8px;
+  }
+  .dt-chapter-times { display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
+
+  /* Transport */
+  .dt-transport {
+    display: flex; align-items: center; justify-content: center; gap: 12px;
+  }
+
+  /* Action row */
+  .dt-action-row {
+    display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+  }
+
+  /* Hide these from inside the cover card on desktop */
+  .card-stats-row { display: none; }
+  .card-stream-row { display: none; }
+  .card-scrubber-wrap { display: none; }
+  .card-chapter-pill { display: none; }
+  .card-chapter-times { display: none; }
+  .card-transport { display: none; }
+  .card-action-grid { display: none; }
+  .card-more-pill { display: none; }
 }
 </style>
