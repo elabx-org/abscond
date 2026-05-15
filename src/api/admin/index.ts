@@ -119,6 +119,10 @@ export async function deleteBackup(id: string): Promise<void> {
   await api.delete(`/backups/${id}`)
 }
 
+export async function applyBackup(id: string): Promise<void> {
+  await api.patch(`/backups/${id}/apply`)
+}
+
 export async function getServerLogs(): Promise<string[]> {
   try {
     const res = await api.get('/logs', { params: { level: 2, startCursor: 0, count: 100 } })

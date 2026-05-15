@@ -280,7 +280,9 @@ const selectedIds       = ref(new Set<string>())
 const showPlaylistPicker = ref(false)
 const playlists         = ref<Playlist[]>([])
 const loadingPlaylists  = ref(false)
-const sortField      = ref<'title' | 'author' | 'addedAt' | 'duration' | 'progress'>('title')
+const sortField      = ref<'title' | 'author' | 'addedAt' | 'duration' | 'progress'>(
+  (localStorage.getItem('abs_lib_sort') as 'title' | 'author' | 'addedAt' | 'duration' | 'progress') ?? 'title'
+)
 const progressFilter = ref<'all' | 'in-progress' | 'finished' | 'not-started'>('all')
 
 const progressFilters = [
@@ -289,7 +291,7 @@ const progressFilters = [
   { key: 'finished' as const,    label: 'Finished' },
   { key: 'not-started' as const, label: 'Not Started' },
 ]
-const sortDesc     = ref(false)
+const sortDesc     = ref(localStorage.getItem('abs_lib_sort_desc') === 'true')
 const pageSize     = 100
 const page         = ref(1)
 const searchQuery  = ref('')
@@ -371,9 +373,15 @@ function setSort(field: 'title' | 'author' | 'addedAt' | 'duration' | 'progress'
     sortField.value = field; sortDesc.value = false
   }
   page.value = 1
+  localStorage.setItem('abs_lib_sort', sortField.value)
+  localStorage.setItem('abs_lib_sort_desc', String(sortDesc.value))
 }
 
-function toggleDir() { sortDesc.value = !sortDesc.value; page.value = 1 }
+function toggleDir() {
+  sortDesc.value = !sortDesc.value
+  page.value = 1
+  localStorage.setItem('abs_lib_sort_desc', String(sortDesc.value))
+}
 
 function loadMore() { page.value++ }
 

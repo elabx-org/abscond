@@ -24,11 +24,33 @@
           <p class="backup-filename">{{ b.filename }}</p>
           <p class="backup-meta">{{ formatSize(b.fileSize) }} · {{ formatDate(b.createdAt) }}</p>
         </div>
+        <button class="restore-btn" :disabled="restoringId === b.id" @click="confirmRestore(b)" title="Restore this backup">
+          <v-icon size="15">{{ restoringId === b.id ? 'mdi-loading' : 'mdi-restore' }}</v-icon>
+        </button>
         <button class="del-btn" @click="confirmDelete(b)">
           <v-icon size="16">mdi-delete-outline</v-icon>
         </button>
       </div>
     </div>
+
+    <!-- Restore confirm -->
+    <Teleport to="body">
+      <Transition name="sheet">
+        <div v-if="restoreTarget" class="sheet-backdrop" @click.self="restoreTarget = null">
+          <div class="confirm-sheet">
+            <div class="drag-handle-area"><div class="drag-handle" /></div>
+            <div class="create-content">
+              <h3 class="create-title">Restore Backup</h3>
+              <p class="confirm-text">Restore <strong>{{ restoreTarget.filename }}</strong>?<br />This will overwrite current data and restart the server.</p>
+              <button class="del-confirm-btn" style="background:#d4a017" :disabled="!!restoringId" @click="doRestore">
+                {{ restoringId ? 'Restoring…' : 'Restore' }}
+              </button>
+              <button class="cancel-btn" @click="restoreTarget = null">Cancel</button>
+            </div>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
 
     <!-- Delete confirm -->
     <Teleport to="body">
@@ -53,16 +75,29 @@
 
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
-import { getBackups, createBackup, deleteBackup } from '@/api/admin'
+import { getBackups, createBackup, deleteBackup, applyBackup } from '@/api/admin'
 import type { AdminBackup } from '@/api/admin'
 
 const loading      = ref(true)
 const backups      = ref<AdminBackup[]>([])
 const creating     = ref(false)
-const deleteTarget = ref<AdminBackup | null>(null)
-const deleting     = ref(false)
+const deleteTarget  = ref<AdminBackup | null>(null)
+const deleting      = ref(false)
+const restoreTarget = ref<AdminBackup | null>(null)
+const restoringId   = ref<string | null>(null)
 
 function confirmDelete(b: AdminBackup) { deleteTarget.value = b }
+function confirmRestore(b: AdminBackup) { restoreTarget.value = b }
+
+async function doRestore() {
+  if (!restoreTarget.value) return
+  restoringId.value = restoreTarget.value.id
+  try {
+    await applyBackup(restoreTarget.value.id)
+    restoreTarget.value = null
+  } catch { /* ignore — server may restart */ }
+  finally { restoringId.value = null }
+}
 
 function formatSize(bytes: number) {
   if (bytes < 1024) return `${bytes} B`
@@ -126,6 +161,8 @@ onMounted(async () => {
 .backup-filename { font-size: 13px; font-weight: 600; color: rgba(255,255,255,0.85); margin: 0 0 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .backup-meta { font-size: 11px; color: rgba(255,255,255,0.4); margin: 0; }
 .del-btn { background: transparent; border: none; cursor: pointer; color: rgba(255,255,255,0.3); padding: 6px; }
+.restore-btn { background: transparent; border: none; cursor: pointer; color: rgba(212,160,23,0.6); padding: 6px; }
+.restore-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
 .sheet-backdrop { position: fixed; inset: 0; z-index: 200; background: rgba(0,0,0,0.55); }
 .confirm-sheet { position: absolute; bottom: 0; left: 0; right: 0; border-radius: 24px 24px 0 0; border-top: 1px solid rgba(255,255,255,0.08); background: #111; overflow: hidden; }
