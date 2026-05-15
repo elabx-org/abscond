@@ -325,7 +325,10 @@ async function loadNarrators() {
   loadingNarrators.value = true
   try {
     const res = await api.get(`/libraries/${lib.activeLibraryId}/narrators`)
-    narratorsList.value = res.data.narrators ?? []
+    const raw = res.data.narrators ?? res.data ?? []
+    narratorsList.value = raw.map((n: unknown) =>
+      typeof n === 'string' ? n : ((n as Record<string, unknown>).name as string) ?? ''
+    ).filter(Boolean)
   }
   catch { narratorsList.value = [] }
   finally { loadingNarrators.value = false }

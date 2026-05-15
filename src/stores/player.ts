@@ -228,7 +228,11 @@ export const usePlayerStore = defineStore('player', () => {
   }
 
   function togglePlay() {
-    if (!audio) return
+    if (!audio) {
+      // audio is null when currentItem was restored from localStorage after a page reload/redeploy
+      if (currentItem.value) play(currentItem.value)
+      return
+    }
     if (isPlaying.value) {
       audio.pause()
     } else {

@@ -25,8 +25,14 @@
         <button class="mini-ctrl" @click.stop="player.togglePlay()">
           <v-icon size="22" color="white">{{ player.isPlaying ? 'mdi-pause' : 'mdi-play' }}</v-icon>
         </button>
-        <button class="mini-ctrl" @click.stop="player.skipForward(skipFwdSecs)">
-          <v-icon size="20" color="rgba(255,255,255,0.7)">{{ skipFwdSecs === 10 ? 'mdi-fast-forward-10' : skipFwdSecs === 15 ? 'mdi-fast-forward-15' : 'mdi-fast-forward-30' }}</v-icon>
+        <button class="mini-ctrl skip-fwd-btn" @click.stop="player.skipForward(skipFwdSecs)">
+          <v-icon v-if="skipFwdSecs === 10" size="20" color="rgba(255,255,255,0.7)">mdi-fast-forward-10</v-icon>
+          <v-icon v-else-if="skipFwdSecs === 15" size="20" color="rgba(255,255,255,0.7)">mdi-fast-forward-15</v-icon>
+          <v-icon v-else-if="skipFwdSecs === 30" size="20" color="rgba(255,255,255,0.7)">mdi-fast-forward-30</v-icon>
+          <span v-else class="mini-skip-custom">
+            <v-icon size="16" color="rgba(255,255,255,0.7)">mdi-fast-forward</v-icon>
+            <span class="mini-skip-secs">{{ skipFwdSecs }}s</span>
+          </span>
         </button>
         <button class="mini-ctrl" @click.stop="player.stop()">
           <v-icon size="18" color="rgba(255,255,255,0.4)">mdi-close</v-icon>
@@ -105,6 +111,8 @@ const authorNames = computed(() =>
   background: transparent; border: none; cursor: pointer;
   padding: 6px; flex-shrink: 0;
 }
+.mini-skip-custom { display: flex; flex-direction: column; align-items: center; gap: 1px; }
+.mini-skip-secs { font-size: 8px; font-weight: 700; color: rgba(255,255,255,0.6); line-height: 1; }
 
 .mini-progress-track {
   position: absolute; bottom: 0; left: 0; right: 0; height: 3px;
