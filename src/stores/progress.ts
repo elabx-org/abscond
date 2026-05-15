@@ -11,7 +11,22 @@ export const useProgressStore = defineStore('progress', () => {
   const recentlyFinished = ref<LibraryItem[]>([])
   const discover         = ref<LibraryItem[]>([])
 
-  async function fetchInProgress() {
+  async function fetchInProgress(libraryId?: string) {
+    if (libraryId) {
+      try {
+        const res = await api.get(`/libraries/${libraryId}/items`, {
+          params: { limit: 25, sort: 'updatedAt', desc: 1, filter: btoa('progress.in-progress') },
+        })
+        const items: LibraryItem[] = (res.data.results ?? []).filter(
+          (item: LibraryItem) => !item.userMediaProgress?.isFinished
+        )
+        items.sort((a, b) => (b.userMediaProgress?.lastUpdate ?? 0) - (a.userMediaProgress?.lastUpdate ?? 0))
+        if (items.length > 0) {
+          inProgress.value = items
+          return
+        }
+      } catch { /* fall through */ }
+    }
     inProgress.value = await getItemsInProgress()
   }
 

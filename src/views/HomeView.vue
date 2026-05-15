@@ -63,7 +63,7 @@
           :cover-src="coverUrl(item.id, auth.token ?? '')"
           :progress="item.userMediaProgress?.progress ?? 0"
           :current-time="item.userMediaProgress?.currentTime ?? 0"
-          :duration="item.userMediaProgress?.duration ?? item.media.duration ?? 0"
+          :duration="item.userMediaProgress?.duration || item.media.duration || 0"
           :is-playing="player.currentItem?.id === item.id && player.isPlaying"
           :is-current="player.currentItem?.id === item.id"
           @click="resumeItem(item)"
@@ -432,7 +432,7 @@ async function onTouchEnd() {
   try {
     if (!lib.activeLibraryId) return
     await Promise.allSettled([
-      progress.fetchInProgress(),
+      progress.fetchInProgress(lib.activeLibraryId || undefined),
       progress.fetchRecentlyAdded(lib.activeLibraryId),
       progress.fetchRecentlyFinished(lib.activeLibraryId),
       progress.fetchDiscover(lib.activeLibraryId),
@@ -561,7 +561,7 @@ onMounted(async () => {
   if (!lib.libraries.length) await lib.fetchLibraries()
 
   await Promise.allSettled([
-    progress.fetchInProgress().finally(() => { loadingProgress.value = false }),
+    progress.fetchInProgress(lib.activeLibraryId || undefined).finally(() => { loadingProgress.value = false }),
     lib.activeLibraryId
       ? progress.fetchRecentlyAdded(lib.activeLibraryId).finally(() => { loadingRecent.value = false })
       : Promise.resolve().then(() => { loadingRecent.value = false }),

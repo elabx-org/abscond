@@ -359,14 +359,14 @@
                   v-for="ch in filteredChapters" :key="ch.id"
                   class="chapter-item"
                   :class="{
-                    active: player.currentChapter?.id === ch.id,
-                    finished: player.currentTime > ch.end && player.currentChapter?.id !== ch.id
+                    active: panelCurrentChapter?.id === ch.id,
+                    finished: player.currentTime > ch.end && panelCurrentChapter?.id !== ch.id
                   }"
                   @click="player.seek(ch.start)"
                 >
                   <span class="chapter-item-num">
-                    <v-icon v-if="player.currentChapter?.id === ch.id" size="12" color="#d4a017">mdi-volume-high</v-icon>
-                    <v-icon v-else-if="player.currentTime > ch.end" size="12" color="rgba(255,255,255,0.2)">mdi-check</v-icon>
+                    <v-icon v-if="panelCurrentChapter?.id === ch.id" size="12" color="#d4a017">mdi-volume-high</v-icon>
+                    <v-icon v-else-if="player.currentTime > ch.end && panelCurrentChapter?.id !== ch.id" size="12" color="rgba(255,255,255,0.2)">mdi-check</v-icon>
                     <span v-else class="ch-num-label">{{ chapters.indexOf(ch) + 1 }}</span>
                   </span>
                   <span class="chapter-item-name">{{ ch.title }}</span>
@@ -638,6 +638,15 @@ const chapters = computed<import('@/api/types').Chapter[]>(() => {
   if (Array.isArray(mediaChs) && mediaChs.length > 0) return mediaChs
   return fetchedChapters.value
 })
+const panelCurrentChapter = computed(() => {
+  const chs = chapters.value
+  if (!chs.length) return null
+  for (let i = chs.length - 1; i >= 0; i--) {
+    if (player.currentTime >= chs[i].start) return chs[i]
+  }
+  return chs[0] ?? null
+})
+
 const filteredChapters = computed(() => {
   const q = chapterSearch.value.trim().toLowerCase()
   if (!q) return chapters.value
@@ -1117,7 +1126,8 @@ function queueDragEnd() {
   border-top: 1px solid rgba(255,255,255,0.1);
   padding: 14px 16px calc(16px + env(safe-area-inset-bottom, 0px));
   box-shadow: 0 -8px 32px rgba(0,0,0,0.6);
-  max-height: 60vh; overflow-y: auto; scrollbar-width: none;
+  max-height: 65vh; overflow-y: auto; scrollbar-width: none;
+  overscroll-behavior: contain;
 }
 .panel-box::-webkit-scrollbar { display: none; }
 .panel-title {
@@ -1163,7 +1173,7 @@ function queueDragEnd() {
   padding: 20px; color: rgba(255,255,255,0.3); font-size: 12px;
 }
 .queue-empty-msg p { margin: 0; }
-.queue-list { max-height: 240px; overflow-y: auto; scrollbar-width: none; }
+.queue-list { overflow-y: visible; scrollbar-width: none; }
 .queue-item-row {
   display: flex; align-items: center; gap: 10px;
   padding: 10px 12px 10px 8px; border-bottom: 1px solid rgba(255,255,255,0.04);
@@ -1181,7 +1191,7 @@ function queueDragEnd() {
 .queue-item-del { background: transparent; border: none; cursor: pointer; padding: 4px; flex-shrink: 0; }
 
 /* Chapters panel */
-.chapters-panel { padding: 14px 0 0; max-height: 65vh; }
+.chapters-panel { padding: 14px 0 0; }
 .chapters-loading-row { display: flex; align-items: center; gap: 8px; padding: 12px 16px; font-size: 12px; color: rgba(255,255,255,0.35); }
 .chapters-empty-row { padding: 12px 16px; font-size: 12px; color: rgba(255,255,255,0.25); }
 .chapters-panel-header { display: flex; align-items: center; justify-content: space-between; padding: 0 16px 10px; }
@@ -1198,7 +1208,7 @@ function queueDragEnd() {
 .chapter-search-input::placeholder { color: rgba(255,255,255,0.25); }
 .chapter-search-clear { background: transparent; border: none; cursor: pointer; padding: 0; display: flex; align-items: center; color: rgba(255,255,255,0.3); }
 .chapters-no-match { font-size: 12px; color: rgba(255,255,255,0.25); padding: 12px 16px; }
-.chapters-list { max-height: 240px; overflow-y: auto; scrollbar-width: none; }
+.chapters-list { overflow-y: visible; scrollbar-width: none; }
 .chapter-item {
   display: flex; align-items: center; gap: 10px;
   padding: 10px 16px; cursor: pointer; border-bottom: 1px solid rgba(255,255,255,0.04);
