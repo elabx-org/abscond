@@ -161,6 +161,7 @@
       @play="playQuick"
       @mark-finished="markFinishedQuick"
       @clear-progress="clearProgressQuick"
+      @add-to-queue="addQuickToQueue"
       @add-to-playlist="openPlaylistForQuick"
       @view-detail="selectedItem = quickItem; quickItem = null"
     />
@@ -196,10 +197,12 @@ import { getPlaylists, addItemToPlaylist } from '@/api/playlists'
 import type { Playlist } from '@/api/playlists'
 import type { LibraryItem } from '@/api/types'
 import { usePlayerStore } from '@/stores/player'
+import { useNotificationStore } from '@/stores/notifications'
 
 const lib    = useLibraryStore()
 const auth   = useAuthStore()
 const player = usePlayerStore()
+const notify = useNotificationStore()
 
 const selectedItem      = ref<LibraryItem | null>(null)
 const quickItem         = ref<LibraryItem | null>(null)
@@ -331,6 +334,13 @@ async function clearProgressQuick() {
   if (!quickItem.value) return
   const id = quickItem.value.id
   await api.delete(`/me/progress/${id}`)
+  quickItem.value = null
+}
+
+function addQuickToQueue() {
+  if (!quickItem.value) return
+  player.addToQueue(quickItem.value)
+  notify.show(`"${quickItem.value.media.metadata.title}" added to queue`, 'success')
   quickItem.value = null
 }
 

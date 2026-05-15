@@ -95,8 +95,12 @@
             <span v-if="player.sleepMinsLeft" class="util-badge">{{ player.sleepMinsLeft }}m</span>
             <span v-else-if="player.sleepEndOfChapter" class="util-badge">ch</span>
           </button>
-          <button class="util-btn" @click="showChapters = !showChapters">
+          <button class="util-btn" @click="showChapters = !showChapters; showQueue = false">
             <v-icon size="18">mdi-format-list-bulleted</v-icon>
+          </button>
+          <button class="util-btn" :class="{ active: player.queue.length > 0 }" @click="showQueue = !showQueue; showChapters = false">
+            <v-icon size="18">mdi-playlist-play</v-icon>
+            <span v-if="player.queue.length" class="util-badge">{{ player.queue.length }}</span>
           </button>
           <button class="util-btn" @click="addBookmark">
             <v-icon size="18">mdi-bookmark-plus-outline</v-icon>
@@ -121,6 +125,28 @@
                 @click="setSleepEoc"
               >End of Ch.</button>
               <button class="sleep-opt cancel" @click="setSleep(null)">Off</button>
+            </div>
+          </div>
+        </Transition>
+
+        <!-- Queue -->
+        <Transition name="fade">
+          <div v-if="showQueue" class="chapters-wrap">
+            <div class="queue-head">
+              <span class="queue-label">Up next ({{ player.queue.length }})</span>
+              <button v-if="player.queue.length" class="queue-clear" @click="player.clearQueue()">Clear</button>
+            </div>
+            <div v-if="!player.queue.length" class="queue-empty">No items in queue</div>
+            <div
+              v-for="(item, idx) in player.queue"
+              :key="item.id"
+              class="chapter-row"
+            >
+              <span class="queue-idx">{{ idx + 1 }}</span>
+              <span class="chapter-name">{{ item.media.metadata.title }}</span>
+              <button class="queue-del" @click="player.removeFromQueue(idx)">
+                <v-icon size="14">mdi-close</v-icon>
+              </button>
             </div>
           </div>
         </Transition>
@@ -158,8 +184,9 @@ const player = usePlayerStore()
 const auth   = useAuthStore()
 const notify = useNotificationStore()
 
-const showChapters   = ref(false)
+const showChapters    = ref(false)
 const showSleepPicker = ref(false)
+const showQueue       = ref(false)
 const scrubberEl     = ref<HTMLElement | null>(null)
 let scrubbing = false
 
@@ -401,6 +428,13 @@ function onChapterBarClick(e: MouseEvent) {
 .chapter-row.active { color: #d4a017; }
 .chapter-name { flex: 1; font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .chapter-time { font-size: 11px; color: rgba(255,255,255,0.35); flex-shrink: 0; }
+
+.queue-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+.queue-label { font-size: 11px; font-weight: 600; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 0.4px; }
+.queue-clear { font-size: 11px; color: rgba(255,255,255,0.3); background: transparent; border: none; cursor: pointer; padding: 0; }
+.queue-empty { font-size: 12px; color: rgba(255,255,255,0.25); text-align: center; padding: 12px 0; }
+.queue-idx { font-size: 11px; color: rgba(255,255,255,0.3); width: 16px; flex-shrink: 0; }
+.queue-del { background: transparent; border: none; cursor: pointer; color: rgba(255,255,255,0.3); padding: 2px; flex-shrink: 0; }
 
 .fade-enter-active, .fade-leave-active { transition: opacity 0.2s; }
 .fade-enter-from, .fade-leave-to { opacity: 0; }

@@ -17,6 +17,7 @@ export const usePlayerStore = defineStore('player', () => {
   const error         = ref<string | null>(null)
   const sleepMinsLeft      = ref<number | null>(null)
   const sleepEndOfChapter  = ref(false)
+  const queue              = ref<LibraryItem[]>([])
 
   let audio: HTMLAudioElement | null = null
   let syncTimer: ReturnType<typeof setInterval> | null = null
@@ -110,6 +111,10 @@ export const usePlayerStore = defineStore('player', () => {
     } else {
       isPlaying.value = false
       _doSync()
+      if (queue.value.length > 0) {
+        const nextItem = queue.value.shift()!
+        setTimeout(() => play(nextItem), 500)
+      }
     }
   }
 
@@ -243,9 +248,12 @@ export const usePlayerStore = defineStore('player', () => {
   }
 
   return {
-    currentItem, session, isPlaying, currentTime, duration,
+    currentItem, session, isPlaying, currentTime, duration, queue,
     playbackRate, isLoading, error, sleepMinsLeft, sleepEndOfChapter,
     currentChapter, currentTrackIndex, progress,
     play, togglePlay, seek, skipBack, skipForward, setRate, setSleepTimer, stop,
+    addToQueue: (item: LibraryItem) => { queue.value.push(item) },
+    clearQueue: () => { queue.value = [] },
+    removeFromQueue: (idx: number) => { queue.value.splice(idx, 1) },
   }
 })

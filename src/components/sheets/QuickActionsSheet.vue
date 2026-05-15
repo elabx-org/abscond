@@ -31,6 +31,11 @@
               <span>Clear progress</span>
             </button>
 
+            <button class="qa-action" @click="$emit('add-to-queue'); $emit('close')">
+              <div class="qa-icon"><v-icon size="20" color="rgba(255,255,255,0.6)">mdi-playlist-play</v-icon></div>
+              <span>Add to queue</span>
+            </button>
+
             <button class="qa-action" @click="$emit('add-to-playlist'); $emit('close')">
               <div class="qa-icon"><v-icon size="20" color="rgba(255,255,255,0.6)">mdi-playlist-plus</v-icon></div>
               <span>Add to playlist</span>
@@ -61,6 +66,7 @@ defineEmits<{
   (e: 'play'): void
   (e: 'mark-finished'): void
   (e: 'clear-progress'): void
+  (e: 'add-to-queue'): void
   (e: 'add-to-playlist'): void
   (e: 'view-detail'): void
 }>()
