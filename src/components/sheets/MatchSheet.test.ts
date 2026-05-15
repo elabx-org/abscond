@@ -93,6 +93,8 @@ describe('MatchSheet — providers', () => {
     const labels = chips.map(c => c.text())
     expect(labels).toContain('Audible')
     expect(labels).toContain('Audible CA')
+    expect(labels).toContain('Audible UK')
+    expect(labels).toContain('Audible DE')
     expect(labels).toContain('Open Library')
     expect(labels).toContain('iTunes')
   })
@@ -115,16 +117,31 @@ describe('MatchSheet — close and reset', () => {
       props: { modelValue: true, item: mockItem },
       global: { stubs: { Teleport: true } },
     })
-    // simulate advancing to candidates step
+    // advance to candidates step
     await wrapper.find('.match-search-btn').trigger('click')
     await flushPromises()
-    // close
+    // close then re-open
     await wrapper.setProps({ modelValue: false })
-    // re-open
     await wrapper.setProps({ modelValue: true })
-    // should be back on search step
+    // should be back on search step, no results-count
     expect(wrapper.find('.match-search-btn').exists()).toBe(true)
     expect(wrapper.find('.results-count').exists()).toBe(false)
+  })
+
+  it('clears error state when closed and reopened', async () => {
+    vi.mocked(searchCandidates).mockRejectedValueOnce(new Error('fail'))
+    const wrapper = mount(MatchSheet, {
+      props: { modelValue: true, item: mockItem },
+      global: { stubs: { Teleport: true } },
+    })
+    // trigger search error
+    await wrapper.find('.match-search-btn').trigger('click')
+    await flushPromises()
+    expect(wrapper.find('.match-error').exists()).toBe(true)
+    // close and reopen — error should be gone
+    await wrapper.setProps({ modelValue: false })
+    await wrapper.setProps({ modelValue: true })
+    expect(wrapper.find('.match-error').exists()).toBe(false)
   })
 })
 
