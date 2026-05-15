@@ -59,6 +59,7 @@
           :cover-src="coverUrl(item.id, auth.token ?? '')"
           :progress="item.userMediaProgress?.progress ?? 0"
           @click="openDetail(item)"
+          @long-press="openQuick(item)"
         />
       </div>
     </section>
@@ -87,6 +88,7 @@
           :cover-src="coverUrl(item.id, auth.token ?? '')"
           :progress="item.userMediaProgress?.progress ?? 0"
           @click="openDetail(item)"
+          @long-press="openQuick(item)"
         />
       </div>
     </section>
@@ -163,6 +165,21 @@
       :show="!!selectedItem"
       @close="selectedItem = null"
     />
+    <QuickActionsSheet
+      v-if="quickItem"
+      :show="!!quickItem"
+      :title="quickItem.media.metadata.title"
+      :author="(quickItem.media.metadata.authors ?? []).map(a => a.name).join(', ') || 'Unknown'"
+      :cover-src="coverUrl(quickItem.id, auth.token ?? '')"
+      :progress="quickItem.userMediaProgress?.progress ?? 0"
+      @close="quickItem = null"
+      @play="playQuick"
+      @mark-finished="markFinishedQuick"
+      @clear-progress="clearProgressQuick"
+      @add-to-queue="addQuickToQueue"
+      @add-to-playlist="quickItem = null"
+      @view-detail="selectedItem = quickItem; quickItem = null"
+    />
   </div>
 </template>
 
@@ -171,17 +188,23 @@ import { computed, onMounted, ref } from 'vue'
 import { useProgressStore } from '@/stores/progress'
 import { useLibraryStore } from '@/stores/library'
 import { useAuthStore } from '@/stores/auth'
-import { coverUrl } from '@/api/client'
+import { usePlayerStore } from '@/stores/player'
+import { useNotificationStore } from '@/stores/notifications'
+import { coverUrl, api } from '@/api/client'
 import PortraitCard from '@/components/cards/PortraitCard.vue'
 import BookDetailSheet from '@/components/sheets/BookDetailSheet.vue'
 import PodcastDetailSheet from '@/components/sheets/PodcastDetailSheet.vue'
+import QuickActionsSheet from '@/components/sheets/QuickActionsSheet.vue'
 import type { LibraryItem } from '@/api/types'
 
 const progress = useProgressStore()
 const lib      = useLibraryStore()
 const auth     = useAuthStore()
+const player   = usePlayerStore()
+const notify   = useNotificationStore()
 
 const selectedItem    = ref<LibraryItem | null>(null)
+const quickItem       = ref<LibraryItem | null>(null)
 const loadingProgress = ref(false)
 const loadingRecent   = ref(false)
 const loadingFinished = ref(false)
@@ -241,6 +264,34 @@ const timeOfDayLabel = computed(() => {
 })
 
 function openDetail(item: LibraryItem) { selectedItem.value = item }
+function openQuick(item: LibraryItem) { quickItem.value = item }
+
+async function playQuick() {
+  if (!quickItem.value) return
+  const item = quickItem.value; quickItem.value = null
+  await player.play(item)
+}
+
+async function markFinishedQuick() {
+  if (!quickItem.value) return
+  const id = quickItem.value.id
+  const isFinished = quickItem.value.userMediaProgress?.isFinished
+  await api.patch(`/me/progress/${id}`, { isFinished: !isFinished, progress: isFinished ? 0 : 1 })
+  quickItem.value = null
+}
+
+async function clearProgressQuick() {
+  if (!quickItem.value) return
+  await api.delete(`/me/progress/${quickItem.value.id}`)
+  quickItem.value = null
+}
+
+function addQuickToQueue() {
+  if (!quickItem.value) return
+  player.addToQueue(quickItem.value)
+  notify.show(`Added to queue`, 'success')
+  quickItem.value = null
+}
 
 async function refreshDiscover() {
   if (!lib.activeLibraryId) return
