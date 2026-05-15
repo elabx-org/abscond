@@ -64,6 +64,9 @@
         <button class="sort-chip" :class="{ active: sortField === 'progress' }" @click="setSort('progress')">
           <v-icon size="12">mdi-progress-check</v-icon> Progress
         </button>
+        <button class="sort-chip" :class="{ active: sortField === 'lastPlayed' }" @click="setSort('lastPlayed')">
+          <v-icon size="12">mdi-history</v-icon> Played
+        </button>
         <button class="sort-chip sort-chip--dir" @click="toggleDir">
           <v-icon size="14">{{ sortDesc ? 'mdi-sort-descending' : 'mdi-sort-ascending' }}</v-icon>
         </button>
@@ -455,8 +458,8 @@ const selectedIds       = ref(new Set<string>())
 const showPlaylistPicker = ref(false)
 const playlists         = ref<Playlist[]>([])
 const loadingPlaylists  = ref(false)
-const sortField      = ref<'title' | 'author' | 'addedAt' | 'duration' | 'progress'>(
-  (localStorage.getItem('abs_lib_sort') as 'title' | 'author' | 'addedAt' | 'duration' | 'progress') ?? 'title'
+const sortField      = ref<'title' | 'author' | 'addedAt' | 'duration' | 'progress' | 'lastPlayed'>(
+  (localStorage.getItem('abs_lib_sort') as 'title' | 'author' | 'addedAt' | 'duration' | 'progress' | 'lastPlayed') ?? 'title'
 )
 const progressFilter = ref<'all' | 'in-progress' | 'finished' | 'not-started'>('all')
 
@@ -536,6 +539,9 @@ const sortedItems = computed(() => {
     } else if (sortField.value === 'progress') {
       va = a.userMediaProgress?.progress ?? 0
       vb = b.userMediaProgress?.progress ?? 0
+    } else if (sortField.value === 'lastPlayed') {
+      va = a.userMediaProgress?.lastUpdate ?? 0
+      vb = b.userMediaProgress?.lastUpdate ?? 0
     } else {
       va = a.addedAt
       vb = b.addedAt
@@ -549,7 +555,7 @@ const sortedItems = computed(() => {
 
 const hasMore = computed(() => filteredItems.value.length > page.value * pageSize)
 
-function setSort(field: 'title' | 'author' | 'addedAt' | 'duration' | 'progress') {
+function setSort(field: 'title' | 'author' | 'addedAt' | 'duration' | 'progress' | 'lastPlayed') {
   if (sortField.value === field) { sortDesc.value = !sortDesc.value } else {
     sortField.value = field; sortDesc.value = false
   }
