@@ -35,6 +35,28 @@
       </div>
     </section>
 
+    <!-- Appearance -->
+    <section class="settings-section">
+      <p class="section-label">Appearance</p>
+
+      <div class="settings-item">
+        <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-theme-light-dark</v-icon>
+        <span class="item-label">Theme</span>
+        <div class="theme-chips">
+          <button
+            class="theme-chip"
+            :class="{ active: settingsStore.theme === 'dark' }"
+            @click="settingsStore.setTheme('dark')"
+          >Dark</button>
+          <button
+            class="theme-chip"
+            :class="{ active: settingsStore.theme === 'oled' }"
+            @click="settingsStore.setTheme('oled')"
+          >OLED</button>
+        </div>
+      </div>
+    </section>
+
     <!-- Playback -->
     <section class="settings-section">
       <p class="section-label">Playback</p>
@@ -893,6 +915,14 @@ async function doLogout() {
   color: rgba(255,255,255,0.45); transition: all 0.15s;
 }
 .interval-chip.active { background: rgba(212,160,23,0.15); border-color: rgba(212,160,23,0.4); color: #d4a017; }
+
+.theme-chips { display: flex; gap: 6px; }
+.theme-chip {
+  font-size: 11px; padding: 4px 12px; border-radius: 20px; cursor: pointer;
+  background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08);
+  color: rgba(255,255,255,0.5); transition: all 0.15s;
+}
+.theme-chip.active { background: rgba(212,160,23,0.15); border-color: rgba(212,160,23,0.4); color: #d4a017; }
 
 .reset-presets-btn {
   font-size: 11px; padding: 3px 10px; border-radius: 12px; cursor: pointer;

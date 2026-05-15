@@ -1,7 +1,22 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 
+export type AppTheme = 'dark' | 'oled'
+
+function applyTheme(t: AppTheme) {
+  document.documentElement.classList.toggle('theme-oled', t === 'oled')
+}
+
 export const useSettingsStore = defineStore('settings', () => {
+  const theme = ref<AppTheme>((localStorage.getItem('abs_theme') as AppTheme) ?? 'dark')
+  applyTheme(theme.value)
+
+  function setTheme(t: AppTheme) {
+    theme.value = t
+    localStorage.setItem('abs_theme', t)
+    applyTheme(t)
+  }
+
   const skipBackSecs        = ref<number>(parseInt(localStorage.getItem('abs_skip_back') ?? '30'))
   const skipFwdSecs         = ref<number>(parseInt(localStorage.getItem('abs_skip_fwd')  ?? '30'))
   const speedAdjustedTime   = ref<boolean>(localStorage.getItem('abs_speed_adj_time') !== 'false')
@@ -57,5 +72,5 @@ export const useSettingsStore = defineStore('settings', () => {
     localStorage.setItem('abs_default_speed', String(rate))
   }
 
-  return { skipBackSecs, skipFwdSecs, speedAdjustedTime, podcastAutoAdvance, bookAutoAdvance, autoRewindEnabled, autoRewindMax, defaultSpeed, chapterBarrierEnabled, setSkipBack, setSkipFwd, setSpeedAdjustedTime, setPodcastAutoAdvance, setBookAutoAdvance, setAutoRewindEnabled, setAutoRewindMax, setDefaultSpeed, setChapterBarrierEnabled }
+  return { theme, setTheme, skipBackSecs, skipFwdSecs, speedAdjustedTime, podcastAutoAdvance, bookAutoAdvance, autoRewindEnabled, autoRewindMax, defaultSpeed, chapterBarrierEnabled, setSkipBack, setSkipFwd, setSpeedAdjustedTime, setPodcastAutoAdvance, setBookAutoAdvance, setAutoRewindEnabled, setAutoRewindMax, setDefaultSpeed, setChapterBarrierEnabled }
 })

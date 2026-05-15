@@ -14,6 +14,38 @@
 
 :root {
   color-scheme: dark;
+  --bg-base: #111;
+  --bg-card: #1a1a1a;
+  --bg-sheet: #111;
+  --bg-panel: #1e1e1e;
+}
+
+.theme-oled {
+  --bg-base: #000;
+  --bg-card: #0d0d0d;
+  --bg-sheet: #000;
+  --bg-panel: #0d0d0d;
+}
+
+/* OLED: force pure black backgrounds across the app */
+.theme-oled body,
+.theme-oled .app-shell,
+.theme-oled .shell-content,
+.theme-oled .bottom-nav,
+.theme-oled .home-view,
+.theme-oled .library-view,
+.theme-oled .player-view,
+.theme-oled .search-view,
+.theme-oled .settings-view,
+.theme-oled .stats-view,
+.theme-oled .browse-view,
+.theme-oled .bookmarks-view,
+.theme-oled .collections-view,
+.theme-oled .playlists-view,
+.theme-oled .upcoming-view,
+.theme-oled .car-mode,
+.theme-oled .car-mode::before {
+  background-color: #000 !important;
 }
 
 /* Scrollbar */
