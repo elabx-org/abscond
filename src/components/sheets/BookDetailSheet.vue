@@ -341,9 +341,7 @@
 
             <!-- Description -->
             <div v-if="item.media.metadata.description" class="sheet-desc-wrap">
-              <p class="sheet-desc" :class="{ expanded: descExpanded }">
-                {{ item.media.metadata.description }}
-              </p>
+              <div class="sheet-desc" :class="{ expanded: descExpanded }" v-html="item.media.metadata.description" />
               <button class="show-more" @click="descExpanded = !descExpanded">
                 {{ descExpanded ? 'Show less' : 'Show more' }}
               </button>
@@ -1069,9 +1067,14 @@ async function doSaveMeta() {
 .sheet-desc {
   font-size: 12px; line-height: 1.6; color: rgba(255,255,255,0.6);
   margin: 0 0 4px;
-  display: -webkit-box; -webkit-line-clamp: 6; -webkit-box-orient: vertical; overflow: hidden;
+  max-height: 9.6em; overflow: hidden; position: relative;
 }
-.sheet-desc.expanded { display: block; }
+.sheet-desc.expanded { max-height: none; }
+.sheet-desc :deep(p) { margin: 0 0 0.5em; }
+.sheet-desc :deep(p:last-child) { margin-bottom: 0; }
+.sheet-desc :deep(a) { color: #d4a017; text-decoration: none; }
+.sheet-desc :deep(b), .sheet-desc :deep(strong) { color: rgba(255,255,255,0.8); font-weight: 600; }
+.sheet-desc :deep(br) { display: block; content: ''; margin-bottom: 0.25em; }
 .show-more {
   font-size: 11px; color: #d4a017; background: transparent; border: none; cursor: pointer; padding: 0;
 }

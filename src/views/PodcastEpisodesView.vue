@@ -19,7 +19,7 @@
       <div class="podcast-hero">
         <img :src="coverUrl(item.id, auth.token ?? '')" class="podcast-cover" />
         <div class="podcast-info">
-          <p class="podcast-desc">{{ item.media.metadata.description }}</p>
+          <div class="podcast-desc html-body" v-html="item.media.metadata.description" />
         </div>
       </div>
 
@@ -108,7 +108,7 @@
               <div v-if="(ep.userEpisodeProgress?.progress ?? 0) > 0 && !ep.userEpisodeProgress?.isFinished" class="ep-progress-track">
                 <div class="ep-progress-fill" :style="{ width: `${(ep.userEpisodeProgress?.progress ?? 0) * 100}%` }" />
               </div>
-              <div v-if="ep.description && expandedEps.has(ep.id)" class="ep-desc">{{ ep.description }}</div>
+              <div v-if="ep.description && expandedEps.has(ep.id)" class="ep-desc html-body" v-html="ep.description" />
             </div>
             <button class="ep-play-btn" @click="playEpisode(ep)">
               <v-icon size="22" :color="isPlayingEp(ep.id) ? '#d4a017' : 'rgba(255,255,255,0.7)'">
@@ -302,7 +302,11 @@ onMounted(async () => {
 .podcast-hero { display: flex; gap: 14px; margin-bottom: 24px; }
 .podcast-cover { width: 80px; height: 80px; border-radius: 10px; object-fit: cover; flex-shrink: 0; }
 .podcast-info { flex: 1; }
-.podcast-desc { font-size: 12px; color: rgba(255,255,255,0.45); margin: 0; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; }
+.podcast-desc { font-size: 12px; color: rgba(255,255,255,0.45); margin: 0; line-height: 1.5; max-height: 6em; overflow: hidden; }
+.html-body :deep(p) { margin: 0 0 0.4em; }
+.html-body :deep(p:last-child) { margin-bottom: 0; }
+.html-body :deep(a) { color: #d4a017; text-decoration: none; }
+.html-body :deep(b), .html-body :deep(strong) { color: rgba(255,255,255,0.7); font-weight: 600; }
 
 .ep-refresh-row { display: flex; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
 .ep-refresh-btn, .ep-settings-btn {
@@ -372,7 +376,7 @@ onMounted(async () => {
 .ep-dl-btn { background: transparent; border: none; cursor: pointer; padding: 4px; flex-shrink: 0; }
 .ep-dl-btn:disabled { cursor: default; }
 .ep-expand-btn { background: transparent; border: none; cursor: pointer; padding: 4px; flex-shrink: 0; }
-.ep-desc { font-size: 11px; color: rgba(255,255,255,0.4); line-height: 1.5; margin-top: 6px; display: -webkit-box; -webkit-line-clamp: 6; -webkit-box-orient: vertical; overflow: hidden; }
+.ep-desc { font-size: 11px; color: rgba(255,255,255,0.4); line-height: 1.5; margin-top: 6px; }
 .ep-played-badge { color: #22c55e; }
 .ep-row.finished .ep-title { color: rgba(255,255,255,0.45); }
 .ep-empty { font-size: 12px; color: rgba(255,255,255,0.25); padding: 20px 0; text-align: center; }
