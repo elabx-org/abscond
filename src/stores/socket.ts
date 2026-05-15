@@ -71,6 +71,21 @@ export const useSocketStore = defineStore('socket', () => {
       const libId = d.libraryId as string
       if (libId && libId === ls.activeLibraryId) ls.fetchItems(libId)
     }))
+
+    cleanups.push(onSocketEvent('item_removed', (data: unknown) => {
+      if (!data || typeof data !== 'object') return
+      const d = data as Record<string, unknown>
+      if (!d.id) return
+      const ls = useLibraryStore()
+      for (const libId of Object.keys(ls.itemsByLibrary ?? {})) {
+        const items = ls.itemsFor(libId)
+        const idx = items.findIndex(i => i.id === d.id)
+        if (idx >= 0) { items.splice(idx, 1); break }
+      }
+      const ps = useProgressStore()
+      ps.inProgress     = ps.inProgress.filter((i: { id: unknown }) => i.id !== d.id)
+      ps.recentlyAdded  = ps.recentlyAdded.filter((i: { id: unknown }) => i.id !== d.id)
+    }))
   }
 
   function disconnect() {
