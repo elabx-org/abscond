@@ -384,7 +384,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch, onBeforeUnmount } from 'vue'
+import { computed, ref, shallowRef, watch, onBeforeUnmount } from 'vue'
 import { useRouter } from 'vue-router'
 import { useDraggableSheet } from '@/composables/useDraggableSheet'
 import { useColorThief } from '@/composables/useColorThief'
@@ -423,6 +423,13 @@ const props = defineProps<{
 
 const emit = defineEmits<{ close: []; 'item-updated': [item: LibraryItem] }>()
 
+// Local mirror so the template re-renders immediately on match without depending
+// on prop propagation timing. Stays in sync with parent changes via the watcher.
+const displayItem = shallowRef<LibraryItem>(props.item)
+watch(() => props.item, (v) => { displayItem.value = v })
+// Shadows the 'item' prop in the template — setup vars take priority over props.
+const item = displayItem
+
 const router = useRouter()
 const player = usePlayerStore()
 const notify = useNotificationStore()
@@ -453,20 +460,20 @@ const authorsExpanded   = ref(false)
 const narratorsExpanded = ref(false)
 
 const visibleAuthors = computed(() => {
-  const authors = props.item.media.metadata.authors ?? []
+  const authors = displayItem.value.media.metadata.authors ?? []
   return authorsExpanded.value ? authors : authors.slice(0, MAX_VISIBLE_AUTHORS)
 })
 const hiddenAuthorCount = computed(() => {
-  const count = props.item.media.metadata.authors?.length ?? 0
+  const count = displayItem.value.media.metadata.authors?.length ?? 0
   return authorsExpanded.value ? 0 : Math.max(0, count - MAX_VISIBLE_AUTHORS)
 })
 
 const visibleNarrators = computed(() => {
-  const narrators = props.item.media.metadata.narrators ?? []
+  const narrators = displayItem.value.media.metadata.narrators ?? []
   return narratorsExpanded.value ? narrators : narrators.slice(0, MAX_VISIBLE_NARRATORS)
 })
 const hiddenNarratorCount = computed(() => {
-  const count = props.item.media.metadata.narrators?.length ?? 0
+  const count = displayItem.value.media.metadata.narrators?.length ?? 0
   return narratorsExpanded.value ? 0 : Math.max(0, count - MAX_VISIBLE_NARRATORS)
 })
 
@@ -625,10 +632,9 @@ function onCoverUpdated() {
 }
 
 function onMatched(updated: LibraryItem) {
-  // Mutate in-place so the sheet refreshes immediately regardless of whether
-  // the parent re-assigns its ref (the upward emit keeps parent caches in sync).
-  Object.assign(props.item.media.metadata, updated.media.metadata)
-  if (updated.tags) (props.item as unknown as { tags: string[] }).tags = updated.tags
+  // Swap the local mirror — template reads displayItem (via `item = displayItem`),
+  // so this triggers an immediate re-render without relying on prop propagation timing.
+  displayItem.value = updated
   emit('item-updated', updated)
   const m = updated.media.metadata
   editMeta.value.title         = m.title ?? ''

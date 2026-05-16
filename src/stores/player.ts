@@ -59,6 +59,10 @@ export const usePlayerStore = defineStore('player', () => {
   let trackStartOffset = 0
   let pausedAt: number | null = null
   let _wasPlayingBeforeHide = false
+  // True only when the USER explicitly paused (togglePlay or MediaSession pause action).
+  // iOS auto-pauses the audio element BEFORE visibilitychange fires, so isPlaying.value
+  // is already false at capture time — we can't use it to distinguish user vs system pauses.
+  let _userPaused = false
 
   const _isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)
 
@@ -157,8 +161,8 @@ export const usePlayerStore = defineStore('player', () => {
       album:  (meta.series ?? []).map((s: { name: string }) => s.name).join(', ') || '',
       artwork: [{ src: `${base}/api/items/${currentItem.value.id}/cover?token=${encodeURIComponent(token)}`, sizes: '512x512', type: 'image/jpeg' }],
     })
-    navigator.mediaSession.setActionHandler('play',           () => { audio?.play() })
-    navigator.mediaSession.setActionHandler('pause',          () => { audio?.pause() })
+    navigator.mediaSession.setActionHandler('play',           () => { _userPaused = false; audio?.play() })
+    navigator.mediaSession.setActionHandler('pause',          () => { _userPaused = true;  audio?.pause() })
     navigator.mediaSession.setActionHandler('seekbackward',   (d) => skipBack(d?.seekOffset ?? 30))
     navigator.mediaSession.setActionHandler('seekforward',    (d) => skipForward(d?.seekOffset ?? 30))
     navigator.mediaSession.setActionHandler('previoustrack',  () => skipBack(30))
@@ -400,6 +404,7 @@ export const usePlayerStore = defineStore('player', () => {
         }
       }
 
+      _userPaused = false
       await audio.play()
       _updateMediaSession()
       _startSync()
@@ -434,8 +439,10 @@ export const usePlayerStore = defineStore('player', () => {
       return
     }
     if (isPlaying.value) {
+      _userPaused = true
       audio.pause()
     } else {
+      _userPaused = false
       if (audioCtx?.state === 'suspended') audioCtx.resume().catch(() => {})
       audio.play()
     }
@@ -582,22 +589,24 @@ export const usePlayerStore = defineStore('player', () => {
 
   function _onVisibilityChange() {
     if (document.hidden) {
-      // Use the Vue ref, not audio.paused — iOS may have already paused the
-      // underlying element synchronously before visibilitychange fires, so
-      // audio.paused is unreliable here. isPlaying is only flipped by our
-      // 'pause' event listener, which runs later in the event loop.
-      _wasPlayingBeforeHide = isPlaying.value
+      // iOS fires the audio 'pause' event BEFORE visibilitychange, so by the time
+      // we get here isPlaying is already false and audio.paused is already true.
+      // Use _userPaused instead: it's only set on explicit user/MediaSession pauses,
+      // never on system-driven pauses (background, interruptions).
+      _wasPlayingBeforeHide = !_userPaused && !!currentItem.value
       if (session.value) _doSync()
     } else {
-      // Returning to foreground: resume if we were playing when we left.
-      // On iOS audioCtx is null (AudioContext is skipped entirely), so go
-      // straight to audio.play(). On other platforms resume the AudioContext first.
-      if (_wasPlayingBeforeHide) {
-        if (!_isIOS && audioCtx?.state === 'suspended') {
-          audioCtx.resume().then(() => audio?.play()).catch(() => {})
-        } else if (audio?.paused) {
-          audio.play().catch(() => {})
+      if (_wasPlayingBeforeHide && !_userPaused) {
+        const tryPlay = () => {
+          if (!_isIOS && audioCtx?.state === 'suspended') {
+            audioCtx.resume().then(() => audio?.play()).catch(() => {})
+          } else if (audio?.paused) {
+            audio.play().catch(() => {})
+          }
         }
+        tryPlay()
+        // iOS sometimes fires a second system pause during the resume transition.
+        if (_isIOS) setTimeout(() => { if (!_userPaused && audio?.paused) tryPlay() }, 300)
       }
       _wasPlayingBeforeHide = false
     }
@@ -615,6 +624,7 @@ export const usePlayerStore = defineStore('player', () => {
     _stopSync()
     _clearSleepTimers()
     if (session.value) { await _doSync(); await closeSession(session.value.id).catch(() => {}) }
+    _userPaused = false
     audio?.pause()
     audio = null
     session.value     = null
