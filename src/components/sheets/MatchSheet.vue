@@ -157,6 +157,7 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
 import { searchCandidates, applyMatch, type MatchCandidate } from '@/api/match'
+import { getItem } from '@/api/items'
 import { coverUrl } from '@/api/client'
 import { useAuthStore } from '@/stores/auth'
 import type { LibraryItem } from '@/api/types'
@@ -255,30 +256,17 @@ async function doApply() {
     applying.value = false
     return
   }
-  // Build the updated display item from candidate data immediately — don't call getItem
-  // (avoids a second network round-trip and any timing issues with server-side persistence).
-  // Clear authors/narrators arrays so the template falls back to the string fields.
-  const matched = selected.value
-  const updatedItem: LibraryItem = {
-    ...props.item,
-    media: {
-      ...props.item.media,
-      metadata: {
-        ...props.item.media.metadata,
-        title:         matched.title,
-        subtitle:      matched.subtitle ?? null,
-        authorName:    matched.author,
-        authors:       null,
-        narratorName:  matched.narrator ?? null,
-        narrators:     null,
-        publisher:     matched.publisher ?? props.item.media.metadata.publisher ?? null,
-        publishedYear: matched.publishedYear ?? props.item.media.metadata.publishedYear ?? null,
-        description:   matched.description ?? null,
-        genres:        matched.genres ?? props.item.media.metadata.genres ?? [],
-      },
-    },
+  // Fetch the authoritative updated item from the server — the server applies the
+  // metadata, downloads the cover, and reconciles author/narrator records.
+  // Client-side construction misses all of that.
+  try {
+    const updatedItem = await getItem(props.item.id)
+    emit('matched', updatedItem)
+  } catch {
+    error.value = 'Match applied but failed to reload — please close and reopen the book'
+    applying.value = false
+    return
   }
-  emit('matched', updatedItem)
   applying.value = false
   close()
 }

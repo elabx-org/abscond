@@ -589,24 +589,22 @@ export const usePlayerStore = defineStore('player', () => {
 
   function _onVisibilityChange() {
     if (document.hidden) {
-      // iOS fires the audio 'pause' event BEFORE visibilitychange, so by the time
-      // we get here isPlaying is already false and audio.paused is already true.
-      // Use _userPaused instead: it's only set on explicit user/MediaSession pauses,
-      // never on system-driven pauses (background, interruptions).
+      // On iOS, audio 'pause' fires BEFORE visibilitychange, so audio.paused and
+      // isPlaying are both already false here. Use _userPaused: it is only ever set
+      // true by an explicit user tap — system-driven pauses leave it false.
       _wasPlayingBeforeHide = !_userPaused && !!currentItem.value
       if (session.value) _doSync()
     } else {
-      if (_wasPlayingBeforeHide && !_userPaused) {
-        const tryPlay = () => {
-          if (!_isIOS && audioCtx?.state === 'suspended') {
-            audioCtx.resume().then(() => audio?.play()).catch(() => {})
-          } else if (audio?.paused) {
-            audio.play().catch(() => {})
-          }
+      if (_wasPlayingBeforeHide && !_userPaused && audio?.paused) {
+        if (!_isIOS && audioCtx?.state === 'suspended') {
+          audioCtx.resume().then(() => audio?.play()).catch(() => {})
+        } else {
+          // On iOS: if the audio session is still alive (quick foreground return),
+          // play() succeeds silently. If iOS revoked the activation token, play()
+          // throws NotAllowedError — catch it and let the user tap play or use the
+          // lock-screen/Control-Center MediaSession controls (which carry a gesture).
+          audio.play().catch(() => {})
         }
-        tryPlay()
-        // iOS sometimes fires a second system pause during the resume transition.
-        if (_isIOS) setTimeout(() => { if (!_userPaused && audio?.paused) tryPlay() }, 300)
       }
       _wasPlayingBeforeHide = false
     }
