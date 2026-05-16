@@ -403,7 +403,6 @@ import MakeM4bSheet from '@/components/sheets/MakeM4bSheet.vue'
 import BookActionsSheet from '@/components/sheets/BookActionsSheet.vue'
 import { getDirectDownloadUrl } from '@/api/downloads'
 import { getBaseUrl, api } from '@/api/client'
-import { getItem } from '@/api/items'
 import { getPlaylists, addItemToPlaylist } from '@/api/playlists'
 import type { Playlist } from '@/api/playlists'
 import { getCollections, addBookToCollection } from '@/api/collections'
@@ -625,21 +624,18 @@ function onCoverUpdated() {
   if (img) img.src = img.src.includes('?') ? img.src.replace(/&?_t=\d+/, '') + `&_t=${Date.now()}` : img.src + `?_t=${Date.now()}`
 }
 
-async function onMatched(itemId: string) {
-  try {
-    const updated = await getItem(itemId)
-    emit('item-updated', updated)
-    const m = updated.media.metadata
-    editMeta.value.title         = m.title ?? ''
-    editMeta.value.subtitle      = m.subtitle ?? ''
-    editMeta.value.authorNames   = m.authors?.length ? m.authors.map(a => a.name).join(', ') : (m.authorName ?? '')
-    editMeta.value.narratorNames = m.narrators?.length ? m.narrators.join(', ') : (m.narratorName ?? '')
-    editMeta.value.publishedYear = m.publishedYear ?? ''
-    editMeta.value.publisher     = m.publisher ?? ''
-    editMeta.value.genres        = m.genres?.join(', ') ?? ''
-    editMeta.value.description   = m.description ?? ''
-    editMeta.value.tags          = (updated.tags ?? []).join(', ')
-  } catch { /* keep existing values on fetch failure */ }
+function onMatched(updated: LibraryItem) {
+  emit('item-updated', updated)
+  const m = updated.media.metadata
+  editMeta.value.title         = m.title ?? ''
+  editMeta.value.subtitle      = m.subtitle ?? ''
+  editMeta.value.authorNames   = m.authors?.length ? m.authors.map(a => a.name).join(', ') : (m.authorName ?? '')
+  editMeta.value.narratorNames = m.narrators?.length ? m.narrators.join(', ') : (m.narratorName ?? '')
+  editMeta.value.publishedYear = m.publishedYear ?? ''
+  editMeta.value.publisher     = m.publisher ?? ''
+  editMeta.value.genres        = m.genres?.join(', ') ?? ''
+  editMeta.value.description   = m.description ?? ''
+  editMeta.value.tags          = (updated.tags ?? []).join(', ')
 }
 
 function handleAction(id: string) {

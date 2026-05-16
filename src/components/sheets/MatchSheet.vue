@@ -157,12 +157,13 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
 import { searchCandidates, applyMatch, type MatchCandidate } from '@/api/match'
+import { getItem } from '@/api/items'
 import { coverUrl } from '@/api/client'
 import { useAuthStore } from '@/stores/auth'
 import type { LibraryItem } from '@/api/types'
 
 const props = defineProps<{ modelValue: boolean; item: LibraryItem }>()
-const emit  = defineEmits<{ 'update:modelValue': [val: boolean]; matched: [itemId: string] }>()
+const emit  = defineEmits<{ 'update:modelValue': [val: boolean]; matched: [item: LibraryItem] }>()
 const auth  = useAuthStore()
 
 const PROVIDERS = [
@@ -250,7 +251,8 @@ async function doApply() {
   try {
     const asin = (selected.value as MatchCandidate & { asin?: string }).asin ?? selected.value.id
     await applyMatch(props.item.id, provider.value, selected.value.title, selected.value.author || undefined, asin)
-    emit('matched', props.item.id)
+    const updatedItem = await getItem(props.item.id)
+    emit('matched', updatedItem)
     close()
   } catch {
     error.value = 'Failed to apply match — please try again'

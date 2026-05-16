@@ -363,7 +363,16 @@ export const usePlayerStore = defineStore('player', () => {
         localStorage.setItem('abs_playback_rate', String(defSpeed))
       }
 
+      // Remove any previously injected audio element
+      document.getElementById('__abs_audio__')?.remove()
       audio = new Audio()
+      audio.id = '__abs_audio__'
+      if (_isIOS) {
+        // iOS requires the audio element to be in the DOM for the audio session
+        // to register properly and keep playing when the app goes to background.
+        audio.setAttribute('playsinline', '')
+        document.body.appendChild(audio)
+      }
       audio.playbackRate = playbackRate.value
       _attachListeners()
       _ensureAudioGraph()
