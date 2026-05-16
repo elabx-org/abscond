@@ -58,6 +58,7 @@ export const usePlayerStore = defineStore('player', () => {
   let timeListenedAccum = 0
   let trackStartOffset = 0
   let pausedAt: number | null = null
+  let _wasPlayingBeforeHide = false
 
   const _isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)
 
@@ -581,17 +582,19 @@ export const usePlayerStore = defineStore('player', () => {
 
   function _onVisibilityChange() {
     if (document.hidden) {
+      // Capture playing state NOW — before iOS fires the pause event and sets isPlaying=false
+      _wasPlayingBeforeHide = !audio?.paused
       if (session.value) _doSync()
     } else {
-      // Returning to foreground — resume AudioContext if it was suspended in background
-      if (audioCtx?.state === 'suspended') {
-        audioCtx.resume().then(() => {
-          if (isPlaying.value && audio?.paused) audio?.play().catch(() => {})
-        }).catch(() => {})
-      } else if (isPlaying.value && audio?.paused) {
-        // Audio element paused without AudioContext involvement (e.g. iOS interruption)
-        audio?.play().catch(() => {})
+      // Returning to foreground: resume if audio was playing when we left
+      if (_wasPlayingBeforeHide && audio?.paused) {
+        if (audioCtx?.state === 'suspended') {
+          audioCtx.resume().then(() => audio?.play()).catch(() => {})
+        } else {
+          audio?.play().catch(() => {})
+        }
       }
+      _wasPlayingBeforeHide = false
     }
   }
 

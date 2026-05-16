@@ -7,9 +7,6 @@ vi.mock('@/api/match', () => ({
   searchCandidates: vi.fn(),
   applyMatch: vi.fn(),
 }))
-vi.mock('@/api/items', () => ({
-  getItem: vi.fn(),
-}))
 vi.mock('@/api/client', () => ({
   coverUrl: vi.fn((id: string) => `/api/items/${id}/cover?token=tok`),
 }))
@@ -18,7 +15,6 @@ vi.mock('@/stores/auth', () => ({
 }))
 
 import { searchCandidates, applyMatch } from '@/api/match'
-import { getItem } from '@/api/items'
 
 const mockItem: LibraryItem = {
   id: 'li1',
@@ -238,17 +234,16 @@ describe('MatchSheet — apply step', () => {
     expect(wrapper.text()).toContain('Review Changes')
   })
 
-  it('calls applyMatch and emits matched with updated item on Apply Changes click', async () => {
-    const updatedItem = { ...mockItem, id: 'li1' }
+  it('calls applyMatch and emits matched with candidate data on Apply Changes click', async () => {
     vi.mocked(applyMatch).mockResolvedValueOnce({ updated: true })
-    vi.mocked(getItem).mockResolvedValueOnce(updatedItem)
     const wrapper = await mountAtDiff()
     await wrapper.find('.match-search-btn').trigger('click')
     await flushPromises()
     expect(applyMatch).toHaveBeenCalledWith('li1', 'audible', 'Dune', 'Frank Herbert', 'c1')
-    expect(getItem).toHaveBeenCalledWith('li1')
     expect(wrapper.emitted('matched')).toBeTruthy()
-    expect(wrapper.emitted('matched')![0]).toEqual([updatedItem])
+    const emittedItem = wrapper.emitted('matched')![0][0] as { media: { metadata: { title: string; authorName: string } } }
+    expect(emittedItem.media.metadata.title).toBe('Dune')
+    expect(emittedItem.media.metadata.authorName).toBe('Frank Herbert')
   })
 
   it('shows error on apply failure', async () => {

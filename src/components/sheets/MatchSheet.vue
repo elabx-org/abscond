@@ -157,7 +157,6 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
 import { searchCandidates, applyMatch, type MatchCandidate } from '@/api/match'
-import { getItem } from '@/api/items'
 import { coverUrl } from '@/api/client'
 import { useAuthStore } from '@/stores/auth'
 import type { LibraryItem } from '@/api/types'
@@ -251,14 +250,37 @@ async function doApply() {
   try {
     const asin = (selected.value as MatchCandidate & { asin?: string }).asin ?? selected.value.id
     await applyMatch(props.item.id, provider.value, selected.value.title, selected.value.author || undefined, asin)
-    const updatedItem = await getItem(props.item.id)
-    emit('matched', updatedItem)
-    close()
   } catch {
     error.value = 'Failed to apply match — please try again'
-  } finally {
     applying.value = false
+    return
   }
+  // Build the updated display item from candidate data immediately — don't call getItem
+  // (avoids a second network round-trip and any timing issues with server-side persistence).
+  // Clear authors/narrators arrays so the template falls back to the string fields.
+  const matched = selected.value
+  const updatedItem: LibraryItem = {
+    ...props.item,
+    media: {
+      ...props.item.media,
+      metadata: {
+        ...props.item.media.metadata,
+        title:         matched.title,
+        subtitle:      matched.subtitle ?? null,
+        authorName:    matched.author,
+        authors:       null,
+        narratorName:  matched.narrator ?? null,
+        narrators:     null,
+        publisher:     matched.publisher ?? props.item.media.metadata.publisher ?? null,
+        publishedYear: matched.publishedYear ?? props.item.media.metadata.publishedYear ?? null,
+        description:   matched.description ?? null,
+        genres:        matched.genres ?? props.item.media.metadata.genres ?? [],
+      },
+    },
+  }
+  emit('matched', updatedItem)
+  applying.value = false
+  close()
 }
 
 function close() {
