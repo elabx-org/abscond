@@ -265,13 +265,21 @@ async function doApply() {
     if (c.genres?.length) metadata.genres        = c.genres
     const payload: Record<string, unknown> = { metadata }
     if (c.coverUrl) payload.url = c.coverUrl
-    const res = await api.patch(`/items/${props.item.id}/media`, payload)
-    const updatedItem: LibraryItem = res.data.libraryItem ?? await getItem(props.item.id)
+    await api.patch(`/items/${props.item.id}/media`, payload)
+  } catch {
+    error.value = 'Failed to apply match — please try again'
+    applying.value = false
+    return
+  }
+  // PATCH response uses toOldJSON() which omits computed fields like authorName.
+  // Always fetch the expanded item so the UI gets the full correct state.
+  try {
+    const updatedItem = await getItem(props.item.id)
     emit('matched', updatedItem)
     applying.value = false
     close()
   } catch {
-    error.value = 'Failed to apply match — please try again'
+    error.value = 'Match applied but failed to reload — please close and reopen the book'
     applying.value = false
   }
 }

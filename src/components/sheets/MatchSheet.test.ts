@@ -242,12 +242,13 @@ describe('MatchSheet — apply step', () => {
     expect(wrapper.text()).toContain('Review Changes')
   })
 
-  it('patches metadata and emits matched using libraryItem from PATCH response', async () => {
+  it('patches metadata then fetches expanded item via getItem', async () => {
     const updatedItem = {
       ...mockItem,
       media: { ...mockItem.media, metadata: { ...mockItem.media.metadata, title: 'Dune Updated', authorName: 'Frank Herbert' } },
     }
-    vi.mocked(api.patch).mockResolvedValueOnce({ data: { updated: true, libraryItem: updatedItem } } as any)
+    vi.mocked(api.patch).mockResolvedValueOnce({ data: { updated: true } } as any)
+    vi.mocked(getItem).mockResolvedValueOnce(updatedItem)
     const wrapper = await mountAtDiff()
     await wrapper.find('.match-search-btn').trigger('click')
     await flushPromises()
@@ -258,30 +259,24 @@ describe('MatchSheet — apply step', () => {
         narrators: ['Simon Vance'],
       }),
     }))
-    expect(getItem).not.toHaveBeenCalled()
-    expect(wrapper.emitted('matched')).toBeTruthy()
-    const emittedItem = wrapper.emitted('matched')![0][0] as { media: { metadata: { title: string } } }
-    expect(emittedItem.media.metadata.title).toBe('Dune Updated')
-  })
-
-  it('falls back to getItem when PATCH response has no libraryItem', async () => {
-    const updatedItem = {
-      ...mockItem,
-      media: { ...mockItem.media, metadata: { ...mockItem.media.metadata, title: 'Dune Fallback', authorName: 'Frank Herbert' } },
-    }
-    vi.mocked(api.patch).mockResolvedValueOnce({ data: { updated: false } } as any)
-    vi.mocked(getItem).mockResolvedValueOnce(updatedItem)
-    const wrapper = await mountAtDiff()
-    await wrapper.find('.match-search-btn').trigger('click')
-    await flushPromises()
     expect(getItem).toHaveBeenCalledWith('li1')
     expect(wrapper.emitted('matched')).toBeTruthy()
-    const emittedItem = wrapper.emitted('matched')![0][0] as { media: { metadata: { title: string } } }
-    expect(emittedItem.media.metadata.title).toBe('Dune Fallback')
+    const emittedItem = wrapper.emitted('matched')![0][0] as { media: { metadata: { title: string; authorName: string } } }
+    expect(emittedItem.media.metadata.title).toBe('Dune Updated')
+    expect(emittedItem.media.metadata.authorName).toBe('Frank Herbert')
   })
 
   it('shows error on patch failure', async () => {
     vi.mocked(api.patch).mockRejectedValueOnce(new Error('network'))
+    const wrapper = await mountAtDiff()
+    await wrapper.find('.match-search-btn').trigger('click')
+    await flushPromises()
+    expect(wrapper.find('.match-error').exists()).toBe(true)
+  })
+
+  it('shows error when getItem fails after successful patch', async () => {
+    vi.mocked(api.patch).mockResolvedValueOnce({ data: { updated: true } } as any)
+    vi.mocked(getItem).mockRejectedValueOnce(new Error('network'))
     const wrapper = await mountAtDiff()
     await wrapper.find('.match-search-btn').trigger('click')
     await flushPromises()
