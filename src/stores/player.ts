@@ -582,16 +582,21 @@ export const usePlayerStore = defineStore('player', () => {
 
   function _onVisibilityChange() {
     if (document.hidden) {
-      // Capture playing state NOW — before iOS fires the pause event and sets isPlaying=false
-      _wasPlayingBeforeHide = !audio?.paused
+      // Use the Vue ref, not audio.paused — iOS may have already paused the
+      // underlying element synchronously before visibilitychange fires, so
+      // audio.paused is unreliable here. isPlaying is only flipped by our
+      // 'pause' event listener, which runs later in the event loop.
+      _wasPlayingBeforeHide = isPlaying.value
       if (session.value) _doSync()
     } else {
-      // Returning to foreground: resume if audio was playing when we left
-      if (_wasPlayingBeforeHide && audio?.paused) {
-        if (audioCtx?.state === 'suspended') {
+      // Returning to foreground: resume if we were playing when we left.
+      // On iOS audioCtx is null (AudioContext is skipped entirely), so go
+      // straight to audio.play(). On other platforms resume the AudioContext first.
+      if (_wasPlayingBeforeHide) {
+        if (!_isIOS && audioCtx?.state === 'suspended') {
           audioCtx.resume().then(() => audio?.play()).catch(() => {})
-        } else {
-          audio?.play().catch(() => {})
+        } else if (audio?.paused) {
+          audio.play().catch(() => {})
         }
       }
       _wasPlayingBeforeHide = false

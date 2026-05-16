@@ -625,6 +625,10 @@ function onCoverUpdated() {
 }
 
 function onMatched(updated: LibraryItem) {
+  // Mutate in-place so the sheet refreshes immediately regardless of whether
+  // the parent re-assigns its ref (the upward emit keeps parent caches in sync).
+  Object.assign(props.item.media.metadata, updated.media.metadata)
+  if (updated.tags) (props.item as unknown as { tags: string[] }).tags = updated.tags
   emit('item-updated', updated)
   const m = updated.media.metadata
   editMeta.value.title         = m.title ?? ''
