@@ -1,77 +1,76 @@
 <template>
   <Teleport to="body">
-    <Transition name="scrim">
-      <div v-if="modelValue" class="more-scrim" @click="$emit('update:modelValue', false)" />
-    </Transition>
     <Transition name="sheet">
-      <div v-if="modelValue" class="more-sheet">
-        <div class="more-drag-row">
-          <div class="more-drag-handle" />
-          <button class="more-edit-btn" @click="editing = true" title="Edit layout">
-            <v-icon size="15" color="rgba(255,255,255,0.4)">mdi-pencil-outline</v-icon>
-          </button>
-        </div>
-
-        <!-- Normal mode: list of overflow items -->
-        <template v-if="!editing">
-          <button
-            v-for="item in ITEMS"
-            :key="item.id"
-            class="more-row"
-            :class="{ 'more-row--destructive': item.destructive }"
-            @click="handleItem(item.id)"
-          >
-            <v-icon size="18" class="more-row-icon" :color="item.destructive ? 'rgba(255,80,80,0.75)' : 'rgba(212,160,23,0.8)'">
-              {{ item.icon }}
-            </v-icon>
-            <span class="more-row-label">{{ item.label }}</span>
-            <v-icon size="16" color="rgba(255,255,255,0.2)">mdi-chevron-right</v-icon>
-          </button>
-        </template>
-
-        <!-- Edit Layout mode -->
-        <template v-else>
-          <div class="edit-header">
-            <span class="edit-title">Edit Layout</span>
-            <button class="edit-done-btn" @click="editing = false">
-              <v-icon size="16" color="#d4a017">mdi-check</v-icon>
-              Done
+      <div v-if="modelValue" class="more-overlay" @click.self="$emit('update:modelValue', false)">
+        <div class="more-sheet">
+          <div class="more-drag-row">
+            <div class="more-drag-handle" />
+            <button class="more-edit-btn" @click="editing = true" title="Edit layout">
+              <v-icon size="15" color="rgba(255,255,255,0.4)">mdi-pencil-outline</v-icon>
             </button>
           </div>
-          <div class="edit-chips">
+
+          <!-- Normal mode: list of overflow items -->
+          <template v-if="!editing">
             <button
-              class="edit-chip"
-              :class="{ active: iconsOnly }"
-              @click="iconsOnly = !iconsOnly; saveLayout()"
-            >Icons only</button>
-            <button
-              class="edit-chip"
-              :class="{ active: moreInGrid }"
-              @click="moreInGrid = !moreInGrid; saveLayout()"
-            >More in grid</button>
-          </div>
-          <p class="edit-hint">Drag items across the divider to move them between the grid and this menu.</p>
-          <div class="edit-section-label">On card</div>
-          <div
-            v-for="item in ITEMS.slice(0, 4)"
-            :key="item.id"
-            class="edit-row edit-row--on-card"
-          >
-            <v-icon size="16" :color="item.destructive ? 'rgba(255,80,80,0.6)' : 'rgba(255,255,255,0.55)'">{{ item.icon }}</v-icon>
-            <span class="edit-row-label">{{ item.label }}</span>
-            <v-icon size="16" color="rgba(255,255,255,0.2)">mdi-drag-vertical</v-icon>
-          </div>
-          <div class="edit-divider"><div class="edit-div-line"/><span class="edit-div-label">In menu</span><div class="edit-div-line"/></div>
-          <div
-            v-for="item in ITEMS.slice(4)"
-            :key="item.id"
-            class="edit-row"
-          >
-            <v-icon size="16" :color="item.destructive ? 'rgba(255,80,80,0.6)' : 'rgba(255,255,255,0.55)'">{{ item.icon }}</v-icon>
-            <span class="edit-row-label">{{ item.label }}</span>
-            <v-icon size="16" color="rgba(255,255,255,0.2)">mdi-drag-vertical</v-icon>
-          </div>
-        </template>
+              v-for="item in ITEMS"
+              :key="item.id"
+              class="more-row"
+              :class="{ 'more-row--destructive': item.destructive }"
+              @click="handleItem(item.id)"
+            >
+              <v-icon size="18" class="more-row-icon" :color="item.destructive ? 'rgba(255,80,80,0.75)' : 'rgba(212,160,23,0.8)'">
+                {{ item.icon }}
+              </v-icon>
+              <span class="more-row-label">{{ item.label }}</span>
+              <v-icon size="16" color="rgba(255,255,255,0.2)">mdi-chevron-right</v-icon>
+            </button>
+          </template>
+
+          <!-- Edit Layout mode -->
+          <template v-else>
+            <div class="edit-header">
+              <span class="edit-title">Edit Layout</span>
+              <button class="edit-done-btn" @click="editing = false">
+                <v-icon size="16" color="#d4a017">mdi-check</v-icon>
+                Done
+              </button>
+            </div>
+            <div class="edit-chips">
+              <button
+                class="edit-chip"
+                :class="{ active: iconsOnly }"
+                @click="iconsOnly = !iconsOnly; saveLayout()"
+              >Icons only</button>
+              <button
+                class="edit-chip"
+                :class="{ active: moreInGrid }"
+                @click="moreInGrid = !moreInGrid; saveLayout()"
+              >More in grid</button>
+            </div>
+            <p class="edit-hint">Drag items across the divider to move them between the grid and this menu.</p>
+            <div class="edit-section-label">On card</div>
+            <div
+              v-for="item in ITEMS.slice(0, 4)"
+              :key="item.id"
+              class="edit-row edit-row--on-card"
+            >
+              <v-icon size="16" :color="item.destructive ? 'rgba(255,80,80,0.6)' : 'rgba(255,255,255,0.55)'">{{ item.icon }}</v-icon>
+              <span class="edit-row-label">{{ item.label }}</span>
+              <v-icon size="16" color="rgba(255,255,255,0.2)">mdi-drag-vertical</v-icon>
+            </div>
+            <div class="edit-divider"><div class="edit-div-line"/><span class="edit-div-label">In menu</span><div class="edit-div-line"/></div>
+            <div
+              v-for="item in ITEMS.slice(4)"
+              :key="item.id"
+              class="edit-row"
+            >
+              <v-icon size="16" :color="item.destructive ? 'rgba(255,80,80,0.6)' : 'rgba(255,255,255,0.55)'">{{ item.icon }}</v-icon>
+              <span class="edit-row-label">{{ item.label }}</span>
+              <v-icon size="16" color="rgba(255,255,255,0.2)">mdi-drag-vertical</v-icon>
+            </div>
+          </template>
+        </div>
       </div>
     </Transition>
   </Teleport>
@@ -117,16 +116,14 @@ function handleItem(id: string) {
 </script>
 
 <style scoped>
-.more-scrim {
-  position: fixed; inset: 0; z-index: 199; background: rgba(0,0,0,0.5);
+.more-overlay {
+  position: fixed; inset: 0; z-index: 200;
+  background: rgba(0,0,0,0.5);
+  display: flex; align-items: flex-end;
 }
-.scrim-enter-active, .scrim-leave-active { transition: opacity 0.2s; }
-.scrim-enter-from, .scrim-leave-to { opacity: 0; }
 
 .more-sheet {
-  position: fixed; left: auto; right: 0; width: min(480px, 100%);
-  bottom: calc(56px + env(safe-area-inset-bottom, 0px));
-  z-index: 200; background: #1e1e1e;
+  width: 100%; background: #1e1e1e;
   border-radius: 20px 20px 0 0;
   border-top: 1px solid rgba(212,160,23,0.2);
   padding: 8px 14px calc(14px + env(safe-area-inset-bottom, 0px));
@@ -135,14 +132,18 @@ function handleItem(id: string) {
   overscroll-behavior: contain;
 }
 .more-sheet::-webkit-scrollbar { display: none; }
+
+.sheet-enter-active, .sheet-leave-active { transition: opacity 0.25s; }
+.sheet-enter-active .more-sheet, .sheet-leave-active .more-sheet { transition: transform 0.3s ease; }
+.sheet-enter-from, .sheet-leave-to { opacity: 0; }
+.sheet-enter-from .more-sheet, .sheet-leave-to .more-sheet { transform: translateY(100%); }
+
 @media (min-width: 520px) {
-  .more-sheet { top: 0; bottom: 0 !important; max-height: 100% !important; border-radius: 0; border-top: none; border-left: 1px solid rgba(255,255,255,0.08); }
-  .sheet-enter-from, .sheet-leave-to { transform: translateX(100%); opacity: 1; }
+  .more-overlay { align-items: center; justify-content: center; }
+  .more-sheet { width: 480px; border-radius: 20px; border-top: none; max-height: 80vh; }
+  .sheet-enter-from .more-sheet, .sheet-leave-to .more-sheet { transform: scale(0.96) translateY(8px); }
   .more-drag-row { display: none; }
 }
-
-.sheet-enter-active, .sheet-leave-active { transition: transform 0.25s cubic-bezier(0.32,0.72,0,1), opacity 0.2s; }
-.sheet-enter-from, .sheet-leave-to { transform: translateY(100%); opacity: 0; }
 
 .more-drag-row {
   display: flex; align-items: center; justify-content: center;
