@@ -251,27 +251,27 @@ async function doApply() {
   const c = selected.value
   try {
     const metadata: Record<string, unknown> = { title: c.title }
-    if (c.subtitle)        metadata.subtitle      = c.subtitle
-    if (c.author)          metadata.authors       = [{ name: c.author }]
-    if (c.narrator)        metadata.narrators     = [c.narrator]
-    if (c.publishedYear)   metadata.publishedYear = c.publishedYear
-    if (c.publisher)       metadata.publisher     = c.publisher
-    if (c.description)     metadata.description   = c.description
-    if (c.genres?.length)  metadata.genres        = c.genres
-    await api.patch(`/items/${props.item.id}/media`, { metadata })
-    if (c.coverUrl) await api.post(`/items/${props.item.id}/cover`, { url: c.coverUrl }).catch(() => {})
-  } catch {
-    error.value = 'Failed to apply match — please try again'
-    applying.value = false
-    return
-  }
-  try {
-    const updatedItem = await getItem(props.item.id)
+    if (c.subtitle)       metadata.subtitle      = c.subtitle
+    if (c.author) {
+      const names = c.author.split(',').map(n => n.trim()).filter(Boolean)
+      metadata.authors = names.map(name => ({ id: `new-${Date.now()}`, name }))
+    }
+    if (c.narrator) {
+      metadata.narrators = c.narrator.split(',').map(n => n.trim()).filter(Boolean)
+    }
+    if (c.publishedYear)  metadata.publishedYear = c.publishedYear
+    if (c.publisher)      metadata.publisher     = c.publisher
+    if (c.description)    metadata.description   = c.description
+    if (c.genres?.length) metadata.genres        = c.genres
+    const payload: Record<string, unknown> = { metadata }
+    if (c.coverUrl) payload.url = c.coverUrl
+    const res = await api.patch(`/items/${props.item.id}/media`, payload)
+    const updatedItem: LibraryItem = res.data.libraryItem ?? await getItem(props.item.id)
     emit('matched', updatedItem)
     applying.value = false
     close()
   } catch {
-    error.value = 'Match applied but failed to reload — please close and reopen the book'
+    error.value = 'Failed to apply match — please try again'
     applying.value = false
   }
 }
