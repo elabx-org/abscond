@@ -5,20 +5,24 @@ import type { LibraryItem } from '@/api/types'
 
 vi.mock('@/api/match', () => ({
   searchCandidates: vi.fn(),
-  applyMatch: vi.fn(),
 }))
 vi.mock('@/api/items', () => ({
   getItem: vi.fn(),
 }))
 vi.mock('@/api/client', () => ({
   coverUrl: vi.fn((id: string) => `/api/items/${id}/cover?token=tok`),
+  api: {
+    patch: vi.fn(),
+    post:  vi.fn(),
+  },
 }))
 vi.mock('@/stores/auth', () => ({
   useAuthStore: () => ({ token: 'tok' }),
 }))
 
-import { searchCandidates, applyMatch } from '@/api/match'
+import { searchCandidates } from '@/api/match'
 import { getItem } from '@/api/items'
+import { api } from '@/api/client'
 
 const mockItem: LibraryItem = {
   id: 'li1',
@@ -238,48 +242,35 @@ describe('MatchSheet — apply step', () => {
     expect(wrapper.text()).toContain('Review Changes')
   })
 
-  it('uses libraryItem from match response and emits matched without calling getItem', async () => {
+  it('patches metadata and emits matched with fresh item from getItem', async () => {
     const updatedItem = {
       ...mockItem,
       media: { ...mockItem.media, metadata: { ...mockItem.media.metadata, title: 'Dune Updated', authorName: 'Frank Herbert' } },
     }
-    vi.mocked(applyMatch).mockResolvedValueOnce({ updated: true, libraryItem: updatedItem })
+    vi.mocked(api.patch).mockResolvedValueOnce({ data: {} } as any)
+    vi.mocked(getItem).mockResolvedValueOnce(updatedItem)
     const wrapper = await mountAtDiff()
     await wrapper.find('.match-search-btn').trigger('click')
     await flushPromises()
-    expect(applyMatch).toHaveBeenCalledWith('li1', 'audible', 'Dune', 'Frank Herbert', 'c1')
-    expect(getItem).not.toHaveBeenCalled()
+    expect(api.patch).toHaveBeenCalledWith('/items/li1/media', expect.objectContaining({
+      metadata: expect.objectContaining({ title: 'Dune', authors: [{ name: 'Frank Herbert' }] }),
+    }))
+    expect(getItem).toHaveBeenCalledWith('li1')
     expect(wrapper.emitted('matched')).toBeTruthy()
     const emittedItem = wrapper.emitted('matched')![0][0] as { media: { metadata: { title: string; authorName: string } } }
     expect(emittedItem.media.metadata.title).toBe('Dune Updated')
-    expect(emittedItem.media.metadata.authorName).toBe('Frank Herbert')
   })
 
-  it('falls back to getItem when match response has no libraryItem', async () => {
-    vi.mocked(applyMatch).mockResolvedValueOnce({ updated: true })
-    vi.mocked(getItem).mockResolvedValueOnce({
-      ...mockItem,
-      media: { ...mockItem.media, metadata: { ...mockItem.media.metadata, title: 'Dune Fallback', authorName: 'Frank Herbert' } },
-    })
-    const wrapper = await mountAtDiff()
-    await wrapper.find('.match-search-btn').trigger('click')
-    await flushPromises()
-    expect(getItem).toHaveBeenCalledWith('li1')
-    expect(wrapper.emitted('matched')).toBeTruthy()
-    const emittedItem = wrapper.emitted('matched')![0][0] as { media: { metadata: { title: string } } }
-    expect(emittedItem.media.metadata.title).toBe('Dune Fallback')
-  })
-
-  it('shows error on apply failure', async () => {
-    vi.mocked(applyMatch).mockRejectedValueOnce(new Error('network'))
+  it('shows error on patch failure', async () => {
+    vi.mocked(api.patch).mockRejectedValueOnce(new Error('network'))
     const wrapper = await mountAtDiff()
     await wrapper.find('.match-search-btn').trigger('click')
     await flushPromises()
     expect(wrapper.find('.match-error').exists()).toBe(true)
   })
 
-  it('shows error when getItem fails after successful applyMatch with no libraryItem', async () => {
-    vi.mocked(applyMatch).mockResolvedValueOnce({ updated: true })
+  it('shows error when getItem fails after successful patch', async () => {
+    vi.mocked(api.patch).mockResolvedValueOnce({ data: {} } as any)
     vi.mocked(getItem).mockRejectedValueOnce(new Error('network'))
     const wrapper = await mountAtDiff()
     await wrapper.find('.match-search-btn').trigger('click')

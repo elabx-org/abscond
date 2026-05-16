@@ -156,9 +156,9 @@
 
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
-import { searchCandidates, applyMatch, type MatchCandidate } from '@/api/match'
+import { searchCandidates, type MatchCandidate } from '@/api/match'
 import { getItem } from '@/api/items'
-import { coverUrl } from '@/api/client'
+import { api, coverUrl } from '@/api/client'
 import { useAuthStore } from '@/stores/auth'
 import type { LibraryItem } from '@/api/types'
 
@@ -248,31 +248,32 @@ async function doApply() {
   if (!selected.value) return
   applying.value = true
   error.value    = null
-  let updatedItem: LibraryItem | null = null
+  const c = selected.value
   try {
-    const asin = (selected.value as MatchCandidate & { asin?: string }).asin ?? selected.value.id
-    const result = await applyMatch(props.item.id, provider.value, selected.value.title, selected.value.author || undefined, asin)
-    // ABS returns the updated libraryItem in the match response — use it directly to
-    // avoid a race between the match write and a subsequent GET read.
-    if (result.libraryItem) updatedItem = result.libraryItem
+    const metadata: Record<string, unknown> = { title: c.title }
+    if (c.subtitle)        metadata.subtitle      = c.subtitle
+    if (c.author)          metadata.authors       = [{ name: c.author }]
+    if (c.narrator)        metadata.narrators     = [c.narrator]
+    if (c.publishedYear)   metadata.publishedYear = c.publishedYear
+    if (c.publisher)       metadata.publisher     = c.publisher
+    if (c.description)     metadata.description   = c.description
+    if (c.genres?.length)  metadata.genres        = c.genres
+    await api.patch(`/items/${props.item.id}/media`, { metadata })
+    if (c.coverUrl) await api.post(`/items/${props.item.id}/cover`, { url: c.coverUrl }).catch(() => {})
   } catch {
     error.value = 'Failed to apply match — please try again'
     applying.value = false
     return
   }
-  // Fall back to a fresh GET only if the server didn't return libraryItem.
-  if (!updatedItem) {
-    try {
-      updatedItem = await getItem(props.item.id)
-    } catch {
-      error.value = 'Match applied but failed to reload — please close and reopen the book'
-      applying.value = false
-      return
-    }
+  try {
+    const updatedItem = await getItem(props.item.id)
+    emit('matched', updatedItem)
+    applying.value = false
+    close()
+  } catch {
+    error.value = 'Match applied but failed to reload — please close and reopen the book'
+    applying.value = false
   }
-  emit('matched', updatedItem)
-  applying.value = false
-  close()
 }
 
 function close() {
