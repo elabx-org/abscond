@@ -352,6 +352,11 @@
       v-model="showFiles"
       :item-id="item.id"
     />
+    <MakeM4bSheet
+      v-if="showMakeM4b"
+      v-model="showMakeM4b"
+      :item-id="item.id"
+    />
   <BookActionsSheet
     v-model="showActions"
     :progress="progress"
@@ -377,6 +382,7 @@ import MatchSheet from '@/components/sheets/MatchSheet.vue'
 import CoverSheet from '@/components/sheets/CoverSheet.vue'
 import ChaptersSheet from '@/components/sheets/ChaptersSheet.vue'
 import FilesSheet from '@/components/sheets/FilesSheet.vue'
+import MakeM4bSheet from '@/components/sheets/MakeM4bSheet.vue'
 import BookActionsSheet from '@/components/sheets/BookActionsSheet.vue'
 import { getDirectDownloadUrl } from '@/api/downloads'
 import { getBaseUrl, api } from '@/api/client'
@@ -472,6 +478,7 @@ const showMatch         = ref(false)
 const showCover         = ref(false)
 const showChapters      = ref(false)
 const showFiles         = ref(false)
+const showMakeM4b       = ref(false)
 const showActions       = ref(false)
 const showDeleteConfirm = ref(false)
 const deleting          = ref(false)
@@ -595,15 +602,6 @@ async function doEmbedMetadata() {
   }
 }
 
-async function doMakeM4b() {
-  try {
-    await api.post(`/encode`, { id: props.item.id })
-    notify.show('M4B creation task queued', 'success')
-  } catch {
-    notify.show('Failed to queue M4B creation', 'error')
-  }
-}
-
 function onCoverUpdated() {
   // Force cover image refresh by busting the cache key
   const img = document.querySelector(`img[src*="${props.item.id}/cover"]`) as HTMLImageElement | null
@@ -641,7 +639,7 @@ function handleAction(id: string) {
   else if (id === 'match')      showMatch.value         = true
   else if (id === 'edit')       openEdit()
   else if (id === 'embed-meta') doEmbedMetadata()
-  else if (id === 'make-m4b')   doMakeM4b()
+  else if (id === 'make-m4b')   showMakeM4b.value = true
   else if (id === 'scan')       doScan()
   else if (id === 'delete')     showDeleteConfirm.value = true
 }
@@ -792,6 +790,7 @@ watch(() => props.show, async (v) => {
     showCover.value       = false
     showChapters.value    = false
     showFiles.value       = false
+    showMakeM4b.value     = false
     showActions.value      = false
     authorsExpanded.value   = false
     narratorsExpanded.value = false
