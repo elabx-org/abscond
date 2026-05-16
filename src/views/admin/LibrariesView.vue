@@ -296,7 +296,28 @@ const addError      = ref('')
 async function scan(id: string) {
   scanningIds.value = new Set([...scanningIds.value, id])
   try { await scanLibrary(id) } catch { /* ignore */ }
-  // Keep scanningIds entry until library_scan_complete socket event clears it
+  // Fallback: if the library_scan_complete socket event is missed (socket
+  // disconnect during scan), poll every 8s for up to 3 minutes then clear.
+  const startedAt = Date.now()
+  const poll = setInterval(async () => {
+    if (!scanningIds.value.has(id)) { clearInterval(poll); return }
+    const elapsed = Date.now() - startedAt
+    if (elapsed > 3 * 60 * 1000) {
+      clearInterval(poll)
+      scanningIds.value = new Set([...scanningIds.value].filter(x => x !== id))
+      await refreshLibrary(id)
+      return
+    }
+    // Check if scan is still running via socket.scanProgress
+    if (!socket.scanProgress[id]) {
+      // No progress entry = scan likely done; give it one more second to settle
+      await new Promise(r => setTimeout(r, 1000))
+      if (!scanningIds.value.has(id)) { clearInterval(poll); return }
+      clearInterval(poll)
+      scanningIds.value = new Set([...scanningIds.value].filter(x => x !== id))
+      await refreshLibrary(id)
+    }
+  }, 8000)
 }
 
 async function matchBooks(id: string) {
