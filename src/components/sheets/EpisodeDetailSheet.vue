@@ -230,4 +230,13 @@ function stripHtml(html: string): string {
 
 .sheet-enter-active, .sheet-leave-active { transition: opacity 0.25s; }
 .sheet-enter-from, .sheet-leave-to { opacity: 0; }
+
+@media (min-width: 640px) {
+  .ep-detail-sheet {
+    left: auto !important; right: 0; top: 0; bottom: 0 !important;
+    width: 480px; max-width: 100vw; height: 100% !important;
+    border-radius: 0; border-top: none; border-left: 1px solid rgba(255,255,255,0.08);
+  }
+  .drag-handle-area { display: none; }
+}
 </style>
