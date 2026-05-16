@@ -19,17 +19,17 @@ vi.mock('@/api/client', () => ({
 
 import { api } from '@/api/client'
 
-beforeEach(() => vi.clearAllMocks())
+beforeEach(() => vi.resetAllMocks())
 
 describe('getServerInfo', () => {
-  it('returns version from /server/info', async () => {
-    vi.mocked(api.get).mockResolvedValueOnce({ data: { version: '2.4.0' } })
+  it('returns version from /authorize', async () => {
+    vi.mocked(api.post).mockResolvedValueOnce({ data: { serverSettings: { version: '2.4.0' } } })
     const info = await getServerInfo()
-    expect(api.get).toHaveBeenCalledWith('/server/info')
+    expect(api.post).toHaveBeenCalledWith('/authorize', {})
     expect(info.version).toBe('2.4.0')
   })
   it('returns fallback on error', async () => {
-    vi.mocked(api.get).mockRejectedValueOnce(new Error('fail'))
+    vi.mocked(api.post).mockRejectedValueOnce(new Error('fail'))
     const info = await getServerInfo()
     expect(info.version).toBe('—')
   })
