@@ -160,11 +160,13 @@ import { searchCandidates, type MatchCandidate } from '@/api/match'
 import { getItem } from '@/api/items'
 import { api, coverUrl } from '@/api/client'
 import { useAuthStore } from '@/stores/auth'
+import { useNotificationStore } from '@/stores/notifications'
 import type { LibraryItem } from '@/api/types'
 
-const props = defineProps<{ modelValue: boolean; item: LibraryItem }>()
-const emit  = defineEmits<{ 'update:modelValue': [val: boolean]; matched: [item: LibraryItem] }>()
-const auth  = useAuthStore()
+const props  = defineProps<{ modelValue: boolean; item: LibraryItem }>()
+const emit   = defineEmits<{ 'update:modelValue': [val: boolean]; matched: [item: LibraryItem] }>()
+const auth   = useAuthStore()
+const notify = useNotificationStore()
 
 const PROVIDERS = [
   { value: 'audible',     label: 'Audible' },
@@ -265,8 +267,11 @@ async function doApply() {
     if (c.genres?.length) metadata.genres        = c.genres
     const payload: Record<string, unknown> = { metadata }
     if (c.coverUrl) payload.url = c.coverUrl
-    await api.patch(`/items/${props.item.id}/media`, payload)
-  } catch {
+    console.log('[MatchSheet] PATCH payload', JSON.stringify(payload))
+    const patchRes = await api.patch(`/items/${props.item.id}/media`, payload)
+    console.log('[MatchSheet] PATCH response updated:', patchRes.data?.updated)
+  } catch (err) {
+    console.error('[MatchSheet] PATCH failed', err)
     error.value = 'Failed to apply match — please try again'
     applying.value = false
     return
@@ -275,10 +280,13 @@ async function doApply() {
   // Always fetch the expanded item so the UI gets the full correct state.
   try {
     const updatedItem = await getItem(props.item.id)
+    console.log('[MatchSheet] getItem title:', updatedItem.media.metadata.title, 'author:', updatedItem.media.metadata.authorName)
     emit('matched', updatedItem)
+    notify.show('Metadata updated', 'success')
     applying.value = false
     close()
-  } catch {
+  } catch (err) {
+    console.error('[MatchSheet] getItem failed', err)
     error.value = 'Match applied but failed to reload — please close and reopen the book'
     applying.value = false
   }
