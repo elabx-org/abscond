@@ -384,7 +384,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, shallowRef, watch, onBeforeUnmount } from 'vue'
+import { computed, ref, watch, onBeforeUnmount } from 'vue'
 import { useRouter } from 'vue-router'
 import { useDraggableSheet } from '@/composables/useDraggableSheet'
 import { useColorThief } from '@/composables/useColorThief'
@@ -425,7 +425,7 @@ const emit = defineEmits<{ close: []; 'item-updated': [item: LibraryItem] }>()
 
 // Local mirror so the template re-renders immediately on match without depending
 // on prop propagation timing. Stays in sync with parent changes via the watcher.
-const displayItem = shallowRef<LibraryItem>(props.item)
+const displayItem = ref<LibraryItem>(props.item)
 watch(() => props.item, (v) => { displayItem.value = v })
 // Shadows the 'item' prop in the template — setup vars take priority over props.
 const item = displayItem

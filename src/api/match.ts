@@ -1,5 +1,6 @@
 import axios from 'axios'
 import { api } from './client'
+import type { LibraryItem } from './types'
 
 export interface MatchCandidate {
   id?: string
@@ -17,6 +18,7 @@ export interface MatchCandidate {
 
 export interface ApplyMatchResult {
   updated: boolean
+  libraryItem?: LibraryItem
 }
 
 export async function searchCandidates(

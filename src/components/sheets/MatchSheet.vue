@@ -248,25 +248,29 @@ async function doApply() {
   if (!selected.value) return
   applying.value = true
   error.value    = null
+  let updatedItem: LibraryItem | null = null
   try {
     const asin = (selected.value as MatchCandidate & { asin?: string }).asin ?? selected.value.id
-    await applyMatch(props.item.id, provider.value, selected.value.title, selected.value.author || undefined, asin)
+    const result = await applyMatch(props.item.id, provider.value, selected.value.title, selected.value.author || undefined, asin)
+    // ABS returns the updated libraryItem in the match response — use it directly to
+    // avoid a race between the match write and a subsequent GET read.
+    if (result.libraryItem) updatedItem = result.libraryItem
   } catch {
     error.value = 'Failed to apply match — please try again'
     applying.value = false
     return
   }
-  // Fetch the authoritative updated item from the server — the server applies the
-  // metadata, downloads the cover, and reconciles author/narrator records.
-  // Client-side construction misses all of that.
-  try {
-    const updatedItem = await getItem(props.item.id)
-    emit('matched', updatedItem)
-  } catch {
-    error.value = 'Match applied but failed to reload — please close and reopen the book'
-    applying.value = false
-    return
+  // Fall back to a fresh GET only if the server didn't return libraryItem.
+  if (!updatedItem) {
+    try {
+      updatedItem = await getItem(props.item.id)
+    } catch {
+      error.value = 'Match applied but failed to reload — please close and reopen the book'
+      applying.value = false
+      return
+    }
   }
+  emit('matched', updatedItem)
   applying.value = false
   close()
 }
