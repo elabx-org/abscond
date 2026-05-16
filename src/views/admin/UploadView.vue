@@ -7,10 +7,12 @@
     <!-- Library picker -->
     <div class="form-group">
       <label class="form-label">Library</label>
-      <select v-model="selectedLibraryId" class="form-select">
-        <option value="">Select library…</option>
-        <option v-for="l in lib.libraries" :key="l.id" :value="l.id">{{ l.name }}</option>
-      </select>
+      <AppSelect
+        v-model="selectedLibraryId"
+        :options="lib.libraries.map(l => ({ value: l.id, label: l.name }))"
+        placeholder="Select library…"
+        :full="true"
+      />
     </div>
 
     <!-- Folder / item title -->
@@ -72,6 +74,7 @@
 import { ref } from 'vue'
 import { useLibraryStore } from '@/stores/library'
 import { api } from '@/api/client'
+import AppSelect from '@/components/common/AppSelect.vue'
 
 const lib = useLibraryStore()
 

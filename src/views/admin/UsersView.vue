@@ -42,11 +42,15 @@
               <h3 class="create-title">New User</h3>
               <input v-model="newUsername" class="form-input" placeholder="Username" autocomplete="off" />
               <input v-model="newPassword" class="form-input" type="password" placeholder="Password" autocomplete="new-password" />
-              <select v-model="newType" class="form-input form-select">
-                <option value="user">User</option>
-                <option value="admin">Admin</option>
-                <option value="guest">Guest</option>
-              </select>
+              <AppSelect
+                v-model="newType"
+                :options="[
+                  { value: 'user', label: 'User' },
+                  { value: 'admin', label: 'Admin' },
+                  { value: 'guest', label: 'Guest' },
+                ]"
+                :full="true"
+              />
               <p v-if="createError" class="form-error">{{ createError }}</p>
               <button class="save-btn" :disabled="!canCreate || saving" @click="doCreate">
                 {{ saving ? 'Creating…' : 'Create User' }}
@@ -83,6 +87,7 @@ import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { getUsers, createUser, deleteUser } from '@/api/admin'
 import type { AdminUser } from '@/api/admin'
+import AppSelect from '@/components/common/AppSelect.vue'
 
 const router  = useRouter()
 const loading = ref(true)

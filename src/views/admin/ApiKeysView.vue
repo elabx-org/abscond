@@ -61,18 +61,24 @@
                 placeholder="Key name"
                 autocomplete="off"
               />
-              <select v-model="newUserId" class="form-input form-select">
-                <option value="" disabled>Select user</option>
-                <option v-for="u in selectableUsers" :key="u.id" :value="u.id">
-                  {{ u.username }}
-                </option>
-              </select>
-              <select v-model="newExpiresIn" class="form-input form-select">
-                <option :value="undefined">Never</option>
-                <option :value="2592000">30 days</option>
-                <option :value="7776000">90 days</option>
-                <option :value="31536000">1 year</option>
-              </select>
+              <AppSelect
+                v-model="newUserId"
+                :options="selectableUsers.map(u => ({ value: u.id, label: u.username }))"
+                placeholder="Select user"
+                :full="true"
+                style="margin-bottom:10px"
+              />
+              <AppSelect
+                v-model="newExpiresIn"
+                :options="[
+                  { value: undefined, label: 'Never' },
+                  { value: 2592000, label: '30 days' },
+                  { value: 7776000, label: '90 days' },
+                  { value: 31536000, label: '1 year' },
+                ]"
+                :full="true"
+                style="margin-bottom:10px"
+              />
               <p v-if="createError" class="form-error">{{ createError }}</p>
               <button
                 class="save-btn"
@@ -93,6 +99,7 @@
 import { computed, onMounted, ref } from 'vue'
 import { getApiKeys, createApiKey, deleteApiKey, getUsers } from '@/api/admin'
 import type { ApiKey, AdminUser } from '@/api/admin'
+import AppSelect from '@/components/common/AppSelect.vue'
 
 const loading = ref(true)
 const keys    = ref<ApiKey[]>([])

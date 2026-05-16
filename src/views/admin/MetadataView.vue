@@ -134,10 +134,14 @@
                 <input v-model="newProvider.name" class="form-input" placeholder="Name" />
                 <input v-model="newProvider.url" class="form-input" placeholder="URL (https://…)" />
                 <input v-model="newProvider.authHeaderValue" class="form-input" placeholder="Auth header value (optional)" />
-                <select v-model="newProvider.mediaType" class="form-input form-select">
-                  <option value="book">Book</option>
-                  <option value="podcast">Podcast</option>
-                </select>
+                <AppSelect
+                  v-model="newProvider.mediaType"
+                  :options="[
+                    { value: 'book', label: 'Book' },
+                    { value: 'podcast', label: 'Podcast' },
+                  ]"
+                  :full="true"
+                />
                 <p v-if="providerError" class="form-error">{{ providerError }}</p>
                 <button class="save-btn" :disabled="!newProvider.name.trim() || !newProvider.url.trim() || providerSaving" @click="doCreateProvider">
                   {{ providerSaving ? 'Adding…' : 'Add Provider' }}
@@ -159,6 +163,7 @@ import {
   getCustomMetadataProviders, createCustomMetadataProvider, deleteCustomMetadataProvider,
 } from '@/api/admin'
 import type { CustomMetadataProvider } from '@/api/admin'
+import AppSelect from '@/components/common/AppSelect.vue'
 
 type Sheet = 'tags' | 'genres' | 'providers' | null
 

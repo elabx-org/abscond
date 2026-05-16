@@ -206,15 +206,15 @@
           <div class="setting-info">
             <p class="setting-name">Match existing by</p>
           </div>
-          <select
+          <AppSelect
             v-model="settings.authOpenIDMatchExistingBy"
-            class="setting-select"
+            :options="[
+              { value: null, label: 'Disabled' },
+              { value: 'email', label: 'Email' },
+              { value: 'username', label: 'Username' },
+            ]"
             @change="dirty = true"
-          >
-            <option :value="null">Disabled</option>
-            <option value="email">Email</option>
-            <option value="username">Username</option>
-          </select>
+          />
         </div>
       </div>
 
@@ -233,6 +233,7 @@
 import { computed, onMounted, ref } from 'vue'
 import { getAuthSettings, updateAuthSettings } from '@/api/admin'
 import type { AuthSettings } from '@/api/admin'
+import AppSelect from '@/components/common/AppSelect.vue'
 
 const loading   = ref(true)
 const loadError = ref(false)

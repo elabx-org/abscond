@@ -107,10 +107,14 @@
             <div class="create-content">
               <h3 class="create-title">New Library</h3>
               <input v-model="libName" class="form-input" placeholder="Library name" />
-              <select v-model="libMediaType" class="form-input form-select">
-                <option value="book">Audiobooks</option>
-                <option value="podcast">Podcasts</option>
-              </select>
+              <AppSelect
+                v-model="libMediaType"
+                :options="[
+                  { value: 'book', label: 'Audiobooks' },
+                  { value: 'podcast', label: 'Podcasts' },
+                ]"
+                :full="true"
+              />
               <input v-model="libFolder" class="form-input" placeholder="Folder path (e.g. /audiobooks)" />
               <p class="form-hint">The folder must exist on the server and be accessible.</p>
               <p v-if="libError" class="form-error">{{ libError }}</p>
@@ -230,6 +234,7 @@ import { getAdminLibraries, scanLibrary, getPodcastFeed, addPodcast, createLibra
 import type { AdminLibrary, PodcastFeedInfo } from '@/api/admin'
 import { useSocketStore } from '@/stores/socket'
 import { api } from '@/api/client'
+import AppSelect from '@/components/common/AppSelect.vue'
 
 const socket = useSocketStore()
 const router = useRouter()

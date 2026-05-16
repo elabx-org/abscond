@@ -30,13 +30,17 @@
             <p class="setting-name">Cover provider</p>
             <p class="setting-desc">Source used when auto-finding covers</p>
           </div>
-          <select v-model="settings.scannerCoverProvider" class="setting-select" @change="dirty = true">
-            <option value="audible">Audible</option>
-            <option value="itunes">iTunes</option>
-            <option value="openlibrary">Open Library</option>
-            <option value="googlebooks">Google Books</option>
-            <option value="audiobookshelf">AudioBookShelf</option>
-          </select>
+          <AppSelect
+            v-model="settings.scannerCoverProvider"
+            :options="[
+              { value: 'audible', label: 'Audible' },
+              { value: 'itunes', label: 'iTunes' },
+              { value: 'openlibrary', label: 'Open Library' },
+              { value: 'googlebooks', label: 'Google Books' },
+              { value: 'audiobookshelf', label: 'AudioBookShelf' },
+            ]"
+            @change="dirty = true"
+          />
         </div>
 
         <div class="setting-row">
@@ -82,11 +86,15 @@
             <p class="setting-name">Auto-backup schedule</p>
             <p class="setting-desc">How often to create automatic backups</p>
           </div>
-          <select v-model="settings.backupSchedule" class="setting-select" @change="dirty = true">
-            <option :value="false">Off</option>
-            <option value="0 1 * * *">Daily</option>
-            <option value="0 1 * * 0">Weekly</option>
-          </select>
+          <AppSelect
+            v-model="settings.backupSchedule"
+            :options="[
+              { value: false, label: 'Off' },
+              { value: '0 1 * * *', label: 'Daily' },
+              { value: '0 1 * * 0', label: 'Weekly' },
+            ]"
+            @change="dirty = true"
+          />
         </div>
         <div class="setting-row">
           <div class="setting-info">
@@ -139,10 +147,14 @@
             <p class="setting-name">Default library view</p>
             <p class="setting-desc">Server-default view mode for the library</p>
           </div>
-          <select v-model.number="settings.bookshelfView" class="setting-select" @change="dirty = true">
-            <option :value="0">Bookshelf grid</option>
-            <option :value="1">List view</option>
-          </select>
+          <AppSelect
+            v-model="settings.bookshelfView"
+            :options="[
+              { value: 0, label: 'Bookshelf grid' },
+              { value: 1, label: 'List view' },
+            ]"
+            @change="dirty = true"
+          />
         </div>
       </div>
 
@@ -180,6 +192,7 @@
 import { onMounted, ref } from 'vue'
 import { getServerSettings, updateServerSettings } from '@/api/admin/index'
 import type { ServerSettings } from '@/api/admin/index'
+import AppSelect from '@/components/common/AppSelect.vue'
 
 const loading   = ref(true)
 const loadError = ref(false)
