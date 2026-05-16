@@ -431,6 +431,62 @@ export async function updateAuthSettings(data: Partial<AuthSettings>): Promise<v
   await api.patch('/auth-settings', data)
 }
 
+// ─── Tags ──────────────────────────────────────────────────────────────────────
+export async function getTags(): Promise<string[]> {
+  const res = await api.get('/tags')
+  return res.data.tags ?? []
+}
+
+export async function renameTag(tag: string, newTag: string): Promise<void> {
+  await api.post('/tags/rename', { tag, newTag })
+}
+
+export async function deleteTag(tag: string): Promise<void> {
+  await api.delete(`/tags/${encodeURIComponent(btoa(tag))}`)
+}
+
+// ─── Genres ────────────────────────────────────────────────────────────────────
+export async function getGenres(): Promise<string[]> {
+  const res = await api.get('/genres')
+  return res.data.genres ?? []
+}
+
+export async function renameGenre(genre: string, newGenre: string): Promise<void> {
+  await api.post('/genres/rename', { genre, newGenre })
+}
+
+export async function deleteGenre(genre: string): Promise<void> {
+  await api.delete(`/genres/${encodeURIComponent(btoa(genre))}`)
+}
+
+// ─── Custom Metadata Providers ─────────────────────────────────────────────────
+export interface CustomMetadataProvider {
+  id: string
+  name: string
+  url: string
+  mediaType: 'book' | 'podcast'
+  authHeaderValue?: string | null
+}
+
+export async function getCustomMetadataProviders(): Promise<CustomMetadataProvider[]> {
+  const res = await api.get('/custom-metadata-providers')
+  return res.data.providers ?? []
+}
+
+export async function createCustomMetadataProvider(data: {
+  name: string
+  url: string
+  mediaType: 'book' | 'podcast'
+  authHeaderValue?: string
+}): Promise<CustomMetadataProvider> {
+  const res = await api.post('/custom-metadata-providers', data)
+  return res.data.provider ?? res.data
+}
+
+export async function deleteCustomMetadataProvider(id: string): Promise<void> {
+  await api.delete(`/custom-metadata-providers/${id}`)
+}
+
 // ─── Item Metadata Quick Match ─────────────────────────────────────────────────
 export interface SearchProviders {
   books: Array<{ value: string; text: string }>

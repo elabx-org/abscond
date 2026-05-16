@@ -1,188 +1,331 @@
 <template>
   <div class="metadata-view">
-    <div v-if="loading" class="loading-state">
-      <div v-for="n in 5" :key="n" class="skel-row" />
+    <div class="nav-list">
+      <button class="nav-row" @click="open('tags')">
+        <span class="nav-label">Manage Tags</span>
+        <v-icon size="18" color="rgba(255,255,255,0.3)">mdi-chevron-right</v-icon>
+      </button>
+      <button class="nav-row" @click="open('genres')">
+        <span class="nav-label">Manage Genres</span>
+        <v-icon size="18" color="rgba(255,255,255,0.3)">mdi-chevron-right</v-icon>
+      </button>
+      <button class="nav-row" @click="open('providers')">
+        <span class="nav-label">Custom Metadata Providers</span>
+        <v-icon size="18" color="rgba(255,255,255,0.3)">mdi-chevron-right</v-icon>
+      </button>
     </div>
-
-    <template v-else>
-      <div class="settings-group">
-        <p class="group-label">Quick Match All</p>
-        <p class="group-desc">Match all items in a library to a metadata provider. Runs in the background.</p>
-
-        <div class="setting-row">
-          <div class="setting-info">
-            <p class="setting-name">Library</p>
-          </div>
-          <select v-model="selectedLibraryId" class="setting-select">
-            <option value="" disabled>Select library</option>
-            <option v-for="lib in libraries" :key="lib.id" :value="lib.id">{{ lib.name }}</option>
-          </select>
-        </div>
-
-        <div class="setting-row">
-          <div class="setting-info">
-            <p class="setting-name">Provider</p>
-            <p class="setting-desc">Metadata source used for matching</p>
-          </div>
-          <select v-model="selectedProvider" class="setting-select">
-            <option v-for="p in bookProviders" :key="p.value" :value="p.value">{{ p.text }}</option>
-          </select>
-        </div>
-
-        <div class="setting-row" @click="overrideCover = !overrideCover">
-          <div class="setting-info">
-            <p class="setting-name">Override cover</p>
-            <p class="setting-desc">Replace existing cover with matched result</p>
-          </div>
-          <div class="toggle" :class="{ on: overrideCover }"><div class="toggle-thumb" /></div>
-        </div>
-
-        <div class="setting-row" @click="overrideDetails = !overrideDetails">
-          <div class="setting-info">
-            <p class="setting-name">Override details</p>
-            <p class="setting-desc">Replace title, author, description, etc.</p>
-          </div>
-          <div class="toggle" :class="{ on: overrideDetails }"><div class="toggle-thumb" /></div>
-        </div>
-
-        <p v-if="matchStatus === 'running'" class="status-msg">
-          <v-icon size="13" class="spin">mdi-loading</v-icon> Queuing items…
-        </p>
-        <p v-else-if="matchStatus === 'done'" class="status-msg success">
-          <v-icon size="13">mdi-check-circle-outline</v-icon> Match job started in background
-        </p>
-        <p v-else-if="matchStatus === 'error'" class="status-msg err">
-          <v-icon size="13">mdi-alert-circle-outline</v-icon> {{ matchError }}
-        </p>
-
-        <button
-          class="action-btn"
-          :disabled="!selectedLibraryId || matchStatus === 'running'"
-          @click="doQuickMatch"
-        >
-          {{ matchStatus === 'running' ? 'Starting…' : 'Quick Match All' }}
-        </button>
-      </div>
-    </template>
   </div>
+
+  <!-- Tags sheet -->
+  <Teleport to="body">
+    <Transition name="sheet">
+      <div v-if="activeSheet === 'tags'" class="sheet-backdrop" @click.self="close">
+        <div class="sheet">
+          <div class="drag-handle-area"><div class="drag-handle" /></div>
+          <div class="sheet-header">
+            <h3 class="sheet-title">Manage Tags</h3>
+            <button class="sheet-close" @click="close"><v-icon size="20">mdi-close</v-icon></button>
+          </div>
+          <div class="sheet-body">
+            <div v-if="listLoading" class="list-loading">
+              <div v-for="n in 5" :key="n" class="skel-item" />
+            </div>
+            <div v-else-if="!items.length" class="empty-state">
+              <v-icon size="32" color="rgba(255,255,255,0.1)">mdi-tag-off-outline</v-icon>
+              <p>No tags found</p>
+            </div>
+            <div v-else class="item-list">
+              <div v-for="item in items" :key="item" class="item-row">
+                <template v-if="editingItem === item">
+                  <input v-model="editValue" class="inline-input" @keyup.enter="saveRename(item)" @keyup.escape="editingItem = ''" />
+                  <button class="icon-btn save" :disabled="!editValue.trim() || editValue === item" @click="saveRename(item)">
+                    <v-icon size="16">mdi-check</v-icon>
+                  </button>
+                  <button class="icon-btn cancel" @click="editingItem = ''">
+                    <v-icon size="16">mdi-close</v-icon>
+                  </button>
+                </template>
+                <template v-else>
+                  <span class="item-name">{{ item }}</span>
+                  <button class="icon-btn edit" @click="startEdit(item)"><v-icon size="15">mdi-pencil-outline</v-icon></button>
+                  <button class="icon-btn del" @click="doDelete(item)"><v-icon size="15">mdi-delete-outline</v-icon></button>
+                </template>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </Transition>
+  </Teleport>
+
+  <!-- Genres sheet -->
+  <Teleport to="body">
+    <Transition name="sheet">
+      <div v-if="activeSheet === 'genres'" class="sheet-backdrop" @click.self="close">
+        <div class="sheet">
+          <div class="drag-handle-area"><div class="drag-handle" /></div>
+          <div class="sheet-header">
+            <h3 class="sheet-title">Manage Genres</h3>
+            <button class="sheet-close" @click="close"><v-icon size="20">mdi-close</v-icon></button>
+          </div>
+          <div class="sheet-body">
+            <div v-if="listLoading" class="list-loading">
+              <div v-for="n in 5" :key="n" class="skel-item" />
+            </div>
+            <div v-else-if="!items.length" class="empty-state">
+              <v-icon size="32" color="rgba(255,255,255,0.1)">mdi-shape-outline</v-icon>
+              <p>No genres found</p>
+            </div>
+            <div v-else class="item-list">
+              <div v-for="item in items" :key="item" class="item-row">
+                <template v-if="editingItem === item">
+                  <input v-model="editValue" class="inline-input" @keyup.enter="saveRename(item)" @keyup.escape="editingItem = ''" />
+                  <button class="icon-btn save" :disabled="!editValue.trim() || editValue === item" @click="saveRename(item)">
+                    <v-icon size="16">mdi-check</v-icon>
+                  </button>
+                  <button class="icon-btn cancel" @click="editingItem = ''">
+                    <v-icon size="16">mdi-close</v-icon>
+                  </button>
+                </template>
+                <template v-else>
+                  <span class="item-name">{{ item }}</span>
+                  <button class="icon-btn edit" @click="startEdit(item)"><v-icon size="15">mdi-pencil-outline</v-icon></button>
+                  <button class="icon-btn del" @click="doDelete(item)"><v-icon size="15">mdi-delete-outline</v-icon></button>
+                </template>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </Transition>
+  </Teleport>
+
+  <!-- Custom Providers sheet -->
+  <Teleport to="body">
+    <Transition name="sheet">
+      <div v-if="activeSheet === 'providers'" class="sheet-backdrop" @click.self="close">
+        <div class="sheet">
+          <div class="drag-handle-area"><div class="drag-handle" /></div>
+          <div class="sheet-header">
+            <h3 class="sheet-title">Custom Metadata Providers</h3>
+            <button class="sheet-close" @click="close"><v-icon size="20">mdi-close</v-icon></button>
+          </div>
+          <div class="sheet-body">
+            <div v-if="listLoading" class="list-loading">
+              <div v-for="n in 3" :key="n" class="skel-item" />
+            </div>
+            <div v-else>
+              <div v-if="providers.length" class="item-list" style="margin-bottom:16px">
+                <div v-for="p in providers" :key="p.id" class="provider-row">
+                  <div class="provider-info">
+                    <p class="provider-name">{{ p.name }}</p>
+                    <p class="provider-meta">{{ p.mediaType }} · <span class="provider-url">{{ p.url }}</span></p>
+                  </div>
+                  <button class="icon-btn del" @click="doDeleteProvider(p.id)"><v-icon size="15">mdi-delete-outline</v-icon></button>
+                </div>
+              </div>
+              <div v-else class="empty-state" style="margin-bottom:16px">
+                <v-icon size="32" color="rgba(255,255,255,0.1)">mdi-api</v-icon>
+                <p>No custom providers</p>
+              </div>
+
+              <div class="add-provider-form">
+                <p class="form-label">Add Provider</p>
+                <input v-model="newProvider.name" class="form-input" placeholder="Name" />
+                <input v-model="newProvider.url" class="form-input" placeholder="URL (https://…)" />
+                <input v-model="newProvider.authHeaderValue" class="form-input" placeholder="Auth header value (optional)" />
+                <select v-model="newProvider.mediaType" class="form-input form-select">
+                  <option value="book">Book</option>
+                  <option value="podcast">Podcast</option>
+                </select>
+                <p v-if="providerError" class="form-error">{{ providerError }}</p>
+                <button class="save-btn" :disabled="!newProvider.name.trim() || !newProvider.url.trim() || providerSaving" @click="doCreateProvider">
+                  {{ providerSaving ? 'Adding…' : 'Add Provider' }}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </Transition>
+  </Teleport>
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
-import { getAdminLibraries, getSearchProviders, getLibraryItemIds, batchQuickMatch } from '@/api/admin'
-import type { AdminLibrary } from '@/api/admin'
+import { ref } from 'vue'
+import {
+  getTags, renameTag, deleteTag,
+  getGenres, renameGenre, deleteGenre,
+  getCustomMetadataProviders, createCustomMetadataProvider, deleteCustomMetadataProvider,
+} from '@/api/admin'
+import type { CustomMetadataProvider } from '@/api/admin'
 
-const loading            = ref(true)
-const libraries          = ref<AdminLibrary[]>([])
-const bookProviders      = ref<Array<{ value: string; text: string }>>([])
-const selectedLibraryId  = ref('')
-const selectedProvider   = ref('google')
-const overrideCover      = ref(false)
-const overrideDetails    = ref(false)
-const matchStatus        = ref<'idle' | 'running' | 'done' | 'error'>('idle')
-const matchError         = ref('')
+type Sheet = 'tags' | 'genres' | 'providers' | null
 
-async function doQuickMatch() {
-  if (!selectedLibraryId.value) return
-  matchStatus.value = 'running'
-  matchError.value  = ''
+const activeSheet  = ref<Sheet>(null)
+const listLoading  = ref(false)
+const items        = ref<string[]>([])
+const providers    = ref<CustomMetadataProvider[]>([])
+const editingItem  = ref('')
+const editValue    = ref('')
+
+const newProvider = ref({ name: '', url: '', mediaType: 'book' as 'book' | 'podcast', authHeaderValue: '' })
+const providerSaving = ref(false)
+const providerError  = ref('')
+
+async function open(sheet: Sheet) {
+  activeSheet.value = sheet
+  listLoading.value = true
+  items.value       = []
+  providers.value   = []
+  editingItem.value = ''
   try {
-    const ids = await getLibraryItemIds(selectedLibraryId.value)
-    if (!ids.length) {
-      matchError.value = 'No items found in this library'
-      matchStatus.value = 'error'
-      return
-    }
-    await batchQuickMatch(ids, {
-      provider:        selectedProvider.value,
-      overrideCover:   overrideCover.value,
-      overrideDetails: overrideDetails.value,
-    })
-    matchStatus.value = 'done'
-    setTimeout(() => { matchStatus.value = 'idle' }, 4000)
-  } catch (e: unknown) {
-    matchError.value  = e instanceof Error ? e.message : 'Failed to start match'
-    matchStatus.value = 'error'
-  }
+    if (sheet === 'tags')      items.value     = (await getTags()).sort()
+    if (sheet === 'genres')    items.value     = (await getGenres()).sort()
+    if (sheet === 'providers') providers.value = await getCustomMetadataProviders()
+  } catch { /* ignore */ }
+  finally { listLoading.value = false }
 }
 
-onMounted(async () => {
+function close() { activeSheet.value = null }
+
+function startEdit(item: string) {
+  editingItem.value = item
+  editValue.value   = item
+}
+
+async function saveRename(oldVal: string) {
+  const newVal = editValue.value.trim()
+  if (!newVal || newVal === oldVal) return
   try {
-    const [libs, providers] = await Promise.all([
-      getAdminLibraries(),
-      getSearchProviders(),
-    ])
-    libraries.value     = libs
-    bookProviders.value = providers.books
-    if (libs.length) selectedLibraryId.value = libs[0].id
-    if (providers.books.length) selectedProvider.value = providers.books[0].value
+    if (activeSheet.value === 'tags')   await renameTag(oldVal, newVal)
+    if (activeSheet.value === 'genres') await renameGenre(oldVal, newVal)
+    const idx = items.value.indexOf(oldVal)
+    if (idx !== -1) items.value[idx] = newVal
+    items.value.sort()
   } catch { /* ignore */ }
-  finally { loading.value = false }
-})
+  finally { editingItem.value = '' }
+}
+
+async function doDelete(val: string) {
+  try {
+    if (activeSheet.value === 'tags')   await deleteTag(val)
+    if (activeSheet.value === 'genres') await deleteGenre(val)
+    items.value = items.value.filter(i => i !== val)
+  } catch { /* ignore */ }
+}
+
+async function doDeleteProvider(id: string) {
+  try {
+    await deleteCustomMetadataProvider(id)
+    providers.value = providers.value.filter(p => p.id !== id)
+  } catch { /* ignore */ }
+}
+
+async function doCreateProvider() {
+  if (!newProvider.value.name.trim() || !newProvider.value.url.trim()) return
+  providerSaving.value = true
+  providerError.value  = ''
+  try {
+    const p = await createCustomMetadataProvider({
+      name:            newProvider.value.name.trim(),
+      url:             newProvider.value.url.trim(),
+      mediaType:       newProvider.value.mediaType,
+      authHeaderValue: newProvider.value.authHeaderValue.trim() || undefined,
+    })
+    providers.value.push(p)
+    newProvider.value = { name: '', url: '', mediaType: 'book', authHeaderValue: '' }
+  } catch (e: unknown) {
+    providerError.value = e instanceof Error ? e.message : 'Failed to add provider'
+  } finally { providerSaving.value = false }
+}
 </script>
 
 <style scoped>
 .metadata-view { padding: 4px 0; }
 
-.loading-state { display: flex; flex-direction: column; gap: 10px; }
-.skel-row {
-  height: 56px; border-radius: 10px;
+.nav-list { display: flex; flex-direction: column; }
+.nav-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 0; background: transparent; border: none; border-bottom: 1px solid rgba(255,255,255,0.06);
+  cursor: pointer; width: 100%; text-align: left;
+}
+.nav-row:last-child { border-bottom: none; }
+.nav-label { font-size: 14px; font-weight: 500; color: rgba(255,255,255,0.85); }
+
+.sheet-backdrop { position: fixed; inset: 0; z-index: 200; background: rgba(0,0,0,0.55); }
+.sheet {
+  position: absolute; bottom: 0; left: 0; right: 0;
+  border-radius: 24px 24px 0 0; border-top: 1px solid rgba(255,255,255,0.08);
+  background: #111; max-height: 80vh; display: flex; flex-direction: column;
+}
+.drag-handle-area { padding: 10px 0 4px; flex-shrink: 0; }
+.drag-handle { width: 40px; height: 4px; border-radius: 2px; background: rgba(255,255,255,0.25); margin: 0 auto; }
+.sheet-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 4px 20px 12px; flex-shrink: 0;
+}
+.sheet-title { font-size: 16px; font-weight: 700; color: rgba(255,255,255,0.9); margin: 0; }
+.sheet-close { background: transparent; border: none; cursor: pointer; color: rgba(255,255,255,0.4); padding: 4px; }
+.sheet-body { overflow-y: auto; padding: 0 20px 40px; flex: 1; }
+
+.list-loading { display: flex; flex-direction: column; gap: 8px; }
+.skel-item {
+  height: 40px; border-radius: 8px;
   background: linear-gradient(90deg, #1a1a1a 25%, #222 50%, #1a1a1a 75%);
   background-size: 200% 100%; animation: shimmer 1.5s infinite;
 }
 @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
 
-.settings-group { display: flex; flex-direction: column; margin-bottom: 24px; }
-.group-label {
-  font-size: 11px; font-weight: 700; color: rgba(255,255,255,0.4);
-  text-transform: uppercase; letter-spacing: 0.07em; margin: 0 0 4px;
-}
-.group-desc { font-size: 12px; color: rgba(255,255,255,0.3); margin: 0 0 8px; line-height: 1.5; }
+.empty-state { display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 32px 0; color: rgba(255,255,255,0.4); font-size: 13px; }
 
-.setting-row {
-  display: flex; align-items: center; gap: 12px; padding: 12px 0;
-  border-bottom: 1px solid rgba(255,255,255,0.05); cursor: default;
+.item-list { display: flex; flex-direction: column; }
+.item-row {
+  display: flex; align-items: center; gap: 8px; padding: 10px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
 }
-.setting-row:last-of-type { border-bottom: none; }
-.setting-info { flex: 1; }
-.setting-name { font-size: 13px; font-weight: 600; color: rgba(255,255,255,0.85); margin: 0 0 2px; }
-.setting-desc { font-size: 11px; color: rgba(255,255,255,0.35); margin: 0; }
+.item-row:last-child { border-bottom: none; }
+.item-name { flex: 1; font-size: 13px; color: rgba(255,255,255,0.85); }
 
-.setting-select {
-  background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
-  border-radius: 8px; padding: 6px 10px; font-size: 12px;
-  color: rgba(255,255,255,0.8); outline: none; cursor: pointer; flex-shrink: 0;
-  appearance: none; max-width: 160px;
+.inline-input {
+  flex: 1; background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 6px; padding: 5px 8px; font-size: 13px; color: rgba(255,255,255,0.9); outline: none;
 }
 
-.toggle {
-  width: 44px; height: 24px; border-radius: 12px; border: none; cursor: pointer;
-  background: rgba(255,255,255,0.12); position: relative; flex-shrink: 0; transition: background 0.2s;
+.icon-btn {
+  background: transparent; border: none; cursor: pointer; padding: 5px; border-radius: 6px; flex-shrink: 0;
 }
-.toggle.on { background: #d4a017; }
-.toggle-thumb {
-  position: absolute; top: 2px; left: 2px;
-  width: 20px; height: 20px; border-radius: 50%; background: white; transition: left 0.2s;
-}
-.toggle.on .toggle-thumb { left: 22px; }
+.icon-btn.edit   { color: rgba(255,255,255,0.35); }
+.icon-btn.del    { color: rgba(220,50,50,0.5); }
+.icon-btn.save   { color: #22c55e; }
+.icon-btn.cancel { color: rgba(255,255,255,0.35); }
+.icon-btn:disabled { opacity: 0.3; cursor: not-allowed; }
 
-.status-msg {
-  display: flex; align-items: center; gap: 6px;
-  font-size: 12px; color: rgba(255,255,255,0.5); margin: 10px 0 0;
+.provider-row {
+  display: flex; align-items: center; gap: 10px; padding: 10px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
 }
-.status-msg.success { color: #22c55e; }
-.status-msg.err     { color: #e05555; }
+.provider-row:last-child { border-bottom: none; }
+.provider-info { flex: 1; min-width: 0; }
+.provider-name { font-size: 13px; font-weight: 600; color: rgba(255,255,255,0.85); margin: 0 0 2px; }
+.provider-meta { font-size: 11px; color: rgba(255,255,255,0.4); margin: 0; text-transform: capitalize; }
+.provider-url  { font-size: 10px; color: rgba(255,255,255,0.3); word-break: break-all; }
 
-.action-btn {
-  margin-top: 16px; padding: 13px; border-radius: 12px; border: none; cursor: pointer;
-  background: #d4a017; color: white; font-size: 14px; font-weight: 700; width: 100%;
+.add-provider-form { border-top: 1px solid rgba(255,255,255,0.06); padding-top: 16px; display: flex; flex-direction: column; gap: 8px; }
+.form-label { font-size: 11px; font-weight: 700; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 0.07em; margin: 0 0 4px; }
+.form-input {
+  width: 100%; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 8px; padding: 10px 12px; font-size: 13px;
+  color: rgba(255,255,255,0.9); outline: none; box-sizing: border-box;
 }
-.action-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-
-@keyframes spin { to { transform: rotate(360deg); } }
-.spin { animation: spin 0.8s linear infinite; display: inline-block; }
-
-@media (min-width: 768px) {
-  .action-btn { max-width: 280px; }
+.form-select { appearance: none; }
+.form-error { font-size: 12px; color: #e05555; margin: 0; }
+.save-btn {
+  padding: 12px; border-radius: 10px; border: none; cursor: pointer;
+  background: #d4a017; color: white; font-size: 14px; font-weight: 700;
 }
+.save-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.sheet-enter-active, .sheet-leave-active { transition: opacity 0.2s; }
+.sheet-enter-from, .sheet-leave-to { opacity: 0; }
 </style>
