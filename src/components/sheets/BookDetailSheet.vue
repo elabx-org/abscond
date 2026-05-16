@@ -65,23 +65,6 @@
             </div>
             <p v-if="progress >= 1" class="finished-badge">✓ Finished</p>
 
-            <!-- Star rating -->
-            <div class="star-row">
-              <button
-                v-for="n in 5"
-                :key="n"
-                class="star-btn"
-                @click="setRating(n)"
-              >
-                <v-icon size="22" :color="n <= userRating ? '#d4a017' : 'rgba(255,255,255,0.15)'">
-                  {{ n <= userRating ? 'mdi-star' : 'mdi-star-outline' }}
-                </v-icon>
-              </button>
-              <button v-if="userRating > 0" class="star-clear" @click="setRating(0)">
-                <v-icon size="14" color="rgba(255,255,255,0.25)">mdi-close</v-icon>
-              </button>
-            </div>
-
             <!-- Series -->
             <div v-if="allSeries.length" class="series-rows">
               <button
@@ -742,22 +725,12 @@ const finishedDateLabel = computed(() => {
   return t ? _fmtDate(t) : ''
 })
 
-const userRating = ref(props.item.userMediaProgress?.rating ?? 0)
-
-async function setRating(stars: number) {
-  userRating.value = stars
-  try {
-    await api.patch(`/me/progress/${props.item.id}`, { rating: stars > 0 ? stars : null })
-  } catch { /* ignore */ }
-}
-
 onBeforeUnmount(() => { document.body.style.overflow = '' })
 
 watch(() => props.show, async (v) => {
   document.body.style.overflow = v ? 'hidden' : ''
   if (v) {
     descExpanded.value    = false
-    userRating.value      = props.item.userMediaProgress?.rating ?? 0
     showPlaylistAdd.value = false
     showCollectionAdd.value = false
     showShare.value       = false
@@ -969,9 +942,6 @@ async function doSaveMeta() {
 .finished-badge {
   font-size: 11px; color: #22c55e; text-align: center; margin: 4px 0 8px;
 }
-.star-row { display: flex; align-items: center; justify-content: center; gap: 4px; margin: 8px 0 4px; }
-.star-btn { background: transparent; border: none; cursor: pointer; padding: 2px; }
-.star-clear { background: transparent; border: none; cursor: pointer; padding: 2px; margin-left: 4px; }
 .series-rows { margin: 0 0 8px; display: flex; flex-wrap: wrap; justify-content: center; gap: 4px; }
 .series-btn {
   font-size: 10px; color: rgba(255,255,255,0.45); background: rgba(255,255,255,0.06);

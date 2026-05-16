@@ -1401,7 +1401,7 @@ function queueDragEnd() {
 .scrim-enter-active, .scrim-leave-active { transition: opacity 0.2s; }
 .scrim-enter-from, .scrim-leave-to { opacity: 0; }
 .panel-box {
-  position: fixed; left: 0; right: 0;
+  position: fixed; left: auto; right: 0; width: min(480px, 100%);
   bottom: calc(56px + env(safe-area-inset-bottom, 0px));
   z-index: 200;
   background: #1a1a1a; border-radius: 20px 20px 0 0;
@@ -1413,11 +1413,8 @@ function queueDragEnd() {
   touch-action: pan-y;
 }
 .panel-box::-webkit-scrollbar { display: none; }
-@media (min-width: 768px) and (max-width: 1279px) {
-  .panel-box { left: 72px; bottom: 0; }
-}
-@media (min-width: 1280px) {
-  .panel-box { left: 200px; bottom: 0; }
+@media (min-width: 520px) {
+  .panel-box { bottom: 0; border-radius: 0; border-top: none; border-left: 1px solid rgba(255,255,255,0.08); max-height: 100%; }
 }
 .panel-title {
   font-size: 10px; font-weight: 700; color: rgba(255,255,255,0.4);

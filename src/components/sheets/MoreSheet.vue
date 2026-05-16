@@ -124,7 +124,7 @@ function handleItem(id: string) {
 .scrim-enter-from, .scrim-leave-to { opacity: 0; }
 
 .more-sheet {
-  position: fixed; left: 0; right: 0;
+  position: fixed; left: auto; right: 0; width: min(480px, 100%);
   bottom: calc(56px + env(safe-area-inset-bottom, 0px));
   z-index: 200; background: #1e1e1e;
   border-radius: 20px 20px 0 0;
@@ -135,8 +135,9 @@ function handleItem(id: string) {
   overscroll-behavior: contain;
 }
 .more-sheet::-webkit-scrollbar { display: none; }
-@media (min-width: 768px) and (max-width: 1279px) { .more-sheet { left: 72px; bottom: 0; } }
-@media (min-width: 1280px) { .more-sheet { left: 200px; bottom: 0; } }
+@media (min-width: 520px) {
+  .more-sheet { bottom: 0; border-radius: 0; border-top: none; border-left: 1px solid rgba(255,255,255,0.08); max-height: 100%; }
+}
 
 .sheet-enter-active, .sheet-leave-active { transition: transform 0.25s cubic-bezier(0.32,0.72,0,1), opacity 0.2s; }
 .sheet-enter-from, .sheet-leave-to { transform: translateY(100%); opacity: 0; }
