@@ -552,6 +552,7 @@
       :cover-src="player.currentItem ? coverUrl(player.currentItem.id, auth.token ?? '') : ''"
       :show="showItemDetail"
       @close="showItemDetail = false"
+      @item-updated="(u) => player.currentItem = u"
     />
     <PodcastDetailSheet
       v-if="showItemDetail && player.currentItem && player.currentItem.mediaType === 'podcast'"

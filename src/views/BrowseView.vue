@@ -154,6 +154,7 @@
       :cover-src="coverUrl(selectedBook.id, auth.token ?? '')"
       :show="!!selectedBook"
       @close="selectedBook = null"
+      @item-updated="(u) => selectedBook = u"
     />
 
     <!-- Genre filter sheet -->

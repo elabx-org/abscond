@@ -440,6 +440,7 @@
       :cover-src="coverUrl(selectedItem.id, auth.token ?? '')"
       :show="!!selectedItem"
       @close="selectedItem = null"
+      @item-updated="(u) => selectedItem = u"
     />
     <PodcastDetailSheet
       v-if="selectedItem && selectedItem.mediaType === 'podcast'"

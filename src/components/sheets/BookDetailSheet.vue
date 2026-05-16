@@ -422,7 +422,7 @@ const props = defineProps<{
   show: boolean
 }>()
 
-const emit = defineEmits<{ close: [] }>()
+const emit = defineEmits<{ close: []; 'item-updated': [item: LibraryItem] }>()
 
 const router = useRouter()
 const player = usePlayerStore()
@@ -628,11 +628,8 @@ function onCoverUpdated() {
 async function onMatched(itemId: string) {
   try {
     const updated = await getItem(itemId)
+    emit('item-updated', updated)
     const m = updated.media.metadata
-    // Update the live item in-place so the sheet header / cover / details refresh immediately
-    Object.assign(props.item.media.metadata, m)
-    if (updated.tags) props.item.tags = updated.tags
-    // Also sync the edit form
     editMeta.value.title         = m.title ?? ''
     editMeta.value.subtitle      = m.subtitle ?? ''
     editMeta.value.authorNames   = m.authors?.length ? m.authors.map(a => a.name).join(', ') : (m.authorName ?? '')

@@ -166,6 +166,7 @@
       :cover-src="coverUrl(detailItem.id, auth.token ?? '')"
       :show="!!detailItem"
       @close="detailItem = null"
+      @item-updated="(u) => detailItem = u"
     />
   </div>
 </template>

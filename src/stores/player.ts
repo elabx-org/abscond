@@ -59,8 +59,17 @@ export const usePlayerStore = defineStore('player', () => {
   let trackStartOffset = 0
   let pausedAt: number | null = null
 
+  const _isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)
+
   function _ensureAudioGraph() {
     if (!audio) return
+    if (_isIOS) {
+      // On iOS, skip routing audio through AudioContext — AudioContext suspends when page
+      // goes to background, killing audio. Instead use the native audio element path.
+      // EQ is bypassed on iOS in exchange for reliable background playback.
+      audio.volume = Math.min(1, volume.value)
+      return
+    }
     const eq = useEqualizerStore()
     if (!audioCtx) {
       audioCtx = new AudioContext()
@@ -68,6 +77,11 @@ export const usePlayerStore = defineStore('player', () => {
       const { output: eqOut } = eq.buildChain(audioCtx)
       eqOut.connect(gainNode)
       gainNode.connect(audioCtx.destination)
+      audioCtx.addEventListener('statechange', () => {
+        if (audioCtx?.state === 'running' && isPlaying.value && audio?.paused) {
+          audio?.play().catch(() => {})
+        }
+      })
     }
     gainNode!.gain.value = volume.value
     try {
@@ -557,7 +571,19 @@ export const usePlayerStore = defineStore('player', () => {
   }
 
   function _onVisibilityChange() {
-    if (document.hidden && session.value) _doSync()
+    if (document.hidden) {
+      if (session.value) _doSync()
+    } else {
+      // Returning to foreground — resume AudioContext if it was suspended in background
+      if (audioCtx?.state === 'suspended') {
+        audioCtx.resume().then(() => {
+          if (isPlaying.value && audio?.paused) audio?.play().catch(() => {})
+        }).catch(() => {})
+      } else if (isPlaying.value && audio?.paused) {
+        // Audio element paused without AudioContext involvement (e.g. iOS interruption)
+        audio?.play().catch(() => {})
+      }
+    }
   }
 
   function _onPageHide() {
