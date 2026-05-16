@@ -78,8 +78,20 @@ export const useProgressStore = defineStore('progress', () => {
     }
   }
 
+  function updateItem(updated: LibraryItem) {
+    const merge = (existing: LibraryItem): LibraryItem => ({
+      ...updated,
+      userMediaProgress: existing.userMediaProgress ?? updated.userMediaProgress,
+    })
+    const replace = (arr: LibraryItem[]) => arr.map(i => i.id === updated.id ? merge(i) : i)
+    inProgress.value       = replace(inProgress.value)
+    recentlyAdded.value    = replace(recentlyAdded.value)
+    recentlyFinished.value = replace(recentlyFinished.value)
+    discover.value         = replace(discover.value)
+  }
+
   return {
     inProgress, recentlyAdded, recentlyFinished, discover,
-    fetchInProgress, fetchRecentlyAdded, fetchRecentlyFinished, fetchDiscover,
+    fetchInProgress, fetchRecentlyAdded, fetchRecentlyFinished, fetchDiscover, updateItem,
   }
 })

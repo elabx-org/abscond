@@ -593,6 +593,11 @@ export const usePlayerStore = defineStore('player', () => {
       // isPlaying are both already false here. Use _userPaused: it is only ever set
       // true by an explicit user tap — system-driven pauses leave it false.
       _wasPlayingBeforeHide = !_userPaused && !!currentItem.value
+      // Belt-and-suspenders: the 'pause' event handler already sets this, but iOS
+      // may suspend the WebView before that update reaches the lock screen.
+      if (_wasPlayingBeforeHide && 'mediaSession' in navigator) {
+        navigator.mediaSession.playbackState = 'paused'
+      }
       if (session.value) _doSync()
     } else {
       if (_wasPlayingBeforeHide && !_userPaused && audio?.paused) {
