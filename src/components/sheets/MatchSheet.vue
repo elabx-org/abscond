@@ -372,11 +372,12 @@ function close() {
 .sheet-enter-active .match-sheet, .sheet-leave-active .match-sheet { transition: transform 0.3s ease; }
 .sheet-enter-from, .sheet-leave-to { opacity: 0; }
 .sheet-enter-from .match-sheet, .sheet-leave-to .match-sheet { transform: translateY(100%); }
-@media (min-width: 1280px) {
+@media (min-width: 520px) {
   .match-sheet-overlay { align-items: center; justify-content: center; }
   .match-sheet {
-    width: 480px; max-width: 90vw; border-radius: 20px; max-height: 80vh;
+    width: 480px; max-width: 90vw; border-radius: 20px; max-height: 80vh; border-top: none;
   }
+  .sheet-handle { display: none; }
   .sheet-enter-from .match-sheet, .sheet-leave-to .match-sheet { transform: scale(0.96) translateY(8px); }
 }
 </style>

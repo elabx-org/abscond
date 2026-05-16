@@ -158,8 +158,23 @@
               <input v-model="editMeta.narratorNames" class="edit-input" placeholder="Narrators (comma-separated)" />
               <input v-model="editMeta.publishedYear" class="edit-input" placeholder="Published year" />
               <input v-model="editMeta.publisher" class="edit-input" placeholder="Publisher" />
+              <input v-model="editMeta.language" class="edit-input" placeholder="Language (e.g. English)" />
               <input v-model="editMeta.genres" class="edit-input" placeholder="Genres (comma-separated)" />
               <input v-model="editMeta.tags" class="edit-input" placeholder="Tags (comma-separated)" />
+              <div class="edit-two-col">
+                <input v-model="editMeta.isbn" class="edit-input" placeholder="ISBN" />
+                <input v-model="editMeta.asin" class="edit-input" placeholder="ASIN" />
+              </div>
+              <div class="edit-checkbox-row">
+                <label class="edit-checkbox-label">
+                  <input type="checkbox" v-model="editMeta.explicit" class="edit-checkbox" />
+                  Explicit
+                </label>
+                <label class="edit-checkbox-label">
+                  <input type="checkbox" v-model="editMeta.abridged" class="edit-checkbox" />
+                  Abridged
+                </label>
+              </div>
               <textarea v-model="editMeta.description" class="edit-input edit-textarea" placeholder="Description" />
               <p v-if="editError" class="form-error-sm">{{ editError }}</p>
               <div class="share-actions">
@@ -338,6 +353,8 @@
       v-if="showCover"
       v-model="showCover"
       :item-id="item.id"
+      :item-title="item.media.metadata.title"
+      :item-author="item.media.metadata.authorName ?? item.media.metadata.authors?.[0]?.name ?? ''"
       @updated="onCoverUpdated"
     />
     <ChaptersSheet
@@ -473,7 +490,7 @@ const shareLoading      = ref(false)
 const showEdit          = ref(false)
 const editSaving        = ref(false)
 const editError         = ref('')
-const editMeta          = ref({ title: '', subtitle: '', authorNames: '', narratorNames: '', publishedYear: '', publisher: '', genres: '', tags: '', description: '' })
+const editMeta          = ref({ title: '', subtitle: '', authorNames: '', narratorNames: '', publishedYear: '', publisher: '', genres: '', tags: '', description: '', isbn: '', asin: '', language: '', explicit: false, abridged: false })
 const showMatch         = ref(false)
 const showCover         = ref(false)
 const showChapters      = ref(false)
@@ -884,6 +901,11 @@ function openEdit() {
     genres:        (m.genres ?? []).join(', '),
     tags:          (props.item.tags ?? []).join(', '),
     description:   m.description ?? '',
+    isbn:          (m as Record<string, unknown>).isbn as string ?? '',
+    asin:          (m as Record<string, unknown>).asin as string ?? '',
+    language:      (m as Record<string, unknown>).language as string ?? '',
+    explicit:      !!((m as Record<string, unknown>).explicit),
+    abridged:      !!((m as Record<string, unknown>).abridged),
   }
   editError.value = ''
   coverUrl_.value  = ''
@@ -905,6 +927,11 @@ async function doSaveMeta() {
         publisher:     editMeta.value.publisher.trim() || null,
         genres:        editMeta.value.genres.split(',').map(g => g.trim()).filter(Boolean),
         description:   editMeta.value.description.trim() || null,
+        isbn:          editMeta.value.isbn.trim() || null,
+        asin:          editMeta.value.asin.trim() || null,
+        language:      editMeta.value.language.trim() || null,
+        explicit:      editMeta.value.explicit,
+        abridged:      editMeta.value.abridged,
       },
       tags: editMeta.value.tags.split(',').map(t => t.trim()).filter(Boolean),
     }
@@ -1067,6 +1094,10 @@ async function doSaveMeta() {
 }
 .edit-input::placeholder { color: rgba(255,255,255,0.3); }
 .edit-textarea { height: 80px; resize: none; line-height: 1.5; }
+.edit-two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.edit-checkbox-row { display: flex; gap: 20px; padding: 4px 2px; }
+.edit-checkbox-label { display: flex; align-items: center; gap: 6px; font-size: 12px; color: rgba(255,255,255,0.6); cursor: pointer; }
+.edit-checkbox { width: 16px; height: 16px; accent-color: #d4a017; cursor: pointer; }
 .cover-update-row { display: flex; gap: 8px; align-items: center; width: 100%; }
 .cover-upload-btn {
   display: flex; align-items: center; justify-content: center;

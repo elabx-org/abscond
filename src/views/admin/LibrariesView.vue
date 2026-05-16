@@ -49,6 +49,10 @@
               <v-icon size="16">{{ scanningId === lib.id ? 'mdi-loading' : 'mdi-magnify-scan' }}</v-icon>
               <span>{{ scanningId === lib.id ? 'Scanning…' : 'Scan' }}</span>
             </button>
+            <button v-if="lib.mediaType === 'book'" class="scan-btn match-btn" :class="{ scanning: matchingId === lib.id }" :disabled="!!matchingId" @click="matchBooks(lib.id)" title="Match all books with metadata providers">
+              <v-icon size="16">{{ matchingId === lib.id ? 'mdi-loading' : 'mdi-book-sync-outline' }}</v-icon>
+              <span>{{ matchingId === lib.id ? 'Matching…' : 'Match' }}</span>
+            </button>
             <button class="edit-lib-btn" @click="openEditLib(lib)" title="Edit library">
               <v-icon size="15">mdi-pencil-outline</v-icon>
             </button>
@@ -230,7 +234,7 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { getAdminLibraries, scanLibrary, getPodcastFeed, addPodcast, createLibrary, updateLibrary, deleteLibrary, checkNewPodcastEpisodes, getLibraryPodcastItems } from '@/api/admin'
+import { getAdminLibraries, scanLibrary, matchLibraryBooks, getPodcastFeed, addPodcast, createLibrary, updateLibrary, deleteLibrary, checkNewPodcastEpisodes, getLibraryPodcastItems } from '@/api/admin'
 import type { AdminLibrary, PodcastFeedInfo } from '@/api/admin'
 import { useSocketStore } from '@/stores/socket'
 import { api } from '@/api/client'
@@ -244,6 +248,7 @@ const loadingPodcastsId = ref<string | null>(null)
 const loading    = ref(true)
 const libraries  = ref<AdminLibrary[]>([])
 const scanningId     = ref<string | null>(null)
+const matchingId     = ref<string | null>(null)
 const checkingEpId   = ref<string | null>(null)
 const checkEpProgress = ref(0)
 const checkEpTotal    = ref(0)
@@ -281,6 +286,12 @@ async function scan(id: string) {
   scanningId.value = id
   try { await scanLibrary(id) } catch { /* ignore */ }
   finally { scanningId.value = null }
+}
+
+async function matchBooks(id: string) {
+  matchingId.value = id
+  try { await matchLibraryBooks(id) } catch { /* ignore */ }
+  finally { matchingId.value = null }
 }
 
 async function checkEpisodes(libId: string) {
@@ -439,6 +450,7 @@ onMounted(async () => {
   color: #d4a017; cursor: pointer; flex-shrink: 0;
 }
 .scan-btn.scanning { opacity: 0.6; cursor: not-allowed; }
+.match-btn { background: rgba(100,160,255,0.08); border-color: rgba(100,160,255,0.2); color: rgba(100,160,255,0.85); }
 .add-podcast-btn {
   display: flex; align-items: center; gap: 5px; font-size: 11px; padding: 5px 10px;
   border-radius: 8px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);

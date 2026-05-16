@@ -13,6 +13,9 @@
             <span class="fs-title">Files</span>
             <span v-if="files.length" class="fs-count-badge">{{ files.length }}</span>
             <div style="flex: 1" />
+            <button class="fs-path-toggle" :class="{ active: showFullPath }" @click="showFullPath = !showFullPath">
+              Full Path
+            </button>
             <button class="fs-close-btn" @click="close">
               <v-icon size="16">mdi-close</v-icon>
             </button>
@@ -43,14 +46,17 @@
                 <!-- File info -->
                 <div class="fs-info">
                   <p class="fs-filename">
-                    {{ file.metadata.filename }}
+                    {{ showFullPath ? file.metadata.path : file.metadata.filename }}
                     <span v-if="file.isSupplementary" class="fs-supplementary-chip">supplementary</span>
                   </p>
-                  <p class="fs-path">{{ relativePath(file.metadata.path, file.metadata.filename) }}</p>
+                  <p v-if="!showFullPath" class="fs-path">{{ relativePath(file.metadata.path, file.metadata.filename) }}</p>
                 </div>
 
-                <!-- File size -->
-                <span class="fs-size">{{ fmtSize(file.metadata.size) }}</span>
+                <!-- Type + size -->
+                <div class="fs-right">
+                  <span class="fs-type">{{ file.fileType ?? 'other' }}</span>
+                  <span class="fs-size">{{ fmtSize(file.metadata.size) }}</span>
+                </div>
               </div>
 
               <!-- Empty state -->
@@ -96,8 +102,9 @@ const emit = defineEmits<{
   'update:modelValue': [val: boolean]
 }>()
 
-const loading = ref(false)
-const files   = ref<LibraryFile[]>([])
+const loading      = ref(false)
+const files        = ref<LibraryFile[]>([])
+const showFullPath = ref(false)
 
 // ── Data loading ──────────────────────────────────────────────────────────────
 
@@ -124,19 +131,23 @@ watch(
 
 function fileIcon(type?: string): string {
   switch (type) {
-    case 'audio': return 'mdi-music'
-    case 'image': return 'mdi-image-outline'
-    case 'text':  return 'mdi-text-box-outline'
-    default:      return 'mdi-file-outline'
+    case 'audio':    return 'mdi-music'
+    case 'image':    return 'mdi-image-outline'
+    case 'text':     return 'mdi-text-box-outline'
+    case 'metadata': return 'mdi-code-json'
+    case 'ebook':    return 'mdi-book-open-outline'
+    default:         return 'mdi-file-outline'
   }
 }
 
 function fileIconColor(type?: string): string {
   switch (type) {
-    case 'audio': return '#d4a017'
-    case 'image': return 'rgba(180,120,255,0.8)'
-    case 'text':  return 'rgba(100,160,255,0.8)'
-    default:      return 'rgba(255,255,255,0.2)'
+    case 'audio':    return '#d4a017'
+    case 'image':    return 'rgba(180,120,255,0.8)'
+    case 'text':     return 'rgba(100,160,255,0.8)'
+    case 'metadata': return 'rgba(80,200,120,0.8)'
+    case 'ebook':    return 'rgba(100,200,255,0.8)'
+    default:         return 'rgba(255,255,255,0.2)'
   }
 }
 
@@ -225,6 +236,17 @@ function close() {
   white-space: nowrap;
 }
 
+.fs-path-toggle {
+  font-size: 10px; font-weight: 600;
+  padding: 4px 10px; border-radius: 20px;
+  background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
+  color: rgba(255,255,255,0.4); cursor: pointer; flex-shrink: 0;
+  transition: all 0.15s;
+}
+.fs-path-toggle.active {
+  background: rgba(212,160,23,0.12); border-color: rgba(212,160,23,0.3); color: #d4a017;
+}
+
 .fs-close-btn {
   background: rgba(255, 255, 255, 0.08); border: none;
   border-radius: 50%; width: 28px; height: 28px;
@@ -290,11 +312,19 @@ function close() {
   margin: 0;
 }
 
-/* ── File size ─────────────────────────────────────────────────────────────── */
+/* ── File right column (size + type) ──────────────────────────────────────── */
+.fs-right {
+  display: flex; flex-direction: column; align-items: flex-end; gap: 2px; flex-shrink: 0;
+}
 .fs-size {
   font-size: 11px;
   color: rgba(255, 255, 255, 0.4);
-  flex-shrink: 0;
+}
+.fs-type {
+  font-size: 9px;
+  color: rgba(255, 255, 255, 0.25);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
 }
 
 /* ── Skeleton loader ───────────────────────────────────────────────────────── */

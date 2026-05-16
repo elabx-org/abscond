@@ -13,7 +13,55 @@
           </div>
 
           <div class="sheet-body">
-            <!-- Section 1: URL -->
+            <!-- Section 1: Search -->
+            <p class="section-label">Search for Cover</p>
+            <select v-model="searchProvider" class="cover-input cover-select" :disabled="searching || saving">
+              <option value="google">Google Books</option>
+              <option value="openlibrary">Open Library</option>
+              <option value="audible">Audible</option>
+              <option value="itunes">iTunes</option>
+            </select>
+            <input
+              v-model="searchTitle"
+              class="cover-input"
+              placeholder="Title"
+              :disabled="searching || saving"
+              @keydown.enter="doSearch"
+            />
+            <input
+              v-model="searchAuthor"
+              class="cover-input"
+              placeholder="Author"
+              :disabled="searching || saving"
+              @keydown.enter="doSearch"
+            />
+            <button
+              class="gold-btn"
+              :disabled="!searchTitle.trim() || searching || saving"
+              @click="doSearch"
+            >
+              <v-icon v-if="searching" size="15" class="spin">mdi-loading</v-icon>
+              <v-icon v-else size="15">mdi-magnify</v-icon>
+              {{ searching ? 'Searching…' : 'Search' }}
+            </button>
+
+            <div v-if="searchDone && !coverResults.length" class="no-results">No results found</div>
+            <div v-if="coverResults.length" class="cover-results-grid">
+              <button
+                v-for="(r, i) in coverResults"
+                :key="i"
+                class="cover-result-item"
+                :disabled="saving"
+                @click="applyCoverFromSearch(r.cover)"
+              >
+                <img :src="r.cover" :alt="r.title" loading="lazy" />
+                <span class="cover-result-title">{{ r.title }}</span>
+              </button>
+            </div>
+
+            <div class="section-gap" />
+
+            <!-- Section 2: URL -->
             <p class="section-label">Cover URL</p>
             <input
               v-model="urlInput"
@@ -34,7 +82,7 @@
 
             <div class="section-gap" />
 
-            <!-- Section 2: Upload -->
+            <!-- Section 3: Upload -->
             <p class="section-label">Upload Image</p>
             <input
               ref="fileInputRef"
@@ -58,7 +106,7 @@
 
             <div class="section-gap" />
 
-            <!-- Section 3: Remove -->
+            <!-- Section 4: Remove -->
             <p class="section-label">Remove</p>
             <button
               class="destructive-btn"
@@ -80,23 +128,34 @@ import { ref, watch } from 'vue'
 import { api } from '@/api/client'
 import { useNotificationStore } from '@/stores/notifications'
 
-const props = defineProps<{ modelValue: boolean; itemId: string }>()
+const props = defineProps<{ modelValue: boolean; itemId: string; itemTitle?: string; itemAuthor?: string }>()
 const emit = defineEmits<{ 'update:modelValue': [val: boolean]; updated: [] }>()
 
 const notify = useNotificationStore()
 
-const urlInput = ref('')
-const pickedFile = ref<File | null>(null)
-const fileInputRef = ref<HTMLInputElement | null>(null)
-const saving = ref(false)
-const activeAction = ref<'url' | 'upload' | 'remove' | null>(null)
+const urlInput      = ref('')
+const pickedFile    = ref<File | null>(null)
+const fileInputRef  = ref<HTMLInputElement | null>(null)
+const saving        = ref(false)
+const activeAction  = ref<'url' | 'upload' | 'remove' | null>(null)
+
+const searchProvider = ref('google')
+const searchTitle    = ref('')
+const searchAuthor   = ref('')
+const searching      = ref(false)
+const searchDone     = ref(false)
+const coverResults   = ref<Array<{ title: string; cover: string }>>([])
 
 watch(() => props.modelValue, (opened) => {
   if (opened) {
-    urlInput.value = ''
-    pickedFile.value = null
-    saving.value = false
-    activeAction.value = null
+    urlInput.value      = ''
+    pickedFile.value    = null
+    saving.value        = false
+    activeAction.value  = null
+    searchTitle.value   = props.itemTitle ?? ''
+    searchAuthor.value  = props.itemAuthor ?? ''
+    searchDone.value    = false
+    coverResults.value  = []
     if (fileInputRef.value) fileInputRef.value.value = ''
   }
 })
@@ -104,6 +163,44 @@ watch(() => props.modelValue, (opened) => {
 function onFileChange(e: Event) {
   const target = e.target as HTMLInputElement
   pickedFile.value = target.files?.[0] ?? null
+}
+
+async function doSearch() {
+  if (!searchTitle.value.trim() || searching.value) return
+  searching.value   = true
+  searchDone.value  = false
+  coverResults.value = []
+  try {
+    const res = await api.get('/search/books', {
+      params: { title: searchTitle.value.trim(), author: searchAuthor.value.trim(), provider: searchProvider.value },
+    })
+    const matches = res.data?.matches ?? res.data ?? []
+    coverResults.value = (matches as Array<Record<string, unknown>>)
+      .filter(m => m.cover)
+      .map(m => ({ title: String(m.title ?? ''), cover: String(m.cover) }))
+    searchDone.value = true
+  } catch {
+    notify.show('Search failed', 'error')
+  } finally {
+    searching.value = false
+  }
+}
+
+async function applyCoverFromSearch(url: string) {
+  if (saving.value) return
+  saving.value      = true
+  activeAction.value = 'url'
+  try {
+    await api.post(`/items/${props.itemId}/cover`, { url })
+    notify.show('Cover updated', 'success')
+    emit('updated')
+    close()
+  } catch {
+    notify.show('Failed to update cover', 'error')
+  } finally {
+    saving.value      = false
+    activeAction.value = null
+  }
 }
 
 async function applyUrl() {
@@ -274,6 +371,30 @@ function close() {
   display: flex; align-items: center; justify-content: center; gap: 6px;
 }
 .destructive-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.cover-select {
+  appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='rgba(255,255,255,0.4)' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 12px center; background-size: 10px;
+  padding-right: 32px; cursor: pointer;
+}
+.no-results {
+  font-size: 11px; color: rgba(255,255,255,0.3); text-align: center; padding: 12px 0 4px;
+}
+.cover-results-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 12px;
+}
+.cover-result-item {
+  background: transparent; border: 1px solid rgba(255,255,255,0.1); border-radius: 8px;
+  overflow: hidden; cursor: pointer; padding: 0; display: flex; flex-direction: column;
+  transition: border-color 0.15s;
+}
+.cover-result-item:hover { border-color: rgba(212,160,23,0.4); }
+.cover-result-item:disabled { opacity: 0.5; cursor: not-allowed; }
+.cover-result-item img { width: 100%; aspect-ratio: 2/3; object-fit: cover; display: block; }
+.cover-result-title {
+  font-size: 9px; color: rgba(255,255,255,0.45); padding: 4px 6px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center;
+}
 
 .spin { animation: spin 0.7s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }

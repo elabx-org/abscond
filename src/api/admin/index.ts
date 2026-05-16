@@ -90,6 +90,10 @@ export async function scanLibrary(libraryId: string): Promise<void> {
   await api.get(`/libraries/${libraryId}/scan`)
 }
 
+export async function matchLibraryBooks(libraryId: string): Promise<void> {
+  await api.post(`/libraries/${libraryId}/match-books`)
+}
+
 export async function updateLibrary(id: string, data: { name?: string; settings?: Partial<AdminLibrary['settings']> }): Promise<AdminLibrary> {
   const res = await api.patch(`/libraries/${id}`, data)
   return res.data.library ?? res.data
