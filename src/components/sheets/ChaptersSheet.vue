@@ -164,6 +164,7 @@ async function loadChapters() {
 watch(
   () => props.modelValue,
   (v) => { if (v) loadChapters() },
+  { immediate: true },
 )
 
 // ── Editing helpers ───────────────────────────────────────────────────────────

@@ -117,6 +117,7 @@ async function loadFiles() {
 watch(
   () => props.modelValue,
   (v) => { if (v) loadFiles() },
+  { immediate: true },
 )
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
