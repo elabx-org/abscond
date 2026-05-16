@@ -896,7 +896,8 @@ async function doSaveMeta() {
   background: rgba(0,0,0,0.55);
 }
 .book-sheet {
-  position: absolute; bottom: 0; left: 0; right: 0;
+  position: absolute; bottom: 0; right: 0;
+  width: min(480px, 100%);
   border-radius: 24px 24px 0 0;
   border-top: 1px solid rgba(255,255,255,0.08);
   background: #111; overflow: hidden;
@@ -1124,18 +1125,10 @@ async function doSaveMeta() {
 .sheet-enter-from, .sheet-leave-to { opacity: 0; }
 .sheet-enter-from .book-sheet, .sheet-leave-to .book-sheet { transform: translateY(100%); }
 
-@media (min-width: 640px) {
+@media (min-width: 520px) {
   .book-sheet {
-    left: auto !important;
-    right: 0;
-    top: 0;
-    bottom: 0 !important;
-    width: 480px;
-    max-width: 100vw;
-    height: 100% !important;
-    border-radius: 0;
-    border-top: none;
-    border-left: 1px solid rgba(255,255,255,0.08);
+    top: 0; bottom: 0 !important; height: 100% !important;
+    border-radius: 0; border-top: none; border-left: 1px solid rgba(255,255,255,0.08);
   }
   .cover-drag-area { display: none; }
   .sheet-enter-from .book-sheet, .sheet-leave-to .book-sheet { transform: translateX(100%); }

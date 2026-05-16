@@ -131,10 +131,10 @@ watch(() => props.show, (v) => { if (v) load() })
 .sheet-enter-active, .sheet-leave-active { transition: transform 0.3s ease, opacity 0.3s; }
 .sheet-enter-from, .sheet-leave-to { transform: translateY(100%); opacity: 0; }
 
-@media (min-width: 640px) {
+@media (min-width: 520px) {
   .sheet-backdrop { align-items: stretch; justify-content: flex-end; }
   .sheet-panel {
-    width: 480px; max-width: 100vw; max-height: 100% !important;
+    width: min(480px, 100%); max-height: 100% !important;
     border-radius: 0; border-top: none; border-left: 1px solid rgba(255,255,255,0.08);
   }
   .drag-handle { display: none; }

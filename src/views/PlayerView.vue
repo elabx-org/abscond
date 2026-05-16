@@ -580,51 +580,55 @@
     />
 
     <!-- Bookmark sheet -->
-    <v-bottom-sheet v-model="showBookmarkSheet" :scrim="true">
-      <div class="bm-sheet-content">
-        <div class="sheet-handle" />
-        <div class="bm-sheet-header">
-          <p class="bm-sheet-title">Bookmarks</p>
-          <button class="bm-sheet-add-btn" @click="showAddBookmark = true">
-            <v-icon size="16" color="#d4a017">mdi-plus</v-icon>
-            Add
-          </button>
-        </div>
+    <Teleport to="body">
+      <Transition name="bm-sheet">
+        <div v-if="showBookmarkSheet" class="bm-backdrop" @click.self="showBookmarkSheet = false">
+          <div class="bm-sheet-content">
+            <div class="bm-drag-handle" />
+            <div class="bm-sheet-header">
+              <p class="bm-sheet-title">Bookmarks</p>
+              <button class="bm-sheet-add-btn" @click="showAddBookmark = true">
+                <v-icon size="16" color="#d4a017">mdi-plus</v-icon>
+                Add
+              </button>
+            </div>
 
-        <!-- Add bookmark form -->
-        <Transition name="expand-bm">
-          <div v-if="showAddBookmark" class="bm-add-form">
-            <div class="bm-add-time">{{ formatTime(player.currentTime) }}</div>
-            <input
-              v-model="newBookmarkTitle"
-              class="bm-add-input"
-              placeholder="Bookmark name…"
-              @keydown.enter="saveNewBookmark"
-            />
-            <div class="bm-add-actions">
-              <button class="bm-cancel" @click="showAddBookmark = false">Cancel</button>
-              <button class="bm-save" @click="saveNewBookmark" :disabled="!newBookmarkTitle.trim()">Save</button>
+            <!-- Add bookmark form -->
+            <Transition name="expand-bm">
+              <div v-if="showAddBookmark" class="bm-add-form">
+                <div class="bm-add-time">{{ formatTime(player.currentTime) }}</div>
+                <input
+                  v-model="newBookmarkTitle"
+                  class="bm-add-input"
+                  placeholder="Bookmark name…"
+                  @keydown.enter="saveNewBookmark"
+                />
+                <div class="bm-add-actions">
+                  <button class="bm-cancel" @click="showAddBookmark = false">Cancel</button>
+                  <button class="bm-save" @click="saveNewBookmark" :disabled="!newBookmarkTitle.trim()">Save</button>
+                </div>
+              </div>
+            </Transition>
+
+            <!-- Bookmark list -->
+            <div v-if="itemBookmarks.length" class="bm-list">
+              <div v-for="bm in itemBookmarks" :key="bm.time" class="bm-row" @click="jumpToBookmark(bm.time)">
+                <v-icon size="14" color="rgba(212,160,23,0.7)">mdi-bookmark</v-icon>
+                <span class="bm-row-title">{{ bm.title }}</span>
+                <span class="bm-row-time">{{ formatTime(bm.time) }}</span>
+                <button class="bm-row-del" @click.stop="removeItemBookmark(bm.time)">
+                  <v-icon size="13" color="rgba(255,255,255,0.2)">mdi-close</v-icon>
+                </button>
+              </div>
+            </div>
+            <div v-else-if="!showAddBookmark" class="bm-empty">
+              <v-icon size="28" color="rgba(255,255,255,0.1)">mdi-bookmark-outline</v-icon>
+              <p>No bookmarks for this item</p>
             </div>
           </div>
-        </Transition>
-
-        <!-- Bookmark list -->
-        <div v-if="itemBookmarks.length" class="bm-list">
-          <div v-for="bm in itemBookmarks" :key="bm.time" class="bm-row" @click="jumpToBookmark(bm.time)">
-            <v-icon size="14" color="rgba(212,160,23,0.7)">mdi-bookmark</v-icon>
-            <span class="bm-row-title">{{ bm.title }}</span>
-            <span class="bm-row-time">{{ formatTime(bm.time) }}</span>
-            <button class="bm-row-del" @click.stop="removeItemBookmark(bm.time)">
-              <v-icon size="13" color="rgba(255,255,255,0.2)">mdi-close</v-icon>
-            </button>
-          </div>
         </div>
-        <div v-else-if="!showAddBookmark" class="bm-empty">
-          <v-icon size="28" color="rgba(255,255,255,0.1)">mdi-bookmark-outline</v-icon>
-          <p>No bookmarks for this item</p>
-        </div>
-      </div>
-    </v-bottom-sheet>
+      </Transition>
+    </Teleport>
   </div>
 </template>
 
@@ -1519,9 +1523,28 @@ function queueDragEnd() {
 .backdrop-enter-from, .backdrop-leave-to { opacity: 0; }
 
 /* Bookmark sheet */
+.bm-backdrop {
+  position: fixed; inset: 0; z-index: 350;
+  background: rgba(0,0,0,0.55);
+}
 .bm-sheet-content {
+  position: absolute; bottom: 0; right: 0; width: min(480px, 100%);
   background: #1a1a1a; border-radius: 20px 20px 0 0;
-  padding: 12px 16px 40px; max-height: 70vh; overflow-y: auto;
+  padding: 0 16px 40px; max-height: 70vh; overflow-y: auto;
+}
+.bm-drag-handle {
+  width: 40px; height: 4px; border-radius: 2px;
+  background: rgba(255,255,255,0.25); margin: 10px auto 14px;
+}
+.bm-sheet-enter-active, .bm-sheet-leave-active { transition: opacity 0.25s; }
+.bm-sheet-enter-from, .bm-sheet-leave-to { opacity: 0; }
+@media (min-width: 520px) {
+  .bm-sheet-content {
+    top: 0; bottom: 0 !important; max-height: 100% !important;
+    border-radius: 0; border-top: none; border-left: 1px solid rgba(255,255,255,0.08);
+    overflow-y: auto;
+  }
+  .bm-drag-handle { display: none; }
 }
 .bm-sheet-header { display: flex; align-items: center; margin-bottom: 12px; }
 .bm-sheet-title { flex: 1; font-size: 15px; font-weight: 700; color: rgba(255,255,255,0.9); margin: 0; }

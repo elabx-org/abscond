@@ -220,7 +220,7 @@ watch(() => props.show, async (v) => {
 <style scoped>
 .sheet-backdrop { position: fixed; inset: 0; z-index: 200; background: rgba(0,0,0,0.55); }
 .pod-sheet {
-  position: absolute; bottom: 0; left: 0; right: 0; height: 90vh;
+  position: absolute; bottom: 0; right: 0; width: min(480px, 100%); height: 90vh;
   border-radius: 24px 24px 0 0; border-top: 1px solid rgba(255,255,255,0.08);
   background: #111; display: flex; flex-direction: column; overflow: hidden;
 }
@@ -279,10 +279,9 @@ watch(() => props.show, async (v) => {
 .sheet-enter-active, .sheet-leave-active { transition: opacity 0.25s; }
 .sheet-enter-from, .sheet-leave-to { opacity: 0; }
 
-@media (min-width: 640px) {
+@media (min-width: 520px) {
   .pod-sheet {
-    left: auto !important; right: 0; top: 0; bottom: 0 !important;
-    width: 480px; max-width: 100vw; height: 100% !important;
+    top: 0; bottom: 0 !important; height: 100% !important;
     border-radius: 0; border-top: none; border-left: 1px solid rgba(255,255,255,0.08);
   }
   .drag-handle-area { display: none; }
