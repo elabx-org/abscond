@@ -94,6 +94,15 @@ export async function matchLibraryBooks(libraryId: string): Promise<void> {
   await api.post(`/libraries/${libraryId}/match-books`)
 }
 
+export async function getLibraryStats(libraryId: string): Promise<{ totalItems: number; totalSize: number }> {
+  const res = await api.get(`/libraries/${libraryId}/stats`)
+  return res.data
+}
+
+export async function reorderLibraries(orderedIds: string[]): Promise<void> {
+  await api.patch('/libraries/order', orderedIds)
+}
+
 export async function updateLibrary(id: string, data: { name?: string; settings?: Partial<AdminLibrary['settings']> }): Promise<AdminLibrary> {
   const res = await api.patch(`/libraries/${id}`, data)
   return res.data.library ?? res.data

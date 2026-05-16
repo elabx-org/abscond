@@ -18,12 +18,21 @@
     </div>
 
     <div v-else class="lib-list">
-      <div v-for="lib in libraries" :key="lib.id" class="lib-card">
+      <div v-for="(lib, idx) in libraries" :key="lib.id" class="lib-card">
         <div class="lib-card-header">
+          <!-- Reorder handles -->
+          <div class="lib-reorder">
+            <button class="reorder-btn" :disabled="idx === 0 || reordering" @click="moveLibrary(idx, -1)" title="Move up">
+              <v-icon size="14">mdi-chevron-up</v-icon>
+            </button>
+            <button class="reorder-btn" :disabled="idx === libraries.length - 1 || reordering" @click="moveLibrary(idx, 1)" title="Move down">
+              <v-icon size="14">mdi-chevron-down</v-icon>
+            </button>
+          </div>
           <v-icon size="20" color="#d4a017">{{ lib.mediaType === 'podcast' ? 'mdi-podcast' : 'mdi-bookshelf' }}</v-icon>
           <div class="lib-info">
             <p class="lib-name">{{ lib.name }}</p>
-            <p class="lib-type">{{ lib.mediaType }} · {{ lib.stats?.totalItems ?? '?' }} items</p>
+            <p class="lib-type">{{ lib.mediaType }} · {{ lib.stats?.totalItems ?? '—' }} items</p>
           </div>
           <div class="lib-actions">
             <button
@@ -45,9 +54,9 @@
               <v-icon size="16">{{ checkingEpId === lib.id ? 'mdi-loading' : 'mdi-refresh' }}</v-icon>
               <span>{{ checkingEpId === lib.id ? `${checkEpProgress}/${checkEpTotal}` : 'Check' }}</span>
             </button>
-            <button class="scan-btn" :class="{ scanning: scanningId === lib.id }" @click="scan(lib.id)">
-              <v-icon size="16">{{ scanningId === lib.id ? 'mdi-loading' : 'mdi-magnify-scan' }}</v-icon>
-              <span>{{ scanningId === lib.id ? 'Scanning…' : 'Scan' }}</span>
+            <button class="scan-btn" :class="{ scanning: scanningIds.has(lib.id) }" @click="scan(lib.id)">
+              <v-icon size="16" :class="{ spin: scanningIds.has(lib.id) }">{{ scanningIds.has(lib.id) ? 'mdi-loading' : 'mdi-magnify-scan' }}</v-icon>
+              <span>{{ scanningIds.has(lib.id) ? 'Scanning…' : 'Scan' }}</span>
             </button>
             <button v-if="lib.mediaType === 'book'" class="scan-btn match-btn" :class="{ scanning: matchingId === lib.id }" :disabled="!!matchingId" @click="matchBooks(lib.id)" title="Match all books with metadata providers">
               <v-icon size="16">{{ matchingId === lib.id ? 'mdi-loading' : 'mdi-book-sync-outline' }}</v-icon>
@@ -232,10 +241,11 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { onMounted, onUnmounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { getAdminLibraries, scanLibrary, matchLibraryBooks, getPodcastFeed, addPodcast, createLibrary, updateLibrary, deleteLibrary, checkNewPodcastEpisodes, getLibraryPodcastItems } from '@/api/admin'
+import { getAdminLibraries, scanLibrary, matchLibraryBooks, reorderLibraries, getLibraryStats, getPodcastFeed, addPodcast, createLibrary, updateLibrary, deleteLibrary, checkNewPodcastEpisodes, getLibraryPodcastItems } from '@/api/admin'
 import type { AdminLibrary, PodcastFeedInfo } from '@/api/admin'
+import { onSocketEvent } from '@/api/socket'
 import { useSocketStore } from '@/stores/socket'
 import { api } from '@/api/client'
 import AppSelect from '@/components/common/AppSelect.vue'
@@ -247,11 +257,12 @@ const loadingPodcastsId = ref<string | null>(null)
 
 const loading    = ref(true)
 const libraries  = ref<AdminLibrary[]>([])
-const scanningId     = ref<string | null>(null)
+const scanningIds    = ref<Set<string>>(new Set())
 const matchingId     = ref<string | null>(null)
 const checkingEpId   = ref<string | null>(null)
 const checkEpProgress = ref(0)
 const checkEpTotal    = ref(0)
+const reordering     = ref(false)
 
 const showCreateLib = ref(false)
 const libName       = ref('')
@@ -283,9 +294,9 @@ const adding        = ref(false)
 const addError      = ref('')
 
 async function scan(id: string) {
-  scanningId.value = id
+  scanningIds.value = new Set([...scanningIds.value, id])
   try { await scanLibrary(id) } catch { /* ignore */ }
-  finally { scanningId.value = null }
+  // Keep scanningIds entry until library_scan_complete socket event clears it
 }
 
 async function matchBooks(id: string) {
@@ -293,6 +304,39 @@ async function matchBooks(id: string) {
   try { await matchLibraryBooks(id) } catch { /* ignore */ }
   finally { matchingId.value = null }
 }
+
+async function refreshLibrary(libId: string) {
+  try {
+    const stats = await getLibraryStats(libId)
+    const idx = libraries.value.findIndex(l => l.id === libId)
+    if (idx >= 0) {
+      libraries.value[idx] = { ...libraries.value[idx], stats, lastScan: Date.now() }
+    }
+  } catch { /* ignore */ }
+}
+
+async function moveLibrary(idx: number, direction: -1 | 1) {
+  const newIdx = idx + direction
+  if (newIdx < 0 || newIdx >= libraries.value.length) return
+  const arr = [...libraries.value]
+  ;[arr[idx], arr[newIdx]] = [arr[newIdx], arr[idx]]
+  libraries.value = arr
+  reordering.value = true
+  try { await reorderLibraries(arr.map(l => l.id)) } catch { /* ignore */ }
+  finally { reordering.value = false }
+}
+
+// Keep scan spinner alive and refresh library data when scan completes
+const stopScanComplete = onSocketEvent('library_scan_complete', (data: unknown) => {
+  const d = data as Record<string, unknown>
+  const libId = d?.libraryId as string | undefined
+  if (libId) {
+    scanningIds.value = new Set([...scanningIds.value].filter(id => id !== libId))
+    refreshLibrary(libId)
+  }
+})
+
+onUnmounted(() => { stopScanComplete() })
 
 async function checkEpisodes(libId: string) {
   checkingEpId.value    = libId
@@ -313,7 +357,7 @@ async function checkEpisodes(libId: string) {
 }
 
 function formatDate(ts: number) {
-  return new Date(ts).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })
+  return new Date(ts).toLocaleString(undefined, { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' })
 }
 
 function openAddPodcast(lib: AdminLibrary) {
@@ -417,7 +461,16 @@ async function loadPodcastItems(libId: string) {
 }
 
 onMounted(async () => {
-  try { libraries.value = await getAdminLibraries() } catch { /* ignore */ }
+  try {
+    libraries.value = await getAdminLibraries()
+    // Load item counts in parallel for all libraries
+    await Promise.all(libraries.value.map(async (lib, idx) => {
+      try {
+        const stats = await getLibraryStats(lib.id)
+        libraries.value[idx] = { ...libraries.value[idx], stats }
+      } catch { /* stats optional */ }
+    }))
+  } catch { /* ignore */ }
   finally { loading.value = false }
 })
 </script>
@@ -440,6 +493,14 @@ onMounted(async () => {
 .lib-list { display: flex; flex-direction: column; gap: 10px; }
 .lib-card { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.06); border-radius: 12px; padding: 14px; }
 .lib-card-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+.lib-reorder { display: flex; flex-direction: column; gap: 1px; flex-shrink: 0; }
+.reorder-btn {
+  display: flex; align-items: center; justify-content: center; width: 20px; height: 18px;
+  background: transparent; border: none; cursor: pointer; color: rgba(255,255,255,0.3);
+  border-radius: 4px; padding: 0;
+}
+.reorder-btn:hover:not(:disabled) { color: rgba(255,255,255,0.7); background: rgba(255,255,255,0.06); }
+.reorder-btn:disabled { opacity: 0.2; cursor: not-allowed; }
 .lib-info { flex: 1; }
 .lib-name { font-size: 14px; font-weight: 700; color: rgba(255,255,255,0.9); margin: 0 0 2px; }
 .lib-type { font-size: 11px; color: rgba(255,255,255,0.4); margin: 0; text-transform: capitalize; }
