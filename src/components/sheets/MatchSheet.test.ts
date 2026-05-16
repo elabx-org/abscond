@@ -239,7 +239,7 @@ describe('MatchSheet — apply step', () => {
     const wrapper = await mountAtDiff()
     await wrapper.find('.match-search-btn').trigger('click')
     await flushPromises()
-    expect(applyMatch).toHaveBeenCalledWith('li1', 'audible', 'Dune', 'Frank Herbert')
+    expect(applyMatch).toHaveBeenCalledWith('li1', 'audible', 'Dune', 'Frank Herbert', 'c1')
     expect(wrapper.emitted('matched')).toBeTruthy()
     expect(wrapper.emitted('matched')![0]).toEqual(['li1'])
   })

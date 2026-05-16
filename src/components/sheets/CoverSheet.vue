@@ -158,7 +158,7 @@ watch(() => props.modelValue, (opened) => {
     coverResults.value  = []
     if (fileInputRef.value) fileInputRef.value.value = ''
   }
-})
+}, { immediate: true })
 
 function onFileChange(e: Event) {
   const target = e.target as HTMLInputElement

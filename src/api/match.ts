@@ -41,9 +41,11 @@ export async function applyMatch(
   provider: string,
   title: string,
   author?: string,
+  asin?: string,
 ): Promise<ApplyMatchResult> {
   const body: Record<string, string> = { provider, title }
   if (author) body.author = author
+  if (asin)   body.asin   = asin
   const res = await api.post(`/items/${itemId}/match`, body)
   return res.data
 }

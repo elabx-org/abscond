@@ -248,7 +248,8 @@ async function doApply() {
   applying.value = true
   error.value    = null
   try {
-    await applyMatch(props.item.id, provider.value, selected.value.title, selected.value.author || undefined)
+    const asin = (selected.value as MatchCandidate & { asin?: string }).asin ?? selected.value.id
+    await applyMatch(props.item.id, provider.value, selected.value.title, selected.value.author || undefined, asin)
     emit('matched', props.item.id)
     close()
   } catch {
