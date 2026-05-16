@@ -334,6 +334,24 @@
       :item="props.item"
       @matched="onMatched"
     />
+    <CoverSheet
+      v-if="showCover"
+      v-model="showCover"
+      :item-id="item.id"
+      @updated="onCoverUpdated"
+    />
+    <ChaptersSheet
+      v-if="showChapters"
+      v-model="showChapters"
+      :item-id="item.id"
+      :total-duration="item.media.duration ?? 0"
+      @seek="(t) => player.seek(t)"
+    />
+    <FilesSheet
+      v-if="showFiles"
+      v-model="showFiles"
+      :item-id="item.id"
+    />
   <BookActionsSheet
     v-model="showActions"
     :progress="progress"
@@ -356,6 +374,9 @@ import AuthorDetailSheet from '@/components/sheets/AuthorDetailSheet.vue'
 import NarratorDetailSheet from '@/components/sheets/NarratorDetailSheet.vue'
 import NotesSheet from '@/components/sheets/NotesSheet.vue'
 import MatchSheet from '@/components/sheets/MatchSheet.vue'
+import CoverSheet from '@/components/sheets/CoverSheet.vue'
+import ChaptersSheet from '@/components/sheets/ChaptersSheet.vue'
+import FilesSheet from '@/components/sheets/FilesSheet.vue'
 import BookActionsSheet from '@/components/sheets/BookActionsSheet.vue'
 import { getDirectDownloadUrl } from '@/api/downloads'
 import { getBaseUrl, api } from '@/api/client'
@@ -448,6 +469,9 @@ const editSaving        = ref(false)
 const editError         = ref('')
 const editMeta          = ref({ title: '', subtitle: '', authorNames: '', narratorNames: '', publishedYear: '', publisher: '', genres: '', tags: '', description: '' })
 const showMatch         = ref(false)
+const showCover         = ref(false)
+const showChapters      = ref(false)
+const showFiles         = ref(false)
 const showActions       = ref(false)
 const showDeleteConfirm = ref(false)
 const deleting          = ref(false)
@@ -580,6 +604,12 @@ async function doMakeM4b() {
   }
 }
 
+function onCoverUpdated() {
+  // Force cover image refresh by busting the cache key
+  const img = document.querySelector(`img[src*="${props.item.id}/cover"]`) as HTMLImageElement | null
+  if (img) img.src = img.src.includes('?') ? img.src.replace(/&?_t=\d+/, '') + `&_t=${Date.now()}` : img.src + `?_t=${Date.now()}`
+}
+
 async function onMatched(itemId: string) {
   try {
     const updated = await getItem(itemId)
@@ -605,6 +635,9 @@ function handleAction(id: string) {
   else if (id === 'queue')      addToQueue()
   else if (id === 'reset')      removeProgress()
   else if (id === 'goodreads')  openGoodreads()
+  else if (id === 'cover')      showCover.value         = true
+  else if (id === 'chapters')   showChapters.value      = true
+  else if (id === 'files')      showFiles.value         = true
   else if (id === 'match')      showMatch.value         = true
   else if (id === 'edit')       openEdit()
   else if (id === 'embed-meta') doEmbedMetadata()
@@ -756,6 +789,9 @@ watch(() => props.show, async (v) => {
     showShare.value       = false
     shareLink.value       = null
     showEdit.value        = false
+    showCover.value       = false
+    showChapters.value    = false
+    showFiles.value       = false
     showActions.value      = false
     authorsExpanded.value   = false
     narratorsExpanded.value = false

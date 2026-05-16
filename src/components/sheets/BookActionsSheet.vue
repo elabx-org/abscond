@@ -47,6 +47,9 @@ const ALL_ITEMS = [
   { id: 'queue',      label: 'Add to Queue',       icon: 'mdi-playlist-music',           destructive: false, always: true  },
   { id: 'reset',      label: 'Reset Progress',     icon: 'mdi-restart',                  destructive: false, always: false },
   { id: 'goodreads',  label: 'Goodreads',          icon: 'mdi-bookshelf',                destructive: false, always: false },
+  { id: 'cover',         label: 'Update Cover',       icon: 'mdi-image-edit-outline',       destructive: false, always: false },
+  { id: 'chapters',      label: 'Edit Chapters',      icon: 'mdi-format-list-numbered',     destructive: false, always: false },
+  { id: 'files',         label: 'View Files',         icon: 'mdi-file-multiple-outline',    destructive: false, always: false },
   { id: 'match',         label: 'Match Metadata',     icon: 'mdi-magnify-scan',             destructive: false, always: false },
   { id: 'edit',          label: 'Edit Metadata',      icon: 'mdi-pencil-outline',           destructive: false, always: false },
   { id: 'embed-meta',    label: 'Embed Metadata',     icon: 'mdi-tag-arrow-down-outline',   destructive: false, always: false },
@@ -60,6 +63,9 @@ const visibleItems = computed(() =>
     if (item.always) return true
     if (item.id === 'reset')     return props.progress > 0
     if (item.id === 'goodreads') return props.goodreadsEnabled
+    if (item.id === 'cover')      return props.isAdmin
+    if (item.id === 'chapters')   return props.isAdmin
+    if (item.id === 'files')      return props.isAdmin
     if (item.id === 'match')      return props.isAdmin
     if (item.id === 'edit')       return props.isAdmin
     if (item.id === 'embed-meta') return props.isAdmin
