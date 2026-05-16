@@ -562,6 +562,24 @@ async function doScan() {
   } finally { scanning.value = false }
 }
 
+async function doEmbedMetadata() {
+  try {
+    await api.post(`/items/${props.item.id}/embed-metadata`)
+    notify.show('Embed metadata task queued', 'success')
+  } catch {
+    notify.show('Failed to queue embed metadata', 'error')
+  }
+}
+
+async function doMakeM4b() {
+  try {
+    await api.post(`/encode`, { id: props.item.id })
+    notify.show('M4B creation task queued', 'success')
+  } catch {
+    notify.show('Failed to queue M4B creation', 'error')
+  }
+}
+
 async function onMatched(itemId: string) {
   try {
     const updated = await getItem(itemId)
@@ -589,6 +607,8 @@ function handleAction(id: string) {
   else if (id === 'goodreads')  openGoodreads()
   else if (id === 'match')      showMatch.value         = true
   else if (id === 'edit')       openEdit()
+  else if (id === 'embed-meta') doEmbedMetadata()
+  else if (id === 'make-m4b')   doMakeM4b()
   else if (id === 'scan')       doScan()
   else if (id === 'delete')     showDeleteConfirm.value = true
 }
