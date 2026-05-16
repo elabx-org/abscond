@@ -136,7 +136,9 @@ function handleItem(id: string) {
 }
 .more-sheet::-webkit-scrollbar { display: none; }
 @media (min-width: 520px) {
-  .more-sheet { bottom: 0; border-radius: 0; border-top: none; border-left: 1px solid rgba(255,255,255,0.08); max-height: 100%; }
+  .more-sheet { top: 0; bottom: 0 !important; max-height: 100% !important; border-radius: 0; border-top: none; border-left: 1px solid rgba(255,255,255,0.08); }
+  .sheet-enter-from, .sheet-leave-to { transform: translateX(100%); opacity: 1; }
+  .more-drag-row { display: none; }
 }
 
 .sheet-enter-active, .sheet-leave-active { transition: transform 0.25s cubic-bezier(0.32,0.72,0,1), opacity 0.2s; }

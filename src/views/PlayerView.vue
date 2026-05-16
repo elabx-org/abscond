@@ -1414,7 +1414,8 @@ function queueDragEnd() {
 }
 .panel-box::-webkit-scrollbar { display: none; }
 @media (min-width: 520px) {
-  .panel-box { bottom: 0; border-radius: 0; border-top: none; border-left: 1px solid rgba(255,255,255,0.08); max-height: 100%; }
+  .panel-box { top: 0; bottom: 0; max-height: 100%; border-radius: 0; border-top: none; border-left: 1px solid rgba(255,255,255,0.08); }
+  .panel-enter-from, .panel-leave-to { transform: translateX(100%); opacity: 1; }
 }
 .panel-title {
   font-size: 10px; font-weight: 700; color: rgba(255,255,255,0.4);
