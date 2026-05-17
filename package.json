@@ -12,6 +12,7 @@
     "coverage": "vitest run --coverage"
   },
   "dependencies": {
+    "@capacitor/core": "^7.6.5",
     "@mdi/font": "^7.4.47",
     "@mdi/js": "^7.4.47",
     "axios": "^1.16.1",
