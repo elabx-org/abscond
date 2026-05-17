@@ -934,10 +934,15 @@ function setSleep(mins: number | null) {
   if (mins !== null && mins !== 5 && mins !== 10 && mins !== 15 && mins !== 20 && mins !== 30 && mins !== 45 && mins !== 60) {
     localStorage.setItem('abs_sleep_custom', String(mins))
   }
+  if ('vibrate' in navigator) navigator.vibrate(30)
   player.setSleepTimer(mins)
   showSleepPicker.value = false
 }
-function setSleepEoc() { player.setSleepTimer(null, true); showSleepPicker.value = false }
+function setSleepEoc() {
+  if ('vibrate' in navigator) navigator.vibrate(30)
+  player.setSleepTimer(null, true)
+  showSleepPicker.value = false
+}
 function setSleepRewind(secs: number) {
   sleepRewindSecs.value = secs
   localStorage.setItem('abs_sleep_rewind', String(secs))
@@ -1019,6 +1024,7 @@ function scrubFraction(e: PointerEvent): number {
 }
 
 function startScrub(e: PointerEvent) {
+  if ('vibrate' in navigator) navigator.vibrate(30)
   scrubbing = true
   isScrubbing.value = true
   scrubTooltipFrac.value = scrubFraction(e)

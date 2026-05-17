@@ -602,6 +602,7 @@ async function removeProgress() {
 }
 
 async function doDeleteItem() {
+  if ('vibrate' in navigator) navigator.vibrate(30)
   deleting.value = true
   try {
     await api.delete(`/items/${props.item.id}`)
