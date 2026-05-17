@@ -141,9 +141,10 @@
 
             <p v-if="error" class="match-error">{{ error }}</p>
 
-            <button class="match-search-btn" :disabled="applying" @click="doApply">
-              <v-icon v-if="applying" size="15" class="spin">mdi-loading</v-icon>
-              {{ applying ? 'Applying…' : 'Apply Changes' }}
+            <button class="match-search-btn" :class="{ applied }" :disabled="applying" @click="doApply">
+              <v-icon v-if="applying && !applied" size="15" class="spin">mdi-loading</v-icon>
+              <v-icon v-else-if="applied" size="15">mdi-check</v-icon>
+              {{ applied ? '✓ Applied!' : applying ? 'Applying…' : 'Apply Changes' }}
             </button>
             <button class="match-secondary-btn" @click="step = 'candidates'">Back to results</button>
           </div>
@@ -160,13 +161,11 @@ import { searchCandidates, type MatchCandidate } from '@/api/match'
 import { getItem } from '@/api/items'
 import { api, coverUrl } from '@/api/client'
 import { useAuthStore } from '@/stores/auth'
-import { useNotificationStore } from '@/stores/notifications'
 import type { LibraryItem } from '@/api/types'
 
 const props  = defineProps<{ modelValue: boolean; item: LibraryItem }>()
 const emit   = defineEmits<{ 'update:modelValue': [val: boolean]; matched: [item: LibraryItem] }>()
 const auth   = useAuthStore()
-const notify = useNotificationStore()
 
 const PROVIDERS = [
   { value: 'audible',     label: 'Audible' },
@@ -187,6 +186,7 @@ const candidates   = ref<MatchCandidate[]>([])
 const selected     = ref<MatchCandidate | null>(null)
 const loading      = ref(false)
 const applying     = ref(false)
+const applied      = ref(false)
 const error        = ref<string | null>(null)
 
 watch(() => props.modelValue, v => {
@@ -198,6 +198,7 @@ watch(() => props.modelValue, v => {
     candidates.value = []
     selected.value   = null
     error.value      = null
+    applied.value    = false
   }
 }, { immediate: true })
 
@@ -249,6 +250,7 @@ async function doSearch() {
 async function doApply() {
   if (!selected.value) return
   applying.value = true
+  applied.value  = false
   error.value    = null
   const c = selected.value
   try {
@@ -265,14 +267,15 @@ async function doApply() {
     if (c.publisher)      metadata.publisher     = c.publisher
     if (c.description)    metadata.description   = c.description
     if (c.genres?.length) metadata.genres        = c.genres
-    const payload: Record<string, unknown> = { metadata }
-    if (c.coverUrl) payload.url = c.coverUrl
-    console.log('[MatchSheet] PATCH payload', JSON.stringify(payload))
-    const patchRes = await api.patch(`/items/${props.item.id}/media`, payload)
-    console.log('[MatchSheet] PATCH response updated:', patchRes.data?.updated)
+    await api.patch(`/items/${props.item.id}/media`, { metadata })
+    // Cover update is best-effort: if the CDN URL is unreachable from the server
+    // the metadata save must still succeed, so fire-and-forget separately.
+    if (c.coverUrl) {
+      api.post(`/items/${props.item.id}/cover`, { url: c.coverUrl }).catch(() => {})
+    }
   } catch (err) {
     console.error('[MatchSheet] PATCH failed', err)
-    error.value = 'Failed to apply match — please try again'
+    error.value = 'Failed to save metadata — please try again'
     applying.value = false
     return
   }
@@ -280,14 +283,17 @@ async function doApply() {
   // Always fetch the expanded item so the UI gets the full correct state.
   try {
     const updatedItem = await getItem(props.item.id)
-    console.log('[MatchSheet] getItem title:', updatedItem.media.metadata.title, 'author:', updatedItem.media.metadata.authorName)
     emit('matched', updatedItem)
-    notify.show('Metadata updated', 'success')
+    applied.value  = true
     applying.value = false
-    close()
+    // Show success state briefly so the user sees confirmation, then close.
+    setTimeout(() => {
+      applied.value = false
+      close()
+    }, 1200)
   } catch (err) {
     console.error('[MatchSheet] getItem failed', err)
-    error.value = 'Match applied but failed to reload — please close and reopen the book'
+    error.value = 'Metadata saved but failed to reload — please close and reopen'
     applying.value = false
   }
 }
@@ -355,6 +361,7 @@ function close() {
   margin-top: 4px;
 }
 .match-search-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+.match-search-btn.applied { background: #4ade80; color: #0a2010; }
 .match-secondary-btn {
   width: 100%; background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.5);
   font-size: 12px; font-weight: 600; padding: 10px; border-radius: 12px;
