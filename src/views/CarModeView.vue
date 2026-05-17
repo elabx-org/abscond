@@ -9,7 +9,7 @@
     <!-- Top bar -->
     <div class="car-top">
       <button class="car-close" @click="$router.back()">
-        <v-icon size="22" color="rgba(255,255,255,0.6)">mdi-chevron-down</v-icon>
+        <AppIcon icon="mdi-chevron-down" :size="22" color="rgba(255,255,255,0.6)" />
       </button>
       <span class="car-label">Car Mode</span>
       <div style="width:44px" />
@@ -37,20 +37,20 @@
     <!-- Controls -->
     <div class="car-controls" @click.stop>
       <button class="car-skip" @click="player.skipBack(settings.skipBackSecs)">
-        <v-icon size="36">{{ backIcon }}</v-icon>
+        <AppIcon :icon="backIcon" :size="36" />
       </button>
       <button class="car-play" @click="player.togglePlay()">
-        <v-icon size="56" color="#111">{{ player.isPlaying ? 'mdi-pause' : 'mdi-play' }}</v-icon>
+        <AppIcon :icon="player.isPlaying ? 'mdi-pause' : 'mdi-play'" :size="56" color="#111" />
       </button>
       <button class="car-skip" @click="player.skipForward(settings.skipFwdSecs)">
-        <v-icon size="36">{{ fwdIcon }}</v-icon>
+        <AppIcon :icon="fwdIcon" :size="36" />
       </button>
     </div>
 
     <!-- Bottom row -->
     <div class="car-bottom" @click.stop>
       <button class="car-util" :class="{ active: player.sleepMinsLeft || player.sleepEndOfChapter }" @click="cycleSleep">
-        <v-icon size="22">mdi-moon-waning-crescent</v-icon>
+        <AppIcon icon="mdi-moon-waning-crescent" :size="22" />
         <span v-if="player.sleepMinsLeft !== null" class="car-util-badge">{{ player.sleepMinsLeft }}m</span>
         <span v-else-if="player.sleepEndOfChapter" class="car-util-badge">ch</span>
       </button>
@@ -58,7 +58,7 @@
         <span class="car-speed-label">{{ player.playbackRate }}×</span>
       </button>
       <button class="car-util" @click="addBookmark">
-        <v-icon size="22">mdi-bookmark-plus-outline</v-icon>
+        <AppIcon icon="mdi-bookmark-plus-outline" :size="22" />
       </button>
     </div>
   </div>

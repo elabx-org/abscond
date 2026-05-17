@@ -6,7 +6,7 @@
     <section class="settings-section">
       <button class="section-toggle" @click="toggle('account')">
         <span class="section-toggle-title">Account</span>
-        <v-icon class="section-chevron" :class="{ open: isOpen('account') }" size="16" color="rgba(255,255,255,0.3)">mdi-chevron-down</v-icon>
+        <AppIcon icon="mdi-chevron-down" class="section-chevron" :class="{ open: isOpen('account') }" :size="16" color="rgba(255,255,255,0.3)" />
       </button>
 
       <Transition name="sect" @enter="onEnter" @after-enter="onAfterEnter" @leave="onLeave">
@@ -14,7 +14,7 @@
           <div class="settings-card">
             <div class="account-row">
               <div class="avatar">
-                <v-icon size="28" color="rgba(255,255,255,0.6)">mdi-account</v-icon>
+                <AppIcon icon="mdi-account" :size="28" color="rgba(255,255,255,0.6)" />
               </div>
               <div class="account-meta">
                 <p class="account-name">{{ auth.user?.username ?? '—' }}</p>
@@ -24,18 +24,18 @@
           </div>
 
           <div class="settings-item" @click="openChangeUsername">
-            <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-account-edit-outline</v-icon>
+            <AppIcon icon="mdi-account-edit-outline" :size="18" color="rgba(255,255,255,0.5)" />
             <span class="item-label">Change Username</span>
-            <v-icon size="14" color="rgba(255,255,255,0.2)">mdi-chevron-right</v-icon>
+            <AppIcon icon="mdi-chevron-right" :size="14" color="rgba(255,255,255,0.2)" />
           </div>
           <div class="settings-item" @click="showChangePassword = true">
-            <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-lock-outline</v-icon>
+            <AppIcon icon="mdi-lock-outline" :size="18" color="rgba(255,255,255,0.5)" />
             <span class="item-label">Change Password</span>
-            <v-icon size="14" color="rgba(255,255,255,0.2)">mdi-chevron-right</v-icon>
+            <AppIcon icon="mdi-chevron-right" :size="14" color="rgba(255,255,255,0.2)" />
           </div>
 
           <div class="settings-item" @click="confirmLogout = true">
-            <v-icon size="18" color="#ef4444">mdi-logout</v-icon>
+            <AppIcon icon="mdi-logout" :size="18" color="#ef4444" />
             <span class="item-label" style="color:#ef4444">Sign out</span>
           </div>
         </div>
@@ -46,13 +46,13 @@
     <section class="settings-section">
       <button class="section-toggle" @click="toggle('appearance')">
         <span class="section-toggle-title">Appearance</span>
-        <v-icon class="section-chevron" :class="{ open: isOpen('appearance') }" size="16" color="rgba(255,255,255,0.3)">mdi-chevron-down</v-icon>
+        <AppIcon icon="mdi-chevron-down" class="section-chevron" :class="{ open: isOpen('appearance') }" :size="16" color="rgba(255,255,255,0.3)" />
       </button>
 
       <Transition name="sect" @enter="onEnter" @after-enter="onAfterEnter" @leave="onLeave">
         <div v-if="isOpen('appearance')">
           <div class="settings-item">
-            <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-theme-light-dark</v-icon>
+            <AppIcon icon="mdi-theme-light-dark" :size="18" color="rgba(255,255,255,0.5)" />
             <span class="item-label">Theme</span>
             <div class="theme-chips">
               <button
@@ -69,7 +69,7 @@
           </div>
 
           <div class="settings-item" @click="toggleShowExplicit">
-            <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-alert-circle-outline</v-icon>
+            <AppIcon icon="mdi-alert-circle-outline" :size="18" color="rgba(255,255,255,0.5)" />
             <div class="item-label-stack">
               <span class="item-label">Show explicit badge</span>
               <span class="item-sublabel">Show 'E' on covers marked explicit</span>
@@ -80,7 +80,7 @@
           </div>
 
           <div class="settings-item" @click="toggleRectangleCovers">
-            <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-image-frame</v-icon>
+            <AppIcon icon="mdi-image-frame" :size="18" color="rgba(255,255,255,0.5)" />
             <div class="item-label-stack">
               <span class="item-label">Rectangle covers</span>
               <span class="item-sublabel">Show book covers in 2:3 portrait ratio</span>
@@ -91,7 +91,7 @@
           </div>
 
           <div class="settings-item" @click="toggleHideEbookOnly">
-            <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-headphones</v-icon>
+            <AppIcon icon="mdi-headphones" :size="18" color="rgba(255,255,255,0.5)" />
             <div class="item-label-stack">
               <span class="item-label">Hide eBook-only titles</span>
               <span class="item-sublabel">{{ hideEbookOnly ? 'Books with no audio files are hidden' : 'Off — all library items shown' }}</span>
@@ -108,13 +108,13 @@
     <section class="settings-section">
       <button class="section-toggle" @click="toggle('playback')">
         <span class="section-toggle-title">Playback</span>
-        <v-icon class="section-chevron" :class="{ open: isOpen('playback') }" size="16" color="rgba(255,255,255,0.3)">mdi-chevron-down</v-icon>
+        <AppIcon icon="mdi-chevron-down" class="section-chevron" :class="{ open: isOpen('playback') }" :size="16" color="rgba(255,255,255,0.3)" />
       </button>
 
       <Transition name="sect" @enter="onEnter" @after-enter="onAfterEnter" @leave="onLeave">
         <div v-if="isOpen('playback')">
           <div class="settings-item">
-            <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-speedometer</v-icon>
+            <AppIcon icon="mdi-speedometer" :size="18" color="rgba(255,255,255,0.5)" />
             <div class="item-label-stack">
               <span class="item-label">Default speed</span>
               <span class="item-sublabel">Applied when starting a new book</span>
@@ -134,7 +134,7 @@
           </div>
 
           <div class="settings-item">
-            <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-speedometer-medium</v-icon>
+            <AppIcon icon="mdi-speedometer-medium" :size="18" color="rgba(255,255,255,0.5)" />
             <div class="item-label-stack">
               <span class="item-label">Speed presets</span>
               <span class="item-sublabel">Long-press a chip in the player to remove; + to add</span>
@@ -146,7 +146,7 @@
           </div>
 
           <div class="settings-item">
-            <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-skip-backward</v-icon>
+            <AppIcon icon="mdi-skip-backward" :size="18" color="rgba(255,255,255,0.5)" />
             <span class="item-label">Skip back</span>
             <div class="interval-chips">
               <button
@@ -160,7 +160,7 @@
           </div>
 
           <div class="settings-item">
-            <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-skip-forward</v-icon>
+            <AppIcon icon="mdi-skip-forward" :size="18" color="rgba(255,255,255,0.5)" />
             <span class="item-label">Skip forward</span>
             <div class="interval-chips">
               <button
@@ -174,7 +174,7 @@
           </div>
 
           <div class="settings-item" @click="settingsStore.setSpeedAdjustedTime(!settingsStore.speedAdjustedTime)">
-            <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-clock-fast</v-icon>
+            <AppIcon icon="mdi-clock-fast" :size="18" color="rgba(255,255,255,0.5)" />
             <div class="item-label-stack">
               <span class="item-label">Speed-adjusted time</span>
               <span class="item-sublabel">Show remaining time at current playback rate</span>
@@ -185,7 +185,7 @@
           </div>
 
           <div class="settings-item" @click="settingsStore.setBookAutoAdvance(!settingsStore.bookAutoAdvance)">
-            <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-book-arrow-right-outline</v-icon>
+            <AppIcon icon="mdi-book-arrow-right-outline" :size="18" color="rgba(255,255,255,0.5)" />
             <div class="item-label-stack">
               <span class="item-label">Auto-advance books</span>
               <span class="item-sublabel">Automatically play next book in series</span>
@@ -196,7 +196,7 @@
           </div>
 
           <div class="settings-item" @click="settingsStore.setPodcastAutoAdvance(!settingsStore.podcastAutoAdvance)">
-            <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-skip-next-circle-outline</v-icon>
+            <AppIcon icon="mdi-skip-next-circle-outline" :size="18" color="rgba(255,255,255,0.5)" />
             <div class="item-label-stack">
               <span class="item-label">Auto-advance episodes</span>
               <span class="item-sublabel">Automatically play next podcast episode</span>
@@ -207,7 +207,7 @@
           </div>
 
           <div class="settings-item" @click="settingsStore.setChapterBarrierEnabled(!settingsStore.chapterBarrierEnabled)">
-            <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-book-check-outline</v-icon>
+            <AppIcon icon="mdi-book-check-outline" :size="18" color="rgba(255,255,255,0.5)" />
             <div class="item-label-stack">
               <span class="item-label">Pause at chapter end</span>
               <span class="item-sublabel">Pause playback at each chapter boundary</span>
@@ -218,7 +218,7 @@
           </div>
 
           <div class="settings-item" @click="settingsStore.setAutoRewindEnabled(!settingsStore.autoRewindEnabled)">
-            <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-rewind</v-icon>
+            <AppIcon icon="mdi-rewind" :size="18" color="rgba(255,255,255,0.5)" />
             <div class="item-label-stack">
               <span class="item-label">Auto-rewind on resume</span>
               <span class="item-sublabel">Rewind up to {{ settingsStore.autoRewindMax }}s after a pause</span>
@@ -229,7 +229,7 @@
           </div>
 
           <div v-if="settingsStore.autoRewindEnabled" class="settings-item">
-            <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-rewind-outline</v-icon>
+            <AppIcon icon="mdi-rewind-outline" :size="18" color="rgba(255,255,255,0.5)" />
             <span class="item-label">Max rewind</span>
             <div class="interval-chips">
               <button
@@ -243,7 +243,7 @@
           </div>
 
           <div class="settings-item" @click="toggleSleepFade">
-            <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-volume-minus</v-icon>
+            <AppIcon icon="mdi-volume-minus" :size="18" color="rgba(255,255,255,0.5)" />
             <div class="item-label-stack">
               <span class="item-label">Fade volume before sleep</span>
               <span class="item-sublabel">Gradually lower volume before sleep timer fires</span>
@@ -254,7 +254,7 @@
           </div>
 
           <div v-if="sleepFadeEnabled" class="settings-item">
-            <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-timer-outline</v-icon>
+            <AppIcon icon="mdi-timer-outline" :size="18" color="rgba(255,255,255,0.5)" />
             <span class="item-label">Fade duration</span>
             <div class="interval-chips">
               <button
@@ -268,7 +268,7 @@
           </div>
 
           <div class="settings-item" @click="toggleSleepChime">
-            <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-bell-outline</v-icon>
+            <AppIcon icon="mdi-bell-outline" :size="18" color="rgba(255,255,255,0.5)" />
             <div class="item-label-stack">
               <span class="item-label">Chime before sleep</span>
               <span class="item-sublabel">Play a soft chime 30 seconds before sleep fires</span>
@@ -279,7 +279,7 @@
           </div>
 
           <div v-if="sleepChimeEnabled" class="settings-item">
-            <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-volume-medium</v-icon>
+            <AppIcon icon="mdi-volume-medium" :size="18" color="rgba(255,255,255,0.5)" />
             <span class="item-label">Chime volume</span>
             <div style="display:flex;align-items:center;gap:8px;flex:1;justify-content:flex-end">
               <input
@@ -293,7 +293,7 @@
           </div>
 
           <div class="settings-item" @click="toggleSleepResetOnPause">
-            <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-pause-circle-outline</v-icon>
+            <AppIcon icon="mdi-pause-circle-outline" :size="18" color="rgba(255,255,255,0.5)" />
             <div class="item-label-stack">
               <span class="item-label">Pause sleep timer when paused</span>
               <span class="item-sublabel">Stop sleep countdown while audio is paused</span>
@@ -304,7 +304,7 @@
           </div>
 
           <div class="settings-item">
-            <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-vibrate</v-icon>
+            <AppIcon icon="mdi-vibrate" :size="18" color="rgba(255,255,255,0.5)" />
             <div class="item-label-stack">
               <span class="item-label">Shake action</span>
               <span class="item-sublabel">What to do when you shake the device during sleep timer</span>
@@ -317,7 +317,7 @@
           </div>
 
           <div v-if="settingsStore.shakeMode !== 'off'" class="settings-item">
-            <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-speedometer</v-icon>
+            <AppIcon icon="mdi-speedometer" :size="18" color="rgba(255,255,255,0.5)" />
             <span class="item-label">Shake sensitivity</span>
             <div style="display:flex;align-items:center;gap:8px;flex:1;justify-content:flex-end">
               <input
@@ -331,7 +331,7 @@
           </div>
 
           <div v-if="settingsStore.shakeMode === 'addTime'" class="settings-item">
-            <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-timer-plus-outline</v-icon>
+            <AppIcon icon="mdi-timer-plus-outline" :size="18" color="rgba(255,255,255,0.5)" />
             <span class="item-label">Shake adds</span>
             <div style="display:flex;align-items:center;gap:8px;flex:1;justify-content:flex-end">
               <input
@@ -345,7 +345,7 @@
           </div>
 
           <div class="settings-item">
-            <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-rewind</v-icon>
+            <AppIcon icon="mdi-rewind" :size="18" color="rgba(255,255,255,0.5)" />
             <span class="item-label">Sleep rewind</span>
             <div class="interval-chips">
               <button
@@ -360,7 +360,7 @@
 
           <!-- Auto sleep timer -->
           <div class="settings-item" @click="toggleAutoSleep">
-            <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-weather-night</v-icon>
+            <AppIcon icon="mdi-weather-night" :size="18" color="rgba(255,255,255,0.5)" />
             <div class="item-label-stack">
               <span class="item-label">Auto sleep timer</span>
               <span class="item-sublabel">Start sleep timer automatically within a time window</span>
@@ -372,7 +372,7 @@
 
           <template v-if="autoSleepEnabled">
             <div class="settings-item">
-              <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-clock-start</v-icon>
+              <AppIcon icon="mdi-clock-start" :size="18" color="rgba(255,255,255,0.5)" />
               <span class="item-label">Window start</span>
               <div class="interval-chips">
                 <button
@@ -385,7 +385,7 @@
               </div>
             </div>
             <div class="settings-item">
-              <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-clock-end</v-icon>
+              <AppIcon icon="mdi-clock-end" :size="18" color="rgba(255,255,255,0.5)" />
               <span class="item-label">Window end</span>
               <div class="interval-chips">
                 <button
@@ -398,7 +398,7 @@
               </div>
             </div>
             <div class="settings-item">
-              <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-timer-sand</v-icon>
+              <AppIcon icon="mdi-timer-sand" :size="18" color="rgba(255,255,255,0.5)" />
               <span class="item-label">Auto sleep duration</span>
               <div class="interval-chips">
                 <button
@@ -413,7 +413,7 @@
           </template>
 
           <div class="settings-item" @click="togglePerItemSpeed">
-            <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-speedometer</v-icon>
+            <AppIcon icon="mdi-speedometer" :size="18" color="rgba(255,255,255,0.5)" />
             <div class="item-label-stack">
               <span class="item-label">Remember speed per book</span>
               <span class="item-sublabel">Restore the last speed used for each title</span>
@@ -424,7 +424,7 @@
           </div>
 
           <div class="settings-item" @click="toggleGoodreads">
-            <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-bookshelf</v-icon>
+            <AppIcon icon="mdi-bookshelf" :size="18" color="rgba(255,255,255,0.5)" />
             <div class="item-label-stack">
               <span class="item-label">Show Goodreads button</span>
               <span class="item-sublabel">Search Goodreads from book detail sheet</span>
@@ -441,13 +441,13 @@
     <section class="settings-section">
       <button class="section-toggle" @click="toggle('equalizer')">
         <span class="section-toggle-title">Equalizer</span>
-        <v-icon class="section-chevron" :class="{ open: isOpen('equalizer') }" size="16" color="rgba(255,255,255,0.3)">mdi-chevron-down</v-icon>
+        <AppIcon icon="mdi-chevron-down" class="section-chevron" :class="{ open: isOpen('equalizer') }" :size="16" color="rgba(255,255,255,0.3)" />
       </button>
 
       <Transition name="sect" @enter="onEnter" @after-enter="onAfterEnter" @leave="onLeave">
         <div v-if="isOpen('equalizer')">
           <div class="settings-item" @click="eq.setEnabled(!eq.enabled)">
-            <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-equalizer</v-icon>
+            <AppIcon icon="mdi-equalizer" :size="18" color="rgba(255,255,255,0.5)" />
             <div class="item-label-stack">
               <span class="item-label">Equalizer</span>
               <span class="item-sublabel">{{ eq.enabled ? (eq.isCustom ? 'Custom' : eq.activePreset) : 'Off' }}</span>
@@ -521,21 +521,19 @@
     <section class="settings-section">
       <button class="section-toggle" @click="toggle('server')">
         <span class="section-toggle-title">Server</span>
-        <v-icon class="section-chevron" :class="{ open: isOpen('server') }" size="16" color="rgba(255,255,255,0.3)">mdi-chevron-down</v-icon>
+        <AppIcon icon="mdi-chevron-down" class="section-chevron" :class="{ open: isOpen('server') }" :size="16" color="rgba(255,255,255,0.3)" />
       </button>
 
       <Transition name="sect" @enter="onEnter" @after-enter="onAfterEnter" @leave="onLeave">
         <div v-if="isOpen('server')">
           <div class="settings-item" @click="openEditServer">
-            <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-server</v-icon>
+            <AppIcon icon="mdi-server" :size="18" color="rgba(255,255,255,0.5)" />
             <span class="item-label">ABS Server</span>
             <span class="item-value server-url">{{ serverUrl }}</span>
           </div>
 
           <div class="settings-item">
-            <v-icon size="18" :color="socketConnected ? '#22c55e' : '#ef4444'">
-              {{ socketConnected ? 'mdi-circle' : 'mdi-circle-outline' }}
-            </v-icon>
+            <AppIcon :icon="socketConnected ? 'mdi-circle' : 'mdi-circle-outline'" :size="18" :color="socketConnected ? '#22c55e' : '#ef4444'" />
             <span class="item-label">Connection</span>
             <span class="item-value" :style="{ color: socketConnected ? '#22c55e' : '#ef4444' }">
               {{ socketConnected ? 'Connected' : 'Disconnected' }}
@@ -549,7 +547,7 @@
     <section class="settings-section" v-if="lib.libraries.length > 1">
       <button class="section-toggle" @click="toggle('library')">
         <span class="section-toggle-title">Library</span>
-        <v-icon class="section-chevron" :class="{ open: isOpen('library') }" size="16" color="rgba(255,255,255,0.3)">mdi-chevron-down</v-icon>
+        <AppIcon icon="mdi-chevron-down" class="section-chevron" :class="{ open: isOpen('library') }" :size="16" color="rgba(255,255,255,0.3)" />
       </button>
 
       <Transition name="sect" @enter="onEnter" @after-enter="onAfterEnter" @leave="onLeave">
@@ -560,11 +558,9 @@
             class="settings-item"
             @click="lib.setActiveLibrary(l.id)"
           >
-            <v-icon size="18" color="rgba(255,255,255,0.5)">
-              {{ l.mediaType === 'podcast' ? 'mdi-podcast' : 'mdi-bookshelf' }}
-            </v-icon>
+            <AppIcon :icon="l.mediaType === 'podcast' ? 'mdi-podcast' : 'mdi-bookshelf'" :size="18" color="rgba(255,255,255,0.5)" />
             <span class="item-label">{{ l.name }}</span>
-            <v-icon v-if="lib.activeLibraryId === l.id" size="16" color="#d4a017">mdi-check</v-icon>
+            <AppIcon icon="mdi-check" v-if="lib.activeLibraryId === l.id" :size="16" color="#d4a017" />
           </div>
         </div>
       </Transition>
@@ -574,21 +570,21 @@
     <section class="settings-section">
       <button class="section-toggle" @click="toggle('abscond')">
         <span class="section-toggle-title">Abscond</span>
-        <v-icon class="section-chevron" :class="{ open: isOpen('abscond') }" size="16" color="rgba(255,255,255,0.3)">mdi-chevron-down</v-icon>
+        <AppIcon icon="mdi-chevron-down" class="section-chevron" :class="{ open: isOpen('abscond') }" :size="16" color="rgba(255,255,255,0.3)" />
       </button>
 
       <Transition name="sect" @enter="onEnter" @after-enter="onAfterEnter" @leave="onLeave">
         <div v-if="isOpen('abscond')">
           <div class="settings-item" @click="showClearCacheConfirm = true">
-            <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-cached</v-icon>
+            <AppIcon icon="mdi-cached" :size="18" color="rgba(255,255,255,0.5)" />
             <div class="item-label-stack">
               <span class="item-label">Clear App Cache</span>
               <span class="item-sublabel">Clears cached assets and reloads the app</span>
             </div>
-            <v-icon size="14" color="rgba(255,255,255,0.2)">mdi-chevron-right</v-icon>
+            <AppIcon icon="mdi-chevron-right" :size="14" color="rgba(255,255,255,0.2)" />
           </div>
           <div v-if="serverVersion" class="settings-item settings-item--info">
-            <v-icon size="18" color="rgba(255,255,255,0.3)">mdi-server-outline</v-icon>
+            <AppIcon icon="mdi-server-outline" :size="18" color="rgba(255,255,255,0.3)" />
             <span class="item-label">Server version</span>
             <span class="item-value-badge">{{ serverVersion }}</span>
           </div>
@@ -600,21 +596,21 @@
     <section class="settings-section">
       <button class="section-toggle" @click="toggle('about')">
         <span class="section-toggle-title">About</span>
-        <v-icon class="section-chevron" :class="{ open: isOpen('about') }" size="16" color="rgba(255,255,255,0.3)">mdi-chevron-down</v-icon>
+        <AppIcon icon="mdi-chevron-down" class="section-chevron" :class="{ open: isOpen('about') }" :size="16" color="rgba(255,255,255,0.3)" />
       </button>
 
       <Transition name="sect" @enter="onEnter" @after-enter="onAfterEnter" @leave="onLeave">
         <div v-if="isOpen('about')">
           <div class="settings-item">
-            <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-information-outline</v-icon>
+            <AppIcon icon="mdi-information-outline" :size="18" color="rgba(255,255,255,0.5)" />
             <span class="item-label">Version</span>
             <span class="item-value">{{ appVersion }}</span>
           </div>
 
           <div class="settings-item">
-            <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-github</v-icon>
+            <AppIcon icon="mdi-github" :size="18" color="rgba(255,255,255,0.5)" />
             <span class="item-label">Source code</span>
-            <v-icon size="14" color="rgba(255,255,255,0.25)">mdi-open-in-new</v-icon>
+            <AppIcon icon="mdi-open-in-new" :size="14" color="rgba(255,255,255,0.25)" />
           </div>
         </div>
       </Transition>
@@ -624,35 +620,35 @@
     <section class="settings-section">
       <button class="section-toggle" @click="toggle('more')">
         <span class="section-toggle-title">More</span>
-        <v-icon class="section-chevron" :class="{ open: isOpen('more') }" size="16" color="rgba(255,255,255,0.3)">mdi-chevron-down</v-icon>
+        <AppIcon icon="mdi-chevron-down" class="section-chevron" :class="{ open: isOpen('more') }" :size="16" color="rgba(255,255,255,0.3)" />
       </button>
 
       <Transition name="sect" @enter="onEnter" @after-enter="onAfterEnter" @leave="onLeave">
         <div v-if="isOpen('more')">
           <div class="settings-item" @click="router.push({ name: 'stats' })">
-            <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-chart-bar</v-icon>
+            <AppIcon icon="mdi-chart-bar" :size="18" color="rgba(255,255,255,0.5)" />
             <span class="item-label">Listening Stats</span>
-            <v-icon size="14" color="rgba(255,255,255,0.2)">mdi-chevron-right</v-icon>
+            <AppIcon icon="mdi-chevron-right" :size="14" color="rgba(255,255,255,0.2)" />
           </div>
           <div class="settings-item" @click="router.push({ name: 'collections' })">
-            <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-bookmark-multiple-outline</v-icon>
+            <AppIcon icon="mdi-bookmark-multiple-outline" :size="18" color="rgba(255,255,255,0.5)" />
             <span class="item-label">Collections</span>
-            <v-icon size="14" color="rgba(255,255,255,0.2)">mdi-chevron-right</v-icon>
+            <AppIcon icon="mdi-chevron-right" :size="14" color="rgba(255,255,255,0.2)" />
           </div>
           <div class="settings-item" @click="router.push({ name: 'playlists' })">
-            <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-playlist-music</v-icon>
+            <AppIcon icon="mdi-playlist-music" :size="18" color="rgba(255,255,255,0.5)" />
             <span class="item-label">Playlists</span>
-            <v-icon size="14" color="rgba(255,255,255,0.2)">mdi-chevron-right</v-icon>
+            <AppIcon icon="mdi-chevron-right" :size="14" color="rgba(255,255,255,0.2)" />
           </div>
           <div class="settings-item" @click="router.push({ name: 'browse' })">
-            <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-compass-outline</v-icon>
+            <AppIcon icon="mdi-compass-outline" :size="18" color="rgba(255,255,255,0.5)" />
             <span class="item-label">Browse</span>
-            <v-icon size="14" color="rgba(255,255,255,0.2)">mdi-chevron-right</v-icon>
+            <AppIcon icon="mdi-chevron-right" :size="14" color="rgba(255,255,255,0.2)" />
           </div>
           <div class="settings-item" @click="router.push({ name: 'bookmarks' })">
-            <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-bookmark-outline</v-icon>
+            <AppIcon icon="mdi-bookmark-outline" :size="18" color="rgba(255,255,255,0.5)" />
             <span class="item-label">Bookmarks</span>
-            <v-icon size="14" color="rgba(255,255,255,0.2)">mdi-chevron-right</v-icon>
+            <AppIcon icon="mdi-chevron-right" :size="14" color="rgba(255,255,255,0.2)" />
           </div>
         </div>
       </Transition>
@@ -662,23 +658,23 @@
     <section class="settings-section">
       <button class="section-toggle" @click="toggle('data')">
         <span class="section-toggle-title">Data &amp; Backup</span>
-        <v-icon class="section-chevron" :class="{ open: isOpen('data') }" size="16" color="rgba(255,255,255,0.3)">mdi-chevron-down</v-icon>
+        <AppIcon icon="mdi-chevron-down" class="section-chevron" :class="{ open: isOpen('data') }" :size="16" color="rgba(255,255,255,0.3)" />
       </button>
 
       <Transition name="sect" @enter="onEnter" @after-enter="onAfterEnter" @leave="onLeave">
         <div v-if="isOpen('data')">
           <div class="settings-item" @click="exportSettings">
-            <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-export-variant</v-icon>
+            <AppIcon icon="mdi-export-variant" :size="18" color="rgba(255,255,255,0.5)" />
             <span class="item-label">Export Settings</span>
             <span class="item-value" style="font-size:11px">JSON</span>
           </div>
           <div class="settings-item" @click="triggerImport">
-            <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-import</v-icon>
+            <AppIcon icon="mdi-import" :size="18" color="rgba(255,255,255,0.5)" />
             <span class="item-label">Import Settings</span>
             <input ref="importFileRef" type="file" accept=".json" style="display:none" @change="importSettings" />
           </div>
           <div class="settings-item" style="cursor:default">
-            <v-icon size="18" color="rgba(255,255,255,0.3)">mdi-note-outline</v-icon>
+            <AppIcon icon="mdi-note-outline" :size="18" color="rgba(255,255,255,0.3)" />
             <span class="item-label" style="color:rgba(255,255,255,0.35)">Notes (per-book, stored locally)</span>
             <span class="item-value" style="font-size:11px">{{ noteCount }} books</span>
           </div>
@@ -690,7 +686,7 @@
     <section v-if="auth.isAdmin" class="settings-section">
       <button class="section-toggle" @click="toggle('downloads')">
         <span class="section-toggle-title">Downloads</span>
-        <v-icon class="section-chevron" :class="{ open: isOpen('downloads') }" size="16" color="rgba(255,255,255,0.3)">mdi-chevron-down</v-icon>
+        <AppIcon icon="mdi-chevron-down" class="section-chevron" :class="{ open: isOpen('downloads') }" :size="16" color="rgba(255,255,255,0.3)" />
       </button>
 
       <Transition name="sect" @enter="onEnter" @after-enter="onAfterEnter" @leave="onLeave">
@@ -699,23 +695,23 @@
             <span class="item-label" style="color:rgba(255,255,255,0.3)">Loading…</span>
           </div>
           <div v-else-if="!downloads.length" class="settings-item">
-            <v-icon size="18" color="rgba(255,255,255,0.2)">mdi-download-off</v-icon>
+            <AppIcon icon="mdi-download-off" :size="18" color="rgba(255,255,255,0.2)" />
             <span class="item-label" style="color:rgba(255,255,255,0.4)">No active downloads</span>
           </div>
           <div v-else>
             <div v-for="d in downloads" :key="d.id" class="settings-item">
-              <v-icon size="18" color="rgba(212,160,23,0.6)">mdi-download</v-icon>
+              <AppIcon icon="mdi-download" :size="18" color="rgba(212,160,23,0.6)" />
               <div class="item-label-stack">
                 <span class="item-label">{{ d.filename }}</span>
                 <span class="item-sublabel">{{ formatDownloadSize(d.size) }}</span>
               </div>
               <button class="dl-delete-btn" @click="doDeleteDownload(d.id)">
-                <v-icon size="14">mdi-close</v-icon>
+                <AppIcon icon="mdi-close" :size="14" />
               </button>
             </div>
           </div>
           <div class="settings-item" style="cursor:pointer" @click="loadDownloads">
-            <v-icon size="18" color="rgba(255,255,255,0.3)">mdi-refresh</v-icon>
+            <AppIcon icon="mdi-refresh" :size="18" color="rgba(255,255,255,0.3)" />
             <span class="item-label">Refresh</span>
           </div>
         </div>
@@ -725,9 +721,9 @@
     <!-- Admin link -->
     <div v-if="auth.isAdmin" class="admin-link-wrap">
       <button class="admin-link" @click="router.push({ name: 'admin-libraries' })">
-        <v-icon size="18">mdi-shield-crown-outline</v-icon>
+        <AppIcon icon="mdi-shield-crown-outline" :size="18" />
         Admin Panel
-        <v-icon size="16" color="rgba(255,255,255,0.3)">mdi-chevron-right</v-icon>
+        <AppIcon icon="mdi-chevron-right" :size="16" color="rgba(255,255,255,0.3)" />
       </button>
     </div>
 

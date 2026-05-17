@@ -9,7 +9,7 @@
           :class="`toast--${n.type}`"
           @click="notifications.dismiss(n.id)"
         >
-          <v-icon size="16" class="toast-icon">{{ iconFor(n.type) }}</v-icon>
+          <AppIcon :icon="iconFor(n.type)" :size="16" class="toast-icon" />
           <span class="toast-msg">{{ n.message }}</span>
         </div>
       </TransitionGroup>

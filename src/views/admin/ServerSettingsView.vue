@@ -5,7 +5,7 @@
     </div>
 
     <div v-else-if="loadError" class="error-state">
-      <v-icon size="36" color="rgba(255,255,255,0.15)">mdi-alert-circle-outline</v-icon>
+      <AppIcon icon="mdi-alert-circle-outline" :size="36" color="rgba(255,255,255,0.15)" />
       <p>Failed to load server settings.</p>
       <button class="retry-btn" @click="loadSettings">Retry</button>
     </div>

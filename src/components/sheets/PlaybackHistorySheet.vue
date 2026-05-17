@@ -8,11 +8,11 @@
       </div>
 
       <div v-if="loading" class="hist-loading">
-        <v-icon size="18" color="rgba(255,255,255,0.3)" class="mdi-spin">mdi-loading</v-icon>
+        <AppIcon icon="mdi-loading" :size="18" color="rgba(255,255,255,0.3)" class="spin" />
         <span>Loading…</span>
       </div>
       <div v-else-if="!sessions.length" class="hist-empty">
-        <v-icon size="28" color="rgba(255,255,255,0.1)">mdi-history</v-icon>
+        <AppIcon icon="mdi-history" :size="28" color="rgba(255,255,255,0.1)" />
         <p>No listening sessions recorded</p>
       </div>
       <div v-else class="hist-list">

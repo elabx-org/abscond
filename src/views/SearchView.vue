@@ -3,7 +3,7 @@
     <!-- Search input -->
     <div class="search-bar-wrap">
       <div class="search-bar">
-        <v-icon size="18" color="rgba(255,255,255,0.4)">mdi-magnify</v-icon>
+        <AppIcon icon="mdi-magnify" :size="18" color="rgba(255,255,255,0.4)" />
         <input
           ref="inputEl"
           v-model="query"
@@ -13,7 +13,7 @@
           @input="onInput"
         />
         <button v-if="query" class="clear-btn" @click="clearSearch">
-          <v-icon size="16">mdi-close</v-icon>
+          <AppIcon icon="mdi-close" :size="16" />
         </button>
       </div>
     </div>
@@ -47,7 +47,7 @@
 
     <!-- No results -->
     <div v-else-if="query && !loading && isEmpty" class="empty-state">
-      <v-icon size="40" color="rgba(255,255,255,0.15)">mdi-magnify</v-icon>
+      <AppIcon icon="mdi-magnify" :size="40" color="rgba(255,255,255,0.15)" />
       <p>No results for "{{ query }}"</p>
     </div>
 
@@ -67,7 +67,7 @@
             <p class="result-title">{{ item.media.metadata.title }}</p>
             <p class="result-sub">{{ getAuthorDisplay(item) || 'Unknown' }}</p>
           </div>
-          <v-icon size="14" color="rgba(255,255,255,0.2)">mdi-chevron-right</v-icon>
+          <AppIcon icon="mdi-chevron-right" :size="14" color="rgba(255,255,255,0.2)" />
         </div>
       </div>
 
@@ -76,13 +76,13 @@
         <p class="group-label">Series</p>
         <div v-for="s in seriesResults" :key="s.id" class="result-row" @click="openSeries(s)">
           <div class="result-cover series-icon">
-            <v-icon size="24" color="rgba(255,255,255,0.4)">mdi-book-multiple</v-icon>
+            <AppIcon icon="mdi-book-multiple" :size="24" color="rgba(255,255,255,0.4)" />
           </div>
           <div class="result-meta">
             <p class="result-title">{{ s.name }}</p>
             <p class="result-sub">{{ s.books.length }} books</p>
           </div>
-          <v-icon size="14" color="rgba(255,255,255,0.2)">mdi-chevron-right</v-icon>
+          <AppIcon icon="mdi-chevron-right" :size="14" color="rgba(255,255,255,0.2)" />
         </div>
       </div>
 
@@ -91,13 +91,13 @@
         <p class="group-label">Authors</p>
         <div v-for="a in authorResults" :key="a.id" class="result-row" @click="openAuthor(a)">
           <div class="result-cover author-icon">
-            <v-icon size="24" color="rgba(255,255,255,0.4)">mdi-account</v-icon>
+            <AppIcon icon="mdi-account" :size="24" color="rgba(255,255,255,0.4)" />
           </div>
           <div class="result-meta">
             <p class="result-title">{{ a.name }}</p>
             <p class="result-sub">{{ a.numBooks }} books</p>
           </div>
-          <v-icon size="14" color="rgba(255,255,255,0.2)">mdi-chevron-right</v-icon>
+          <AppIcon icon="mdi-chevron-right" :size="14" color="rgba(255,255,255,0.2)" />
         </div>
       </div>
 
@@ -115,7 +115,7 @@
             <p class="result-title">{{ item.media.metadata.title }}</p>
             <p class="result-sub">{{ getAuthorDisplay(item) || 'Podcast' }}</p>
           </div>
-          <v-icon size="14" color="rgba(255,255,255,0.2)">mdi-chevron-right</v-icon>
+          <AppIcon icon="mdi-chevron-right" :size="14" color="rgba(255,255,255,0.2)" />
         </div>
       </div>
 
@@ -129,7 +129,7 @@
             class="narrator-chip"
             @click="browseNarrator(n)"
           >
-            <v-icon size="14" color="rgba(255,255,255,0.5)">mdi-microphone</v-icon>
+            <AppIcon icon="mdi-microphone" :size="14" color="rgba(255,255,255,0.5)" />
             {{ n }}
           </button>
         </div>
@@ -139,7 +139,7 @@
       <div v-if="isPodcastLib && (episodeResults.length || epCacheLoading)" class="result-group">
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
           <p class="group-label" style="margin:0">Episodes</p>
-          <v-icon v-if="epCacheLoading" size="12" color="rgba(255,255,255,0.3)" class="spin">mdi-loading</v-icon>
+          <AppIcon icon="mdi-loading" v-if="epCacheLoading" :size="12" color="rgba(255,255,255,0.3)" class="spin" />
         </div>
         <div
           v-for="r in episodeResults"
@@ -152,7 +152,7 @@
             <p class="result-title">{{ r.episode.title }}</p>
             <p class="result-sub">{{ r.item.media.metadata.title }}</p>
           </div>
-          <v-icon size="14" color="rgba(255,255,255,0.2)">mdi-chevron-right</v-icon>
+          <AppIcon icon="mdi-chevron-right" :size="14" color="rgba(255,255,255,0.2)" />
         </div>
         <p v-if="epCacheLoading && !episodeResults.length" class="ep-search-hint">Searching episodes…</p>
       </div>

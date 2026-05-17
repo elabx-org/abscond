@@ -2,7 +2,7 @@
   <div class="player-view">
     <!-- Empty state -->
     <div v-if="!player.currentItem && !player.recentItems.length" class="empty-state">
-      <v-icon size="56" color="rgba(255,255,255,0.1)">mdi-headphones</v-icon>
+      <AppIcon icon="mdi-headphones" :size="56" color="rgba(255,255,255,0.1)" />
       <p class="empty-title">Nothing playing</p>
       <p class="empty-sub">Choose a book from Library or Home to start listening</p>
     </div>
@@ -27,11 +27,9 @@
         <div class="player-topbar">
           <div class="player-wordmark">
             ABSCOND
-            <v-icon
-              size="13"
+            <AppIcon icon="mdi-cloud-outline" :size="13"
               :color="socket.connected ? 'rgba(100,215,100,0.85)' : 'rgba(255,255,255,0.2)'"
-              style="margin-left:4px"
-            >mdi-cloud-outline</v-icon>
+              style="margin-left:4px" />
           </div>
           <div class="player-topbar-actions">
             <button
@@ -40,7 +38,7 @@
               title="Stop playback"
               @click="player.stop()"
             >
-              <v-icon size="16">mdi-stop</v-icon>
+              <AppIcon icon="mdi-stop" :size="16" />
             </button>
             <button
               class="topbar-action-btn"
@@ -48,7 +46,7 @@
               title="Queue"
               @click="showQueue = !showQueue; showChapters = false; showSleepPicker = false; showSpeedPicker = false"
             >
-              <v-icon size="16">mdi-playlist-play</v-icon>
+              <AppIcon icon="mdi-playlist-play" :size="16" />
               <span v-if="player.queue.length" class="topbar-queue-badge">{{ player.queue.length }}</span>
             </button>
           </div>
@@ -99,32 +97,32 @@
           <!-- Transport controls -->
           <div class="dt-transport">
             <button class="card-ctrl-btn" :disabled="!prevChapter" @click="prevChapter && player.seek(prevChapter.start)">
-              <v-icon size="22" :color="prevChapter ? 'rgba(255,255,255,0.55)' : 'rgba(255,255,255,0.18)'">mdi-skip-previous</v-icon>
+              <AppIcon icon="mdi-skip-previous" :size="22" :color="prevChapter ? 'rgba(255,255,255,0.55)' : 'rgba(255,255,255,0.18)'" />
             </button>
             <button class="card-ctrl-btn" @click="player.skipBack(skipBackSecs)">
               <span v-if="REWIND_ICONS[skipBackSecs]" class="skip-icon-only">
-                <v-icon size="28">{{ REWIND_ICONS[skipBackSecs] }}</v-icon>
+                <AppIcon :icon="REWIND_ICONS[skipBackSecs]" :size="28" />
               </span>
               <span v-else class="skip-icon-labeled">
-                <v-icon size="22">mdi-rewind</v-icon>
+                <AppIcon icon="mdi-rewind" :size="22" />
                 <span class="skip-secs-label">{{ skipBackSecs }}s</span>
               </span>
             </button>
             <button class="card-play-btn" :disabled="player.isLoading" @click="player.togglePlay()">
-              <v-icon v-if="player.isPlaying" size="42" color="#111">mdi-pause</v-icon>
-              <v-icon v-else size="42" color="#111">mdi-play</v-icon>
+              <AppIcon icon="mdi-pause" v-if="player.isPlaying" :size="42" color="#111" />
+              <AppIcon icon="mdi-play" v-else :size="42" color="#111" />
             </button>
             <button class="card-ctrl-btn" @click="player.skipForward(skipFwdSecs)">
               <span v-if="FWD_ICONS[skipFwdSecs]" class="skip-icon-only">
-                <v-icon size="28">{{ FWD_ICONS[skipFwdSecs] }}</v-icon>
+                <AppIcon :icon="FWD_ICONS[skipFwdSecs]" :size="28" />
               </span>
               <span v-else class="skip-icon-labeled">
-                <v-icon size="22">mdi-fast-forward</v-icon>
+                <AppIcon icon="mdi-fast-forward" :size="22" />
                 <span class="skip-secs-label">{{ skipFwdSecs }}s</span>
               </span>
             </button>
             <button class="card-ctrl-btn" :disabled="!nextChapter" @click="nextChapter && player.seek(nextChapter.start)">
-              <v-icon size="22" :color="nextChapter ? 'rgba(255,255,255,0.55)' : 'rgba(255,255,255,0.18)'">mdi-skip-next</v-icon>
+              <AppIcon icon="mdi-skip-next" :size="22" :color="nextChapter ? 'rgba(255,255,255,0.55)' : 'rgba(255,255,255,0.18)'" />
             </button>
           </div>
 
@@ -132,19 +130,19 @@
           <div class="dt-action-row">
             <button class="card-action-btn" :class="{ active: showChapters }"
               @click="showChapters = !showChapters; if (!showChapters) chapterSearch = ''; showQueue = false; showSleepPicker = false; showSpeedPicker = false">
-              <v-icon size="16" style="opacity:0.6">mdi-format-list-bulleted</v-icon>
+              <AppIcon icon="mdi-format-list-bulleted" :size="16" style="opacity:0.6" />
               <span class="card-action-label">Chapters</span>
               <span v-if="chapters.length" class="card-action-badge">{{ chapters.length }}</span>
             </button>
             <button class="card-action-btn" :class="{ active: showSpeedPicker || player.playbackRate !== 1 }"
               @click="showSpeedPicker = !showSpeedPicker; showSleepPicker = false; showChapters = false; showQueue = false">
-              <v-icon size="16" style="opacity:0.6">mdi-speedometer</v-icon>
+              <AppIcon icon="mdi-speedometer" :size="16" style="opacity:0.6" />
               <span class="card-action-label">{{ player.playbackRate }}×</span>
             </button>
             <button class="card-action-btn sleep-btn" :class="{ active: player.sleepMinsLeft !== null || player.sleepEndOfChapter }"
               @click="showSleepPicker = !showSleepPicker; showSpeedPicker = false; showChapters = false; showQueue = false">
               <div v-if="player.sleepMinsLeft !== null" class="sleep-fill" :style="{ width: `${sleepFillPct}%` }" />
-              <v-icon size="16" style="position:relative;z-index:1;opacity:0.6">mdi-timer-outline</v-icon>
+              <AppIcon icon="mdi-timer-outline" :size="16" style="position:relative;z-index:1;opacity:0.6" />
               <span class="card-action-label" style="position:relative;z-index:1">
                 <template v-if="player.sleepMinsLeft !== null">{{ sleepCountdownLabel }}</template>
                 <template v-else-if="player.sleepEndOfChapter">End of Ch.</template>
@@ -152,11 +150,11 @@
               </span>
             </button>
             <button class="card-action-btn" @click="showBookmarkSheet = true">
-              <v-icon size="16" style="opacity:0.6">mdi-bookmark-plus-outline</v-icon>
+              <AppIcon icon="mdi-bookmark-plus-outline" :size="16" style="opacity:0.6" />
               <span class="card-action-label">Bookmarks</span>
             </button>
             <button class="card-action-btn" @click="showMore = true">
-              <v-icon size="16" style="opacity:0.6">mdi-dots-horizontal</v-icon>
+              <AppIcon icon="mdi-dots-horizontal" :size="16" style="opacity:0.6" />
               <span class="card-action-label">More</span>
             </button>
           </div>
@@ -180,7 +178,7 @@
                   @contextmenu.prevent="removeSpeedPreset(s)"
                 >{{ s }}×</button>
                 <button class="panel-opt speed-add" :title="'Save ' + player.playbackRate.toFixed(2) + '× as preset'" @click="addSpeedPreset">
-                  <v-icon size="13">mdi-plus</v-icon>
+                  <AppIcon icon="mdi-plus" :size="13" />
                 </button>
               </div>
             </div>
@@ -235,7 +233,7 @@
                 <button v-if="player.queue.length" class="queue-clear-btn" @click="player.clearQueue()">Clear all</button>
               </div>
               <div v-if="!player.queue.length" class="queue-empty-msg">
-                <v-icon size="28" color="rgba(255,255,255,0.15)">mdi-playlist-remove</v-icon>
+                <AppIcon icon="mdi-playlist-remove" :size="28" color="rgba(255,255,255,0.15)" />
                 <p>Queue is empty</p>
               </div>
               <div v-else ref="queueListEl" class="queue-list"
@@ -250,7 +248,7 @@
                   }"
                 >
                   <div class="queue-drag-handle" @pointerdown.prevent="queueDragStart($event, idx)" touch-action="none">
-                    <v-icon size="16" color="rgba(255,255,255,0.2)">mdi-drag-vertical</v-icon>
+                    <AppIcon icon="mdi-drag-vertical" :size="16" color="rgba(255,255,255,0.2)" />
                   </div>
                   <img :src="coverUrl(entry.item.id, auth.token ?? '')" class="queue-item-cover" />
                   <div class="queue-item-meta">
@@ -258,7 +256,7 @@
                     <p class="queue-item-author">{{ entry.episodeId ? entry.item.media.metadata.title : (entry.item.media.metadata.authorName || 'Unknown') }}</p>
                   </div>
                   <button class="queue-item-del" @click="player.removeFromQueue(idx)">
-                    <v-icon size="16" color="rgba(255,255,255,0.4)">mdi-close</v-icon>
+                    <AppIcon icon="mdi-close" :size="16" color="rgba(255,255,255,0.4)" />
                   </button>
                 </div>
               </div>
@@ -273,15 +271,15 @@
                 <span class="chapters-count">{{ filteredChapters.length }}/{{ chapters.length }}</span>
               </div>
               <div v-if="loadingChapters" class="chapters-loading-row">
-                <v-icon size="16" color="rgba(255,255,255,0.3)" class="spin">mdi-loading</v-icon>
+                <AppIcon icon="mdi-loading" :size="16" color="rgba(255,255,255,0.3)" class="spin" />
                 <span>Loading chapters…</span>
               </div>
               <div v-else-if="!chapters.length" class="chapters-empty-row">No chapters available</div>
               <div v-if="chapters.length > 8" class="chapter-search-wrap">
-                <v-icon size="13" color="rgba(255,255,255,0.3)">mdi-magnify</v-icon>
+                <AppIcon icon="mdi-magnify" :size="13" color="rgba(255,255,255,0.3)" />
                 <input v-model="chapterSearch" class="chapter-search-input" placeholder="Search chapters…" />
                 <button v-if="chapterSearch" class="chapter-search-clear" @click="chapterSearch = ''">
-                  <v-icon size="11">mdi-close</v-icon>
+                  <AppIcon icon="mdi-close" :size="11" />
                 </button>
               </div>
               <div ref="chaptersListEl" class="chapters-list">
@@ -295,8 +293,8 @@
                   @click="player.seek(ch.start)"
                 >
                   <span class="chapter-item-num">
-                    <v-icon v-if="panelCurrentChapter?.id === ch.id" size="12" color="#d4a017">mdi-volume-high</v-icon>
-                    <v-icon v-else-if="player.currentTime > ch.end && panelCurrentChapter?.id !== ch.id" size="12" color="rgba(255,255,255,0.2)">mdi-check</v-icon>
+                    <AppIcon icon="mdi-volume-high" v-if="panelCurrentChapter?.id === ch.id" :size="12" color="#d4a017" />
+                    <AppIcon v-else-if="player.currentTime > ch.end && panelCurrentChapter?.id !== ch.id" icon="mdi-check" :size="12" color="rgba(255,255,255,0.2)" />
                     <span v-else class="ch-num-label">{{ chapters.indexOf(ch) + 1 }}</span>
                   </span>
                   <span class="chapter-item-name">{{ ch.title }}</span>
@@ -375,11 +373,11 @@
                     />
                     <Transition name="cover-flash">
                       <div v-if="coverFlash && i === currentIndex" class="cover-flash-overlay">
-                        <v-icon size="56" color="rgba(255,255,255,0.85)">{{ player.isPlaying ? 'mdi-pause' : 'mdi-play' }}</v-icon>
+                        <AppIcon :icon="player.isPlaying ? 'mdi-pause' : 'mdi-play'" :size="56" color="rgba(255,255,255,0.85)" />
                       </div>
                     </Transition>
                     <div v-if="!player.currentItem || i !== currentIndex" class="cover-play-overlay" @click="switchToItem(item)">
-                      <v-icon size="40" color="white">mdi-play-circle</v-icon>
+                      <AppIcon icon="mdi-play-circle" :size="40" color="white" />
                     </div>
                     <div v-if="player.queue.some(q => q.item.id === item.id) && i !== currentIndex" class="upnext-badge">Up Next</div>
                   </div>
@@ -411,32 +409,32 @@
                   <!-- Transport controls — only on active slide -->
                   <div v-if="i === currentIndex && player.currentItem" class="card-transport">
                     <button class="card-ctrl-btn" :disabled="!prevChapter" @click="prevChapter && player.seek(prevChapter.start)">
-                      <v-icon size="20" :color="prevChapter ? 'rgba(255,255,255,0.55)' : 'rgba(255,255,255,0.18)'">mdi-skip-previous</v-icon>
+                      <AppIcon icon="mdi-skip-previous" :size="20" :color="prevChapter ? 'rgba(255,255,255,0.55)' : 'rgba(255,255,255,0.18)'" />
                     </button>
                     <button class="card-ctrl-btn" @click="player.skipBack(skipBackSecs)">
                       <span v-if="REWIND_ICONS[skipBackSecs]" class="skip-icon-only">
-                        <v-icon size="26">{{ REWIND_ICONS[skipBackSecs] }}</v-icon>
+                        <AppIcon :icon="REWIND_ICONS[skipBackSecs]" :size="26" />
                       </span>
                       <span v-else class="skip-icon-labeled">
-                        <v-icon size="20">mdi-rewind</v-icon>
+                        <AppIcon icon="mdi-rewind" :size="20" />
                         <span class="skip-secs-label">{{ skipBackSecs }}s</span>
                       </span>
                     </button>
                     <button class="card-play-btn" :disabled="player.isLoading" @click="player.togglePlay()">
-                      <v-icon v-if="player.isPlaying" size="38" color="#111">mdi-pause</v-icon>
-                      <v-icon v-else size="38" color="#111">mdi-play</v-icon>
+                      <AppIcon icon="mdi-pause" v-if="player.isPlaying" :size="38" color="#111" />
+                      <AppIcon icon="mdi-play" v-else :size="38" color="#111" />
                     </button>
                     <button class="card-ctrl-btn" @click="player.skipForward(skipFwdSecs)">
                       <span v-if="FWD_ICONS[skipFwdSecs]" class="skip-icon-only">
-                        <v-icon size="26">{{ FWD_ICONS[skipFwdSecs] }}</v-icon>
+                        <AppIcon :icon="FWD_ICONS[skipFwdSecs]" :size="26" />
                       </span>
                       <span v-else class="skip-icon-labeled">
-                        <v-icon size="20">mdi-fast-forward</v-icon>
+                        <AppIcon icon="mdi-fast-forward" :size="20" />
                         <span class="skip-secs-label">{{ skipFwdSecs }}s</span>
                       </span>
                     </button>
                     <button class="card-ctrl-btn" :disabled="!nextChapter" @click="nextChapter && player.seek(nextChapter.start)">
-                      <v-icon size="20" :color="nextChapter ? 'rgba(255,255,255,0.55)' : 'rgba(255,255,255,0.18)'">mdi-skip-next</v-icon>
+                      <AppIcon icon="mdi-skip-next" :size="20" :color="nextChapter ? 'rgba(255,255,255,0.55)' : 'rgba(255,255,255,0.18)'" />
                     </button>
                   </div>
 
@@ -448,7 +446,7 @@
                         :class="{ active: showChapters }"
                         @click="showChapters = !showChapters; if (!showChapters) chapterSearch = ''; showQueue = false; showSleepPicker = false; showSpeedPicker = false"
                       >
-                        <v-icon size="16" style="opacity:0.6">mdi-format-list-bulleted</v-icon>
+                        <AppIcon icon="mdi-format-list-bulleted" :size="16" style="opacity:0.6" />
                         <span class="card-action-label">Chapters</span>
                         <span v-if="chapters.length" class="card-action-badge">{{ chapters.length }}</span>
                       </button>
@@ -457,7 +455,7 @@
                         :class="{ active: showSpeedPicker || player.playbackRate !== 1 }"
                         @click="showSpeedPicker = !showSpeedPicker; showSleepPicker = false; showChapters = false; showQueue = false"
                       >
-                        <v-icon size="16" style="opacity:0.6">mdi-speedometer</v-icon>
+                        <AppIcon icon="mdi-speedometer" :size="16" style="opacity:0.6" />
                         <span class="card-action-label">{{ player.playbackRate }}×</span>
                       </button>
                     </div>
@@ -468,7 +466,7 @@
                         @click="showSleepPicker = !showSleepPicker; showSpeedPicker = false; showChapters = false; showQueue = false"
                       >
                         <div v-if="player.sleepMinsLeft !== null" class="sleep-fill" :style="{ width: `${sleepFillPct}%` }" />
-                        <v-icon size="16" style="position:relative;z-index:1;opacity:0.6">mdi-timer-outline</v-icon>
+                        <AppIcon icon="mdi-timer-outline" :size="16" style="position:relative;z-index:1;opacity:0.6" />
                         <span class="card-action-label" style="position:relative;z-index:1">
                           <template v-if="player.sleepMinsLeft !== null">{{ sleepCountdownLabel }}</template>
                           <template v-else-if="player.sleepEndOfChapter">End of Ch.</template>
@@ -479,7 +477,7 @@
                         class="card-action-btn"
                         @click="showBookmarkSheet = true"
                       >
-                        <v-icon size="16" style="opacity:0.6">mdi-bookmark-plus-outline</v-icon>
+                        <AppIcon icon="mdi-bookmark-plus-outline" :size="16" style="opacity:0.6" />
                         <span class="card-action-label">Bookmarks</span>
                       </button>
                     </div>
@@ -499,7 +497,7 @@
         <!-- Chapter barrier banner -->
         <Transition name="barrier">
           <div v-if="player.chapterBarrierPaused" class="barrier-banner" @click="player.resumeFromBarrier()">
-            <v-icon size="16" color="#d4a017">mdi-bookmark-check-outline</v-icon>
+            <AppIcon icon="mdi-bookmark-check-outline" :size="16" color="#d4a017" />
             <span class="barrier-text">Chapter complete</span>
             <span class="barrier-cta">Tap to continue</span>
           </div>
@@ -589,7 +587,7 @@
             <div class="bm-sheet-header">
               <p class="bm-sheet-title">Bookmarks</p>
               <button class="bm-sheet-add-btn" @click="showAddBookmark = true">
-                <v-icon size="16" color="#d4a017">mdi-plus</v-icon>
+                <AppIcon icon="mdi-plus" :size="16" color="#d4a017" />
                 Add
               </button>
             </div>
@@ -614,16 +612,16 @@
             <!-- Bookmark list -->
             <div v-if="itemBookmarks.length" class="bm-list">
               <div v-for="bm in itemBookmarks" :key="bm.time" class="bm-row" @click="jumpToBookmark(bm.time)">
-                <v-icon size="14" color="rgba(212,160,23,0.7)">mdi-bookmark</v-icon>
+                <AppIcon icon="mdi-bookmark" :size="14" color="rgba(212,160,23,0.7)" />
                 <span class="bm-row-title">{{ bm.title }}</span>
                 <span class="bm-row-time">{{ formatTime(bm.time) }}</span>
                 <button class="bm-row-del" @click.stop="removeItemBookmark(bm.time)">
-                  <v-icon size="13" color="rgba(255,255,255,0.2)">mdi-close</v-icon>
+                  <AppIcon icon="mdi-close" :size="13" color="rgba(255,255,255,0.2)" />
                 </button>
               </div>
             </div>
             <div v-else-if="!showAddBookmark" class="bm-empty">
-              <v-icon size="28" color="rgba(255,255,255,0.1)">mdi-bookmark-outline</v-icon>
+              <AppIcon icon="mdi-bookmark-outline" :size="28" color="rgba(255,255,255,0.1)" />
               <p>No bookmarks for this item</p>
             </div>
           </div>

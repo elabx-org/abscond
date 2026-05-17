@@ -3,15 +3,15 @@
     <div class="nav-list">
       <button class="nav-row" @click="open('tags')">
         <span class="nav-label">Manage Tags</span>
-        <v-icon size="18" color="rgba(255,255,255,0.3)">mdi-chevron-right</v-icon>
+        <AppIcon icon="mdi-chevron-right" :size="18" color="rgba(255,255,255,0.3)" />
       </button>
       <button class="nav-row" @click="open('genres')">
         <span class="nav-label">Manage Genres</span>
-        <v-icon size="18" color="rgba(255,255,255,0.3)">mdi-chevron-right</v-icon>
+        <AppIcon icon="mdi-chevron-right" :size="18" color="rgba(255,255,255,0.3)" />
       </button>
       <button class="nav-row" @click="open('providers')">
         <span class="nav-label">Custom Metadata Providers</span>
-        <v-icon size="18" color="rgba(255,255,255,0.3)">mdi-chevron-right</v-icon>
+        <AppIcon icon="mdi-chevron-right" :size="18" color="rgba(255,255,255,0.3)" />
       </button>
     </div>
   </div>
@@ -24,14 +24,14 @@
           <div class="drag-handle-area"><div class="drag-handle" /></div>
           <div class="sheet-header">
             <h3 class="sheet-title">Manage Tags</h3>
-            <button class="sheet-close" @click="close"><v-icon size="20">mdi-close</v-icon></button>
+            <button class="sheet-close" @click="close"><AppIcon icon="mdi-close" :size="20" /></button>
           </div>
           <div class="sheet-body">
             <div v-if="listLoading" class="list-loading">
               <div v-for="n in 5" :key="n" class="skel-item" />
             </div>
             <div v-else-if="!items.length" class="empty-state">
-              <v-icon size="32" color="rgba(255,255,255,0.1)">mdi-tag-off-outline</v-icon>
+              <AppIcon icon="mdi-tag-off-outline" :size="32" color="rgba(255,255,255,0.1)" />
               <p>No tags found</p>
             </div>
             <div v-else class="item-list">
@@ -39,16 +39,16 @@
                 <template v-if="editingItem === item">
                   <input v-model="editValue" class="inline-input" @keyup.enter="saveRename(item)" @keyup.escape="editingItem = ''" />
                   <button class="icon-btn save" :disabled="!editValue.trim() || editValue === item" @click="saveRename(item)">
-                    <v-icon size="16">mdi-check</v-icon>
+                    <AppIcon icon="mdi-check" :size="16" />
                   </button>
                   <button class="icon-btn cancel" @click="editingItem = ''">
-                    <v-icon size="16">mdi-close</v-icon>
+                    <AppIcon icon="mdi-close" :size="16" />
                   </button>
                 </template>
                 <template v-else>
                   <span class="item-name">{{ item }}</span>
-                  <button class="icon-btn edit" @click="startEdit(item)"><v-icon size="15">mdi-pencil-outline</v-icon></button>
-                  <button class="icon-btn del" @click="doDelete(item)"><v-icon size="15">mdi-delete-outline</v-icon></button>
+                  <button class="icon-btn edit" @click="startEdit(item)"><AppIcon icon="mdi-pencil-outline" :size="15" /></button>
+                  <button class="icon-btn del" @click="doDelete(item)"><AppIcon icon="mdi-delete-outline" :size="15" /></button>
                 </template>
               </div>
             </div>
@@ -66,14 +66,14 @@
           <div class="drag-handle-area"><div class="drag-handle" /></div>
           <div class="sheet-header">
             <h3 class="sheet-title">Manage Genres</h3>
-            <button class="sheet-close" @click="close"><v-icon size="20">mdi-close</v-icon></button>
+            <button class="sheet-close" @click="close"><AppIcon icon="mdi-close" :size="20" /></button>
           </div>
           <div class="sheet-body">
             <div v-if="listLoading" class="list-loading">
               <div v-for="n in 5" :key="n" class="skel-item" />
             </div>
             <div v-else-if="!items.length" class="empty-state">
-              <v-icon size="32" color="rgba(255,255,255,0.1)">mdi-shape-outline</v-icon>
+              <AppIcon icon="mdi-shape-outline" :size="32" color="rgba(255,255,255,0.1)" />
               <p>No genres found</p>
             </div>
             <div v-else class="item-list">
@@ -81,16 +81,16 @@
                 <template v-if="editingItem === item">
                   <input v-model="editValue" class="inline-input" @keyup.enter="saveRename(item)" @keyup.escape="editingItem = ''" />
                   <button class="icon-btn save" :disabled="!editValue.trim() || editValue === item" @click="saveRename(item)">
-                    <v-icon size="16">mdi-check</v-icon>
+                    <AppIcon icon="mdi-check" :size="16" />
                   </button>
                   <button class="icon-btn cancel" @click="editingItem = ''">
-                    <v-icon size="16">mdi-close</v-icon>
+                    <AppIcon icon="mdi-close" :size="16" />
                   </button>
                 </template>
                 <template v-else>
                   <span class="item-name">{{ item }}</span>
-                  <button class="icon-btn edit" @click="startEdit(item)"><v-icon size="15">mdi-pencil-outline</v-icon></button>
-                  <button class="icon-btn del" @click="doDelete(item)"><v-icon size="15">mdi-delete-outline</v-icon></button>
+                  <button class="icon-btn edit" @click="startEdit(item)"><AppIcon icon="mdi-pencil-outline" :size="15" /></button>
+                  <button class="icon-btn del" @click="doDelete(item)"><AppIcon icon="mdi-delete-outline" :size="15" /></button>
                 </template>
               </div>
             </div>
@@ -108,7 +108,7 @@
           <div class="drag-handle-area"><div class="drag-handle" /></div>
           <div class="sheet-header">
             <h3 class="sheet-title">Custom Metadata Providers</h3>
-            <button class="sheet-close" @click="close"><v-icon size="20">mdi-close</v-icon></button>
+            <button class="sheet-close" @click="close"><AppIcon icon="mdi-close" :size="20" /></button>
           </div>
           <div class="sheet-body">
             <div v-if="listLoading" class="list-loading">
@@ -121,11 +121,11 @@
                     <p class="provider-name">{{ p.name }}</p>
                     <p class="provider-meta">{{ p.mediaType }} · <span class="provider-url">{{ p.url }}</span></p>
                   </div>
-                  <button class="icon-btn del" @click="doDeleteProvider(p.id)"><v-icon size="15">mdi-delete-outline</v-icon></button>
+                  <button class="icon-btn del" @click="doDeleteProvider(p.id)"><AppIcon icon="mdi-delete-outline" :size="15" /></button>
                 </div>
               </div>
               <div v-else class="empty-state" style="margin-bottom:16px">
-                <v-icon size="32" color="rgba(255,255,255,0.1)">mdi-api</v-icon>
+                <AppIcon icon="mdi-api" :size="32" color="rgba(255,255,255,0.1)" />
                 <p>No custom providers</p>
               </div>
 

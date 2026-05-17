@@ -3,7 +3,7 @@
     <div class="section-header">
       <h3 class="section-title">API Keys</h3>
       <button class="add-btn" @click="showCreate = true">
-        <v-icon size="16">mdi-plus</v-icon>
+        <AppIcon icon="mdi-plus" :size="16" />
         <span>New Key</span>
       </button>
     </div>
@@ -13,14 +13,14 @@
     </div>
 
     <div v-else-if="keys.length === 0" class="empty-state">
-      <v-icon size="40" color="rgba(255,255,255,0.2)">mdi-key-off-outline</v-icon>
+      <AppIcon icon="mdi-key-off-outline" :size="40" color="rgba(255,255,255,0.2)" />
       <p class="empty-text">No API keys</p>
     </div>
 
     <div v-else class="key-list">
       <template v-for="k in keys" :key="k.id">
         <div class="key-row">
-          <v-icon size="18" color="#d4a017" class="key-icon">mdi-key-outline</v-icon>
+          <AppIcon icon="mdi-key-outline" :size="18" color="#d4a017" class="key-icon" />
           <div class="key-info">
             <p class="key-name">{{ k.name }}</p>
             <p class="key-meta">
@@ -34,7 +34,7 @@
               {{ k.isActive ? 'active' : 'inactive' }}
             </span>
             <button class="del-btn" @click="toggleConfirm(k.id)">
-              <v-icon size="18">mdi-delete-outline</v-icon>
+              <AppIcon icon="mdi-delete-outline" :size="18" />
             </button>
           </div>
         </div>

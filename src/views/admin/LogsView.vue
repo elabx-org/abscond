@@ -3,7 +3,7 @@
     <div class="section-header">
       <h3 class="section-title">Server Logs</h3>
       <button class="refresh-btn" :disabled="loading" @click="load">
-        <v-icon size="16">mdi-refresh</v-icon>
+        <AppIcon icon="mdi-refresh" :size="16" />
       </button>
     </div>
 
@@ -12,7 +12,7 @@
     </div>
 
     <div v-else-if="!logs.length" class="empty-state">
-      <v-icon size="36" color="rgba(255,255,255,0.15)">mdi-text-box-outline</v-icon>
+      <AppIcon icon="mdi-text-box-outline" :size="36" color="rgba(255,255,255,0.15)" />
       <p>No logs available</p>
     </div>
 

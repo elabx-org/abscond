@@ -6,7 +6,7 @@
           <div class="drag-handle-area"><div class="drag-handle" /></div>
           <div class="sheet-content">
             <button class="sheet-close" @click="$emit('close')">
-              <v-icon size="20">mdi-close</v-icon>
+              <AppIcon icon="mdi-close" :size="20" />
             </button>
 
             <div v-if="loading" class="loading-head">

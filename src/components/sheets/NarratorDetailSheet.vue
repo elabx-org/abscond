@@ -7,7 +7,7 @@
 
           <div class="sheet-header">
             <div class="narrator-avatar">
-              <v-icon size="28" color="#d4a017">mdi-microphone</v-icon>
+              <AppIcon icon="mdi-microphone" :size="28" color="#d4a017" />
             </div>
             <div class="narrator-meta">
               <h2 class="narrator-name">{{ narratorName }}</h2>
@@ -38,7 +38,7 @@
           </div>
 
           <div v-else class="empty-state">
-            <v-icon size="36" color="rgba(255,255,255,0.15)">mdi-microphone-off</v-icon>
+            <AppIcon icon="mdi-microphone-off" :size="36" color="rgba(255,255,255,0.15)" />
             <p>No books found for this narrator</p>
           </div>
         </div>

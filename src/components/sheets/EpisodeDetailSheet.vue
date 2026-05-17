@@ -13,7 +13,7 @@
 
           <div class="sheet-content">
             <button class="sheet-close" @click="$emit('close')">
-              <v-icon size="20">mdi-close</v-icon>
+              <AppIcon icon="mdi-close" :size="20" />
             </button>
 
             <!-- Header -->
@@ -43,23 +43,23 @@
             <!-- Actions -->
             <div class="ep-actions">
               <button class="play-btn" @click="onPlay">
-                <v-icon size="20" color="white">{{ isThisPlaying ? 'mdi-pause' : 'mdi-play' }}</v-icon>
+                <AppIcon :icon="isThisPlaying ? 'mdi-pause' : 'mdi-play'" :size="20" color="white" />
                 {{ isThisPlaying ? 'Pause' : (epProgress > 0 && !epFinished ? 'Continue' : 'Play') }}
               </button>
               <button class="action-btn" @click="onDownload">
-                <v-icon size="16">mdi-download-outline</v-icon>
+                <AppIcon icon="mdi-download-outline" :size="16" />
                 Download
               </button>
               <button class="action-btn" @click="onToggleFinished" :disabled="togglingFinished">
-                <v-icon size="16">{{ epFinished ? 'mdi-undo' : 'mdi-check-circle-outline' }}</v-icon>
+                <AppIcon :icon="epFinished ? 'mdi-undo' : 'mdi-check-circle-outline'" :size="16" />
                 {{ epFinished ? 'Unfinish' : 'Finished' }}
               </button>
               <button class="action-btn" @click="onPlayNext">
-                <v-icon size="16">mdi-skip-next-circle-outline</v-icon>
+                <AppIcon icon="mdi-skip-next-circle-outline" :size="16" />
                 Play next
               </button>
               <button class="action-btn" @click="onAddToQueue">
-                <v-icon size="16">mdi-playlist-plus</v-icon>
+                <AppIcon icon="mdi-playlist-plus" :size="16" />
                 Queue
               </button>
             </div>

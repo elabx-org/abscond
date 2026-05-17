@@ -10,13 +10,13 @@
     </div>
 
     <div v-else-if="!feeds.length" class="empty-state">
-      <v-icon size="36" color="rgba(255,255,255,0.15)">mdi-rss-off</v-icon>
+      <AppIcon icon="mdi-rss-off" :size="36" color="rgba(255,255,255,0.15)" />
       <p>No open RSS feeds</p>
     </div>
 
     <div v-else class="feed-list">
       <div v-for="feed in feeds" :key="feed.id" class="feed-row">
-        <v-icon size="20" color="#d4a017" class="feed-icon">mdi-rss</v-icon>
+        <AppIcon icon="mdi-rss" :size="20" color="#d4a017" class="feed-icon" />
         <div class="feed-info">
           <p class="feed-title">{{ feed.meta.title }}</p>
           <div class="feed-sub">

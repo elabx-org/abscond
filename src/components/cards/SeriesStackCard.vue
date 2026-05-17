@@ -11,7 +11,7 @@
         >
           <img :src="coverUrl(id, token)" :alt="name" class="stack-img" @error="onImgError(id)" />
           <div v-if="imgErrors.has(id)" class="stack-placeholder">
-            <v-icon size="20" color="rgba(255,255,255,0.2)">mdi-book-multiple</v-icon>
+            <AppIcon icon="mdi-book-multiple" :size="20" color="rgba(255,255,255,0.2)" />
           </div>
         </div>
       </template>
@@ -20,7 +20,7 @@
         <div class="stack-layer" :style="layerStyle(0, 1)">
           <img v-if="coverIds.length" :src="coverUrl(coverIds[0], token)" :alt="name" class="stack-img" />
           <div v-else class="stack-placeholder">
-            <v-icon size="28" color="rgba(255,255,255,0.2)">mdi-book-multiple</v-icon>
+            <AppIcon icon="mdi-book-multiple" :size="28" color="rgba(255,255,255,0.2)" />
           </div>
         </div>
       </template>
@@ -35,12 +35,12 @@
         />
         <!-- Finished badge -->
         <div v-if="finishedCount > 0 && finishedCount >= totalCount" class="stack-finished">
-          <v-icon size="9" color="white">mdi-check</v-icon>
+          <AppIcon icon="mdi-check" :size="9" color="white" />
           Finished
         </div>
         <!-- Book count badge -->
         <div class="stack-count-badge">
-          <v-icon size="9" color="rgba(255,255,255,0.8)">mdi-book-open-outline</v-icon>
+          <AppIcon icon="mdi-book-open-outline" :size="9" color="rgba(255,255,255,0.8)" />
           {{ finishedCount > 0 && finishedCount < totalCount ? `${finishedCount}/${totalCount}` : totalCount }}
         </div>
       </div>

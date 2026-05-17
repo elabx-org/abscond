@@ -17,38 +17,38 @@
           <!-- Actions -->
           <div class="qa-actions">
             <button class="qa-action" @click="$emit('play'); $emit('close')">
-              <div class="qa-icon"><v-icon size="20" color="#d4a017">mdi-play-circle-outline</v-icon></div>
+              <div class="qa-icon"><AppIcon icon="mdi-play-circle-outline" :size="20" color="#d4a017" /></div>
               <span>{{ progress > 0 && progress < 1 ? 'Continue' : 'Play' }}</span>
             </button>
 
             <button class="qa-action" @click="$emit('mark-finished'); $emit('close')">
-              <div class="qa-icon"><v-icon size="20" color="rgba(255,255,255,0.6)">mdi-check-circle-outline</v-icon></div>
+              <div class="qa-icon"><AppIcon icon="mdi-check-circle-outline" :size="20" color="rgba(255,255,255,0.6)" /></div>
               <span>{{ progress >= 1 ? 'Mark unfinished' : 'Mark finished' }}</span>
             </button>
 
             <button v-if="progress > 0" class="qa-action" @click="$emit('clear-progress'); $emit('close')">
-              <div class="qa-icon"><v-icon size="20" color="rgba(255,255,255,0.6)">mdi-restore</v-icon></div>
+              <div class="qa-icon"><AppIcon icon="mdi-restore" :size="20" color="rgba(255,255,255,0.6)" /></div>
               <span>Clear progress</span>
             </button>
 
             <button class="qa-action" @click="$emit('play-next'); $emit('close')">
-              <div class="qa-icon"><v-icon size="20" color="rgba(255,255,255,0.6)">mdi-skip-next-circle-outline</v-icon></div>
+              <div class="qa-icon"><AppIcon icon="mdi-skip-next-circle-outline" :size="20" color="rgba(255,255,255,0.6)" /></div>
               <span>Play next</span>
             </button>
 
             <button class="qa-action" @click="$emit('add-to-queue'); $emit('close')">
-              <div class="qa-icon"><v-icon size="20" color="rgba(255,255,255,0.6)">mdi-playlist-play</v-icon></div>
+              <div class="qa-icon"><AppIcon icon="mdi-playlist-play" :size="20" color="rgba(255,255,255,0.6)" /></div>
               <span>Add to queue</span>
             </button>
 
             <button class="qa-action" @click="$emit('add-to-playlist'); $emit('close')">
-              <div class="qa-icon"><v-icon size="20" color="rgba(255,255,255,0.6)">mdi-playlist-plus</v-icon></div>
+              <div class="qa-icon"><AppIcon icon="mdi-playlist-plus" :size="20" color="rgba(255,255,255,0.6)" /></div>
               <span>Add to playlist</span>
             </button>
 
             <!-- Add to collection -->
             <button class="qa-action" @click="openCollectionPicker">
-              <div class="qa-icon"><v-icon size="20" color="rgba(255,255,255,0.6)">mdi-bookshelf</v-icon></div>
+              <div class="qa-icon"><AppIcon icon="mdi-bookshelf" :size="20" color="rgba(255,255,255,0.6)" /></div>
               <span>Add to collection</span>
             </button>
 
@@ -69,7 +69,7 @@
             </div>
 
             <button class="qa-action" @click="$emit('view-detail'); $emit('close')">
-              <div class="qa-icon"><v-icon size="20" color="rgba(255,255,255,0.6)">mdi-information-outline</v-icon></div>
+              <div class="qa-icon"><AppIcon icon="mdi-information-outline" :size="20" color="rgba(255,255,255,0.6)" /></div>
               <span>Book details</span>
             </button>
           </div>

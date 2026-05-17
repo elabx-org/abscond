@@ -18,11 +18,11 @@
                   :disabled="!isDirty || saving"
                   @click="save"
                 >
-                  <v-icon v-if="saving" size="12" class="ch-spin">mdi-loading</v-icon>
+                  <AppIcon icon="mdi-loading" v-if="saving" :size="12" class="ch-spin" />
                   {{ saving ? 'Saving…' : 'Save' }}
                 </button>
                 <button class="ch-close-btn" @click="close">
-                  <v-icon size="16">mdi-close</v-icon>
+                  <AppIcon icon="mdi-close" :size="16" />
                 </button>
               </div>
             </div>
@@ -47,7 +47,7 @@
               >
                 <!-- Seek button -->
                 <button class="ch-seek-btn" :title="`Seek to chapter ${idx + 1}`" @click="emit('seek', ch.start)">
-                  <v-icon size="14" color="#d4a017">mdi-play</v-icon>
+                  <AppIcon icon="mdi-play" :size="14" color="#d4a017" />
                 </button>
 
                 <!-- Chapter number -->
@@ -77,7 +77,7 @@
                   :title="`Delete chapter ${idx + 1}`"
                   @click="deleteChapter(idx)"
                 >
-                  <v-icon size="14">mdi-close</v-icon>
+                  <AppIcon icon="mdi-close" :size="14" />
                 </button>
               </div>
 
@@ -90,7 +90,7 @@
 
           <!-- Add chapter button -->
           <button class="ch-add-btn" :disabled="loading" @click="addChapter">
-            <v-icon size="16">mdi-plus</v-icon>
+            <AppIcon icon="mdi-plus" :size="16" />
             Add Chapter
           </button>
 

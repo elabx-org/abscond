@@ -20,7 +20,7 @@
             {{ savingUrl ? 'Saving…' : 'Save URL' }}
           </button>
           <p v-if="urlSuccess" class="success-msg">
-            <v-icon size="14" color="#22c55e">mdi-check</v-icon> Saved
+            <AppIcon icon="mdi-check" :size="14" color="#22c55e" /> Saved
           </p>
         </div>
       </div>
@@ -30,7 +30,7 @@
         <p class="group-label">Events</p>
 
         <div v-if="!events.length" class="empty-state">
-          <v-icon size="32" color="rgba(255,255,255,0.1)">mdi-bell-off-outline</v-icon>
+          <AppIcon icon="mdi-bell-off-outline" :size="32" color="rgba(255,255,255,0.1)" />
           <p>No notification events configured on this server.</p>
           <p class="empty-sub">Apprise URL must be set first.</p>
         </div>
@@ -49,7 +49,7 @@
                 @click="doTest(ev.id)"
                 title="Send a test notification"
               >
-                <v-icon size="12">{{ testingId === ev.id ? 'mdi-loading' : 'mdi-send-outline' }}</v-icon>
+                <AppIcon :icon="testingId === ev.id ? 'mdi-loading' : 'mdi-send-outline'" :size="12" />
                 Test
               </button>
               <div

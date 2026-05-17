@@ -17,7 +17,7 @@
         @error="imgError = true"
       />
       <div v-if="imgError" class="cover-placeholder">
-        <v-icon size="32" color="rgba(255,255,255,0.2)">mdi-book-open-variant</v-icon>
+        <AppIcon icon="mdi-book-open-variant" :size="32" color="rgba(255,255,255,0.2)" />
       </div>
       <!-- Now-playing indicator -->
       <div v-if="isNowPlaying" class="now-playing-badge">
@@ -29,12 +29,12 @@
         :style="{ width: `${Math.round((progress ?? 0) * 100)}%`, background: accent }"
       />
       <div v-if="(progress ?? 0) >= 1" class="finished-badge">
-        <v-icon size="10" color="white">mdi-check</v-icon>
+        <AppIcon icon="mdi-check" :size="10" color="white" />
       </div>
       <div v-if="explicit && showExplicitBadge" class="explicit-badge">E</div>
       <Transition name="check">
         <div v-if="selected" class="select-overlay">
-          <v-icon size="20" color="white">mdi-check</v-icon>
+          <AppIcon icon="mdi-check" :size="20" color="white" />
         </div>
       </Transition>
     </div>

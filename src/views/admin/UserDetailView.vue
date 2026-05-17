@@ -17,7 +17,7 @@
           <p v-if="user.lastSeen" class="hero-seen">Last seen {{ timeAgo(user.lastSeen) }}</p>
         </div>
         <button v-if="user.type !== 'root'" class="edit-fab" @click="showEdit = true">
-          <v-icon size="18">mdi-pencil-outline</v-icon>
+          <AppIcon icon="mdi-pencil-outline" :size="18" />
         </button>
       </div>
 
@@ -44,7 +44,7 @@
         <div v-for="n in 4" :key="n" class="skel-row" />
       </div>
       <div v-else-if="!sessions.length" class="empty-state">
-        <v-icon size="32" color="rgba(255,255,255,0.1)">mdi-headphones</v-icon>
+        <AppIcon icon="mdi-headphones" :size="32" color="rgba(255,255,255,0.1)" />
         <p>No listening sessions yet</p>
       </div>
       <div v-else class="session-list">
@@ -61,7 +61,7 @@
     </template>
 
     <div v-else class="empty-state">
-      <v-icon size="32" color="rgba(255,255,255,0.1)">mdi-account-off</v-icon>
+      <AppIcon icon="mdi-account-off" :size="32" color="rgba(255,255,255,0.1)" />
       <p>User not found</p>
     </div>
 

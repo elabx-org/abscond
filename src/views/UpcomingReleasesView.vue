@@ -7,18 +7,18 @@
   >
     <Transition name="ptr">
       <div v-if="ptr.pulling" class="ptr-indicator">
-        <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-arrow-down</v-icon>
+        <AppIcon icon="mdi-arrow-down" :size="18" color="rgba(255,255,255,0.5)" />
       </div>
     </Transition>
     <div class="view-header">
       <h2 class="screen-title">Upcoming</h2>
       <div class="header-actions">
         <button v-if="!scanning" class="refresh-btn" @click="startScan(true)" :title="cacheAgeLabel">
-          <v-icon size="18" color="rgba(255,255,255,0.5)">mdi-refresh</v-icon>
+          <AppIcon icon="mdi-refresh" :size="18" color="rgba(255,255,255,0.5)" />
         </button>
         <div class="region-pill" @click="showRegionPicker = true">
           <span>{{ region.toUpperCase() }}</span>
-          <v-icon size="12" color="rgba(255,255,255,0.4)">mdi-chevron-down</v-icon>
+          <AppIcon icon="mdi-chevron-down" :size="12" color="rgba(255,255,255,0.4)" />
         </div>
       </div>
     </div>
@@ -27,7 +27,7 @@
     <Transition name="fade">
       <div v-if="scanning" class="scan-card">
         <div class="scan-top">
-          <v-icon size="18" color="#d4a017" class="spin">mdi-loading</v-icon>
+          <AppIcon icon="mdi-loading" :size="18" color="#d4a017" class="spin" />
           <span class="scan-title">Scanning series…</span>
           <button class="scan-cancel" @click="cancelScan">Cancel</button>
         </div>
@@ -42,14 +42,14 @@
     <!-- Stale cache warning -->
     <Transition name="fade">
       <div v-if="!scanning && isCacheStale && books.length" class="stale-banner">
-        <v-icon size="14" color="rgba(255,255,255,0.4)">mdi-clock-outline</v-icon>
+        <AppIcon icon="mdi-clock-outline" :size="14" color="rgba(255,255,255,0.4)" />
         <span>Last scan was {{ cacheAgeLabel }} — tap refresh to update</span>
       </div>
     </Transition>
 
     <!-- Empty / no ASIN state -->
     <div v-if="!scanning && !books.length && !firstLoad" class="empty-state">
-      <v-icon size="48" color="rgba(255,255,255,0.1)">mdi-calendar-clock-outline</v-icon>
+      <AppIcon icon="mdi-calendar-clock-outline" :size="48" color="rgba(255,255,255,0.1)" />
       <p class="empty-title">No upcoming releases found</p>
       <p class="empty-sub">This scans series in your library that have Audible ASINs. Make sure your books were matched to Audible metadata.</p>
       <button class="scan-btn" @click="startScan(true)">Scan now</button>
@@ -81,10 +81,10 @@
           <div class="book-cover-wrap">
             <img v-if="book.coverUrl" :src="book.coverUrl" class="book-cover" />
             <div v-else class="book-cover-placeholder">
-              <v-icon size="22" color="rgba(255,255,255,0.2)">mdi-headphones</v-icon>
+              <AppIcon icon="mdi-headphones" :size="22" color="rgba(255,255,255,0.2)" />
             </div>
             <div v-if="book.inLibrary" class="owned-badge">
-              <v-icon size="10" color="#22c55e">mdi-check</v-icon>
+              <AppIcon icon="mdi-check" :size="10" color="#22c55e" />
             </div>
           </div>
           <div class="book-meta">
@@ -111,10 +111,10 @@
           <div class="book-cover-wrap">
             <img v-if="book.coverUrl" :src="book.coverUrl" class="book-cover" />
             <div v-else class="book-cover-placeholder">
-              <v-icon size="22" color="rgba(255,255,255,0.2)">mdi-headphones</v-icon>
+              <AppIcon icon="mdi-headphones" :size="22" color="rgba(255,255,255,0.2)" />
             </div>
             <div v-if="book.inLibrary" class="owned-badge">
-              <v-icon size="10" color="#22c55e">mdi-check</v-icon>
+              <AppIcon icon="mdi-check" :size="10" color="#22c55e" />
             </div>
           </div>
           <div class="book-meta">

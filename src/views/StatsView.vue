@@ -8,9 +8,7 @@
     <!-- Pull-to-refresh indicator -->
     <Transition name="ptr">
       <div v-if="ptr.pulling || ptr.refreshing" class="ptr-indicator">
-        <v-icon size="18" color="rgba(255,255,255,0.5)" :class="{ spin: ptr.refreshing }">
-          {{ ptr.refreshing ? 'mdi-loading' : 'mdi-arrow-down' }}
-        </v-icon>
+        <AppIcon :icon="ptr.refreshing ? 'mdi-loading' : 'mdi-arrow-down'" :size="18" color="rgba(255,255,255,0.5)" :class="{ spin: ptr.refreshing }" />
       </div>
     </Transition>
 
@@ -57,44 +55,44 @@
         <p class="section-label">Activity</p>
         <div class="accent-grid">
           <div class="accent-card accent-card--orange">
-            <v-icon size="18" color="#f97316">mdi-fire</v-icon>
+            <AppIcon icon="mdi-fire" :size="18" color="#f97316" />
             <p class="accent-value">{{ currentStreak }}</p>
             <p class="accent-label">Current streak</p>
             <p class="accent-sub">days</p>
           </div>
           <div class="accent-card accent-card--amber">
-            <v-icon size="18" color="#f59e0b">mdi-trophy-outline</v-icon>
+            <AppIcon icon="mdi-trophy-outline" :size="18" color="#f59e0b" />
             <p class="accent-value">{{ longestStreak }}</p>
             <p class="accent-label">Best streak</p>
             <p class="accent-sub">days</p>
           </div>
           <div class="accent-card accent-card--green">
-            <v-icon size="18" color="#22c55e">mdi-book-check-outline</v-icon>
+            <AppIcon icon="mdi-book-check-outline" :size="18" color="#22c55e" />
             <p class="accent-value">{{ totalBooksFinished }}</p>
             <p class="accent-label">Books finished</p>
           </div>
           <div v-if="episodesFinished > 0" class="accent-card accent-card--purple">
-            <v-icon size="18" color="#a855f7">mdi-podcast</v-icon>
+            <AppIcon icon="mdi-podcast" :size="18" color="#a855f7" />
             <p class="accent-value">{{ episodesFinished }}</p>
             <p class="accent-label">Episodes finished</p>
           </div>
           <div class="accent-card accent-card--teal accent-card--tap" @click="showYearSheet = true">
-            <v-icon size="18" color="#14b8a6">mdi-bookshelf</v-icon>
+            <AppIcon icon="mdi-bookshelf" :size="18" color="#14b8a6" />
             <p class="accent-value">{{ booksThisYear }}</p>
             <p class="accent-label">This year</p>
           </div>
           <div v-if="episodesThisYear > 0" class="accent-card accent-card--indigo">
-            <v-icon size="18" color="#6366f1">mdi-podcast</v-icon>
+            <AppIcon icon="mdi-podcast" :size="18" color="#6366f1" />
             <p class="accent-value">{{ episodesThisYear }}</p>
             <p class="accent-label">Episodes this year</p>
           </div>
           <div class="accent-card accent-card--blue">
-            <v-icon size="18" color="#3b82f6">mdi-calendar-check-outline</v-icon>
+            <AppIcon icon="mdi-calendar-check-outline" :size="18" color="#3b82f6" />
             <p class="accent-value">{{ activeDays }}</p>
             <p class="accent-label">Days active</p>
           </div>
           <div class="accent-card accent-card--purple">
-            <v-icon size="18" color="#a855f7">mdi-speedometer</v-icon>
+            <AppIcon icon="mdi-speedometer" :size="18" color="#a855f7" />
             <p class="accent-value">{{ dailyAverageLabel }}</p>
             <p class="accent-label">Daily average</p>
           </div>
@@ -223,7 +221,7 @@
               <p class="session-sub">{{ s.displayAuthor }} · {{ formatDate(s.updatedAt) }}</p>
             </div>
             <span class="session-dur">{{ formatMinutes(s.duration) }}</span>
-            <v-icon size="14" color="rgba(255,255,255,0.15)">mdi-chevron-right</v-icon>
+            <AppIcon icon="mdi-chevron-right" :size="14" color="rgba(255,255,255,0.15)" />
           </div>
         </div>
         <div ref="sessionSentinel" class="session-sentinel" />
@@ -265,7 +263,7 @@
         </div>
       </div>
       <button class="sess-jump-btn" @click="jumpToSession(activeSession)">
-        <v-icon size="16" color="#111">mdi-play</v-icon>
+        <AppIcon icon="mdi-play" :size="16" color="#111" />
         Resume from {{ formatTime(activeSession.currentTime ?? activeSession.startTime ?? 0) }}
       </button>
     </div>
@@ -292,7 +290,7 @@
           </div>
         </div>
         <div v-if="!booksThisYearList.length" class="year-empty">
-          <v-icon size="32" color="rgba(255,255,255,0.1)">mdi-bookshelf</v-icon>
+          <AppIcon icon="mdi-bookshelf" :size="32" color="rgba(255,255,255,0.1)" />
           <p>No listening sessions this year yet</p>
         </div>
       </div>

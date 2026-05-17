@@ -21,13 +21,11 @@
           @drop="onDrop(i)"
           @dragend="onDragEnd"
         >
-          <v-icon size="20" class="drag-icon" color="rgba(255,255,255,0.25)">mdi-drag-horizontal-variant</v-icon>
-          <v-icon size="18" color="rgba(255,255,255,0.4)">{{ section.icon }}</v-icon>
+          <AppIcon icon="mdi-drag-horizontal-variant" :size="20" class="drag-icon" color="rgba(255,255,255,0.25)" />
+          <AppIcon :icon="section.icon" :size="18" color="rgba(255,255,255,0.4)" />
           <span class="section-name" :class="{ hidden: hiddenIds.has(section.id) }">{{ section.label }}</span>
           <button class="eye-btn" @click="toggleHidden(section.id)">
-            <v-icon size="18" :color="hiddenIds.has(section.id) ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.6)'">
-              {{ hiddenIds.has(section.id) ? 'mdi-eye-off-outline' : 'mdi-eye-outline' }}
-            </v-icon>
+            <AppIcon :icon="hiddenIds.has(section.id) ? 'mdi-eye-off-outline' : 'mdi-eye-outline'" :size="18" :color="hiddenIds.has(section.id) ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.6)'" />
           </button>
         </div>
       </div>

@@ -5,7 +5,7 @@
 
       <!-- Header -->
       <div class="eq-header">
-        <v-icon size="20" :color="accent">mdi-equalizer</v-icon>
+        <AppIcon icon="mdi-equalizer" :size="20" :color="accent" />
         <span class="eq-title">Audio Enhancements</span>
         <v-spacer />
         <v-switch
@@ -70,7 +70,7 @@
 
         <!-- Bass Boost -->
         <div class="effect-row">
-          <v-icon size="18" :color="eq.enabled ? accent : 'rgba(255,255,255,0.2)'">mdi-speaker</v-icon>
+          <AppIcon icon="mdi-speaker" :size="18" :color="eq.enabled ? accent : 'rgba(255,255,255,0.2)'" />
           <span class="effect-label" :style="{ color: eq.enabled ? 'rgba(255,255,255,0.75)' : 'rgba(255,255,255,0.2)' }">Bass Boost</span>
           <input
             type="range"
@@ -88,7 +88,7 @@
 
         <!-- Mono -->
         <div class="toggle-row">
-          <v-icon size="18" :color="eq.mono ? accent : 'rgba(255,255,255,0.2)'">mdi-headphones</v-icon>
+          <AppIcon icon="mdi-headphones" :size="18" :color="eq.mono ? accent : 'rgba(255,255,255,0.2)'" />
           <span class="toggle-label" :style="{ color: eq.mono ? 'rgba(255,255,255,0.75)' : 'rgba(255,255,255,0.25)' }">Mono Audio</span>
           <v-switch
             :modelValue="eq.mono"

@@ -5,23 +5,23 @@
 
       <!-- Header -->
       <div class="sheet-header">
-        <v-icon size="20" :color="accent">mdi-note-text</v-icon>
+        <AppIcon icon="mdi-note-text" :size="20" :color="accent" />
         <div class="header-meta">
           <span class="header-title">Notes</span>
           <span class="header-sub">{{ itemTitle }}</span>
         </div>
         <v-btn v-if="notes.length > 0" icon variant="text" size="small" @click="exportNotes">
-          <v-icon size="18">mdi-export-variant</v-icon>
+          <AppIcon icon="mdi-export-variant" :size="18" />
         </v-btn>
         <v-btn icon variant="text" size="small" @click="openEditor()">
-          <v-icon size="20">mdi-plus</v-icon>
+          <AppIcon icon="mdi-plus" :size="20" />
         </v-btn>
       </div>
       <v-divider />
 
       <!-- Empty state -->
       <div v-if="notes.length === 0" class="empty-state">
-        <v-icon size="48" color="rgba(255,255,255,0.1)">mdi-note-plus-outline</v-icon>
+        <AppIcon icon="mdi-note-plus-outline" :size="48" color="rgba(255,255,255,0.1)" />
         <p class="empty-title">No notes yet</p>
         <p class="empty-sub">Markdown is supported</p>
       </div>
@@ -44,7 +44,7 @@
             class="note-delete"
             @click.stop="confirmDelete(i)"
           >
-            <v-icon size="14" color="rgba(255,255,255,0.25)">mdi-delete-outline</v-icon>
+            <AppIcon icon="mdi-delete-outline" :size="14" color="rgba(255,255,255,0.25)" />
           </v-btn>
         </div>
       </div>

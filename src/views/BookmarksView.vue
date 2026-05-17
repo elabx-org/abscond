@@ -7,30 +7,28 @@
   >
     <Transition name="ptr">
       <div v-if="ptr.pulling || ptr.refreshing" class="ptr-indicator">
-        <v-icon size="18" color="rgba(255,255,255,0.5)" :class="{ spin: ptr.refreshing }">
-          {{ ptr.refreshing ? 'mdi-loading' : 'mdi-arrow-down' }}
-        </v-icon>
+        <AppIcon :icon="ptr.refreshing ? 'mdi-loading' : 'mdi-arrow-down'" :size="18" color="rgba(255,255,255,0.5)" :class="{ spin: ptr.refreshing }" />
       </div>
     </Transition>
     <div class="view-header">
       <h2 class="screen-title">Bookmarks</h2>
       <div class="header-actions">
         <button v-if="!selecting && groups.length" class="sort-btn" @click="cycleSort" :title="sortLabel">
-          <v-icon size="14" color="rgba(255,255,255,0.5)">{{ sortIcon }}</v-icon>
+          <AppIcon :icon="sortIcon" :size="14" color="rgba(255,255,255,0.5)" />
           <span class="sort-label">{{ sortLabel }}</span>
         </button>
         <button v-if="!selecting && groups.length" class="icon-btn" @click="selecting = true">
-          <v-icon size="18" color="rgba(255,255,255,0.4)">mdi-check-circle-outline</v-icon>
+          <AppIcon icon="mdi-check-circle-outline" :size="18" color="rgba(255,255,255,0.4)" />
         </button>
         <button v-if="selecting" class="icon-btn" @click="exitSelection">
-          <v-icon size="18" color="rgba(255,255,255,0.4)">mdi-close</v-icon>
+          <AppIcon icon="mdi-close" :size="18" color="rgba(255,255,255,0.4)" />
         </button>
       </div>
     </div>
 
     <!-- Empty state -->
     <div v-if="!loading && !groups.length" class="empty-state">
-      <v-icon size="48" color="rgba(255,255,255,0.1)">mdi-bookmark-outline</v-icon>
+      <AppIcon icon="mdi-bookmark-outline" :size="48" color="rgba(255,255,255,0.1)" />
       <p>No bookmarks yet</p>
       <p class="empty-sub">Bookmarks you add while listening will appear here</p>
     </div>
@@ -51,18 +49,14 @@
       <div v-for="group in groups" :key="group.itemId" class="book-group">
         <div class="group-header" @click="selecting ? toggleGroupSelect(group) : (group.expanded = !group.expanded)">
           <div v-if="selecting" class="group-check">
-            <v-icon size="20" :color="isGroupAllSelected(group) ? '#d4a017' : 'rgba(255,255,255,0.25)'">
-              {{ isGroupAllSelected(group) ? 'mdi-check-circle' : 'mdi-circle-outline' }}
-            </v-icon>
+            <AppIcon :icon="isGroupAllSelected(group) ? 'mdi-check-circle' : 'mdi-circle-outline'" :size="20" :color="isGroupAllSelected(group) ? '#d4a017' : 'rgba(255,255,255,0.25)'" />
           </div>
           <img :src="coverUrl(group.itemId, auth.token ?? '')" class="group-cover" />
           <div class="group-meta">
             <p class="group-title">{{ group.title }}</p>
             <p class="group-count">{{ group.bookmarks.length }} bookmark{{ group.bookmarks.length !== 1 ? 's' : '' }}</p>
           </div>
-          <v-icon v-if="!selecting" size="18" color="rgba(255,255,255,0.3)">
-            {{ group.expanded ? 'mdi-chevron-up' : 'mdi-chevron-down' }}
-          </v-icon>
+          <AppIcon :icon="group.expanded ? 'mdi-chevron-up' : 'mdi-chevron-down'" v-if="!selecting" :size="18" color="rgba(255,255,255,0.3)" />
         </div>
 
         <Transition name="expand">
@@ -76,20 +70,18 @@
               @contextmenu.prevent="enterSelection(group.itemId, bm.time)"
             >
               <div v-if="selecting" class="bm-check">
-                <v-icon size="18" :color="selected.has(selKey(group.itemId, bm.time)) ? '#d4a017' : 'rgba(255,255,255,0.25)'">
-                  {{ selected.has(selKey(group.itemId, bm.time)) ? 'mdi-check-circle' : 'mdi-circle-outline' }}
-                </v-icon>
+                <AppIcon :icon="selected.has(selKey(group.itemId, bm.time)) ? 'mdi-check-circle' : 'mdi-circle-outline'" :size="18" :color="selected.has(selKey(group.itemId, bm.time)) ? '#d4a017' : 'rgba(255,255,255,0.25)'" />
               </div>
-              <v-icon v-else size="16" color="rgba(212,160,23,0.7)" style="flex-shrink:0">mdi-bookmark</v-icon>
+              <AppIcon icon="mdi-bookmark" v-else :size="16" color="rgba(212,160,23,0.7)" style="flex-shrink:0" />
               <div class="bookmark-meta">
                 <p class="bookmark-title">{{ bm.title }}</p>
               </div>
               <div class="bookmark-time">{{ formatTime(bm.time) }}</div>
               <button v-if="!selecting" class="bm-edit-btn" @click.stop="startEdit(group, bm)">
-                <v-icon size="14" color="rgba(255,255,255,0.25)">mdi-pencil-outline</v-icon>
+                <AppIcon icon="mdi-pencil-outline" :size="14" color="rgba(255,255,255,0.25)" />
               </button>
               <button v-if="!selecting" class="bm-del-btn" @click.stop="removeBookmark(group.itemId, bm.time)">
-                <v-icon size="14" color="rgba(255,255,255,0.2)">mdi-trash-can-outline</v-icon>
+                <AppIcon icon="mdi-trash-can-outline" :size="14" color="rgba(255,255,255,0.2)" />
               </button>
             </div>
           </div>
@@ -102,7 +94,7 @@
       <div v-if="selecting && selected.size" class="batch-bar">
         <span class="batch-count">{{ selected.size }} selected</span>
         <button class="batch-del-btn" @click="deleteSelected">
-          <v-icon size="16" color="white">mdi-trash-can-outline</v-icon>
+          <AppIcon icon="mdi-trash-can-outline" :size="16" color="white" />
           Delete
         </button>
       </div>

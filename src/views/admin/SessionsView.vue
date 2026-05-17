@@ -12,14 +12,14 @@
     </div>
 
     <div v-else-if="sessions.length === 0" class="empty-state">
-      <v-icon size="40" color="rgba(255,255,255,0.2)">mdi-headphones-off</v-icon>
+      <AppIcon icon="mdi-headphones-off" :size="40" color="rgba(255,255,255,0.2)" />
       <p class="empty-text">No sessions found</p>
     </div>
 
     <div v-else class="session-list">
       <template v-for="s in sessions" :key="s.id">
         <div class="session-row">
-          <v-icon size="20" color="rgba(255,255,255,0.3)" class="session-icon">mdi-headphones</v-icon>
+          <AppIcon icon="mdi-headphones" :size="20" color="rgba(255,255,255,0.3)" class="session-icon" />
           <div class="session-info">
             <p class="session-title">{{ s.displayTitle }}</p>
             <p class="session-meta">
@@ -35,7 +35,7 @@
           <div class="session-right">
             <span class="session-duration">{{ fmtDuration(s.timeListening > 0 ? s.timeListening : s.duration) }}</span>
             <button class="del-btn" @click="toggleConfirm(s.id)">
-              <v-icon size="18">mdi-delete-outline</v-icon>
+              <AppIcon icon="mdi-delete-outline" :size="18" />
             </button>
           </div>
         </div>

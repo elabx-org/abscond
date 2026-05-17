@@ -3,7 +3,7 @@
     <div class="section-header">
       <h3 class="section-title">Users</h3>
       <button class="add-btn" @click="showCreate = true">
-        <v-icon size="16">mdi-plus</v-icon>
+        <AppIcon icon="mdi-plus" :size="16" />
         <span>Add</span>
       </button>
     </div>
@@ -24,10 +24,10 @@
           </p>
         </div>
         <button v-if="u.type !== 'root'" class="edit-btn" @click="router.push({ name: 'admin-user-detail', params: { id: u.id } })" title="Edit user">
-          <v-icon size="16">mdi-pencil-outline</v-icon>
+          <AppIcon icon="mdi-pencil-outline" :size="16" />
         </button>
         <button v-if="u.type !== 'root'" class="del-btn" @click="confirmDelete(u)">
-          <v-icon size="16">mdi-delete-outline</v-icon>
+          <AppIcon icon="mdi-delete-outline" :size="16" />
         </button>
       </div>
     </div>

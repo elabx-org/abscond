@@ -2,7 +2,7 @@
   <div class="admin-layout">
     <div class="admin-topbar">
       <button class="back-btn" @click="router.push({ name: 'settings' })">
-        <v-icon size="20">mdi-arrow-left</v-icon>
+        <AppIcon icon="mdi-arrow-left" :size="20" />
       </button>
       <span class="admin-title">Admin Panel</span>
     </div>
@@ -15,7 +15,7 @@
         :class="{ active: route.name === tab.name || DETAIL_PARENT[route.name as string] === tab.name }"
         @click="router.push({ name: tab.name })"
       >
-        <v-icon size="16">{{ tab.icon }}</v-icon>
+        <AppIcon :icon="tab.icon" :size="16" />
         <span>{{ tab.label }}</span>
       </button>
     </div>

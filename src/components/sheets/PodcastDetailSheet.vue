@@ -13,7 +13,7 @@
 
           <div class="sheet-content">
             <button class="sheet-close" @click="$emit('close')">
-              <v-icon size="20">mdi-close</v-icon>
+              <AppIcon icon="mdi-close" :size="20" />
             </button>
 
             <!-- Header -->
@@ -29,15 +29,15 @@
             <!-- View all + controls -->
             <div class="ep-controls">
               <button class="view-all-btn" @click="viewAll">
-                <v-icon size="14">mdi-open-in-new</v-icon>
+                <AppIcon icon="mdi-open-in-new" :size="14" />
                 View all
               </button>
               <div class="ep-ctrl-right">
                 <button class="ep-ctrl-btn" :class="{ on: hideFinished }" @click="toggleHideFinished" title="Hide finished">
-                  <v-icon size="14">mdi-check-circle-outline</v-icon>
+                  <AppIcon icon="mdi-check-circle-outline" :size="14" />
                 </button>
                 <button class="ep-ctrl-btn" @click="toggleSort" :title="newestFirst ? 'Newest first' : 'Oldest first'">
-                  <v-icon size="14">{{ newestFirst ? 'mdi-sort-descending' : 'mdi-sort-ascending' }}</v-icon>
+                  <AppIcon :icon="newestFirst ? 'mdi-sort-descending' : 'mdi-sort-ascending'" :size="14" />
                   <span class="ep-ctrl-label">{{ newestFirst ? 'Newest' : 'Oldest' }}</span>
                 </button>
               </div>
@@ -74,12 +74,10 @@
                   <p v-if="ep.userEpisodeProgress?.isFinished" class="ep-finished">✓</p>
                 </div>
                 <button class="ep-play-btn">
-                  <v-icon size="18" :color="isEpPlaying(ep.id) ? '#d4a017' : 'rgba(255,255,255,0.6)'">
-                    {{ isEpPlaying(ep.id) ? 'mdi-pause' : 'mdi-play' }}
-                  </v-icon>
+                  <AppIcon :icon="isEpPlaying(ep.id) ? 'mdi-pause' : 'mdi-play'" :size="18" :color="isEpPlaying(ep.id) ? '#d4a017' : 'rgba(255,255,255,0.6)'" />
                 </button>
                 <button class="ep-dl-btn" @click.stop="downloadEpisode(ep)">
-                  <v-icon size="16" color="rgba(255,255,255,0.35)">mdi-download-outline</v-icon>
+                  <AppIcon icon="mdi-download-outline" :size="16" color="rgba(255,255,255,0.35)" />
                 </button>
               </div>
             </div>

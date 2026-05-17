@@ -2,7 +2,7 @@
   <div class="podcast-view">
     <div class="view-header">
       <button class="back-btn" @click="$router.back()">
-        <v-icon size="20" color="rgba(255,255,255,0.6)">mdi-arrow-left</v-icon>
+        <AppIcon icon="mdi-arrow-left" :size="20" color="rgba(255,255,255,0.6)" />
       </button>
       <div class="header-meta">
         <h2 class="screen-title">{{ item?.media.metadata.title ?? 'Podcast' }}</h2>
@@ -26,11 +26,11 @@
       <!-- Refresh feed + Settings toggle row -->
       <div class="ep-refresh-row">
         <button class="ep-refresh-btn" :disabled="refreshing" @click="refreshFeed">
-          <v-icon size="14" :class="{ spin: refreshing }">mdi-refresh</v-icon>
+          <AppIcon icon="mdi-refresh" :size="14" :class="{ spin: refreshing }" />
           {{ refreshing ? 'Checking for new episodes…' : 'Refresh feed' }}
         </button>
         <button class="ep-settings-btn" @click="showSettings = !showSettings">
-          <v-icon size="14">{{ showSettings ? 'mdi-chevron-up' : 'mdi-cog-outline' }}</v-icon>
+          <AppIcon :icon="showSettings ? 'mdi-chevron-up' : 'mdi-cog-outline'" :size="14" />
           Settings
         </button>
       </div>
@@ -47,11 +47,11 @@
           <span class="settings-label">Max episodes to keep</span>
           <div class="stepper">
             <button class="step-btn" @click="settingsForm.maxToKeep = Math.max(0, settingsForm.maxToKeep - 1)">
-              <v-icon size="14">mdi-minus</v-icon>
+              <AppIcon icon="mdi-minus" :size="14" />
             </button>
             <span class="step-val">{{ settingsForm.maxToKeep === 0 ? '∞' : settingsForm.maxToKeep }}</span>
             <button class="step-btn" @click="settingsForm.maxToKeep++">
-              <v-icon size="14">mdi-plus</v-icon>
+              <AppIcon icon="mdi-plus" :size="14" />
             </button>
           </div>
         </div>
@@ -59,11 +59,11 @@
           <span class="settings-label">Max new eps to download</span>
           <div class="stepper">
             <button class="step-btn" @click="settingsForm.maxNew = Math.max(0, settingsForm.maxNew - 1)">
-              <v-icon size="14">mdi-minus</v-icon>
+              <AppIcon icon="mdi-minus" :size="14" />
             </button>
             <span class="step-val">{{ settingsForm.maxNew === 0 ? '∞' : settingsForm.maxNew }}</span>
             <button class="step-btn" @click="settingsForm.maxNew++">
-              <v-icon size="14">mdi-plus</v-icon>
+              <AppIcon icon="mdi-plus" :size="14" />
             </button>
           </div>
         </div>
@@ -75,10 +75,10 @@
       <!-- Episode filter -->
       <div class="ep-filter-row">
         <div class="ep-search-wrap">
-          <v-icon size="14" color="rgba(255,255,255,0.3)">mdi-magnify</v-icon>
+          <AppIcon icon="mdi-magnify" :size="14" color="rgba(255,255,255,0.3)" />
           <input v-model="epSearch" class="ep-search" placeholder="Search episodes…" />
           <button v-if="epSearch" class="ep-search-clear" @click="epSearch = ''">
-            <v-icon size="12">mdi-close</v-icon>
+            <AppIcon icon="mdi-close" :size="12" />
           </button>
         </div>
         <div class="ep-filter-chips">
@@ -115,24 +115,16 @@
               <div v-if="ep.description && expandedEps.has(ep.id)" class="ep-desc html-body" v-html="ep.description" />
             </div>
             <button class="ep-play-btn" @click="playEpisode(ep)">
-              <v-icon size="22" :color="isPlayingEp(ep.id) ? '#d4a017' : 'rgba(255,255,255,0.7)'">
-                {{ isPlayingEp(ep.id) && player.isPlaying ? 'mdi-pause-circle' : 'mdi-play-circle' }}
-              </v-icon>
+              <AppIcon :icon="isPlayingEp(ep.id) && player.isPlaying ? 'mdi-pause-circle' : 'mdi-play-circle'" :size="22" :color="isPlayingEp(ep.id) ? '#d4a017' : 'rgba(255,255,255,0.7)'" />
             </button>
             <button v-if="ep.description" class="ep-expand-btn" @click.stop="toggleExpand(ep.id)">
-              <v-icon size="14" :color="expandedEps.has(ep.id) ? '#d4a017' : 'rgba(255,255,255,0.2)'">
-                {{ expandedEps.has(ep.id) ? 'mdi-chevron-up' : 'mdi-chevron-down' }}
-              </v-icon>
+              <AppIcon :icon="expandedEps.has(ep.id) ? 'mdi-chevron-up' : 'mdi-chevron-down'" :size="14" :color="expandedEps.has(ep.id) ? '#d4a017' : 'rgba(255,255,255,0.2)'" />
             </button>
             <button class="ep-mark-btn" @click.stop="toggleFinished(ep)" :title="ep.userEpisodeProgress?.isFinished ? 'Mark unplayed' : 'Mark played'">
-              <v-icon size="16" :color="ep.userEpisodeProgress?.isFinished ? '#22c55e' : 'rgba(255,255,255,0.2)'">
-                {{ ep.userEpisodeProgress?.isFinished ? 'mdi-check-circle' : 'mdi-check-circle-outline' }}
-              </v-icon>
+              <AppIcon :icon="ep.userEpisodeProgress?.isFinished ? 'mdi-check-circle' : 'mdi-check-circle-outline'" :size="16" :color="ep.userEpisodeProgress?.isFinished ? '#22c55e' : 'rgba(255,255,255,0.2)'" />
             </button>
             <button class="ep-dl-btn" :disabled="downloadingEps.has(ep.id)" @click.stop="downloadEpisode(ep)" title="Download episode">
-              <v-icon size="15" :color="downloadingEps.has(ep.id) ? '#d4a017' : 'rgba(255,255,255,0.2)'">
-                {{ downloadingEps.has(ep.id) ? 'mdi-loading' : 'mdi-download-outline' }}
-              </v-icon>
+              <AppIcon :icon="downloadingEps.has(ep.id) ? 'mdi-loading' : 'mdi-download-outline'" :size="15" :color="downloadingEps.has(ep.id) ? '#d4a017' : 'rgba(255,255,255,0.2)'" />
             </button>
           </div>
         </div>

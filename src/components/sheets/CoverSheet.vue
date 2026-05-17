@@ -8,7 +8,7 @@
           <div class="sheet-header">
             <p class="sheet-title">Update Cover</p>
             <button class="sheet-close-btn" @click="close">
-              <v-icon size="16">mdi-close</v-icon>
+              <AppIcon icon="mdi-close" :size="16" />
             </button>
           </div>
 
@@ -40,8 +40,8 @@
               :disabled="!searchTitle.trim() || searching || saving"
               @click="doSearch"
             >
-              <v-icon v-if="searching" size="15" class="spin">mdi-loading</v-icon>
-              <v-icon v-else size="15">mdi-magnify</v-icon>
+              <AppIcon icon="mdi-loading" v-if="searching" :size="15" class="spin" />
+              <AppIcon icon="mdi-magnify" v-else :size="15" />
               {{ searching ? 'Searching…' : 'Search' }}
             </button>
 
@@ -76,7 +76,7 @@
               :disabled="!urlInput.trim() || saving"
               @click="applyUrl"
             >
-              <v-icon v-if="saving && activeAction === 'url'" size="15" class="spin">mdi-loading</v-icon>
+              <AppIcon icon="mdi-loading" v-if="saving && activeAction === 'url'" :size="15" class="spin" />
               {{ saving && activeAction === 'url' ? 'Applying…' : 'Apply' }}
             </button>
 
@@ -92,7 +92,7 @@
               @change="onFileChange"
             />
             <button class="upload-pick-btn" :disabled="saving" @click="fileInputRef?.click()">
-              <v-icon size="15" color="rgba(212,160,23,0.8)">mdi-image-plus-outline</v-icon>
+              <AppIcon icon="mdi-image-plus-outline" :size="15" color="rgba(212,160,23,0.8)" />
               {{ pickedFile ? pickedFile.name : 'Choose Image' }}
             </button>
             <button
@@ -100,7 +100,7 @@
               :disabled="!pickedFile || saving"
               @click="uploadFile"
             >
-              <v-icon v-if="saving && activeAction === 'upload'" size="15" class="spin">mdi-loading</v-icon>
+              <AppIcon icon="mdi-loading" v-if="saving && activeAction === 'upload'" :size="15" class="spin" />
               {{ saving && activeAction === 'upload' ? 'Uploading…' : 'Upload' }}
             </button>
 
@@ -113,7 +113,7 @@
               :disabled="saving"
               @click="removeCover"
             >
-              <v-icon v-if="saving && activeAction === 'remove'" size="15" class="spin">mdi-loading</v-icon>
+              <AppIcon icon="mdi-loading" v-if="saving && activeAction === 'remove'" :size="15" class="spin" />
               {{ saving && activeAction === 'remove' ? 'Removing…' : 'Remove Cover' }}
             </button>
           </div>

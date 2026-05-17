@@ -31,12 +31,12 @@
       @click="fileInputEl?.click()"
     >
       <input ref="fileInputEl" type="file" multiple accept="audio/*,.m4b,.mp3,.flac,.ogg,.epub,.pdf" class="file-input" @change="onFileChange" />
-      <v-icon v-if="!files.length" size="40" color="rgba(255,255,255,0.2)">mdi-cloud-upload-outline</v-icon>
+      <AppIcon icon="mdi-cloud-upload-outline" v-if="!files.length" :size="40" color="rgba(255,255,255,0.2)" />
       <p v-if="!files.length" class="drop-text">Tap or drag audio files here</p>
       <p v-if="!files.length" class="drop-sub">mp3, m4b, flac, ogg, epub, pdf</p>
       <div v-else class="file-list">
         <div v-for="f in files" :key="f.name" class="file-row">
-          <v-icon size="16" color="rgba(255,255,255,0.5)">{{ fileIcon(f) }}</v-icon>
+          <AppIcon :icon="fileIcon(f)" :size="16" color="rgba(255,255,255,0.5)" />
           <span class="file-name">{{ f.name }}</span>
           <span class="file-size">{{ formatSize(f.size) }}</span>
         </div>
@@ -54,7 +54,7 @@
 
     <!-- Result -->
     <div v-if="uploadResult" class="result-msg" :class="uploadResult.type">
-      <v-icon size="18">{{ uploadResult.type === 'success' ? 'mdi-check-circle' : 'mdi-alert-circle' }}</v-icon>
+      <AppIcon :icon="uploadResult.type === 'success' ? 'mdi-check-circle' : 'mdi-alert-circle'" :size="18" />
       {{ uploadResult.message }}
     </div>
 
@@ -64,7 +64,7 @@
       :disabled="!selectedLibraryId || !files.length || uploading"
       @click="doUpload"
     >
-      <v-icon size="18" color="white">mdi-upload</v-icon>
+      <AppIcon icon="mdi-upload" :size="18" color="white" />
       {{ uploading ? 'Uploading…' : `Upload ${files.length ? files.length + ' file' + (files.length !== 1 ? 's' : '') : ''}` }}
     </button>
   </div>

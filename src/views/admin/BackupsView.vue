@@ -3,7 +3,7 @@
     <div class="section-header">
       <h3 class="section-title">Backups</h3>
       <button class="add-btn" :disabled="creating" @click="doCreate">
-        <v-icon size="16">{{ creating ? 'mdi-loading' : 'mdi-plus' }}</v-icon>
+        <AppIcon :icon="creating ? 'mdi-loading' : 'mdi-plus'" :size="16" />
         <span>{{ creating ? 'Creating…' : 'New' }}</span>
       </button>
     </div>
@@ -13,22 +13,22 @@
     </div>
 
     <div v-else-if="!backups.length" class="empty-state">
-      <v-icon size="36" color="rgba(255,255,255,0.15)">mdi-backup-restore</v-icon>
+      <AppIcon icon="mdi-backup-restore" :size="36" color="rgba(255,255,255,0.15)" />
       <p>No backups yet</p>
     </div>
 
     <div v-else class="backup-list">
       <div v-for="b in backups" :key="b.id" class="backup-row">
-        <v-icon size="20" color="rgba(255,255,255,0.4)">mdi-database</v-icon>
+        <AppIcon icon="mdi-database" :size="20" color="rgba(255,255,255,0.4)" />
         <div class="backup-info">
           <p class="backup-filename">{{ b.filename }}</p>
           <p class="backup-meta">{{ formatSize(b.fileSize) }} · {{ formatDate(b.createdAt) }}</p>
         </div>
         <button class="restore-btn" :disabled="restoringId === b.id" @click="confirmRestore(b)" title="Restore this backup">
-          <v-icon size="15">{{ restoringId === b.id ? 'mdi-loading' : 'mdi-restore' }}</v-icon>
+          <AppIcon :icon="restoringId === b.id ? 'mdi-loading' : 'mdi-restore'" :size="15" />
         </button>
         <button class="del-btn" @click="confirmDelete(b)">
-          <v-icon size="16">mdi-delete-outline</v-icon>
+          <AppIcon icon="mdi-delete-outline" :size="16" />
         </button>
       </div>
     </div>

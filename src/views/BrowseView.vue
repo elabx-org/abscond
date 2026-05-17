@@ -8,9 +8,7 @@
     <!-- Pull-to-refresh indicator -->
     <Transition name="ptr">
       <div v-if="ptr.pulling || ptr.refreshing" class="ptr-indicator">
-        <v-icon size="18" color="rgba(255,255,255,0.5)" :class="{ spin: ptr.refreshing }">
-          {{ ptr.refreshing ? 'mdi-loading' : 'mdi-arrow-down' }}
-        </v-icon>
+        <AppIcon :icon="ptr.refreshing ? 'mdi-loading' : 'mdi-arrow-down'" :size="18" color="rgba(255,255,255,0.5)" :class="{ spin: ptr.refreshing }" />
       </div>
     </Transition>
 
@@ -32,9 +30,9 @@
     <!-- Series tab -->
     <div v-if="activeTab === 'series'">
       <div class="sub-search-wrap">
-        <v-icon size="14" color="rgba(255,255,255,0.3)">mdi-magnify</v-icon>
+        <AppIcon icon="mdi-magnify" :size="14" color="rgba(255,255,255,0.3)" />
         <input v-model="seriesSearch" class="sub-search-input" placeholder="Search series…" />
-        <button v-if="seriesSearch" class="sub-search-clear" @click="seriesSearch = ''"><v-icon size="12">mdi-close</v-icon></button>
+        <button v-if="seriesSearch" class="sub-search-clear" @click="seriesSearch = ''"><AppIcon icon="mdi-close" :size="12" /></button>
       </div>
       <div v-if="loadingSeries" class="thumb-grid">
         <div v-for="n in 12" :key="n" class="skel-card"><div class="skel-cover" /><div class="skel-line" /></div>
@@ -43,7 +41,7 @@
         <div v-for="s in filteredSeries" :key="s.id" class="thumb-card" @click="openSeries(s)">
           <div class="thumb-cover-wrap">
             <img v-if="s.books && s.books.length" :src="coverUrl(s.books[0].id, auth.token ?? '')" class="thumb-cover" :alt="s.name" />
-            <div v-else class="thumb-placeholder"><v-icon size="28" color="rgba(255,255,255,0.2)">mdi-book-multiple</v-icon></div>
+            <div v-else class="thumb-placeholder"><AppIcon icon="mdi-book-multiple" :size="28" color="rgba(255,255,255,0.2)" /></div>
             <div class="thumb-badge">{{ s.numBooks ?? s.books?.length ?? 0 }}</div>
           </div>
           <p class="thumb-title">{{ s.name }}</p>
@@ -55,9 +53,9 @@
     <!-- Authors tab -->
     <div v-else-if="activeTab === 'authors'">
       <div class="sub-search-wrap">
-        <v-icon size="14" color="rgba(255,255,255,0.3)">mdi-magnify</v-icon>
+        <AppIcon icon="mdi-magnify" :size="14" color="rgba(255,255,255,0.3)" />
         <input v-model="authorSearch" class="sub-search-input" placeholder="Search authors…" />
-        <button v-if="authorSearch" class="sub-search-clear" @click="authorSearch = ''"><v-icon size="12">mdi-close</v-icon></button>
+        <button v-if="authorSearch" class="sub-search-clear" @click="authorSearch = ''"><AppIcon icon="mdi-close" :size="12" /></button>
       </div>
       <div v-if="loadingAuthors" class="thumb-grid">
         <div v-for="n in 12" :key="n" class="skel-card"><div class="skel-cover" /><div class="skel-line" /></div>
@@ -77,9 +75,9 @@
     <!-- Genres tab -->
     <div v-else-if="activeTab === 'genres'">
       <div class="sub-search-wrap">
-        <v-icon size="14" color="rgba(255,255,255,0.3)">mdi-magnify</v-icon>
+        <AppIcon icon="mdi-magnify" :size="14" color="rgba(255,255,255,0.3)" />
         <input v-model="genreSearch" class="sub-search-input" placeholder="Search genres…" />
-        <button v-if="genreSearch" class="sub-search-clear" @click="genreSearch = ''"><v-icon size="12">mdi-close</v-icon></button>
+        <button v-if="genreSearch" class="sub-search-clear" @click="genreSearch = ''"><AppIcon icon="mdi-close" :size="12" /></button>
       </div>
       <div v-if="loadingGenres" class="list-skeleton">
         <div v-for="n in 6" :key="n" class="skel-row" />
@@ -97,9 +95,9 @@
     <!-- Narrators tab -->
     <div v-else-if="activeTab === 'narrators'">
       <div class="sub-search-wrap">
-        <v-icon size="14" color="rgba(255,255,255,0.3)">mdi-magnify</v-icon>
+        <AppIcon icon="mdi-magnify" :size="14" color="rgba(255,255,255,0.3)" />
         <input v-model="narratorSearch" class="sub-search-input" placeholder="Search narrators…" />
-        <button v-if="narratorSearch" class="sub-search-clear" @click="narratorSearch = ''"><v-icon size="12">mdi-close</v-icon></button>
+        <button v-if="narratorSearch" class="sub-search-clear" @click="narratorSearch = ''"><AppIcon icon="mdi-close" :size="12" /></button>
       </div>
       <div v-if="loadingNarrators" class="list-skeleton">
         <div v-for="n in 8" :key="n" class="skel-row" />
@@ -111,9 +109,9 @@
           class="list-row"
           @click="openNarrator(n)"
         >
-          <div class="row-icon"><v-icon size="18" color="rgba(255,255,255,0.4)">mdi-microphone</v-icon></div>
+          <div class="row-icon"><AppIcon icon="mdi-microphone" :size="18" color="rgba(255,255,255,0.4)" /></div>
           <p class="row-name" style="flex:1">{{ n }}</p>
-          <v-icon size="16" color="rgba(255,255,255,0.2)">mdi-chevron-right</v-icon>
+          <AppIcon icon="mdi-chevron-right" :size="16" color="rgba(255,255,255,0.2)" />
         </div>
       </div>
     </div>
@@ -164,7 +162,7 @@
           <div class="sheet-panel">
             <div class="drag-handle" />
             <div class="genre-sheet-header">
-              <v-icon size="18" color="#d4a017">mdi-tag-outline</v-icon>
+              <AppIcon icon="mdi-tag-outline" :size="18" color="#d4a017" />
               <h3 class="genre-sheet-title">{{ activeGenre }}</h3>
               <span class="genre-sheet-count" v-if="!loadingGenreItems">{{ genreItems.length }} books</span>
             </div>

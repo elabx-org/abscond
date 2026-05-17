@@ -90,7 +90,7 @@
               class="mb-2 oidc-btn"
               @click="startOidc(p)"
             >
-              <v-icon start>mdi-login</v-icon>
+              <AppIcon icon="mdi-login" start />
               Continue with {{ p.name }}
             </v-btn>
 

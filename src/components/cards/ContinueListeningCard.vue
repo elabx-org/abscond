@@ -19,11 +19,11 @@
           @error="imgError = true"
         />
         <div v-if="imgError" class="cl-cover-placeholder">
-          <v-icon size="28" color="rgba(255,255,255,0.25)">mdi-book-open-variant</v-icon>
+          <AppIcon icon="mdi-book-open-variant" :size="28" color="rgba(255,255,255,0.25)" />
         </div>
         <!-- Now playing indicator -->
         <div v-if="isCurrent && isPlaying" class="cl-playing-badge">
-          <v-icon size="12" color="white">mdi-graphic-eq</v-icon>
+          <AppIcon icon="mdi-graphic-eq" :size="12" color="white" />
         </div>
       </div>
     </div>

@@ -16,7 +16,7 @@
           <div class="sheet-content">
             <!-- Close button -->
             <button data-testid="sheet-close" class="sheet-close" @click="emit('close')">
-              <v-icon size="20">mdi-close</v-icon>
+              <AppIcon icon="mdi-close" :size="20" />
             </button>
 
             <!-- Title & Authors -->
@@ -77,13 +77,13 @@
 
             <!-- Read button (ebook) -->
             <button v-if="hasEbook" class="read-btn" @click="onReadPress">
-              <v-icon size="18" color="white">mdi-book-open-page-variant</v-icon>
+              <AppIcon icon="mdi-book-open-page-variant" :size="18" color="white" />
               Read
             </button>
 
             <!-- Play button -->
             <button class="play-btn" :style="{ background: accent }" @click="onPlayPress">
-              <v-icon size="20" color="white">{{ isThisPlaying ? 'mdi-pause' : 'mdi-play' }}</v-icon>
+              <AppIcon :icon="isThisPlaying ? 'mdi-pause' : 'mdi-play'" :size="20" color="white" />
               {{ isThisPlaying ? 'Pause' : (progress > 0 && progress < 1 ? 'Continue' : 'Play') }}
             </button>
 
@@ -102,7 +102,7 @@
             <!-- Primary action row -->
             <div class="action-row-primary">
               <button class="action-download" @click="onDownload">
-                <v-icon size="15">mdi-download-outline</v-icon>
+                <AppIcon icon="mdi-download-outline" :size="15" />
                 Download
               </button>
               <button
@@ -111,15 +111,15 @@
                 :disabled="markingFinished"
                 @click="markFinished"
               >
-                <v-icon size="15">mdi-check-circle-outline</v-icon>
+                <AppIcon icon="mdi-check-circle-outline" :size="15" />
                 {{ markingFinished ? 'Marking…' : 'Mark Finished' }}
               </button>
               <div v-else class="action-finished action-finished--done">
-                <v-icon size="15" color="#22c55e">mdi-check-circle</v-icon>
+                <AppIcon icon="mdi-check-circle" :size="15" color="#22c55e" />
                 Finished
               </div>
               <button class="action-more" @click="showActions = true">
-                <v-icon size="18">mdi-dots-horizontal</v-icon>
+                <AppIcon icon="mdi-dots-horizontal" :size="18" />
               </button>
             </div>
 
@@ -143,12 +143,12 @@
               <div class="cover-update-row">
                 <input v-model="coverUrl_" class="edit-input" placeholder="Cover image URL" style="flex:1" />
                 <button class="cover-upload-btn" @click="coverFileInput?.click()" title="Upload image file">
-                  <v-icon size="16">mdi-image-plus</v-icon>
+                  <AppIcon icon="mdi-image-plus" :size="16" />
                 </button>
                 <input ref="coverFileInput" type="file" accept="image/*" style="display:none" @change="onCoverFile" />
               </div>
               <button v-if="coverUrl_ || coverFile" class="cover-save-btn" :disabled="coverSaving" @click="doUpdateCover">
-                <v-icon size="14">{{ coverSaving ? 'mdi-loading' : 'mdi-check' }}</v-icon>
+                <AppIcon :icon="coverSaving ? 'mdi-loading' : 'mdi-check'" :size="14" />
                 {{ coverSaving ? 'Updating…' : 'Update cover' }}
               </button>
 
@@ -192,7 +192,7 @@
               <div v-else-if="shareLink" class="share-url-row">
                 <input :value="shareLink.shareUrl" class="share-url-input" readonly />
                 <button class="share-copy-btn" @click="copyShareLink">
-                  <v-icon size="16">{{ shareCopied ? 'mdi-check' : 'mdi-content-copy' }}</v-icon>
+                  <AppIcon :icon="shareCopied ? 'mdi-check' : 'mdi-content-copy'" :size="16" />
                 </button>
               </div>
               <p v-if="shareError" class="form-error-sm">{{ shareError }}</p>
@@ -208,7 +208,7 @@
               <div v-if="loadingPls" class="pls-loading">Loading…</div>
               <div v-else class="pls-list">
                 <button v-for="pl in playlists" :key="pl.id" class="pls-row" @click="addToPlaylist(pl.id)">
-                  <v-icon size="14" color="rgba(255,255,255,0.5)">mdi-playlist-music</v-icon>
+                  <AppIcon icon="mdi-playlist-music" :size="14" color="rgba(255,255,255,0.5)" />
                   <span>{{ pl.name }}</span>
                   <span class="pls-count">{{ pl.items.length }}</span>
                 </button>
@@ -223,7 +223,7 @@
               <div v-if="loadingCols" class="pls-loading">Loading…</div>
               <div v-else class="pls-list">
                 <button v-for="col in collections" :key="col.id" class="pls-row" @click="addToCollection(col.id)">
-                  <v-icon size="14" color="rgba(255,255,255,0.5)">mdi-bookmark-multiple-outline</v-icon>
+                  <AppIcon icon="mdi-bookmark-multiple-outline" :size="14" color="rgba(255,255,255,0.5)" />
                   <span>{{ col.name }}</span>
                   <span class="pls-count">{{ col.books.length }}</span>
                 </button>
@@ -235,9 +235,9 @@
             <!-- Chapters -->
             <div v-if="item.media.numChapters && item.media.numChapters > 0" class="chapters-section">
               <button class="chapters-toggle" @click="toggleChapters">
-                <v-icon size="15" color="rgba(255,255,255,0.5)">mdi-format-list-numbered</v-icon>
+                <AppIcon icon="mdi-format-list-numbered" :size="15" color="rgba(255,255,255,0.5)" />
                 <span class="chapters-toggle-label">Chapters ({{ item.media.numChapters }})</span>
-                <v-icon size="16" color="rgba(255,255,255,0.3)">{{ chaptersExpanded ? 'mdi-chevron-up' : 'mdi-chevron-down' }}</v-icon>
+                <AppIcon :icon="chaptersExpanded ? 'mdi-chevron-up' : 'mdi-chevron-down'" :size="16" color="rgba(255,255,255,0.3)" />
               </button>
               <div v-if="chaptersExpanded" class="chapters-list">
                 <div v-if="loadingChapters" class="chapters-loading">Loading…</div>
@@ -259,9 +259,9 @@
             <!-- Bookmarks -->
             <div v-if="bookmarks.length > 0" class="chapters-section">
               <button class="chapters-toggle" @click="bookmarksExpanded = !bookmarksExpanded">
-                <v-icon size="15" color="rgba(255,255,255,0.5)">mdi-bookmark-multiple-outline</v-icon>
+                <AppIcon icon="mdi-bookmark-multiple-outline" :size="15" color="rgba(255,255,255,0.5)" />
                 <span class="chapters-toggle-label">Bookmarks ({{ bookmarks.length }})</span>
-                <v-icon size="14" color="rgba(255,255,255,0.25)" class="ml-auto">{{ bookmarksExpanded ? 'mdi-chevron-up' : 'mdi-chevron-down' }}</v-icon>
+                <AppIcon :icon="bookmarksExpanded ? 'mdi-chevron-up' : 'mdi-chevron-down'" :size="14" color="rgba(255,255,255,0.25)" class="ml-auto" />
               </button>
               <div v-if="bookmarksExpanded" class="chapters-list">
                 <button
@@ -279,9 +279,9 @@
             <!-- Listening History -->
             <div class="chapters-section">
               <button class="chapters-toggle" @click="historyExpanded = !historyExpanded">
-                <v-icon size="15" color="rgba(255,255,255,0.5)">mdi-history</v-icon>
+                <AppIcon icon="mdi-history" :size="15" color="rgba(255,255,255,0.5)" />
                 <span class="chapters-toggle-label">Listening History</span>
-                <v-icon size="14" color="rgba(255,255,255,0.25)" class="ml-auto">{{ historyExpanded ? 'mdi-chevron-up' : 'mdi-chevron-down' }}</v-icon>
+                <AppIcon :icon="historyExpanded ? 'mdi-chevron-up' : 'mdi-chevron-down'" :size="14" color="rgba(255,255,255,0.25)" class="ml-auto" />
               </button>
               <div v-if="historyExpanded" class="chapters-list">
                 <div v-if="loadingHistory" class="chapters-loading">Loading…</div>

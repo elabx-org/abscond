@@ -17,7 +17,7 @@
       <div class="mini-content">
         <img v-if="coverSrc" :src="coverSrc" class="mini-cover" />
         <div v-else class="mini-cover mini-cover-placeholder">
-          <v-icon size="16">mdi-book-open-variant</v-icon>
+          <AppIcon icon="mdi-book-open-variant" :size="16" />
         </div>
 
         <div class="mini-meta">
@@ -26,24 +26,24 @@
         </div>
 
         <button class="mini-ctrl" @click.stop="player.togglePlay()">
-          <v-icon size="22" color="white">{{ player.isPlaying ? 'mdi-pause' : 'mdi-play' }}</v-icon>
+          <AppIcon :icon="player.isPlaying ? 'mdi-pause' : 'mdi-play'" :size="22" color="white" />
         </button>
         <button class="mini-ctrl skip-fwd-btn" @click.stop="player.skipForward(skipFwdSecs)">
-          <v-icon v-if="skipFwdSecs === 10" size="20" color="rgba(255,255,255,0.7)">mdi-fast-forward-10</v-icon>
-          <v-icon v-else-if="skipFwdSecs === 15" size="20" color="rgba(255,255,255,0.7)">mdi-fast-forward-15</v-icon>
-          <v-icon v-else-if="skipFwdSecs === 30" size="20" color="rgba(255,255,255,0.7)">mdi-fast-forward-30</v-icon>
+          <AppIcon icon="mdi-fast-forward-10" v-if="skipFwdSecs === 10" :size="20" color="rgba(255,255,255,0.7)" />
+          <AppIcon icon="mdi-fast-forward-15" v-else-if="skipFwdSecs === 15" :size="20" color="rgba(255,255,255,0.7)" />
+          <AppIcon icon="mdi-fast-forward-30" v-else-if="skipFwdSecs === 30" :size="20" color="rgba(255,255,255,0.7)" />
           <span v-else class="mini-skip-custom">
-            <v-icon size="16" color="rgba(255,255,255,0.7)">mdi-fast-forward</v-icon>
+            <AppIcon icon="mdi-fast-forward" :size="16" color="rgba(255,255,255,0.7)" />
             <span class="mini-skip-secs">{{ skipFwdSecs }}s</span>
           </span>
         </button>
         <!-- Sleep timer indicator -->
         <div v-if="player.sleepMinsLeft !== null || player.sleepEndOfChapter" class="mini-sleep" @click.stop="player.setSleepTimer(null)">
-          <v-icon size="12" color="rgba(212,160,23,0.8)">mdi-moon-waning-crescent</v-icon>
+          <AppIcon icon="mdi-moon-waning-crescent" :size="12" color="rgba(212,160,23,0.8)" />
           <span class="mini-sleep-label">{{ player.sleepEndOfChapter ? 'ch' : `${player.sleepMinsLeft}m` }}</span>
         </div>
         <button class="mini-ctrl" @click.stop="player.stop()">
-          <v-icon size="18" color="rgba(255,255,255,0.4)">mdi-close</v-icon>
+          <AppIcon icon="mdi-close" :size="18" color="rgba(255,255,255,0.4)" />
         </button>
       </div>
 

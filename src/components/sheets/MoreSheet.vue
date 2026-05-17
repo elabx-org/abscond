@@ -6,7 +6,7 @@
           <div class="more-drag-row">
             <div class="more-drag-handle" />
             <button class="more-edit-btn" @click="editing = true" title="Edit layout">
-              <v-icon size="15" color="rgba(255,255,255,0.4)">mdi-pencil-outline</v-icon>
+              <AppIcon icon="mdi-pencil-outline" :size="15" color="rgba(255,255,255,0.4)" />
             </button>
           </div>
 
@@ -19,11 +19,9 @@
               :class="{ 'more-row--destructive': item.destructive }"
               @click="handleItem(item.id)"
             >
-              <v-icon size="18" class="more-row-icon" :color="item.destructive ? 'rgba(255,80,80,0.75)' : 'rgba(212,160,23,0.8)'">
-                {{ item.icon }}
-              </v-icon>
+              <AppIcon :icon="item.icon" :size="18" class="more-row-icon" :color="item.destructive ? 'rgba(255,80,80,0.75)' : 'rgba(212,160,23,0.8)'" />
               <span class="more-row-label">{{ item.label }}</span>
-              <v-icon size="16" color="rgba(255,255,255,0.2)">mdi-chevron-right</v-icon>
+              <AppIcon icon="mdi-chevron-right" :size="16" color="rgba(255,255,255,0.2)" />
             </button>
           </template>
 
@@ -32,7 +30,7 @@
             <div class="edit-header">
               <span class="edit-title">Edit Layout</span>
               <button class="edit-done-btn" @click="editing = false">
-                <v-icon size="16" color="#d4a017">mdi-check</v-icon>
+                <AppIcon icon="mdi-check" :size="16" color="#d4a017" />
                 Done
               </button>
             </div>
@@ -55,9 +53,9 @@
               :key="item.id"
               class="edit-row edit-row--on-card"
             >
-              <v-icon size="16" :color="item.destructive ? 'rgba(255,80,80,0.6)' : 'rgba(255,255,255,0.55)'">{{ item.icon }}</v-icon>
+              <AppIcon :icon="item.icon" :size="16" :color="item.destructive ? 'rgba(255,80,80,0.6)' : 'rgba(255,255,255,0.55)'" />
               <span class="edit-row-label">{{ item.label }}</span>
-              <v-icon size="16" color="rgba(255,255,255,0.2)">mdi-drag-vertical</v-icon>
+              <AppIcon icon="mdi-drag-vertical" :size="16" color="rgba(255,255,255,0.2)" />
             </div>
             <div class="edit-divider"><div class="edit-div-line"/><span class="edit-div-label">In menu</span><div class="edit-div-line"/></div>
             <div
@@ -65,9 +63,9 @@
               :key="item.id"
               class="edit-row"
             >
-              <v-icon size="16" :color="item.destructive ? 'rgba(255,80,80,0.6)' : 'rgba(255,255,255,0.55)'">{{ item.icon }}</v-icon>
+              <AppIcon :icon="item.icon" :size="16" :color="item.destructive ? 'rgba(255,80,80,0.6)' : 'rgba(255,255,255,0.55)'" />
               <span class="edit-row-label">{{ item.label }}</span>
-              <v-icon size="16" color="rgba(255,255,255,0.2)">mdi-drag-vertical</v-icon>
+              <AppIcon icon="mdi-drag-vertical" :size="16" color="rgba(255,255,255,0.2)" />
             </div>
           </template>
         </div>

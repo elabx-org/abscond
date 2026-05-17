@@ -5,7 +5,7 @@
     </div>
 
     <div v-else-if="loadError" class="error-state">
-      <v-icon size="36" color="rgba(255,255,255,0.15)">mdi-alert-circle-outline</v-icon>
+      <AppIcon icon="mdi-alert-circle-outline" :size="36" color="rgba(255,255,255,0.15)" />
       <p>Failed to load email settings</p>
       <button class="retry-btn" @click="loadSettings">Retry</button>
     </div>
@@ -89,7 +89,7 @@
               @input="dirty = true"
             />
             <button class="eye-btn" @click="showPass = !showPass" type="button">
-              <v-icon size="16">{{ showPass ? 'mdi-eye-off' : 'mdi-eye' }}</v-icon>
+              <AppIcon :icon="showPass ? 'mdi-eye-off' : 'mdi-eye'" :size="16" />
             </button>
           </div>
         </div>

@@ -8,9 +8,7 @@
           class="toast-item"
           :class="`toast-${t.type}`"
         >
-          <v-icon size="14" class="toast-icon">
-            {{ t.type === 'error' ? 'mdi-alert-circle' : t.type === 'info' ? 'mdi-information' : 'mdi-check-circle' }}
-          </v-icon>
+          <AppIcon :icon="t.type === 'error' ? 'mdi-alert-circle' : t.type === 'info' ? 'mdi-information' : 'mdi-check-circle'" :size="14" class="toast-icon" />
           {{ t.message }}
         </div>
       </transition-group>

@@ -3,7 +3,7 @@
     <div class="section-header">
       <h3 class="section-title">Libraries</h3>
       <button class="add-lib-btn" @click="showCreateLib = true">
-        <v-icon size="16">mdi-plus</v-icon>
+        <AppIcon icon="mdi-plus" :size="16" />
         Create
       </button>
     </div>
@@ -13,7 +13,7 @@
     </div>
 
     <div v-else-if="!libraries.length" class="empty-state">
-      <v-icon size="36" color="rgba(255,255,255,0.15)">mdi-bookshelf</v-icon>
+      <AppIcon icon="mdi-bookshelf" :size="36" color="rgba(255,255,255,0.15)" />
       <p>No libraries found</p>
     </div>
 
@@ -23,13 +23,13 @@
           <!-- Reorder handles -->
           <div class="lib-reorder">
             <button class="reorder-btn" :disabled="idx === 0 || reordering" @click="moveLibrary(idx, -1)" title="Move up">
-              <v-icon size="14">mdi-chevron-up</v-icon>
+              <AppIcon icon="mdi-chevron-up" :size="14" />
             </button>
             <button class="reorder-btn" :disabled="idx === libraries.length - 1 || reordering" @click="moveLibrary(idx, 1)" title="Move down">
-              <v-icon size="14">mdi-chevron-down</v-icon>
+              <AppIcon icon="mdi-chevron-down" :size="14" />
             </button>
           </div>
-          <v-icon size="20" color="#d4a017">{{ lib.mediaType === 'podcast' ? 'mdi-podcast' : 'mdi-bookshelf' }}</v-icon>
+          <AppIcon :icon="lib.mediaType === 'podcast' ? 'mdi-podcast' : 'mdi-bookshelf'" :size="20" color="#d4a017" />
           <div class="lib-info">
             <p class="lib-name">{{ lib.name }}</p>
             <p class="lib-type">{{ lib.mediaType }} · {{ lib.stats?.totalItems ?? '—' }} items</p>
@@ -40,7 +40,7 @@
               class="add-podcast-btn"
               @click="openAddPodcast(lib)"
             >
-              <v-icon size="14">mdi-rss</v-icon>
+              <AppIcon icon="mdi-rss" :size="14" />
               <span>Add</span>
             </button>
             <button
@@ -51,28 +51,28 @@
               @click="checkEpisodes(lib.id)"
               title="Check all podcasts for new episodes"
             >
-              <v-icon size="16">{{ checkingEpId === lib.id ? 'mdi-loading' : 'mdi-refresh' }}</v-icon>
+              <AppIcon :icon="checkingEpId === lib.id ? 'mdi-loading' : 'mdi-refresh'" :size="16" />
               <span>{{ checkingEpId === lib.id ? `${checkEpProgress}/${checkEpTotal}` : 'Check' }}</span>
             </button>
             <button class="scan-btn" :class="{ scanning: scanningIds.has(lib.id) }" @click="scan(lib.id)">
-              <v-icon size="16" :class="{ spin: scanningIds.has(lib.id) }">{{ scanningIds.has(lib.id) ? 'mdi-loading' : 'mdi-magnify-scan' }}</v-icon>
+              <AppIcon :icon="scanningIds.has(lib.id) ? 'mdi-loading' : 'mdi-magnify-scan'" :size="16" :class="{ spin: scanningIds.has(lib.id) }" />
               <span>{{ scanningIds.has(lib.id) ? 'Scanning…' : 'Scan' }}</span>
             </button>
             <button v-if="lib.mediaType === 'book'" class="scan-btn match-btn" :class="{ scanning: matchingId === lib.id }" :disabled="!!matchingId" @click="matchBooks(lib.id)" title="Match all books with metadata providers">
-              <v-icon size="16">{{ matchingId === lib.id ? 'mdi-loading' : 'mdi-book-sync-outline' }}</v-icon>
+              <AppIcon :icon="matchingId === lib.id ? 'mdi-loading' : 'mdi-book-sync-outline'" :size="16" />
               <span>{{ matchingId === lib.id ? 'Matching…' : 'Match' }}</span>
             </button>
             <button class="edit-lib-btn" @click="openEditLib(lib)" title="Edit library">
-              <v-icon size="15">mdi-pencil-outline</v-icon>
+              <AppIcon icon="mdi-pencil-outline" :size="15" />
             </button>
             <button class="del-lib-btn" @click="confirmDeleteLib(lib)" title="Delete library">
-              <v-icon size="15">mdi-delete-outline</v-icon>
+              <AppIcon icon="mdi-delete-outline" :size="15" />
             </button>
           </div>
         </div>
         <div class="folder-list">
           <div v-for="f in lib.folders" :key="f.id" class="folder-row">
-            <v-icon size="13" color="rgba(255,255,255,0.35)">mdi-folder-outline</v-icon>
+            <AppIcon icon="mdi-folder-outline" :size="13" color="rgba(255,255,255,0.35)" />
             <span class="folder-path">{{ f.fullPath }}</span>
           </div>
         </div>
@@ -84,9 +84,9 @@
             class="podcast-item-row"
             @click="router.push({ name: 'admin-podcast-detail', params: { id: p.id } })"
           >
-            <v-icon size="13" color="rgba(212,160,23,0.6)">mdi-podcast</v-icon>
+            <AppIcon icon="mdi-podcast" :size="13" color="rgba(212,160,23,0.6)" />
             <span class="podcast-item-title">{{ p.media?.metadata?.title ?? p.id }}</span>
-            <v-icon size="12" color="rgba(255,255,255,0.2)">mdi-chevron-right</v-icon>
+            <AppIcon icon="mdi-chevron-right" :size="12" color="rgba(255,255,255,0.2)" />
           </div>
         </div>
         <button
@@ -95,7 +95,7 @@
           :disabled="loadingPodcastsId === lib.id"
           @click="loadPodcastItems(lib.id)"
         >
-          <v-icon size="13" :class="{ spin: loadingPodcastsId === lib.id }">{{ loadingPodcastsId === lib.id ? 'mdi-loading' : 'mdi-podcast' }}</v-icon>
+          <AppIcon :icon="loadingPodcastsId === lib.id ? 'mdi-loading' : 'mdi-podcast'" :size="13" :class="{ spin: loadingPodcastsId === lib.id }" />
           {{ loadingPodcastsId === lib.id ? 'Loading…' : 'Show podcasts' }}
         </button>
         <!-- Real-time scan progress -->

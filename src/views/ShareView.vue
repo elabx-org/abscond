@@ -7,7 +7,7 @@
     </div>
 
     <div v-else-if="error" class="error-state">
-      <v-icon size="48" color="rgba(255,255,255,0.15)">mdi-link-off</v-icon>
+      <AppIcon icon="mdi-link-off" :size="48" color="rgba(255,255,255,0.15)" />
       <p class="error-title">Share not found</p>
       <p class="error-sub">This share link may have expired or been removed</p>
       <button class="open-app-btn" @click="$router.push({ name: 'login' })">Open App</button>
@@ -23,7 +23,7 @@
       <div class="share-inner">
         <img v-if="coverSrc" :src="coverSrc" class="share-cover" :alt="shareData.displayTitle" />
         <div v-else class="share-cover-placeholder">
-          <v-icon size="48" color="rgba(255,255,255,0.2)">mdi-book-open-variant</v-icon>
+          <AppIcon icon="mdi-book-open-variant" :size="48" color="rgba(255,255,255,0.2)" />
         </div>
 
         <h1 class="share-title">{{ shareData.displayTitle }}</h1>

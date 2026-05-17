@@ -3,7 +3,7 @@
     <!-- Offline / reconnecting banner -->
     <Transition name="banner">
       <div v-if="showOfflineBanner" class="offline-banner">
-        <v-icon size="14" color="rgba(255,255,255,0.6)">mdi-wifi-off</v-icon>
+        <AppIcon icon="mdi-wifi-off" :size="14" color="rgba(255,255,255,0.6)" />
         <span>Reconnecting to server…</span>
       </div>
     </Transition>

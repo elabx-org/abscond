@@ -7,24 +7,22 @@
   >
     <Transition name="ptr">
       <div v-if="ptr.pulling || ptr.refreshing" class="ptr-indicator">
-        <v-icon size="18" color="rgba(255,255,255,0.5)" :class="{ spin: ptr.refreshing }">
-          {{ ptr.refreshing ? 'mdi-loading' : 'mdi-arrow-down' }}
-        </v-icon>
+        <AppIcon :icon="ptr.refreshing ? 'mdi-loading' : 'mdi-arrow-down'" :size="18" color="rgba(255,255,255,0.5)" :class="{ spin: ptr.refreshing }" />
       </div>
     </Transition>
     <div class="view-header">
       <h2 class="screen-title">Collections</h2>
       <button class="add-btn" @click="showCreate = true">
-        <v-icon size="20">mdi-plus</v-icon>
+        <AppIcon icon="mdi-plus" :size="20" />
       </button>
     </div>
 
     <!-- Search -->
     <div v-if="!loading && collections.length" class="col-search-wrap">
-      <v-icon size="14" color="rgba(255,255,255,0.3)">mdi-magnify</v-icon>
+      <AppIcon icon="mdi-magnify" :size="14" color="rgba(255,255,255,0.3)" />
       <input v-model="colSearch" class="col-search" placeholder="Search collections…" />
       <button v-if="colSearch" class="col-search-clear" @click="colSearch = ''">
-        <v-icon size="12">mdi-close</v-icon>
+        <AppIcon icon="mdi-close" :size="12" />
       </button>
     </div>
 
@@ -38,7 +36,7 @@
 
     <!-- Empty -->
     <div v-else-if="!collections.length" class="empty-state">
-      <v-icon size="40" color="rgba(255,255,255,0.15)">mdi-bookmark-multiple-outline</v-icon>
+      <AppIcon icon="mdi-bookmark-multiple-outline" :size="40" color="rgba(255,255,255,0.15)" />
       <p>No collections yet</p>
       <button class="create-btn" @click="showCreate = true">Create one</button>
     </div>
@@ -67,7 +65,7 @@
               :style="{ gridArea: `c${i + 1}` }"
             />
             <div v-if="!col.books.length" class="collage-placeholder">
-              <v-icon size="28" color="rgba(255,255,255,0.2)">mdi-bookmark-multiple</v-icon>
+              <AppIcon icon="mdi-bookmark-multiple" :size="28" color="rgba(255,255,255,0.2)" />
             </div>
           </div>
         </div>
@@ -87,17 +85,17 @@
             <div class="col-sheet-content">
               <div class="col-sheet-header">
                 <button class="sheet-close" @click="selectedCol = null">
-                  <v-icon size="20">mdi-close</v-icon>
+                  <AppIcon icon="mdi-close" :size="20" />
                 </button>
                 <h3 class="col-sheet-title">{{ selectedCol.name }}</h3>
                 <p v-if="selectedCol.description" class="col-sheet-desc">{{ selectedCol.description }}</p>
                 <button class="del-col-btn" @click="confirmDelete(selectedCol)">
-                  <v-icon size="14">mdi-delete-outline</v-icon>
+                  <AppIcon icon="mdi-delete-outline" :size="14" />
                   Delete collection
                 </button>
               </div>
               <div v-if="!selectedCol.books.length" class="empty-state">
-                <v-icon size="32" color="rgba(255,255,255,0.15)">mdi-book-open-blank-variant</v-icon>
+                <AppIcon icon="mdi-book-open-blank-variant" :size="32" color="rgba(255,255,255,0.15)" />
                 <p>No books in this collection</p>
               </div>
               <div v-else class="col-book-list">
@@ -113,7 +111,7 @@
                     <p class="col-book-author">{{ getAuthorDisplay(b) || 'Unknown' }}</p>
                   </div>
                   <button class="col-book-del" @click.stop="removeBook(b.id)">
-                    <v-icon size="14">mdi-close</v-icon>
+                    <AppIcon icon="mdi-close" :size="14" />
                   </button>
                 </div>
               </div>

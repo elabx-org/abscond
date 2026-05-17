@@ -7,18 +7,18 @@
           <div class="sheet-content">
             <div class="sheet-head">
               <button class="sheet-close" @click="$emit('close')">
-                <v-icon size="20">mdi-close</v-icon>
+                <AppIcon icon="mdi-close" :size="20" />
               </button>
               <div class="series-cover-head">
                 <img v-if="coverSrc && !loading" :src="coverSrc" class="series-cover-img" />
                 <div v-else class="series-icon">
-                  <v-icon size="28" color="#d4a017">mdi-bookshelf</v-icon>
+                  <AppIcon icon="mdi-bookshelf" :size="28" color="#d4a017" />
                 </div>
               </div>
               <h3 class="series-name">{{ seriesName }}</h3>
               <p class="series-count">{{ books.length }} book{{ books.length !== 1 ? 's' : '' }}</p>
               <button v-if="!loading && sortedBooks.length" class="play-all-btn" @click="playAll">
-                <v-icon size="14" color="#111">mdi-play</v-icon>
+                <AppIcon icon="mdi-play" :size="14" color="#111" />
                 Play all
               </button>
               <div v-if="!loading && books.length" class="series-progress-wrap">

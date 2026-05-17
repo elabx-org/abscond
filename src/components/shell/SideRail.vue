@@ -5,12 +5,12 @@
     </div>
     <button v-for="item in navItems" :key="item.route" class="rail-item"
       :class="{ active: isActive(item.route) }" @click="router.push({ name: item.route })">
-      <v-icon size="22">{{ isActive(item.route) ? item.iconActive : item.icon }}</v-icon>
+      <AppIcon :icon="isActive(item.route) ? item.iconActive : item.icon" :size="22" />
       <span class="rail-label">{{ item.label }}</span>
     </button>
     <div class="rail-spacer" />
     <button class="rail-item" :class="{ active: isActive('settings') }" @click="router.push({ name: 'settings' })">
-      <v-icon size="22">{{ isActive('settings') ? 'mdi-cog' : 'mdi-cog-outline' }}</v-icon>
+      <AppIcon :icon="isActive('settings') ? 'mdi-cog' : 'mdi-cog-outline'" :size="22" />
       <span class="rail-label">Settings</span>
     </button>
   </nav>

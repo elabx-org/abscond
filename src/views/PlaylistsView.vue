@@ -7,15 +7,13 @@
   >
     <Transition name="ptr">
       <div v-if="ptr.pulling || ptr.refreshing" class="ptr-indicator">
-        <v-icon size="18" color="rgba(255,255,255,0.5)" :class="{ spin: ptr.refreshing }">
-          {{ ptr.refreshing ? 'mdi-loading' : 'mdi-arrow-down' }}
-        </v-icon>
+        <AppIcon :icon="ptr.refreshing ? 'mdi-loading' : 'mdi-arrow-down'" :size="18" color="rgba(255,255,255,0.5)" :class="{ spin: ptr.refreshing }" />
       </div>
     </Transition>
     <div class="view-header">
       <h2 class="screen-title">Playlists</h2>
       <button class="add-btn" @click="showCreate = true">
-        <v-icon size="20">mdi-plus</v-icon>
+        <AppIcon icon="mdi-plus" :size="20" />
       </button>
     </div>
 
@@ -27,7 +25,7 @@
     </div>
 
     <div v-else-if="!playlists.length" class="empty-state">
-      <v-icon size="40" color="rgba(255,255,255,0.15)">mdi-playlist-music</v-icon>
+      <AppIcon icon="mdi-playlist-music" :size="40" color="rgba(255,255,255,0.15)" />
       <p>No playlists yet</p>
       <button class="create-btn" @click="showCreate = true">Create one</button>
     </div>
@@ -49,7 +47,7 @@
               :style="{ gridArea: `c${i + 1}` }"
             />
             <div v-if="!pl.items.length" class="collage-placeholder">
-              <v-icon size="28" color="rgba(255,255,255,0.2)">mdi-playlist-music</v-icon>
+              <AppIcon icon="mdi-playlist-music" :size="28" color="rgba(255,255,255,0.2)" />
             </div>
           </div>
         </div>
@@ -67,7 +65,7 @@
             <div class="pl-sheet-content">
               <div class="sheet-head">
                 <button class="sheet-close" @click="selected = null">
-                  <v-icon size="20">mdi-close</v-icon>
+                  <AppIcon icon="mdi-close" :size="20" />
                 </button>
                 <h3 class="sheet-title">{{ selected.name }}</h3>
                 <p v-if="selected.description" class="sheet-desc">{{ selected.description }}</p>
@@ -77,21 +75,21 @@
                     class="play-all-btn"
                     @click="playAll(selected)"
                   >
-                    <v-icon size="14" color="#111">mdi-play</v-icon>
+                    <AppIcon icon="mdi-play" :size="14" color="#111" />
                     Play all
                   </button>
                   <button class="rename-pl-btn" @click="openRename(selected)">
-                    <v-icon size="14">mdi-pencil-outline</v-icon>
+                    <AppIcon icon="mdi-pencil-outline" :size="14" />
                     Rename
                   </button>
                   <button class="del-pl-btn" @click="confirmDeletePl(selected)">
-                    <v-icon size="14">mdi-delete-outline</v-icon>
+                    <AppIcon icon="mdi-delete-outline" :size="14" />
                     Delete
                   </button>
                 </div>
               </div>
               <div v-if="!selected.items.length" class="empty-state">
-                <v-icon size="32" color="rgba(255,255,255,0.15)">mdi-playlist-music</v-icon>
+                <AppIcon icon="mdi-playlist-music" :size="32" color="rgba(255,255,255,0.15)" />
                 <p>No items in this playlist</p>
               </div>
               <div v-else class="pl-item-list">
@@ -108,7 +106,7 @@
                     <p class="pl-item-author">{{ (item.libraryItem.media.metadata.authors ?? []).map(a => a.name).join(', ') || 'Unknown' }}</p>
                   </div>
                   <button class="pl-item-del" @click.stop="removeItem(item)">
-                    <v-icon size="14">mdi-close</v-icon>
+                    <AppIcon icon="mdi-close" :size="14" />
                   </button>
                 </div>
               </div>

@@ -9,7 +9,7 @@
 
           <!-- Header -->
           <div class="fs-header">
-            <v-icon size="18" color="#d4a017">mdi-file-multiple</v-icon>
+            <AppIcon icon="mdi-file-multiple" :size="18" color="#d4a017" />
             <span class="fs-title">Files</span>
             <span v-if="files.length" class="fs-count-badge">{{ files.length }}</span>
             <div style="flex: 1" />
@@ -17,7 +17,7 @@
               Full Path
             </button>
             <button class="fs-close-btn" @click="close">
-              <v-icon size="16">mdi-close</v-icon>
+              <AppIcon icon="mdi-close" :size="16" />
             </button>
           </div>
 
@@ -37,11 +37,9 @@
                 class="fs-row"
               >
                 <!-- File type icon -->
-                <v-icon
-                  size="20"
+                <AppIcon :icon="fileIcon(file.fileType)" :size="20"
                   :color="fileIconColor(file.fileType)"
-                  class="fs-icon"
-                >{{ fileIcon(file.fileType) }}</v-icon>
+                  class="fs-icon" />
 
                 <!-- File info -->
                 <div class="fs-info">
@@ -61,7 +59,7 @@
 
               <!-- Empty state -->
               <div v-if="!files.length" class="fs-empty">
-                <v-icon size="40" color="rgba(255,255,255,0.1)">mdi-file-outline</v-icon>
+                <AppIcon icon="mdi-file-outline" :size="40" color="rgba(255,255,255,0.1)" />
                 <span>No files found</span>
               </div>
             </template>

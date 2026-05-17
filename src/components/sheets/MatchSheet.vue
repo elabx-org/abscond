@@ -10,7 +10,7 @@
           <div class="sheet-header">
             <p class="sheet-title">Match Metadata</p>
             <button class="sheet-close-btn" @click="close">
-              <v-icon size="16">mdi-close</v-icon>
+              <AppIcon icon="mdi-close" :size="16" />
             </button>
           </div>
 
@@ -36,8 +36,8 @@
               :disabled="loading || !searchTitle.trim()"
               @click="doSearch"
             >
-              <v-icon v-if="loading" size="15" class="spin">mdi-loading</v-icon>
-              <v-icon v-else size="15">mdi-magnify</v-icon>
+              <AppIcon icon="mdi-loading" v-if="loading" :size="15" class="spin" />
+              <AppIcon icon="mdi-magnify" v-else :size="15" />
               {{ loading ? 'Searching…' : 'Search' }}
             </button>
           </div>
@@ -47,11 +47,11 @@
         <template v-else-if="step === 'candidates'">
           <div class="sheet-header">
             <button class="sheet-back-btn" @click="step = 'search'">
-              <v-icon size="18">mdi-chevron-left</v-icon>
+              <AppIcon icon="mdi-chevron-left" :size="18" />
             </button>
             <p class="sheet-title">Match Metadata</p>
             <button class="sheet-close-btn" @click="close">
-              <v-icon size="16">mdi-close</v-icon>
+              <AppIcon icon="mdi-close" :size="16" />
             </button>
           </div>
 
@@ -59,7 +59,7 @@
             <p class="results-count">{{ candidates.length }} result{{ candidates.length !== 1 ? 's' : '' }} from {{ providerLabel }}</p>
 
             <div v-if="!candidates.length" class="no-results">
-              <v-icon size="32" color="rgba(255,255,255,0.1)">mdi-book-search-outline</v-icon>
+              <AppIcon icon="mdi-book-search-outline" :size="32" color="rgba(255,255,255,0.1)" />
               <p>No results found</p>
               <button class="try-again-btn" @click="step = 'search'">Try again</button>
             </div>
@@ -98,11 +98,11 @@
         <template v-else-if="step === 'diff'">
           <div class="sheet-header">
             <button class="sheet-back-btn" @click="step = 'candidates'">
-              <v-icon size="18">mdi-chevron-left</v-icon>
+              <AppIcon icon="mdi-chevron-left" :size="18" />
             </button>
             <p class="sheet-title">Review Changes</p>
             <button class="sheet-close-btn" @click="close">
-              <v-icon size="16">mdi-close</v-icon>
+              <AppIcon icon="mdi-close" :size="16" />
             </button>
           </div>
 
@@ -114,7 +114,7 @@
                 </div>
                 <p class="cover-label">Current</p>
               </div>
-              <v-icon size="20" color="rgba(255,255,255,0.2)">mdi-arrow-right</v-icon>
+              <AppIcon icon="mdi-arrow-right" :size="20" color="rgba(255,255,255,0.2)" />
               <div class="cover-compare-item">
                 <div class="cover-new">
                   <img v-if="selected?.coverUrl" :src="selected.coverUrl" alt="new" />
@@ -130,7 +130,7 @@
                 <span class="diff-field">{{ row.field }}</span>
                 <template v-if="row.changed">
                   <span class="diff-old">{{ row.old ?? '—' }}</span>
-                  <v-icon size="12" color="rgba(255,255,255,0.2)">mdi-arrow-right</v-icon>
+                  <AppIcon icon="mdi-arrow-right" :size="12" color="rgba(255,255,255,0.2)" />
                   <span class="diff-new">{{ row.new }}</span>
                 </template>
                 <template v-else>
@@ -142,8 +142,8 @@
             <p v-if="error" class="match-error">{{ error }}</p>
 
             <button class="match-search-btn" :class="{ applied }" :disabled="applying" @click="doApply">
-              <v-icon v-if="applying && !applied" size="15" class="spin">mdi-loading</v-icon>
-              <v-icon v-else-if="applied" size="15">mdi-check</v-icon>
+              <AppIcon icon="mdi-loading" v-if="applying && !applied" :size="15" class="spin" />
+              <AppIcon icon="mdi-check" v-else-if="applied" :size="15" />
               {{ applied ? '✓ Applied!' : applying ? 'Applying…' : 'Apply Changes' }}
             </button>
             <button class="match-secondary-btn" @click="step = 'candidates'">Back to results</button>

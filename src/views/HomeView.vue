@@ -8,9 +8,7 @@
     <!-- Pull-to-refresh indicator -->
     <Transition name="ptr">
       <div v-if="ptr.pulling || ptr.refreshing" class="ptr-indicator">
-        <v-icon size="18" color="rgba(255,255,255,0.5)" :class="{ spin: ptr.refreshing }">
-          {{ ptr.refreshing ? 'mdi-loading' : 'mdi-arrow-down' }}
-        </v-icon>
+        <AppIcon :icon="ptr.refreshing ? 'mdi-loading' : 'mdi-arrow-down'" :size="18" color="rgba(255,255,255,0.5)" :class="{ spin: ptr.refreshing }" />
       </div>
     </Transition>
 
@@ -22,21 +20,21 @@
       </div>
       <div style="display:flex;gap:4px">
         <button class="search-icon-btn" @click="showCustomize = true">
-          <v-icon size="20" color="rgba(255,255,255,0.45)">mdi-tune-variant</v-icon>
+          <AppIcon icon="mdi-tune-variant" :size="20" color="rgba(255,255,255,0.45)" />
         </button>
         <button class="search-icon-btn" @click="$router.push({ name: 'search' })">
-          <v-icon size="22" color="rgba(255,255,255,0.6)">mdi-magnify</v-icon>
+          <AppIcon icon="mdi-magnify" :size="22" color="rgba(255,255,255,0.6)" />
         </button>
       </div>
     </div>
 
     <!-- PWA install banner -->
     <div v-if="showInstallBanner" class="install-banner">
-      <v-icon size="18" color="#d4a017">mdi-cellphone-arrow-down</v-icon>
+      <AppIcon icon="mdi-cellphone-arrow-down" :size="18" color="#d4a017" />
       <p class="install-text">Add to your home screen for the best experience</p>
       <button class="install-btn" @click="triggerInstall">Install</button>
       <button class="install-dismiss" @click="showInstallBanner = false">
-        <v-icon size="16">mdi-close</v-icon>
+        <AppIcon icon="mdi-close" :size="16" />
       </button>
     </div>
 
@@ -44,9 +42,9 @@
     <!-- Continue Listening -->
     <section v-if="(progress.inProgress.length || loadingProgress) && !isSectionHidden('continue-listening')" class="section" :style="{ order: getSectionOrder('continue-listening') }">
       <div class="section-header clickable" @click="sectionSheet = { title: 'Continue Listening', icon: 'mdi-play-circle-outline', items: progress.inProgress }">
-        <v-icon size="16" color="rgba(255,255,255,0.35)">mdi-play-circle-outline</v-icon>
+        <AppIcon icon="mdi-play-circle-outline" :size="16" color="rgba(255,255,255,0.35)" />
         <span class="section-label">Continue Listening</span>
-        <v-icon size="12" color="rgba(255,255,255,0.2)">mdi-chevron-right</v-icon>
+        <AppIcon icon="mdi-chevron-right" :size="12" color="rgba(255,255,255,0.2)" />
         <span class="section-count">{{ progress.inProgress.length }}</span>
       </div>
       <div class="h-scroll">
@@ -75,9 +73,9 @@
     <!-- Recently Added -->
     <section v-if="!isSectionHidden('recently-added')" class="section" :style="{ order: getSectionOrder('recently-added') }">
       <div class="section-header clickable" @click="sectionSheet = { title: 'Recently Added', icon: 'mdi-clock-outline', items: progress.recentlyAdded }">
-        <v-icon size="16" color="rgba(255,255,255,0.35)">mdi-clock-outline</v-icon>
+        <AppIcon icon="mdi-clock-outline" :size="16" color="rgba(255,255,255,0.35)" />
         <span class="section-label">Recently Added</span>
-        <v-icon size="12" color="rgba(255,255,255,0.2)">mdi-chevron-right</v-icon>
+        <AppIcon icon="mdi-chevron-right" :size="12" color="rgba(255,255,255,0.2)" />
         <button class="section-link" @click.stop="$router.push({ name: 'library' })">View all</button>
       </div>
       <div v-if="loadingRecent" class="h-scroll">
@@ -107,7 +105,7 @@
     <!-- Recently Finished -->
     <section v-if="(progress.recentlyFinished.length || loadingFinished) && !isSectionHidden('recently-finished')" class="section" :style="{ order: getSectionOrder('recently-finished') }">
       <div class="section-header">
-        <v-icon size="16" color="rgba(255,255,255,0.35)">mdi-check-circle-outline</v-icon>
+        <AppIcon icon="mdi-check-circle-outline" :size="16" color="rgba(255,255,255,0.35)" />
         <span class="section-label">Recently Finished</span>
       </div>
       <div class="h-scroll">
@@ -135,11 +133,11 @@
     <!-- Discover -->
     <section v-if="(progress.discover.length || loadingDiscover) && !isSectionHidden('discover')" class="section" :style="{ order: getSectionOrder('discover') }">
       <div class="section-header clickable" @click="sectionSheet = { title: 'Discover', icon: 'mdi-shuffle-variant', items: progress.discover }">
-        <v-icon size="16" color="rgba(255,255,255,0.35)">mdi-shuffle-variant</v-icon>
+        <AppIcon icon="mdi-shuffle-variant" :size="16" color="rgba(255,255,255,0.35)" />
         <span class="section-label">Discover</span>
-        <v-icon size="12" color="rgba(255,255,255,0.2)">mdi-chevron-right</v-icon>
+        <AppIcon icon="mdi-chevron-right" :size="12" color="rgba(255,255,255,0.2)" />
         <button class="refresh-btn" :disabled="loadingDiscover" @click.stop="refreshDiscover">
-          <v-icon size="14" :class="{ spin: loadingDiscover }">mdi-refresh</v-icon>
+          <AppIcon icon="mdi-refresh" :size="14" :class="{ spin: loadingDiscover }" />
         </button>
       </div>
       <div class="h-scroll">
@@ -167,9 +165,9 @@
     <!-- Dynamic personalized sections (series, newest episodes, etc.) -->
     <section v-for="shelf in extraShelves" :key="shelf.id" class="section" :style="{ order: getSectionOrder(shelf.id) }">
       <div class="section-header clickable" @click="sectionSheet = { title: shelf.label, icon: shelfIcon(shelf.id, shelf.type), items: shelf.entities }">
-        <v-icon size="16" color="rgba(255,255,255,0.35)">{{ shelfIcon(shelf.id, shelf.type) }}</v-icon>
+        <AppIcon :icon="shelfIcon(shelf.id, shelf.type)" :size="16" color="rgba(255,255,255,0.35)" />
         <span class="section-label">{{ shelf.label }}</span>
-        <v-icon size="12" color="rgba(255,255,255,0.2)">mdi-chevron-right</v-icon>
+        <AppIcon icon="mdi-chevron-right" :size="12" color="rgba(255,255,255,0.2)" />
       </div>
       <div class="h-scroll">
         <PortraitCard
@@ -248,7 +246,7 @@
             <div class="drag-handle" />
             <p class="picker-title">Add to playlist</p>
             <div v-if="loadingPlaylists" class="picker-loading">
-              <v-icon size="20" color="rgba(255,255,255,0.3)">mdi-loading</v-icon>
+              <AppIcon icon="mdi-loading" :size="20" color="rgba(255,255,255,0.3)" />
             </div>
             <div v-else class="picker-list">
               <button
@@ -257,7 +255,7 @@
                 class="picker-row"
                 @click="addToPlaylistFromQuick(pl.id)"
               >
-                <v-icon size="16" color="rgba(255,255,255,0.5)">mdi-playlist-music</v-icon>
+                <AppIcon icon="mdi-playlist-music" :size="16" color="rgba(255,255,255,0.5)" />
                 <span class="picker-name">{{ pl.name }}</span>
                 <span class="picker-count">{{ pl.items.length }}</span>
               </button>

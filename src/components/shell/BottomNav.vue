@@ -14,7 +14,7 @@
             <span v-for="n in 5" :key="n" class="wave-bar" :style="`animation-delay:${(n-1)*0.1}s`" />
           </span>
         </template>
-        <v-icon v-else size="20">{{ isActive(item.route) ? item.iconActive : item.icon }}</v-icon>
+        <AppIcon :icon="isActive(item.route) ? item.iconActive : item.icon" v-else :size="20" />
       </span>
       <span class="nav-label">{{ item.label }}</span>
       <span class="nav-dot" />

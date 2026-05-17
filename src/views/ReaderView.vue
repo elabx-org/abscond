@@ -3,12 +3,12 @@
     <!-- Toolbar -->
     <div class="reader-toolbar" :class="{ hidden: hideUI }">
       <button class="tool-btn" @click="$router.back()">
-        <v-icon size="20">mdi-arrow-left</v-icon>
+        <AppIcon icon="mdi-arrow-left" :size="20" />
       </button>
       <span class="tool-title">{{ title }}</span>
       <div class="tool-actions">
         <button class="tool-btn" @click="showSettings = !showSettings">
-          <v-icon size="20">mdi-format-size</v-icon>
+          <AppIcon icon="mdi-format-size" :size="20" />
         </button>
       </div>
     </div>
@@ -17,7 +17,7 @@
     <div v-if="fileType === 'epub'" class="reader-frame" @click="hideUI = !hideUI">
       <div id="epub-viewer" class="epub-viewer" />
       <div v-if="loading" class="reader-loading">
-        <v-icon size="40" color="rgba(255,255,255,0.2)">mdi-book-open-variant</v-icon>
+        <AppIcon icon="mdi-book-open-variant" :size="40" color="rgba(255,255,255,0.2)" />
         <p>Loading book…</p>
       </div>
     </div>
@@ -29,7 +29,7 @@
 
     <!-- Unsupported -->
     <div v-else class="unsupported">
-      <v-icon size="48" color="rgba(255,255,255,0.15)">mdi-file-question-outline</v-icon>
+      <AppIcon icon="mdi-file-question-outline" :size="48" color="rgba(255,255,255,0.15)" />
       <p>This file type cannot be read in the browser</p>
       <p class="unsupported-sub">Use the desktop app or download directly</p>
     </div>

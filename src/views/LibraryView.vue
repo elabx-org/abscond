@@ -9,9 +9,7 @@
     <!-- Pull-to-refresh indicator -->
     <Transition name="ptr">
       <div v-if="ptr.pulling || ptr.refreshing" class="ptr-indicator">
-        <v-icon size="18" color="rgba(255,255,255,0.5)" :class="{ spin: ptr.refreshing }">
-          {{ ptr.refreshing ? 'mdi-loading' : 'mdi-arrow-down' }}
-        </v-icon>
+        <AppIcon :icon="ptr.refreshing ? 'mdi-loading' : 'mdi-arrow-down'" :size="18" color="rgba(255,255,255,0.5)" :class="{ spin: ptr.refreshing }" />
       </div>
     </Transition>
 
@@ -22,7 +20,7 @@
         <p v-if="!lib.loading && items.length" class="lib-count">{{ filteredItems.length.toLocaleString() }} items</p>
       </div>
       <button class="header-search-btn" @click="router.push({ name: 'search' })">
-        <v-icon size="20" color="rgba(255,255,255,0.6)">mdi-magnify</v-icon>
+        <AppIcon icon="mdi-magnify" :size="20" color="rgba(255,255,255,0.6)" />
       </button>
     </div>
 
@@ -51,31 +49,31 @@
     <div v-if="viewMode === 'library'" class="lib-controls">
       <div class="sort-chips">
         <button class="sort-chip" :class="{ active: sortField === 'title' }" @click="setSort('title')">
-          <v-icon size="12">mdi-sort-alphabetical-ascending</v-icon> Title
+          <AppIcon icon="mdi-sort-alphabetical-ascending" :size="12" /> Title
         </button>
         <button class="sort-chip" :class="{ active: sortField === 'author' }" @click="setSort('author')">
-          <v-icon size="12">mdi-account-outline</v-icon> Author
+          <AppIcon icon="mdi-account-outline" :size="12" /> Author
         </button>
         <button class="sort-chip" :class="{ active: sortField === 'addedAt' }" @click="setSort('addedAt')">
-          <v-icon size="12">mdi-clock-outline</v-icon> Added
+          <AppIcon icon="mdi-clock-outline" :size="12" /> Added
         </button>
         <button class="sort-chip" :class="{ active: sortField === 'duration' }" @click="setSort('duration')">
-          <v-icon size="12">mdi-timer-outline</v-icon> Duration
+          <AppIcon icon="mdi-timer-outline" :size="12" /> Duration
         </button>
         <button class="sort-chip" :class="{ active: sortField === 'progress' }" @click="setSort('progress')">
-          <v-icon size="12">mdi-progress-check</v-icon> Progress
+          <AppIcon icon="mdi-progress-check" :size="12" /> Progress
         </button>
         <button class="sort-chip" :class="{ active: sortField === 'lastPlayed' }" @click="setSort('lastPlayed')">
-          <v-icon size="12">mdi-history</v-icon> Played
+          <AppIcon icon="mdi-history" :size="12" /> Played
         </button>
         <button class="sort-chip" :class="{ active: sortField === 'publishedYear' }" @click="setSort('publishedYear')">
-          <v-icon size="12">mdi-calendar-outline</v-icon> Year
+          <AppIcon icon="mdi-calendar-outline" :size="12" /> Year
         </button>
         <button class="sort-chip" :class="{ active: sortField === 'random' }" @click="setSort('random')">
-          <v-icon size="12">mdi-shuffle-variant</v-icon> Shuffle
+          <AppIcon icon="mdi-shuffle-variant" :size="12" /> Shuffle
         </button>
         <button class="sort-chip sort-chip--dir" v-if="sortField !== 'random'" @click="toggleDir">
-          <v-icon size="14">{{ sortDesc ? 'mdi-sort-descending' : 'mdi-sort-ascending' }}</v-icon>
+          <AppIcon :icon="sortDesc ? 'mdi-sort-descending' : 'mdi-sort-ascending'" :size="14" />
         </button>
       </div>
 
@@ -121,7 +119,7 @@
 
       <div class="lib-search-row">
         <div class="lib-search-wrap">
-          <v-icon size="14" color="rgba(255,255,255,0.3)">mdi-magnify</v-icon>
+          <AppIcon icon="mdi-magnify" :size="14" color="rgba(255,255,255,0.3)" />
           <input
             v-model="searchQuery"
             class="lib-search-input"
@@ -129,17 +127,17 @@
             @input="page = 1"
           />
           <button v-if="searchQuery" class="lib-search-clear" @click="searchQuery = ''; page = 1">
-            <v-icon size="12">mdi-close</v-icon>
+            <AppIcon icon="mdi-close" :size="12" />
           </button>
         </div>
         <button class="grid-density-btn" :class="{ active: hideEbookOnly }" @click="toggleHideEbook" title="Hide ebook-only items">
-          <v-icon size="16" :color="hideEbookOnly ? '#d4a017' : 'rgba(255,255,255,0.5)'">mdi-headphones</v-icon>
+          <AppIcon icon="mdi-headphones" :size="16" :color="hideEbookOnly ? '#d4a017' : 'rgba(255,255,255,0.5)'" />
         </button>
         <button class="grid-density-btn" @click="toggleRectangle" :title="rectangleCovers ? 'Square covers' : 'Portrait covers'">
-          <v-icon size="16" color="rgba(255,255,255,0.5)">{{ rectangleCovers ? 'mdi-image-outline' : 'mdi-image-frame' }}</v-icon>
+          <AppIcon :icon="rectangleCovers ? 'mdi-image-outline' : 'mdi-image-frame'" :size="16" color="rgba(255,255,255,0.5)" />
         </button>
         <button class="grid-density-btn" @click="toggleGridDensity" :title="gridDense ? 'Comfortable grid' : 'Compact grid'">
-          <v-icon size="16" color="rgba(255,255,255,0.5)">{{ gridDense ? 'mdi-view-grid' : 'mdi-view-comfy' }}</v-icon>
+          <AppIcon :icon="gridDense ? 'mdi-view-grid' : 'mdi-view-comfy'" :size="16" color="rgba(255,255,255,0.5)" />
         </button>
       </div>
     </div>
@@ -157,7 +155,7 @@
 
     <!-- Empty state -->
     <div v-else-if="!lib.loading && !items.length" class="empty-state">
-      <v-icon size="40" color="rgba(255,255,255,0.15)">mdi-bookshelf</v-icon>
+      <AppIcon icon="mdi-bookshelf" :size="40" color="rgba(255,255,255,0.15)" />
       <p>No books found</p>
     </div>
 
@@ -195,12 +193,12 @@
             class="search-row"
             @click="activeSeries = s; viewMode = 'series'"
           >
-            <div class="search-row-icon"><v-icon size="16" color="rgba(255,255,255,0.4)">mdi-book-open-page-variant</v-icon></div>
+            <div class="search-row-icon"><AppIcon icon="mdi-book-open-page-variant" :size="16" color="rgba(255,255,255,0.4)" /></div>
             <div class="search-row-meta">
               <p class="search-row-title">{{ s.name }}</p>
               <p class="search-row-sub">{{ (s as Record<string, unknown>).numBooks ?? 0 }} books</p>
             </div>
-            <v-icon size="14" color="rgba(255,255,255,0.2)">mdi-chevron-right</v-icon>
+            <AppIcon icon="mdi-chevron-right" :size="14" color="rgba(255,255,255,0.2)" />
           </div>
         </div>
       </div>
@@ -213,9 +211,9 @@
             class="search-row"
             @click="activeAuthor = a"
           >
-            <div class="search-row-icon"><v-icon size="16" color="rgba(255,255,255,0.4)">mdi-account-outline</v-icon></div>
+            <div class="search-row-icon"><AppIcon icon="mdi-account-outline" :size="16" color="rgba(255,255,255,0.4)" /></div>
             <p class="search-row-title">{{ a.name }}</p>
-            <v-icon size="14" color="rgba(255,255,255,0.2)">mdi-chevron-right</v-icon>
+            <AppIcon icon="mdi-chevron-right" :size="14" color="rgba(255,255,255,0.2)" />
           </div>
         </div>
       </div>
@@ -225,10 +223,10 @@
     <!-- Series view -->
     <template v-else-if="viewMode === 'series'">
       <div class="sub-search-wrap">
-        <v-icon size="14" color="rgba(255,255,255,0.3)">mdi-magnify</v-icon>
+        <AppIcon icon="mdi-magnify" :size="14" color="rgba(255,255,255,0.3)" />
         <input v-model="seriesSearch" class="lib-search-input" placeholder="Search series…" />
         <button v-if="seriesSearch" class="lib-search-clear" @click="seriesSearch = ''">
-          <v-icon size="12">mdi-close</v-icon>
+          <AppIcon icon="mdi-close" :size="12" />
         </button>
       </div>
       <div v-if="loadingSeries" class="grid">
@@ -237,7 +235,7 @@
         </div>
       </div>
       <div v-else-if="!filteredSeries.length" class="empty-state">
-        <v-icon size="40" color="rgba(255,255,255,0.15)">mdi-book-multiple</v-icon>
+        <AppIcon icon="mdi-book-multiple" :size="40" color="rgba(255,255,255,0.15)" />
         <p>No series found</p>
       </div>
       <div v-else class="grid">
@@ -255,10 +253,10 @@
     <!-- Authors view -->
     <template v-else-if="viewMode === 'authors'">
       <div class="sub-search-wrap">
-        <v-icon size="14" color="rgba(255,255,255,0.3)">mdi-magnify</v-icon>
+        <AppIcon icon="mdi-magnify" :size="14" color="rgba(255,255,255,0.3)" />
         <input v-model="authorSearch" class="lib-search-input" placeholder="Search authors…" />
         <button v-if="authorSearch" class="lib-search-clear" @click="authorSearch = ''">
-          <v-icon size="12">mdi-close</v-icon>
+          <AppIcon icon="mdi-close" :size="12" />
         </button>
       </div>
       <div v-if="loadingAuthors" class="grid">
@@ -267,7 +265,7 @@
         </div>
       </div>
       <div v-else-if="!filteredAuthors.length" class="empty-state">
-        <v-icon size="40" color="rgba(255,255,255,0.15)">mdi-account-multiple</v-icon>
+        <AppIcon icon="mdi-account-multiple" :size="40" color="rgba(255,255,255,0.15)" />
         <p>No authors found</p>
       </div>
       <div v-else class="grid">
@@ -297,10 +295,10 @@
     <!-- Narrators view -->
     <template v-else-if="viewMode === 'narrators'">
       <div class="sub-search-wrap">
-        <v-icon size="14" color="rgba(255,255,255,0.3)">mdi-magnify</v-icon>
+        <AppIcon icon="mdi-magnify" :size="14" color="rgba(255,255,255,0.3)" />
         <input v-model="narratorSearch" class="lib-search-input" placeholder="Search narrators…" />
         <button v-if="narratorSearch" class="lib-search-clear" @click="narratorSearch = ''">
-          <v-icon size="12">mdi-close</v-icon>
+          <AppIcon icon="mdi-close" :size="12" />
         </button>
       </div>
       <div v-if="loadingNarrators" class="grid">
@@ -309,7 +307,7 @@
         </div>
       </div>
       <div v-else-if="!filteredNarrators.length" class="empty-state">
-        <v-icon size="40" color="rgba(255,255,255,0.15)">mdi-microphone-outline</v-icon>
+        <AppIcon icon="mdi-microphone-outline" :size="40" color="rgba(255,255,255,0.15)" />
         <p>No narrators found</p>
       </div>
       <div v-else class="grid">
@@ -333,26 +331,26 @@
     <Transition name="batch-bar">
       <div v-if="selectMode" class="batch-bar">
         <button class="batch-cancel" @click="exitSelectMode">
-          <v-icon size="18">mdi-close</v-icon>
+          <AppIcon icon="mdi-close" :size="18" />
         </button>
         <button class="batch-select-all" @click="selectAll">
           {{ selectedIds.size === filteredItems.length ? 'None' : 'All' }}
         </button>
         <span class="batch-count">{{ selectedIds.size }} selected</span>
         <button class="batch-action" @click="showPlaylistPicker = true; loadPlaylists()">
-          <v-icon size="16">mdi-playlist-plus</v-icon>
+          <AppIcon icon="mdi-playlist-plus" :size="16" />
           Playlist
         </button>
         <button class="batch-action" @click="showCollectionPicker = true; loadCollections()">
-          <v-icon size="16">mdi-bookmark-plus-outline</v-icon>
+          <AppIcon icon="mdi-bookmark-plus-outline" :size="16" />
           Collection
         </button>
         <button class="batch-action" @click="batchMarkFinished">
-          <v-icon size="16">mdi-check-all</v-icon>
+          <AppIcon icon="mdi-check-all" :size="16" />
           Finished
         </button>
         <button class="batch-action batch-action--danger" @click="batchClearProgress">
-          <v-icon size="16">mdi-restore</v-icon>
+          <AppIcon icon="mdi-restore" :size="16" />
           Clear
         </button>
       </div>
@@ -366,7 +364,7 @@
             <div class="drag-handle" />
             <p class="picker-title">Add {{ selectedIds.size }} book{{ selectedIds.size !== 1 ? 's' : '' }} to playlist</p>
             <div v-if="loadingPlaylists" class="picker-loading">
-              <v-icon size="20" color="rgba(255,255,255,0.3)">mdi-loading</v-icon>
+              <AppIcon icon="mdi-loading" :size="20" color="rgba(255,255,255,0.3)" />
             </div>
             <div v-else class="picker-list">
               <button
@@ -375,7 +373,7 @@
                 class="picker-row"
                 @click="addBatchToPlaylist(pl.id)"
               >
-                <v-icon size="16" color="rgba(255,255,255,0.5)">mdi-playlist-music</v-icon>
+                <AppIcon icon="mdi-playlist-music" :size="16" color="rgba(255,255,255,0.5)" />
                 <span class="picker-name">{{ pl.name }}</span>
                 <span class="picker-count">{{ pl.items.length }}</span>
               </button>
@@ -394,7 +392,7 @@
             <div class="drag-handle" />
             <p class="picker-title">Add {{ selectedIds.size }} book{{ selectedIds.size !== 1 ? 's' : '' }} to collection</p>
             <div v-if="loadingCollections" class="picker-loading">
-              <v-icon size="20" color="rgba(255,255,255,0.3)">mdi-loading</v-icon>
+              <AppIcon icon="mdi-loading" :size="20" color="rgba(255,255,255,0.3)" />
             </div>
             <div v-else class="picker-list">
               <button
@@ -403,7 +401,7 @@
                 class="picker-row"
                 @click="addBatchToCollection(col.id)"
               >
-                <v-icon size="16" color="rgba(255,255,255,0.5)">mdi-bookmark-multiple-outline</v-icon>
+                <AppIcon icon="mdi-bookmark-multiple-outline" :size="16" color="rgba(255,255,255,0.5)" />
                 <span class="picker-name">{{ col.name }}</span>
                 <span class="picker-count">{{ col.books.length }}</span>
               </button>

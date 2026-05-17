@@ -29,7 +29,7 @@
       <!-- Downloaded tab -->
       <div v-if="activeTab === 'downloaded'">
         <div v-if="!downloadedEpisodes.length" class="empty-state">
-          <v-icon size="32" color="rgba(255,255,255,0.1)">mdi-download-off</v-icon>
+          <AppIcon icon="mdi-download-off" :size="32" color="rgba(255,255,255,0.1)" />
           <p>No downloaded episodes</p>
         </div>
         <div v-else class="episode-list">
@@ -39,7 +39,7 @@
               <p class="ep-sub">{{ formatMinutes(ep.audioFile?.duration ?? ep.duration) }} · {{ formatSize(ep.audioFile?.metadata?.size ?? 0) }}</p>
             </div>
             <button class="ep-action-btn ep-delete" :disabled="deletingId === ep.id" @click="doDelete(ep.id)" title="Delete episode">
-              <v-icon size="16">{{ deletingId === ep.id ? 'mdi-loading' : 'mdi-delete-outline' }}</v-icon>
+              <AppIcon :icon="deletingId === ep.id ? 'mdi-loading' : 'mdi-delete-outline'" :size="16" />
             </button>
           </div>
         </div>
@@ -48,7 +48,7 @@
       <!-- Feed tab -->
       <div v-if="activeTab === 'feed'">
         <div v-if="!feedEpisodes.length" class="empty-state">
-          <v-icon size="32" color="rgba(255,255,255,0.1)">mdi-rss-off</v-icon>
+          <AppIcon icon="mdi-rss-off" :size="32" color="rgba(255,255,255,0.1)" />
           <p>No feed episodes available</p>
         </div>
         <div v-else class="episode-list">
@@ -63,7 +63,7 @@
               @click="doDownload(ep.id)"
               :title="ep.downloaded ? 'Already downloaded' : 'Download episode'"
             >
-              <v-icon size="16">{{ downloadingId === ep.id ? 'mdi-loading' : ep.downloaded ? 'mdi-check' : 'mdi-download-outline' }}</v-icon>
+              <AppIcon :icon="downloadingId === ep.id ? 'mdi-loading' : ep.downloaded ? 'mdi-check' : 'mdi-download-outline'" :size="16" />
             </button>
           </div>
         </div>
@@ -77,14 +77,14 @@
             <p class="setting-name">Feed URL</p>
           </div>
           <button class="copy-url-btn" @click="copyFeedUrl">
-            <v-icon size="14">mdi-content-copy</v-icon>
+            <AppIcon icon="mdi-content-copy" :size="14" />
             Copy
           </button>
         </div>
         <p class="feed-url-display">{{ podcast.media?.metadata?.feedUrl ?? 'Not set' }}</p>
         <div class="check-episodes-row">
           <button class="check-btn" :disabled="checking" @click="doCheck">
-            <v-icon size="14" :class="{ spin: checking }">{{ checking ? 'mdi-loading' : 'mdi-refresh' }}</v-icon>
+            <AppIcon :icon="checking ? 'mdi-loading' : 'mdi-refresh'" :size="14" :class="{ spin: checking }" />
             {{ checking ? 'Checking…' : 'Check for new episodes' }}
           </button>
           <span v-if="checkResult !== null" class="check-result">{{ checkResult }} new</span>

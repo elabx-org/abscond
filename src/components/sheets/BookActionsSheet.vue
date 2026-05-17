@@ -13,9 +13,9 @@
             :data-action="item.id"
             @click="pick(item.id)"
           >
-            <v-icon size="18" class="action-row-icon">{{ item.icon }}</v-icon>
+            <AppIcon :icon="item.icon" :size="18" class="action-row-icon" />
             <span class="action-row-label">{{ item.label }}</span>
-            <v-icon size="14" color="rgba(255,255,255,0.2)">mdi-chevron-right</v-icon>
+            <AppIcon icon="mdi-chevron-right" :size="14" color="rgba(255,255,255,0.2)" />
           </button>
         </div>
       </div>

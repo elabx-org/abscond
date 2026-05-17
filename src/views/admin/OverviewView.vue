@@ -12,11 +12,11 @@
         </div>
         <div class="server-actions">
           <button class="action-chip" :disabled="purging" @click="doPurge">
-            <v-icon size="14" :class="{ spin: purging }">{{ purging ? 'mdi-loading' : 'mdi-broom' }}</v-icon>
+            <AppIcon :icon="purging ? 'mdi-loading' : 'mdi-broom'" :size="14" :class="{ spin: purging }" />
             <span>{{ purging ? 'Purging…' : 'Purge Cache' }}</span>
           </button>
           <button class="action-chip" :disabled="scanningAll" @click="doScanAll">
-            <v-icon size="14" :class="{ spin: scanningAll }">{{ scanningAll ? 'mdi-loading' : 'mdi-magnify-scan' }}</v-icon>
+            <AppIcon :icon="scanningAll ? 'mdi-loading' : 'mdi-magnify-scan'" :size="14" :class="{ spin: scanningAll }" />
             <span>{{ scanningAll ? 'Scanning…' : 'Scan All' }}</span>
           </button>
         </div>
@@ -24,22 +24,22 @@
 
       <div class="stat-grid">
         <div class="stat-card">
-          <v-icon size="22" color="#d4a017">mdi-account-group-outline</v-icon>
+          <AppIcon icon="mdi-account-group-outline" :size="22" color="#d4a017" />
           <p class="stat-value">{{ userCount }}</p>
           <p class="stat-label">Total users</p>
         </div>
         <div class="stat-card">
-          <v-icon size="22" color="#22c55e">mdi-bookshelf</v-icon>
+          <AppIcon icon="mdi-bookshelf" :size="22" color="#22c55e" />
           <p class="stat-value">{{ libraryCount }}</p>
           <p class="stat-label">Libraries</p>
         </div>
         <div class="stat-card">
-          <v-icon size="22" color="#3b82f6">mdi-counter</v-icon>
+          <AppIcon icon="mdi-counter" :size="22" color="#3b82f6" />
           <p class="stat-value">{{ totalItems }}</p>
           <p class="stat-label">Total items</p>
         </div>
         <div class="stat-card">
-          <v-icon size="22" color="#a855f7">mdi-backup-restore</v-icon>
+          <AppIcon icon="mdi-backup-restore" :size="22" color="#a855f7" />
           <p class="stat-value">{{ backupCount }}</p>
           <p class="stat-label">Backups</p>
           <p v-if="lastBackupLabel" class="stat-sub">{{ lastBackupLabel }}</p>
@@ -47,7 +47,7 @@
       </div>
 
       <div v-if="successMsg" class="toast-msg">
-        <v-icon size="16" color="#22c55e">mdi-check-circle-outline</v-icon>
+        <AppIcon icon="mdi-check-circle-outline" :size="16" color="#22c55e" />
         {{ successMsg }}
       </div>
     </template>

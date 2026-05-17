@@ -9,28 +9,28 @@
       <p class="drawer-section-label">Discover</p>
       <button v-for="item in mainItems" :key="item.route" class="drawer-item"
         :class="{ active: isActive(item.route) }" @click="router.push({ name: item.route })">
-        <v-icon size="20" class="drawer-icon">{{ isActive(item.route) ? item.iconActive : item.icon }}</v-icon>
+        <AppIcon :icon="isActive(item.route) ? item.iconActive : item.icon" :size="20" class="drawer-icon" />
         <span>{{ item.label }}</span>
       </button>
 
       <p class="drawer-section-label">My Library</p>
       <button v-for="item in libraryItems" :key="item.route" class="drawer-item"
         :class="{ active: isActive(item.route) }" @click="router.push({ name: item.route })">
-        <v-icon size="20" class="drawer-icon">{{ isActive(item.route) ? item.iconActive : item.icon }}</v-icon>
+        <AppIcon :icon="isActive(item.route) ? item.iconActive : item.icon" :size="20" class="drawer-icon" />
         <span>{{ item.label }}</span>
       </button>
 
       <p class="drawer-section-label">Settings</p>
       <button v-for="item in bottomItems" :key="item.route" class="drawer-item"
         :class="{ active: isActive(item.route) }" @click="router.push({ name: item.route })">
-        <v-icon size="20" class="drawer-icon">{{ isActive(item.route) ? item.iconActive : item.icon }}</v-icon>
+        <AppIcon :icon="isActive(item.route) ? item.iconActive : item.icon" :size="20" class="drawer-icon" />
         <span>{{ item.label }}</span>
       </button>
 
       <template v-if="auth.user?.isAdminOrUp">
         <p class="drawer-section-label">Admin</p>
         <button class="drawer-item" :class="{ active: isActive('admin-libraries') }" @click="router.push({ name: 'admin-libraries' })">
-          <v-icon size="20" class="drawer-icon">mdi-server</v-icon>
+          <AppIcon icon="mdi-server" :size="20" class="drawer-icon" />
           <span>Admin</span>
         </button>
       </template>

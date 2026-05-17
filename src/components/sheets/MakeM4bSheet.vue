@@ -8,11 +8,11 @@
           <div class="m4b-drag-handle" />
           <div class="m4b-header">
             <div class="m4b-header-left">
-              <v-icon size="16" color="rgba(212,160,23,0.8)">mdi-music-box-outline</v-icon>
+              <AppIcon icon="mdi-music-box-outline" :size="16" color="rgba(212,160,23,0.8)" />
               <span class="m4b-title">Make M4B</span>
             </div>
             <button class="m4b-close-btn" @click="close">
-              <v-icon size="16">mdi-close</v-icon>
+              <AppIcon icon="mdi-close" :size="16" />
             </button>
           </div>
 
@@ -116,8 +116,8 @@
 
             <!-- Submit -->
             <button class="m4b-start-btn" :disabled="encoding" @click="startEncode">
-              <v-icon v-if="encoding" size="15" class="m4b-spin">mdi-loading</v-icon>
-              <v-icon v-else size="15">mdi-play-circle-outline</v-icon>
+              <AppIcon icon="mdi-loading" v-if="encoding" :size="15" class="m4b-spin" />
+              <AppIcon icon="mdi-play-circle-outline" v-else :size="15" />
               {{ encoding ? 'Starting…' : 'Start M4B Encode' }}
             </button>
 

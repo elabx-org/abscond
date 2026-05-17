@@ -6,16 +6,14 @@
           <div class="drag-handle-area"><div class="drag-handle" /></div>
 
           <div class="sheet-header">
-            <v-icon size="18" color="rgba(255,255,255,0.6)">{{ icon }}</v-icon>
+            <AppIcon :icon="icon" :size="18" color="rgba(255,255,255,0.6)" />
             <span class="sheet-title">{{ title }}</span>
             <span class="sheet-count">{{ items.length }}</span>
             <button class="view-toggle" @click="gridView = !gridView">
-              <v-icon size="18" color="rgba(255,255,255,0.5)">
-                {{ gridView ? 'mdi-view-list' : 'mdi-view-grid' }}
-              </v-icon>
+              <AppIcon :icon="gridView ? 'mdi-view-list' : 'mdi-view-grid'" :size="18" color="rgba(255,255,255,0.5)" />
             </button>
             <button class="sheet-close-btn" @click="$emit('close')">
-              <v-icon size="18" color="rgba(255,255,255,0.4)">mdi-close</v-icon>
+              <AppIcon icon="mdi-close" :size="18" color="rgba(255,255,255,0.4)" />
             </button>
           </div>
 
