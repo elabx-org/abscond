@@ -16,11 +16,28 @@ export default defineConfig({
     vuetify({ autoImport: true }),
     VitePWA({
       registerType: 'autoUpdate',
-      strategies: 'injectManifest',
-      srcDir: 'src',
-      filename: 'sw.ts',
-      injectManifest: {
-        injectionPoint: 'self.__WB_MANIFEST',
+      workbox: {
+        navigateFallbackDenylist: [/^\/auth\//],
+        runtimeCaching: [
+          {
+            urlPattern: /\/api\/items\/[^/]+\/cover/,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'covers-cache',
+              expiration: { maxEntries: 500, maxAgeSeconds: 7 * 24 * 60 * 60 },
+              cacheableResponse: { statuses: [0, 200] },
+            },
+          },
+          {
+            urlPattern: /\/api\/(me\/items-in-progress|me$|libraries\/[^/]+\/items|me\/progress)/,
+            handler: 'StaleWhileRevalidate',
+            options: {
+              cacheName: 'api-cache',
+              expiration: { maxEntries: 100, maxAgeSeconds: 24 * 60 * 60 },
+              cacheableResponse: { statuses: [0, 200] },
+            },
+          },
+        ],
       },
       manifest: {
         id: '/',
