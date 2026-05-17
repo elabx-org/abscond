@@ -1,8 +1,8 @@
 <template>
   <button class="conn-btn" @click="handleTap" :title="connected ? 'Connected' : 'Offline — tap to reconnect'">
-    <AppIcon v-if="reconnecting" icon="mdi-loading" :size="16" color="rgba(245,158,11,0.9)" class="conn-spin" />
-    <AppIcon v-else-if="connected"    icon="mdi-cloud-check" :size="18" color="rgba(34,197,94,0.9)" />
-    <AppIcon v-else                   icon="mdi-cloud-off"   :size="18" color="rgba(249,115,22,0.9)" />
+    <AppIcon v-if="reconnecting" icon="mdi-loading" :size="8" color="rgba(245,158,11,0.9)" class="conn-spin" />
+    <AppIcon v-else-if="connected"    icon="mdi-cloud-check-outline" :size="8" color="rgba(34,197,94,0.9)" />
+    <AppIcon v-else                   icon="mdi-cloud-off-outline"   :size="8" color="rgba(249,115,22,0.9)" />
   </button>
 </template>
 

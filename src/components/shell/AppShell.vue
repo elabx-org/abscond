@@ -11,7 +11,8 @@
     <!-- Mobile top header (brand row) -->
     <header v-if="isMobile" class="mobile-header">
       <AppLogo :size="14" color="rgba(134,59,255,0.5)" />
-      <span class="mobile-brand-name">A &nbsp;B &nbsp;S &nbsp;C &nbsp;O &nbsp;N &nbsp;D</span>
+      <span class="mobile-brand-name">ABSCOND</span>
+      <ConnectionStatus />
     </header>
 
     <!-- Mobile bottom nav -->
@@ -33,6 +34,7 @@
 <script setup lang="ts">
 import AppIcon from '@/components/common/AppIcon.vue'
 import AppLogo from '@/components/common/AppLogo.vue'
+import ConnectionStatus from '@/components/common/ConnectionStatus.vue'
 import { computed, ref, onMounted, onBeforeUnmount, watch } from 'vue'
 import BottomNav  from './BottomNav.vue'
 import SideRail   from './SideRail.vue'
@@ -120,7 +122,7 @@ const contentStyle = computed(() => {
   border-bottom: 1px solid rgba(255,255,255,0.05);
 }
 .mobile-brand-name {
-  font-size: 9px; font-weight: 300; letter-spacing: 5px;
+  font-size: 9px; font-weight: 300; letter-spacing: 4px;
   color: rgba(255,255,255,0.25); text-transform: uppercase;
   flex: 1;
 }

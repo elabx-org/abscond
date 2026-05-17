@@ -25,10 +25,6 @@
 
         <!-- Screen title bar (mobile) -->
         <div class="player-topbar">
-          <div class="player-wordmark">
-            ABSCOND
-            <ConnectionStatus style="margin-left:6px" />
-          </div>
           <div class="player-topbar-actions">
             <button
               v-if="player.currentItem"
@@ -631,7 +627,6 @@
 
 <script setup lang="ts">
 import AppIcon from '@/components/common/AppIcon.vue'
-import ConnectionStatus from '@/components/common/ConnectionStatus.vue'
 import { computed, ref, watch, nextTick, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { usePlayerStore } from '@/stores/player'
@@ -1132,11 +1127,6 @@ function queueDragEnd() {
 .player-topbar {
   display: flex; align-items: center; justify-content: space-between;
   width: 100%; margin-bottom: 4px; padding: 0 2px;
-}
-.player-wordmark {
-  font-size: 9px; font-weight: 300; letter-spacing: 4px;
-  color: rgba(255,255,255,0.3); text-transform: uppercase;
-  display: flex; align-items: center;
 }
 .player-topbar-actions { display: flex; align-items: center; gap: 4px; }
 .topbar-action-btn {
