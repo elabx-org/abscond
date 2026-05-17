@@ -236,7 +236,8 @@ async function startOidc(provider: { id: string }) {
       const cbUrl = new URL(result.callbackUrl)
       router.push({ name: 'auth-callback', query: Object.fromEntries(cbUrl.searchParams) })
     } catch (e: any) {
-      if (e?.message !== 'cancelled') loginError.value = 'SSO login failed. Please try again.'
+      const msg: string = e?.message ?? e?.errorMessage ?? String(e) ?? ''
+      if (msg !== 'cancelled') loginError.value = `SSO failed: ${msg}`
     }
   } else {
     window.location.href = authUrl
