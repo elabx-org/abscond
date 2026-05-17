@@ -142,7 +142,7 @@ import AppIcon from '@/components/common/AppIcon.vue'
 import AppLogo from '@/components/common/AppLogo.vue'
 import { ref, onMounted, onBeforeUnmount } from 'vue'
 import { useRouter } from 'vue-router'
-import { useAuthStore } from '@/stores/auth'
+import { useAuthStore, type AbsUser } from '@/stores/auth'
 import { fetchStatus, login } from '@/api/auth'
 import { isNativeApp, resetBaseUrl } from '@/api/client'
 import { openNativeAuth } from '@/plugins/haptics-bridge'
@@ -206,14 +206,6 @@ async function startOidc(provider: { id: string }) {
   const challenge = base64url(new Uint8Array(hashBuf))
   const state     = base64url(crypto.getRandomValues(new Uint8Array(16)))
 
-  // In Capacitor the WKWebView navigates away from capacitor://localhost during
-  // the OIDC dance, which can evict sessionStorage for that origin. Use
-  // localStorage for native so the PKCE verifier survives the round-trip.
-  const store = isNativeApp() ? localStorage : sessionStorage
-  store.setItem('oidc_verifier', verifier)
-  store.setItem('oidc_state',    state)
-  store.setItem('oidc_abs_base', absBase)
-
   // audiobookshelf://oauth is ABS's default-whitelisted mobile redirect URI —
   // no ABS admin config needed. ASWebAuthenticationSession intercepts this
   // callback natively before iOS can route it to any other installed app.
@@ -232,15 +224,36 @@ async function startOidc(provider: { id: string }) {
   const authUrl = `${absBase}/auth/${provider.id}?${params}`
 
   if (isNativeApp()) {
+    // Native: Swift owns the whole flow (pre-flight cookie capture, popup,
+    // code exchange) and resolves with the ABS token JSON. No localStorage
+    // PKCE round-trip is needed because Swift never leaves the same flow.
     try {
-      const callbackUrl: string = await openNativeAuth(authUrl)
-      const cbUrl = new URL(callbackUrl)
-      router.push({ name: 'auth-callback', query: Object.fromEntries(cbUrl.searchParams) })
+      const tokenJson: string = await openNativeAuth(authUrl, verifier, state)
+      const data = JSON.parse(tokenJson)
+      const accessToken: string = data?.user?.token ?? data?.user?.accessToken
+      if (!accessToken) throw new Error('No token in server response.')
+      const u = data.user
+      const user: AbsUser = {
+        id:          u.id ?? '',
+        username:    u.username ?? '',
+        isAdminOrUp: !!(u.isAdminOrUp || u.type === 'root' || u.type === 'admin'),
+        token:       accessToken,
+      }
+      auth.setSession(accessToken, user)
+      const raw = await getBaseUrl()
+      const baseHost = raw === '/api' ? '' : raw.replace(/\/api$/, '')
+      connectSocket(baseHost, accessToken)
+      router.push({ name: 'home' })
     } catch (e: any) {
       const msg: string = e?.message ?? e?.errorMessage ?? (typeof e === 'string' ? e : 'Unknown error')
       if (msg !== 'cancelled') loginError.value = `SSO failed: ${msg}`
     }
   } else {
+    // Web flow needs the PKCE verifier/state to survive the redirect dance,
+    // so stash them and let AuthCallbackView pick them up after the callback.
+    sessionStorage.setItem('oidc_verifier', verifier)
+    sessionStorage.setItem('oidc_state',    state)
+    sessionStorage.setItem('oidc_abs_base', absBase)
     window.location.href = authUrl
   }
 }

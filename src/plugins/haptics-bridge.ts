@@ -10,12 +10,12 @@ export function setupHapticsBridge(): void {
   const w = window as any
 
   w.__hapticsBridge = {
-    openAuth: (url: string): Promise<string> =>
+    openAuth: (url: string, verifier: string, state: string): Promise<string> =>
       new Promise((res, rej) => {
         const id = ++callId
         cbs[id] = { res, rej }
         w.webkit.messageHandlers.hapticsBridge.postMessage(
-          JSON.stringify({ action: 'openAuth', id, url }),
+          JSON.stringify({ action: 'openAuth', id, url, verifier, state }),
         )
       }),
     _resolve: (id: number, val: string) => {
@@ -36,6 +36,13 @@ export function setupHapticsBridge(): void {
   }
 }
 
-export function openNativeAuth(url: string): Promise<string> {
-  return (window as any).__hapticsBridge.openAuth(url)
+/**
+ * Run the native OIDC flow. Swift handles pre-flight cookie capture, the
+ * ASWebAuthenticationSession popup, and the /auth/openid/callback exchange,
+ * then resolves with the JSON body returned by ABS (same shape as /login).
+ * JS is responsible only for generating the PKCE verifier+state and parsing
+ * the resolved JSON.
+ */
+export function openNativeAuth(url: string, verifier: string, state: string): Promise<string> {
+  return (window as any).__hapticsBridge.openAuth(url, verifier, state)
 }
