@@ -404,8 +404,17 @@ export const usePlayerStore = defineStore('player', () => {
       }
 
       _userPaused = false
-      await audio.play()
       _updateMediaSession()
+      if ('mediaSession' in navigator && duration.value > 0) {
+        try {
+          navigator.mediaSession.setPositionState({
+            duration: duration.value,
+            position: Math.min(currentTime.value, duration.value),
+            playbackRate: playbackRate.value,
+          })
+        } catch { /* ignore */ }
+      }
+      await audio.play()
       _startSync()
       _checkAutoSleep()
     } catch (e: unknown) {
