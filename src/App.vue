@@ -1,5 +1,6 @@
 <template>
   <v-app>
+    <SplashScreen />
     <router-view />
     <ToastContainer />
     <NotificationToast />
@@ -8,6 +9,7 @@
 
 <script setup lang="ts">
 import { watch, onMounted } from 'vue'
+import SplashScreen from '@/components/SplashScreen.vue'
 import ToastContainer from '@/components/common/ToastContainer.vue'
 import NotificationToast from '@/components/shell/NotificationToast.vue'
 import { useAuthStore } from '@/stores/auth'

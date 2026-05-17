@@ -10,28 +10,33 @@ export const useProgressStore = defineStore('progress', () => {
   const recentlyAdded    = ref<LibraryItem[]>([])
   const recentlyFinished = ref<LibraryItem[]>([])
   const discover         = ref<LibraryItem[]>([])
+  const initialLoadDone  = ref(false)
 
   async function fetchInProgress(_libraryId?: string) {
     // ABS's /me/items-in-progress uses toOldJSONMinified() which does NOT embed
     // userMediaProgress. Progress lives in /api/me → mediaProgress[]. Fetch both
     // and merge, exactly as Absorb (github.com/pounat/absorb) does it.
-    const [items, meRes] = await Promise.allSettled([
-      getItemsInProgress(),
-      api.get('/me'),
-    ])
+    try {
+      const [items, meRes] = await Promise.allSettled([
+        getItemsInProgress(),
+        api.get('/me'),
+      ])
 
-    const rawItems: LibraryItem[] = items.status === 'fulfilled' ? items.value : []
+      const rawItems: LibraryItem[] = items.status === 'fulfilled' ? items.value : []
 
-    if (meRes.status === 'fulfilled') {
-      const progressList: import('@/api/types').MediaProgress[] = meRes.value.data?.mediaProgress ?? []
-      const progressMap = new Map(progressList.map(p => [p.libraryItemId + (p.episodeId ? `-${p.episodeId}` : ''), p]))
-      inProgress.value = rawItems.map(item => {
-        const mp = progressMap.get(item.id) ?? progressMap.get(`${item.id}-`)
-        return mp ? { ...item, userMediaProgress: mp } : item
-      }).filter(item => item.userMediaProgress && !item.userMediaProgress.isFinished)
-        .sort((a, b) => (b.userMediaProgress?.lastUpdate ?? 0) - (a.userMediaProgress?.lastUpdate ?? 0))
-    } else {
-      inProgress.value = rawItems
+      if (meRes.status === 'fulfilled') {
+        const progressList: import('@/api/types').MediaProgress[] = meRes.value.data?.mediaProgress ?? []
+        const progressMap = new Map(progressList.map(p => [p.libraryItemId + (p.episodeId ? `-${p.episodeId}` : ''), p]))
+        inProgress.value = rawItems.map(item => {
+          const mp = progressMap.get(item.id) ?? progressMap.get(`${item.id}-`)
+          return mp ? { ...item, userMediaProgress: mp } : item
+        }).filter(item => item.userMediaProgress && !item.userMediaProgress.isFinished)
+          .sort((a, b) => (b.userMediaProgress?.lastUpdate ?? 0) - (a.userMediaProgress?.lastUpdate ?? 0))
+      } else {
+        inProgress.value = rawItems
+      }
+    } finally {
+      initialLoadDone.value = true
     }
   }
 
@@ -91,7 +96,7 @@ export const useProgressStore = defineStore('progress', () => {
   }
 
   return {
-    inProgress, recentlyAdded, recentlyFinished, discover,
+    inProgress, recentlyAdded, recentlyFinished, discover, initialLoadDone,
     fetchInProgress, fetchRecentlyAdded, fetchRecentlyFinished, fetchDiscover, updateItem,
   }
 })
