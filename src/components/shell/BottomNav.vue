@@ -13,7 +13,7 @@
           v-if="item.route === 'player'"
           :size="20"
           :animated="isPlaying ? 'draw' : 'none'"
-          :color="isActive('player') ? '#d4a017' : 'rgba(255,255,255,0.4)'"
+          :color="isActive('player') ? '#a78bfa' : 'rgba(255,255,255,0.4)'"
         />
         <AppIcon v-else :icon="isActive(item.route) ? item.iconActive : item.icon" :size="20" />
       </span>
