@@ -12,7 +12,6 @@
     <header v-if="isMobile" class="mobile-header">
       <AppLogo :size="14" color="rgba(134,59,255,0.5)" />
       <span class="mobile-brand-name">A &nbsp;B &nbsp;S &nbsp;C &nbsp;O &nbsp;N &nbsp;D</span>
-      <ConnectionStatus />
     </header>
 
     <!-- Mobile bottom nav -->
@@ -34,7 +33,6 @@
 <script setup lang="ts">
 import AppIcon from '@/components/common/AppIcon.vue'
 import AppLogo from '@/components/common/AppLogo.vue'
-import ConnectionStatus from '@/components/common/ConnectionStatus.vue'
 import { computed, ref, onMounted, onBeforeUnmount, watch } from 'vue'
 import BottomNav  from './BottomNav.vue'
 import SideRail   from './SideRail.vue'

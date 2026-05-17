@@ -27,9 +27,7 @@
         <div class="player-topbar">
           <div class="player-wordmark">
             ABSCOND
-            <AppIcon icon="mdi-cloud-outline" :size="13"
-              :color="socket.connected ? 'rgba(100,215,100,0.85)' : 'rgba(255,255,255,0.2)'"
-              style="margin-left:4px" />
+            <ConnectionStatus style="margin-left:6px" />
           </div>
           <div class="player-topbar-actions">
             <button
@@ -633,12 +631,12 @@
 
 <script setup lang="ts">
 import AppIcon from '@/components/common/AppIcon.vue'
+import ConnectionStatus from '@/components/common/ConnectionStatus.vue'
 import { computed, ref, watch, nextTick, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { usePlayerStore } from '@/stores/player'
 import { useAuthStore } from '@/stores/auth'
 import { useSettingsStore } from '@/stores/settings'
-import { useSocketStore } from '@/stores/socket'
 import { coverUrl, api } from '@/api/client'
 import { createBookmark, deleteBookmark } from '@/api/bookmarks'
 import type { Bookmark } from '@/api/bookmarks'
@@ -656,7 +654,6 @@ const player   = usePlayerStore()
 const auth     = useAuthStore()
 const settings = useSettingsStore()
 const notify = useNotificationStore()
-const socket = useSocketStore()
 const router = useRouter()
 
 const showChapters     = ref(false)
@@ -1620,7 +1617,6 @@ function queueDragEnd() {
   .player-left { order: 1; }
   .player-right { order: 2; }
 
-  /* On desktop hide only the wordmark; keep stop + queue action buttons */
   .player-wordmark { display: none; }
   .player-topbar { justify-content: flex-end; margin-bottom: 16px; }
 
