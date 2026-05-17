@@ -9,12 +9,13 @@
       @click="navigate(item.route)"
     >
       <span class="nav-icon">
-        <template v-if="item.route === 'player' && isPlaying">
-          <span class="wave-wrap">
-            <span v-for="n in 5" :key="n" class="wave-bar" :style="`animation-delay:${(n-1)*0.1}s`" />
-          </span>
-        </template>
-        <AppIcon :icon="isActive(item.route) ? item.iconActive : item.icon" v-else :size="20" />
+        <AppLogo
+          v-if="item.route === 'player'"
+          :size="20"
+          :animated="isPlaying ? 'draw' : 'none'"
+          :color="isActive('player') ? '#d4a017' : 'rgba(255,255,255,0.4)'"
+        />
+        <AppIcon v-else :icon="isActive(item.route) ? item.iconActive : item.icon" :size="20" />
       </span>
       <span class="nav-label">{{ item.label }}</span>
       <span class="nav-dot" />
@@ -24,6 +25,7 @@
 
 <script setup lang="ts">
 import AppIcon from '@/components/common/AppIcon.vue'
+import AppLogo from '@/components/common/AppLogo.vue'
 import { useRoute, useRouter } from 'vue-router'
 
 const props = defineProps<{ isPlaying: boolean }>()
@@ -69,15 +71,4 @@ function navigate(name: string) {
 .nav-label { font-size: 9px; font-weight: 500; line-height: 1; }
 .nav-dot { width: 4px; height: 4px; border-radius: 50%; background: transparent; margin-top: 1px; }
 .nav-item.active .nav-dot { background: #d4a017; }
-.wave-wrap { display: flex; align-items: flex-end; gap: 1.5px; height: 16px; }
-.wave-bar {
-  width: 2px; background: #d4a017; border-radius: 1px;
-  animation: wave 0.8s ease-in-out infinite alternate;
-}
-.wave-bar:nth-child(1) { height: 6px; }
-.wave-bar:nth-child(2) { height: 12px; }
-.wave-bar:nth-child(3) { height: 16px; }
-.wave-bar:nth-child(4) { height: 10px; }
-.wave-bar:nth-child(5) { height: 7px; }
-@keyframes wave { from { transform: scaleY(0.4); } to { transform: scaleY(1); } }
 </style>
