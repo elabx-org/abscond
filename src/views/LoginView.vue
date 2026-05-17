@@ -144,6 +144,7 @@ import { ref, onMounted, onBeforeUnmount } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { fetchStatus, login } from '@/api/auth'
+import { isNativeApp, resetBaseUrl } from '@/api/client'
 import { connectSocket } from '@/api/socket'
 import { getBaseUrl } from '@/api/client'
 
@@ -172,6 +173,7 @@ async function probeServer() {
     if (status.authMethods.includes('openid')) {
       oidcProviders.value = [{ id: 'openid', name: 'SSO' }]
     }
+    if (isNativeApp()) resetBaseUrl(serverUrl.value)
   } catch (e: any) {
     probeError.value = e?.message || 'Could not reach server. Check the URL and try again.'
   } finally {
@@ -256,6 +258,19 @@ const slideCaptions = ['Player', 'Library', 'Book detail', 'Home', 'Search']
 
 let timer: ReturnType<typeof setInterval>
 onMounted(async () => {
+  if (isNativeApp()) {
+    // In Capacitor, /config.json has no absHost so getBaseUrl() always returns
+    // '/api'. Skip proxy-mode entirely and show the server URL input instead.
+    // If the user previously connected, restore the host and re-probe (picks up SSO).
+    const savedHost = localStorage.getItem('abs_host')
+    if (savedHost) {
+      serverUrl.value = savedHost
+      await probeServer()
+    }
+    timer = setInterval(() => goToSlide((currentSlide.value + 1) % slideCaptions.length), 4000)
+    return
+  }
+
   // resolveBaseUrl returns '/api' only when absHost is empty (proxy mode).
   // nginx proxies /status → ABS, so we can detect OIDC without knowing the host.
   const base = await getBaseUrl()

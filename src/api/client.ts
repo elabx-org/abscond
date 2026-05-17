@@ -7,7 +7,22 @@ export function resolveBaseUrl(absHost: string | undefined): string {
 }
 
 declare global {
-  interface Window { __absconfig?: { absHost?: string; absExternalUrl?: string } }
+  interface Window {
+    __absconfig?: { absHost?: string; absExternalUrl?: string }
+    Capacitor?: { isNativePlatform(): boolean }
+  }
+}
+
+export function isNativeApp(): boolean {
+  return typeof window.Capacitor !== 'undefined' && (window.Capacitor?.isNativePlatform() ?? false)
+}
+
+export function resetBaseUrl(host: string): void {
+  const resolved = resolveBaseUrl(host)
+  baseUrlPromise = Promise.resolve(resolved)
+  _resolvedBase = resolved
+  localStorage.setItem('abs_base_url', resolved)
+  localStorage.setItem('abs_host', host)
 }
 
 export function getExternalUrl(): string {
