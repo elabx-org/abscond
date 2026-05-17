@@ -179,8 +179,8 @@
               <p v-if="editError" class="form-error-sm">{{ editError }}</p>
               <div class="share-actions">
                 <button class="pls-cancel" @click="showEdit = false">Cancel</button>
-                <button class="action-btn" :disabled="editSaving" style="flex:1;justify-content:center" @click="doSaveMeta">
-                  {{ editSaving ? 'Saving…' : 'Save' }}
+                <button class="action-btn" :class="{ 'action-btn--saved': editSaved }" :disabled="editSaving" style="flex:1;justify-content:center" @click="doSaveMeta">
+                  {{ editSaved ? '✓ Saved!' : editSaving ? 'Saving…' : 'Save' }}
                 </button>
               </div>
             </div>
@@ -403,6 +403,7 @@ import MakeM4bSheet from '@/components/sheets/MakeM4bSheet.vue'
 import BookActionsSheet from '@/components/sheets/BookActionsSheet.vue'
 import { getDirectDownloadUrl } from '@/api/downloads'
 import { getBaseUrl, api } from '@/api/client'
+import { getItem } from '@/api/items'
 import { getPlaylists, addItemToPlaylist } from '@/api/playlists'
 import type { Playlist } from '@/api/playlists'
 import { getCollections, addBookToCollection } from '@/api/collections'
@@ -495,6 +496,7 @@ const shareLink         = ref<ShareLink | null>(null)
 const shareLoading      = ref(false)
 const showEdit          = ref(false)
 const editSaving        = ref(false)
+const editSaved         = ref(false)
 const editError         = ref('')
 const editMeta          = ref({ title: '', subtitle: '', authorNames: '', narratorNames: '', publishedYear: '', publisher: '', genres: '', tags: '', description: '', isbn: '', asin: '', language: '', explicit: false, abridged: false })
 const showMatch         = ref(false)
@@ -922,6 +924,7 @@ function openEdit() {
 
 async function doSaveMeta() {
   editError.value  = ''
+  editSaved.value  = false
   editSaving.value = true
   try {
     const payload = {
@@ -943,12 +946,23 @@ async function doSaveMeta() {
       tags: editMeta.value.tags.split(',').map(t => t.trim()).filter(Boolean),
     }
     await api.patch(`/items/${props.item.id}/media`, payload)
-    showEdit.value = false
   } catch {
-    editError.value = 'Failed to save metadata'
-  } finally {
+    editError.value  = 'Failed to save metadata'
     editSaving.value = false
+    return
   }
+  // Refresh the displayed item so the sheet reflects the saved values immediately.
+  try {
+    const updatedItem = await getItem(props.item.id)
+    displayItem.value = updatedItem
+    emit('item-updated', updatedItem)
+  } catch { /* metadata saved — ignore refresh failure */ }
+  editSaving.value = false
+  editSaved.value  = true
+  setTimeout(() => {
+    editSaved.value = false
+    showEdit.value  = false
+  }, 1200)
 }
 </script>
 
@@ -1092,6 +1106,15 @@ async function doSaveMeta() {
 }
 .share-actions { display: flex; gap: 8px; }
 .share-actions .pls-cancel { flex: 1; margin-top: 0; }
+.action-btn {
+  height: 36px; border-radius: 10px; border: none; cursor: pointer;
+  background: #d4a017; color: #111; font-size: 12px; font-weight: 700;
+  display: flex; align-items: center; gap: 6px; padding: 0 14px;
+  transition: background 0.2s, color 0.2s;
+}
+.action-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.action-btn--danger { background: rgba(224,85,85,0.15); color: #e05555; border: 1px solid rgba(224,85,85,0.25); }
+.action-btn--saved  { background: #4ade80; color: #0a2010; }
 .form-error-sm { font-size: 11px; color: #e05555; margin: 4px 0; }
 .edit-panel { gap: 8px; }
 .edit-input {
