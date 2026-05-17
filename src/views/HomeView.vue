@@ -559,7 +559,7 @@ onMounted(async () => {
   loadingFinished.value = true
   loadingDiscover.value = true
 
-  if (!lib.libraries.length) await lib.fetchLibraries()
+  if (!lib.libraries.length) await lib.fetchLibraries().catch(() => {})
 
   await Promise.allSettled([
     progress.fetchInProgress(lib.activeLibraryId || undefined).finally(() => { loadingProgress.value = false }),

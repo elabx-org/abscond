@@ -48,10 +48,12 @@ export function getBaseUrl(): Promise<string> {
 }
 
 export async function createApiClient() {
-  const baseURL = await getBaseUrl()
-  const client = axios.create({ baseURL, timeout: 15000 })
+  // Don't fix baseURL at creation time — in the native app resetBaseUrl() is called
+  // after module load (during probeServer), so we resolve it fresh per-request.
+  const client = axios.create({ timeout: 15000 })
 
-  client.interceptors.request.use((config) => {
+  client.interceptors.request.use(async (config) => {
+    config.baseURL = await getBaseUrl()
     const auth = useAuthStore()
     if (auth.token) config.headers.Authorization = `Bearer ${auth.token}`
     return config
