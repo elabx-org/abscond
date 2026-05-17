@@ -11,7 +11,7 @@
       <span class="nav-icon">
         <AppLogo
           v-if="item.route === 'player'"
-          :size="20"
+          :size="44"
           :animated="isPlaying ? 'draw' : 'none'"
           :color="isActive('player') ? '#a78bfa' : 'rgba(255,255,255,0.4)'"
         />

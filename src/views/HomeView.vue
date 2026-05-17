@@ -12,13 +12,6 @@
       </div>
     </Transition>
 
-    <!-- Brand row -->
-    <div class="brand-row">
-      <AppLogo :size="14" color="rgba(134,59,255,0.5)" />
-      <span class="brand-name">A &nbsp;B &nbsp;S &nbsp;C &nbsp;O &nbsp;N &nbsp;D</span>
-      <ConnectionStatus />
-    </div>
-
     <!-- Greeting -->
     <div class="greeting">
       <div>
@@ -285,8 +278,6 @@
 
 <script setup lang="ts">
 import AppIcon from '@/components/common/AppIcon.vue'
-import AppLogo from '@/components/common/AppLogo.vue'
-import ConnectionStatus from '@/components/common/ConnectionStatus.vue'
 import { onMounted, ref, computed, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useProgressStore } from '@/stores/progress'
@@ -673,17 +664,4 @@ watch(() => lib.activeLibraryId, async (id) => {
 .picker-count { font-size: 11px; color: rgba(255,255,255,0.3); }
 .picker-empty { font-size: 12px; color: rgba(255,255,255,0.3); padding: 16px 0; text-align: center; }
 
-.brand-row {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  margin-bottom: 6px;
-}
-.brand-name {
-  font-size: 9px;
-  font-weight: 300;
-  letter-spacing: 5px;
-  color: rgba(255,255,255,0.25);
-  text-transform: uppercase;
-}
 </style>

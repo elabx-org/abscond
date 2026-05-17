@@ -10,12 +10,12 @@
       <path d="M7 1.5 A5.5 5.5 0 0 1 12.5 7" stroke="#f59e0b" stroke-width="2" stroke-linecap="round"/>
     </svg>
     <!-- Connected: green cloud with checkmark -->
-    <svg v-else-if="connected" width="16" height="12" viewBox="0 0 16 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <svg v-else-if="connected" width="16" height="14" viewBox="0 -1 16 14" fill="none" xmlns="http://www.w3.org/2000/svg">
       <path d="M12.5 9H3.5A3 3 0 0 1 3.5 3a3 3 0 0 1 5.6-1.5A2.5 2.5 0 0 1 12.5 6a2.5 2.5 0 0 1 0 3z" fill="#22c55e" opacity="0.9"/>
       <path d="M5.5 6.5 L7 8 L10.5 5" stroke="white" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
     </svg>
     <!-- Disconnected: orange cloud with X -->
-    <svg v-else width="16" height="12" viewBox="0 0 16 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <svg v-else width="16" height="14" viewBox="0 -1 16 14" fill="none" xmlns="http://www.w3.org/2000/svg">
       <path d="M12.5 9H3.5A3 3 0 0 1 3.5 3a3 3 0 0 1 5.6-1.5A2.5 2.5 0 0 1 12.5 6a2.5 2.5 0 0 1 0 3z" fill="#f97316" opacity="0.9"/>
       <path d="M6.5 5.5 L9.5 8.5 M9.5 5.5 L6.5 8.5" stroke="white" stroke-width="1.3" stroke-linecap="round"/>
     </svg>

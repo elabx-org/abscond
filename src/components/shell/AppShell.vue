@@ -8,6 +8,13 @@
       </div>
     </Transition>
 
+    <!-- Mobile top header (brand row) -->
+    <header v-if="isMobile" class="mobile-header">
+      <AppLogo :size="14" color="rgba(134,59,255,0.5)" />
+      <span class="mobile-brand-name">A &nbsp;B &nbsp;S &nbsp;C &nbsp;O &nbsp;N &nbsp;D</span>
+      <ConnectionStatus />
+    </header>
+
     <!-- Mobile bottom nav -->
     <BottomNav v-if="isMobile" :is-playing="player.isPlaying" />
 
@@ -26,6 +33,8 @@
 
 <script setup lang="ts">
 import AppIcon from '@/components/common/AppIcon.vue'
+import AppLogo from '@/components/common/AppLogo.vue'
+import ConnectionStatus from '@/components/common/ConnectionStatus.vue'
 import { computed, ref, onMounted, onBeforeUnmount, watch } from 'vue'
 import BottomNav  from './BottomNav.vue'
 import SideRail   from './SideRail.vue'
@@ -90,7 +99,10 @@ const shellClass = computed(() => ({
 
 const contentStyle = computed(() => {
   if (isMobile.value) {
-    return { paddingBottom: `calc(56px + env(safe-area-inset-bottom))` }
+    return {
+      paddingTop: '40px',
+      paddingBottom: `calc(56px + env(safe-area-inset-bottom))`,
+    }
   }
   if (isTablet.value)  return { paddingLeft: '72px' }
   return { paddingLeft: '200px' }
@@ -100,6 +112,20 @@ const contentStyle = computed(() => {
 <style scoped>
 .app-shell { min-height: 100dvh; background: #0e0e0e; }
 .shell-content { min-height: 100dvh; }
+
+.mobile-header {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 200;
+  height: 40px;
+  display: flex; align-items: center; gap: 7px;
+  padding: 0 14px;
+  background: rgba(14,14,14,0.85); backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+.mobile-brand-name {
+  font-size: 9px; font-weight: 300; letter-spacing: 5px;
+  color: rgba(255,255,255,0.25); text-transform: uppercase;
+  flex: 1;
+}
 
 .offline-banner {
   position: fixed; top: 0; left: 0; right: 0; z-index: 500;
