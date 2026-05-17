@@ -2,6 +2,7 @@ import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import { connectSocket, disconnectSocket, onSocketEvent } from '@/api/socket'
 import { getBaseUrl } from '@/api/client'
+import { invalidateCovers, invalidateApiEntries } from '@/utils/cache'
 import { useProgressStore } from '@/stores/progress'
 import { useLibraryStore } from '@/stores/library'
 import { useNotificationStore } from '@/stores/notifications'
@@ -104,6 +105,8 @@ export const useSocketStore = defineStore('socket', () => {
         const idx = items.findIndex(i => i.id === d.id)
         if (idx >= 0) items[idx] = d as unknown as typeof items[0]
       }
+      invalidateApiEntries(d.id as string)
+      invalidateCovers(d.id as string)
     }))
 
     cleanups.push(onSocketEvent('scan_start', (data: unknown) => {
@@ -137,6 +140,7 @@ export const useSocketStore = defineStore('socket', () => {
       const d = data as Record<string, unknown> | undefined
       const libId = d?.libraryId as string | undefined
       if (libId) delete scanProgress.value[libId]
+      if (libId) invalidateApiEntries(libId)
       const count = d?.totalAdded as number | undefined
       ns.show(count ? `Library scan complete — ${count} new item${count !== 1 ? 's' : ''}` : 'Library scan complete', 'success')
     }))
@@ -147,6 +151,7 @@ export const useSocketStore = defineStore('socket', () => {
       const ls = useLibraryStore()
       const libId = d.libraryId as string
       if (libId && libId === ls.activeLibraryId) ls.fetchItems(libId)
+      if (libId) invalidateApiEntries(libId)
     }))
 
     cleanups.push(onSocketEvent('podcast_episode_added', (data: unknown) => {
@@ -192,6 +197,7 @@ export const useSocketStore = defineStore('socket', () => {
       if (!data || typeof data !== 'object') return
       const d = data as Record<string, unknown>
       if (!d.id) return
+      const libId = d.libraryId as string | undefined
       const ls = useLibraryStore()
       for (const libId of ls.libraries.map(l => l.id)) {
         const items = ls.itemsFor(libId)
@@ -201,6 +207,7 @@ export const useSocketStore = defineStore('socket', () => {
       const ps = useProgressStore()
       ps.inProgress     = ps.inProgress.filter((i: { id: unknown }) => i.id !== d.id)
       ps.recentlyAdded  = ps.recentlyAdded.filter((i: { id: unknown }) => i.id !== d.id)
+      if (libId) invalidateApiEntries(libId)
     }))
   }
 
