@@ -255,6 +255,7 @@ async function removeCover() {
   activeAction.value = 'remove'
   try {
     await api.delete(`/items/${props.itemId}/cover`)
+    invalidateCovers(props.itemId)
     notify.show('Cover removed', 'success')
     emit('updated')
     close()

@@ -199,8 +199,8 @@ export const useSocketStore = defineStore('socket', () => {
       if (!d.id) return
       const libId = d.libraryId as string | undefined
       const ls = useLibraryStore()
-      for (const libId of ls.libraries.map(l => l.id)) {
-        const items = ls.itemsFor(libId)
+      for (const lId of ls.libraries.map(l => l.id)) {
+        const items = ls.itemsFor(lId)
         const idx = items.findIndex(i => i.id === d.id)
         if (idx >= 0) { items.splice(idx, 1); break }
       }
