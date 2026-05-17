@@ -133,6 +133,15 @@
           </v-alert>
         </template>
       </div>
+
+      <!-- Debug log: shown on next launch when prior auth attempt left entries -->
+      <div v-if="debugLogText" class="debug-log">
+        <div class="debug-log-header">
+          <span>Auth Debug Log</span>
+          <button class="debug-clear-btn" @click="clearLog">Clear</button>
+        </div>
+        <pre class="debug-log-body">{{ debugLogText }}</pre>
+      </div>
     </div>
   </div>
 </template>
@@ -145,7 +154,7 @@ import { useRouter } from 'vue-router'
 import { useAuthStore, type AbsUser } from '@/stores/auth'
 import { fetchStatus, login } from '@/api/auth'
 import { isNativeApp, resetBaseUrl } from '@/api/client'
-import { openNativeAuth } from '@/plugins/haptics-bridge'
+import { openNativeAuth, getDebugLog, clearDebugLog } from '@/plugins/haptics-bridge'
 import { connectSocket } from '@/api/socket'
 import { getBaseUrl } from '@/api/client'
 
@@ -263,6 +272,7 @@ const username   = ref('')
 const password   = ref('')
 const loggingIn  = ref(false)
 const loginError = ref('')
+const debugLogText = ref('')
 
 async function submit() {
   loggingIn.value = true
@@ -304,6 +314,10 @@ onMounted(async () => {
       serverUrl.value = savedHost
       await probeServer()
     }
+    try {
+      const log = await getDebugLog()
+      if (log) debugLogText.value = log
+    } catch { /* non-critical */ }
     timer = setInterval(() => goToSlide((currentSlide.value + 1) % slideCaptions.length), 4000)
     return
   }
@@ -328,6 +342,11 @@ onMounted(async () => {
   timer = setInterval(() => goToSlide((currentSlide.value + 1) % slideCaptions.length), 4000)
 })
 onBeforeUnmount(() => clearInterval(timer))
+
+function clearLog() {
+  clearDebugLog()
+  debugLogText.value = ''
+}
 
 function goToSlide(n: number) {
   slideDir.value = n > currentSlide.value ? 'slide-left' : 'slide-right'
@@ -409,4 +428,28 @@ function goToSlide(n: number) {
 .local-toggle:hover { color:rgba(255,255,255,0.55); }
 .divider-row { display:flex; align-items:center; gap:10px; margin:0.75rem 0; }
 .divider-text { font-size:0.68rem; color:rgba(255,255,255,0.2); white-space:nowrap; }
+
+.debug-log {
+  width:100%; max-width:480px; margin-top:1.5rem;
+  border:1px solid rgba(255,180,0,0.2); border-radius:8px; overflow:hidden;
+}
+.debug-log-header {
+  display:flex; justify-content:space-between; align-items:center;
+  padding:0.4rem 0.75rem;
+  background:rgba(255,180,0,0.08);
+  font-size:0.7rem; color:rgba(255,180,0,0.6); font-weight:600; letter-spacing:0.5px;
+}
+.debug-clear-btn {
+  font-size:0.65rem; color:rgba(255,180,0,0.5); background:none; border:none;
+  cursor:pointer; padding:0 0.25rem;
+}
+.debug-clear-btn:hover { color:rgba(255,180,0,0.9); }
+.debug-log-body {
+  margin:0; padding:0.6rem 0.75rem;
+  font-size:0.58rem; line-height:1.5;
+  color:rgba(255,255,255,0.45);
+  white-space:pre-wrap; word-break:break-all;
+  max-height:200px; overflow-y:auto;
+  background:rgba(0,0,0,0.3);
+}
 </style>

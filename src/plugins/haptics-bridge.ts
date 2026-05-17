@@ -46,3 +46,23 @@ export function setupHapticsBridge(): void {
 export function openNativeAuth(url: string, verifier: string, state: string): Promise<string> {
   return (window as any).__hapticsBridge.openAuth(url, verifier, state)
 }
+
+export function getDebugLog(): Promise<string> {
+  if (!isNativeApp()) return Promise.resolve('')
+  const w = window as any
+  return new Promise((res, rej) => {
+    const id = ++callId
+    cbs[id] = { res, rej }
+    w.webkit.messageHandlers.hapticsBridge.postMessage(
+      JSON.stringify({ action: 'getDebugLog', id }),
+    )
+  })
+}
+
+export function clearDebugLog(): void {
+  if (!isNativeApp()) return
+  const w = window as any
+  w.webkit.messageHandlers.hapticsBridge.postMessage(
+    JSON.stringify({ action: 'clearDebugLog' }),
+  )
+}
