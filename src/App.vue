@@ -15,11 +15,13 @@ import NotificationToast from '@/components/shell/NotificationToast.vue'
 import { useAuthStore } from '@/stores/auth'
 import { useSocketStore } from '@/stores/socket'
 import { usePlayerStore } from '@/stores/player'
+import { useProgressStore } from '@/stores/progress'
 import { api } from '@/api/client'
 
-const auth   = useAuthStore()
-const socket = useSocketStore()
-const player = usePlayerStore()
+const auth     = useAuthStore()
+const socket   = useSocketStore()
+const player   = usePlayerStore()
+const progress = useProgressStore()
 
 function syncSocket() {
   if (auth.isLoggedIn && auth.token) socket.connect(auth.token)
@@ -46,6 +48,15 @@ async function refreshUser() {
   } catch { /* ignore — stale session will be fixed on next login */ }
 }
 
-onMounted(() => { syncSocket(); syncPlayer(); refreshUser() })
-watch(() => auth.isLoggedIn, () => { syncSocket(); syncPlayer() })
+onMounted(() => {
+  syncSocket()
+  syncPlayer()
+  refreshUser()
+  if (auth.isLoggedIn) progress.fetchInProgress()
+})
+watch(() => auth.isLoggedIn, (loggedIn) => {
+  syncSocket()
+  syncPlayer()
+  if (loggedIn) progress.fetchInProgress()
+})
 </script>
