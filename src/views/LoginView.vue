@@ -232,11 +232,11 @@ async function startOidc(provider: { id: string }) {
 
   if (isNativeApp()) {
     try {
-      const result = await (window as any).Capacitor.Plugins.HapticsBridge.openAuth({ url: authUrl })
+      const result = await (window as any).Capacitor.nativePromise('HapticsBridge', 'openAuth', { url: authUrl })
       const cbUrl = new URL(result.callbackUrl)
       router.push({ name: 'auth-callback', query: Object.fromEntries(cbUrl.searchParams) })
     } catch (e: any) {
-      const msg: string = e?.message ?? e?.errorMessage ?? String(e) ?? ''
+      const msg: string = e?.message ?? e?.errorMessage ?? (typeof e === 'string' ? e : 'Unknown error')
       if (msg !== 'cancelled') loginError.value = `SSO failed: ${msg}`
     }
   } else {
