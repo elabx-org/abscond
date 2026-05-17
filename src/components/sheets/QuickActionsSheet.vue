@@ -80,6 +80,7 @@
 </template>
 
 <script setup lang="ts">
+import AppIcon from '@/components/common/AppIcon.vue'
 import { ref, watch } from 'vue'
 import { getCollections, addBookToCollection } from '@/api/collections'
 import type { Collection } from '@/api/collections'

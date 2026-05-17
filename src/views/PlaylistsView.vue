@@ -183,6 +183,7 @@
 </template>
 
 <script setup lang="ts">
+import AppIcon from '@/components/common/AppIcon.vue'
 import { onMounted, ref } from 'vue'
 import { getPlaylists, createPlaylist, deletePlaylist, removeItemFromPlaylist, updatePlaylist } from '@/api/playlists'
 import { coverUrl } from '@/api/client'

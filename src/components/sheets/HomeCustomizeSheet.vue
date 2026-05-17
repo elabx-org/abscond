@@ -35,6 +35,7 @@
 </template>
 
 <script setup lang="ts">
+import AppIcon from '@/components/common/AppIcon.vue'
 import { ref, computed, watch } from 'vue'
 
 export interface HomeSection {

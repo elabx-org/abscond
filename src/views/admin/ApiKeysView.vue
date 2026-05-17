@@ -96,6 +96,7 @@
 </template>
 
 <script setup lang="ts">
+import AppIcon from '@/components/common/AppIcon.vue'
 import { computed, onMounted, ref } from 'vue'
 import { getApiKeys, createApiKey, deleteApiKey, getUsers } from '@/api/admin'
 import type { ApiKey, AdminUser } from '@/api/admin'

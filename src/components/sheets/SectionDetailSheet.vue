@@ -64,6 +64,7 @@
 </template>
 
 <script setup lang="ts">
+import AppIcon from '@/components/common/AppIcon.vue'
 import { ref } from 'vue'
 import { coverUrl } from '@/api/client'
 import { getAuthorDisplay } from '@/utils/metadata'

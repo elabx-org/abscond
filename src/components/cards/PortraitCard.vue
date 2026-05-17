@@ -45,6 +45,7 @@
 </template>
 
 <script setup lang="ts">
+import AppIcon from '@/components/common/AppIcon.vue'
 import { ref, computed } from 'vue'
 import { useColorThief } from '@/composables/useColorThief'
 import { usePlayerStore } from '@/stores/player'

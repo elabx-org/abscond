@@ -170,6 +170,7 @@
 </template>
 
 <script setup lang="ts">
+import AppIcon from '@/components/common/AppIcon.vue'
 import { onMounted, ref, computed } from 'vue'
 import { getCollections, createCollection, deleteCollection, removeBookFromCollection } from '@/api/collections'
 import { coverUrl } from '@/api/client'

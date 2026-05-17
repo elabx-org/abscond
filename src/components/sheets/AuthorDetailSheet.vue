@@ -43,6 +43,7 @@
 </template>
 
 <script setup lang="ts">
+import AppIcon from '@/components/common/AppIcon.vue'
 import { watch, ref, computed } from 'vue'
 import { coverUrl, getBaseUrl } from '@/api/client'
 import { useAuthStore } from '@/stores/auth'

@@ -24,6 +24,7 @@
 </template>
 
 <script setup lang="ts">
+import AppIcon from '@/components/common/AppIcon.vue'
 import { computed } from 'vue'
 
 const props = defineProps<{

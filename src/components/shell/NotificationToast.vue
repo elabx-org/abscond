@@ -18,6 +18,7 @@
 </template>
 
 <script setup lang="ts">
+import AppIcon from '@/components/common/AppIcon.vue'
 import { useNotificationStore } from '@/stores/notifications'
 
 const notifications = useNotificationStore()

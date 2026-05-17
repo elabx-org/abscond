@@ -37,6 +37,7 @@
 </template>
 
 <script setup lang="ts">
+import AppIcon from '@/components/common/AppIcon.vue'
 import { onMounted, ref } from 'vue'
 import { getRssFeeds, closeRssFeed } from '@/api/admin'
 import type { RssFeed } from '@/api/admin'

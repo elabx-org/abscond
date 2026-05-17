@@ -58,6 +58,7 @@
 </template>
 
 <script setup lang="ts">
+import AppIcon from '@/components/common/AppIcon.vue'
 import { onMounted, ref } from 'vue'
 import { getAllSessions, deleteSession } from '@/api/admin'
 import type { GlobalSession } from '@/api/admin'

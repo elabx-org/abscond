@@ -29,6 +29,7 @@
 </template>
 
 <script setup lang="ts">
+import AppIcon from '@/components/common/AppIcon.vue'
 import { ref, watch } from 'vue'
 import { getItemListeningSessions, type ListeningSession } from '@/api/stats'
 

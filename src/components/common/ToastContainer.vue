@@ -17,6 +17,7 @@
 </template>
 
 <script setup lang="ts">
+import AppIcon from '@/components/common/AppIcon.vue'
 import { toasts } from '@/composables/useToast'
 </script>
 

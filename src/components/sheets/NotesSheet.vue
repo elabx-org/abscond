@@ -103,6 +103,7 @@
 </template>
 
 <script setup lang="ts">
+import AppIcon from '@/components/common/AppIcon.vue'
 import { ref, computed, watch } from 'vue'
 import { getNotes, addNote, updateNote, deleteNote } from '@/api/notes'
 import type { Note } from '@/api/notes'

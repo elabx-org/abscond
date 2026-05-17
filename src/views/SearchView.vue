@@ -209,6 +209,7 @@
 </template>
 
 <script setup lang="ts">
+import AppIcon from '@/components/common/AppIcon.vue'
 import { computed, ref, onMounted } from 'vue'
 import { searchLibrary } from '@/api/search'
 import { coverUrl, api } from '@/api/client'

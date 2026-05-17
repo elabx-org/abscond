@@ -150,6 +150,7 @@
 </template>
 
 <script setup lang="ts">
+import AppIcon from '@/components/common/AppIcon.vue'
 import { onMounted, ref } from 'vue'
 import { getEmailSettings, updateEmailSettings, sendTestEmail } from '@/api/admin'
 import type { EmailSettings } from '@/api/admin'

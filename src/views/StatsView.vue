@@ -299,6 +299,7 @@
 </template>
 
 <script setup lang="ts">
+import AppIcon from '@/components/common/AppIcon.vue'
 import { onMounted, onBeforeUnmount, ref, computed, watch } from 'vue'
 import { getUserStats, getLibraryStats, getListeningSessions } from '@/api/stats'
 import { useLibraryStore } from '@/stores/library'

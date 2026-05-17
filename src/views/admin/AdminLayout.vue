@@ -27,6 +27,7 @@
 </template>
 
 <script setup lang="ts">
+import AppIcon from '@/components/common/AppIcon.vue'
 import { useRoute, useRouter } from 'vue-router'
 
 const route  = useRoute()

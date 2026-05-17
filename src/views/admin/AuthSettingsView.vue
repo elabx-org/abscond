@@ -230,6 +230,7 @@
 </template>
 
 <script setup lang="ts">
+import AppIcon from '@/components/common/AppIcon.vue'
 import { computed, onMounted, ref } from 'vue'
 import { getAuthSettings, updateAuthSettings } from '@/api/admin'
 import type { AuthSettings } from '@/api/admin'

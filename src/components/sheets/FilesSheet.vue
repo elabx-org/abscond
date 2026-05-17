@@ -73,6 +73,7 @@
 </template>
 
 <script setup lang="ts">
+import AppIcon from '@/components/common/AppIcon.vue'
 import { ref, watch } from 'vue'
 import { api } from '@/api/client'
 

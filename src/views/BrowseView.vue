@@ -191,6 +191,7 @@
 </template>
 
 <script setup lang="ts">
+import AppIcon from '@/components/common/AppIcon.vue'
 import { onMounted, ref, watch } from 'vue'
 import { useLibraryStore } from '@/stores/library'
 import { useAuthStore } from '@/stores/auth'

@@ -25,6 +25,7 @@
 </template>
 
 <script setup lang="ts">
+import AppIcon from '@/components/common/AppIcon.vue'
 import { nextTick, onMounted, ref } from 'vue'
 import { getServerLogs } from '@/api/admin'
 

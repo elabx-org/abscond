@@ -119,6 +119,7 @@
 </template>
 
 <script setup lang="ts">
+import AppIcon from '@/components/common/AppIcon.vue'
 import { computed } from 'vue'
 import { useEqualizerStore, EQ_BANDS, PRESETS } from '@/stores/equalizer'
 

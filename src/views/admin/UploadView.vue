@@ -71,6 +71,7 @@
 </template>
 
 <script setup lang="ts">
+import AppIcon from '@/components/common/AppIcon.vue'
 import { ref } from 'vue'
 import { useLibraryStore } from '@/stores/library'
 import { api } from '@/api/client'

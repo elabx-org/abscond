@@ -156,6 +156,7 @@
 </template>
 
 <script setup lang="ts">
+import AppIcon from '@/components/common/AppIcon.vue'
 import { ref, computed, watch } from 'vue'
 import { searchCandidates, type MatchCandidate } from '@/api/match'
 import { getItem } from '@/api/items'

@@ -25,6 +25,7 @@
 </template>
 
 <script setup lang="ts">
+import AppIcon from '@/components/common/AppIcon.vue'
 import { computed, ref, onMounted, onBeforeUnmount, watch } from 'vue'
 import BottomNav  from './BottomNav.vue'
 import SideRail   from './SideRail.vue'

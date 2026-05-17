@@ -55,6 +55,7 @@
 </template>
 
 <script setup lang="ts">
+import AppIcon from '@/components/common/AppIcon.vue'
 import { computed, onMounted, ref } from 'vue'
 import { getServerInfo, getUsers, getAdminLibraries, getBackups, purgeCache, scanLibrary } from '@/api/admin/index'
 import type { AdminLibrary, AdminBackup } from '@/api/admin/index'

@@ -152,6 +152,7 @@
 </template>
 
 <script setup lang="ts">
+import AppIcon from '@/components/common/AppIcon.vue'
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { useLibraryStore } from '@/stores/library'
 import { scanUpcoming, loadCache, clearCache, type UpcomingBook, type ScanProgress } from '@/api/upcoming'

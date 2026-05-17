@@ -156,6 +156,7 @@
 </template>
 
 <script setup lang="ts">
+import AppIcon from '@/components/common/AppIcon.vue'
 import { ref } from 'vue'
 import {
   getTags, renameTag, deleteTag,

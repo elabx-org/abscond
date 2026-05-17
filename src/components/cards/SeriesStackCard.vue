@@ -51,6 +51,7 @@
 </template>
 
 <script setup lang="ts">
+import AppIcon from '@/components/common/AppIcon.vue'
 import { computed, ref } from 'vue'
 import { coverUrl } from '@/api/client'
 import type { SeriesDetail } from '@/api/browse'

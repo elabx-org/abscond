@@ -189,6 +189,7 @@
 </template>
 
 <script setup lang="ts">
+import AppIcon from '@/components/common/AppIcon.vue'
 import { onMounted, ref } from 'vue'
 import { getServerSettings, updateServerSettings } from '@/api/admin/index'
 import type { ServerSettings } from '@/api/admin/index'
