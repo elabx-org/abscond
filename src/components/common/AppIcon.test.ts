@@ -58,4 +58,10 @@ describe('AppIcon', () => {
     const w = mount(AppIcon, { props: { icon: 'mdi-loading' } })
     expect(w.find('svg').classes()).toContain('app-icon')
   })
+
+  it('correctly transforms multi-word icon names', () => {
+    const w = mount(AppIcon, { props: { icon: 'mdi-account-multiple' } })
+    const path = w.find('path')
+    expect(path.attributes('d')?.length).toBeGreaterThan(0)
+  })
 })

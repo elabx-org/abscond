@@ -4,7 +4,7 @@
     :height="resolvedSize"
     viewBox="0 0 24 24"
     class="app-icon"
-    :style="color && color !== 'currentColor' ? `color: ${color}` : undefined"
+    :style="color && color !== 'currentColor' ? { color } : undefined"
     aria-hidden="true"
   >
     <path :d="path" fill="currentColor" />
