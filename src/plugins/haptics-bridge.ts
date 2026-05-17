@@ -1,9 +1,41 @@
-import { registerPlugin } from '@capacitor/core'
+import { isNativeApp } from '@/api/client'
 
-export interface HapticsBridgePlugin {
-  openAuth(options: { url: string }): Promise<{ callbackUrl: string }>
-  impact(options: { style?: 'light' | 'medium' | 'heavy' }): Promise<void>
-  notification(options: { type?: 'success' | 'warning' | 'error' }): Promise<void>
+type Callbacks = Record<number, { res: (v: string) => void; rej: (e: { message: string }) => void }>
+
+let callId = 0
+const cbs: Callbacks = {}
+
+export function setupHapticsBridge(): void {
+  if (!isNativeApp()) return
+  const w = window as any
+
+  w.__hapticsBridge = {
+    openAuth: (url: string): Promise<string> =>
+      new Promise((res, rej) => {
+        const id = ++callId
+        cbs[id] = { res, rej }
+        w.webkit.messageHandlers.hapticsBridge.postMessage(
+          JSON.stringify({ action: 'openAuth', id, url }),
+        )
+      }),
+    _resolve: (id: number, val: string) => {
+      const cb = cbs[id]
+      if (cb) { delete cbs[id]; cb.res(val) }
+    },
+    _reject: (id: number, msg: string) => {
+      const cb = cbs[id]
+      if (cb) { delete cbs[id]; cb.rej({ message: msg }) }
+    },
+  }
+
+  ;(navigator as any).vibrate = (): boolean => {
+    w.webkit.messageHandlers.hapticsBridge.postMessage(
+      JSON.stringify({ action: 'impact', style: 'light' }),
+    )
+    return true
+  }
 }
 
-export const HapticsBridge = registerPlugin<HapticsBridgePlugin>('HapticsBridge')
+export function openNativeAuth(url: string): Promise<string> {
+  return (window as any).__hapticsBridge.openAuth(url)
+}

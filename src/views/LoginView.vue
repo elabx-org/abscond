@@ -145,6 +145,7 @@ import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { fetchStatus, login } from '@/api/auth'
 import { isNativeApp, resetBaseUrl } from '@/api/client'
+import { openNativeAuth } from '@/plugins/haptics-bridge'
 import { connectSocket } from '@/api/socket'
 import { getBaseUrl } from '@/api/client'
 
@@ -232,7 +233,7 @@ async function startOidc(provider: { id: string }) {
 
   if (isNativeApp()) {
     try {
-      const callbackUrl: string = await (window as any).__hapticsBridge.openAuth(authUrl)
+      const callbackUrl: string = await openNativeAuth(authUrl)
       const cbUrl = new URL(callbackUrl)
       router.push({ name: 'auth-callback', query: Object.fromEntries(cbUrl.searchParams) })
     } catch (e: any) {
