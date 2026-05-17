@@ -1,7 +1,8 @@
 <template>
   <nav class="side-rail">
     <div class="rail-logo">
-      <div class="logo-icon">◉</div>
+      <AppLogo :size="22" color="rgba(134,59,255,0.6)" />
+      <ConnectionStatus />
     </div>
     <button v-for="item in navItems" :key="item.route" class="rail-item"
       :class="{ active: isActive(item.route) }" @click="router.push({ name: item.route })">
@@ -18,6 +19,8 @@
 
 <script setup lang="ts">
 import AppIcon from '@/components/common/AppIcon.vue'
+import AppLogo from '@/components/common/AppLogo.vue'
+import ConnectionStatus from '@/components/common/ConnectionStatus.vue'
 import { useRoute, useRouter } from 'vue-router'
 const route = useRoute(); const router = useRouter()
 const isActive = (name: string) => route.name === name
@@ -41,11 +44,9 @@ const navItems = [
   background: rgba(14,14,14,0.9); border-right: 1px solid rgba(255,255,255,0.05);
   display: flex; flex-direction: column; align-items: center; padding: 8px 0; gap: 4px;
 }
-.rail-logo { padding: 12px 0 16px; }
-.logo-icon {
-  width: 32px; height: 32px; border-radius: 9px;
-  background: linear-gradient(135deg,#2a1500,#d4a017);
-  display: flex; align-items: center; justify-content: center; font-size: 14px;
+.rail-logo {
+  padding: 14px 0 16px;
+  display: flex; flex-direction: column; align-items: center; gap: 8px;
 }
 .rail-item {
   width: 56px; padding: 8px 4px; border-radius: 12px; border: none; background: transparent;
