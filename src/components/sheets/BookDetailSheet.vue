@@ -405,6 +405,7 @@ import BookActionsSheet from '@/components/sheets/BookActionsSheet.vue'
 import { getDirectDownloadUrl } from '@/api/downloads'
 import { getBaseUrl, api } from '@/api/client'
 import { getItem } from '@/api/items'
+import { invalidateCovers, invalidateApiEntries } from '@/utils/cache'
 import { getPlaylists, addItemToPlaylist } from '@/api/playlists'
 import type { Playlist } from '@/api/playlists'
 import { getCollections, addBookToCollection } from '@/api/collections'
@@ -604,6 +605,7 @@ async function doDeleteItem() {
   deleting.value = true
   try {
     await api.delete(`/items/${props.item.id}`)
+    invalidateApiEntries(props.item.libraryId)
     emit('close')
   } catch { /* ignore */ }
   finally { deleting.value = false }
@@ -691,6 +693,7 @@ async function doUpdateCover() {
     } else if (coverUrl_.value.trim()) {
       await api.post(`/items/${props.item.id}/cover`, { url: coverUrl_.value.trim() })
     }
+    invalidateCovers(props.item.id)
     coverUrl_.value  = ''
     coverFile.value  = null
   } catch { /* ignore */ }
@@ -957,6 +960,7 @@ async function doSaveMeta() {
     const updatedItem = await getItem(props.item.id)
     displayItem.value = updatedItem
     emit('item-updated', updatedItem)
+    invalidateApiEntries(props.item.id)
   } catch { /* metadata saved — ignore refresh failure */ }
   editSaving.value = false
   editSaved.value  = true

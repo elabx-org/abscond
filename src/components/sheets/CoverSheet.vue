@@ -128,6 +128,7 @@ import AppIcon from '@/components/common/AppIcon.vue'
 import { ref, watch } from 'vue'
 import { api } from '@/api/client'
 import { useNotificationStore } from '@/stores/notifications'
+import { invalidateCovers } from '@/utils/cache'
 
 const props = defineProps<{ modelValue: boolean; itemId: string; itemTitle?: string; itemAuthor?: string }>()
 const emit = defineEmits<{ 'update:modelValue': [val: boolean]; updated: [] }>()
@@ -193,6 +194,7 @@ async function applyCoverFromSearch(url: string) {
   activeAction.value = 'url'
   try {
     await api.post(`/items/${props.itemId}/cover`, { url })
+    invalidateCovers(props.itemId)
     notify.show('Cover updated', 'success')
     emit('updated')
     close()
@@ -210,6 +212,7 @@ async function applyUrl() {
   activeAction.value = 'url'
   try {
     await api.post(`/items/${props.itemId}/cover`, { url: urlInput.value.trim() })
+    invalidateCovers(props.itemId)
     notify.show('Cover updated', 'success')
     urlInput.value = ''
     emit('updated')
@@ -232,6 +235,7 @@ async function uploadFile() {
     await api.post(`/items/${props.itemId}/cover`, formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     })
+    invalidateCovers(props.itemId)
     notify.show('Cover updated', 'success')
     pickedFile.value = null
     if (fileInputRef.value) fileInputRef.value.value = ''

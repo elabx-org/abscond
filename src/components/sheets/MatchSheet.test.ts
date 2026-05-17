@@ -19,10 +19,15 @@ vi.mock('@/api/client', () => ({
 vi.mock('@/stores/auth', () => ({
   useAuthStore: () => ({ token: 'tok' }),
 }))
+vi.mock('@/utils/cache', () => ({
+  invalidateCovers:     vi.fn().mockResolvedValue(undefined),
+  invalidateApiEntries: vi.fn().mockResolvedValue(undefined),
+}))
 
 import { searchCandidates } from '@/api/match'
 import { getItem } from '@/api/items'
 import { api } from '@/api/client'
+import { invalidateCovers, invalidateApiEntries } from '@/utils/cache'
 
 const mockItem: LibraryItem = {
   id: 'li1',
@@ -281,5 +286,16 @@ describe('MatchSheet — apply step', () => {
     await wrapper.find('.match-search-btn').trigger('click')
     await flushPromises()
     expect(wrapper.find('.match-error').exists()).toBe(true)
+  })
+
+  it('invalidates covers and API entries after successful apply', async () => {
+    const updatedItem = { ...mockItem }
+    vi.mocked(api.patch).mockResolvedValueOnce({ data: { updated: true } } as any)
+    vi.mocked(getItem).mockResolvedValueOnce(updatedItem)
+    const wrapper = await mountAtDiff()
+    await wrapper.find('.match-search-btn').trigger('click')
+    await flushPromises()
+    expect(invalidateCovers).toHaveBeenCalledWith('li1')
+    expect(invalidateApiEntries).toHaveBeenCalledWith('li1')
   })
 })

@@ -163,6 +163,7 @@ import { getItem } from '@/api/items'
 import { api, coverUrl } from '@/api/client'
 import { useAuthStore } from '@/stores/auth'
 import type { LibraryItem } from '@/api/types'
+import { invalidateCovers, invalidateApiEntries } from '@/utils/cache'
 
 const props  = defineProps<{ modelValue: boolean; item: LibraryItem }>()
 const emit   = defineEmits<{ 'update:modelValue': [val: boolean]; matched: [item: LibraryItem] }>()
@@ -285,6 +286,8 @@ async function doApply() {
   try {
     const updatedItem = await getItem(props.item.id)
     emit('matched', updatedItem)
+    invalidateCovers(props.item.id)
+    invalidateApiEntries(props.item.id)
     applied.value  = true
     applying.value = false
     // Show success state briefly so the user sees confirmation, then close.
