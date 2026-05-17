@@ -1,8 +1,9 @@
 <template>
   <nav class="nav-drawer">
-    <div class="drawer-logo">
-      <div class="logo-icon">◉</div>
-      <span class="logo-name">abs<span class="accent">cond</span></span>
+    <div class="drawer-brand">
+      <AppLogo :size="18" color="rgba(134,59,255,0.6)" />
+      <span class="drawer-brand-name">A &nbsp;B &nbsp;S &nbsp;C &nbsp;O &nbsp;N &nbsp;D</span>
+      <ConnectionStatus />
     </div>
 
     <div class="drawer-scroll">
@@ -40,6 +41,8 @@
 
 <script setup lang="ts">
 import AppIcon from '@/components/common/AppIcon.vue'
+import AppLogo from '@/components/common/AppLogo.vue'
+import ConnectionStatus from '@/components/common/ConnectionStatus.vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 const route = useRoute(); const router = useRouter()
@@ -71,14 +74,20 @@ const bottomItems = [
   background: rgba(11,11,11,0.95); border-right: 1px solid rgba(255,255,255,0.05);
   display: flex; flex-direction: column; padding: 0 8px;
 }
-.drawer-logo { display: flex; align-items: center; gap: 10px; padding: 20px 8px 12px; flex-shrink: 0; }
-.logo-icon {
-  width: 30px; height: 30px; border-radius: 8px;
-  background: linear-gradient(135deg,#2a1500,#d4a017);
-  display: flex; align-items: center; justify-content: center; font-size: 13px;
+.drawer-brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 16px 16px 8px;
 }
-.logo-name { font-size: 0.95rem; font-weight: 800; letter-spacing: -0.3px; }
-.accent { color: #d4a017; }
+.drawer-brand-name {
+  font-size: 9px;
+  font-weight: 300;
+  letter-spacing: 5px;
+  color: rgba(255,255,255,0.25);
+  text-transform: uppercase;
+  flex: 1;
+}
 .drawer-scroll { flex: 1; overflow-y: auto; scrollbar-width: none; padding-bottom: 20px; }
 .drawer-section-label { font-size: 9px; font-weight: 700; color: rgba(255,255,255,0.25); text-transform: uppercase; letter-spacing: 0.08em; padding: 12px 12px 4px; margin: 0; }
 .drawer-item {
