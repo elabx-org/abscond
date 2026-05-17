@@ -8,8 +8,8 @@
   >
     <defs>
       <linearGradient :id="`logo-fade-${uid}`" x1="0" x2="1" y1="0" y2="0">
-        <stop offset="0.55" :stop-color="color" stop-opacity="1"/>
-        <stop offset="1"    :stop-color="color" stop-opacity="0"/>
+        <stop offset="0.55" stop-color="white" stop-opacity="1"/>
+        <stop offset="1"    stop-color="white" stop-opacity="0"/>
       </linearGradient>
       <mask :id="`logo-mask-${uid}`">
         <rect width="36" height="14" :fill="`url(#logo-fade-${uid})`"/>

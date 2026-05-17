@@ -10,7 +10,7 @@
 
     <!-- Mobile top header (brand row) -->
     <header v-if="isMobile" class="mobile-header">
-      <AppLogo :size="14" color="rgba(134,59,255,0.5)" />
+      <AppLogo :size="18" color="rgba(134,59,255,0.65)" />
       <span class="mobile-brand-name">A &nbsp;B &nbsp;S &nbsp;C &nbsp;O &nbsp;N &nbsp;D</span>
       <ConnectionStatus />
     </header>
