@@ -593,7 +593,7 @@ watch(() => lib.activeLibraryId, async (id) => {
 </script>
 
 <style scoped>
-.home-view { padding: 16px 12px 80px; min-height: 100vh; background: #0e0e0e; }
+.home-view { padding: 16px 12px 80px; min-height: 100dvh; background: #0e0e0e; }
 .sections-wrap { display: flex; flex-direction: column; }
 
 .ptr-indicator {

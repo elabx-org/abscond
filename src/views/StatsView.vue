@@ -709,7 +709,7 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-.stats-view { min-height: 100vh; background: #0e0e0e; padding: 16px 12px 60px; }
+.stats-view { min-height: 100dvh; background: #0e0e0e; padding: 16px 12px 60px; }
 
 .ptr-indicator {
   position: fixed; top: 0; left: 0; right: 0; z-index: 100;

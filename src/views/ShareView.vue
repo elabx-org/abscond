@@ -86,7 +86,7 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-.share-view { min-height: 100vh; background: #0e0e0e; position: relative; }
+.share-view { min-height: 100dvh; background: #0e0e0e; position: relative; }
 
 .loading-state { display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 60px 20px; }
 .skel-cover { width: 180px; height: 180px; border-radius: 12px; background: linear-gradient(90deg, #1a1a1a 25%, #222 50%, #1a1a1a 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; }
@@ -102,7 +102,7 @@ onMounted(async () => {
 .backdrop-img { width: 100%; height: 100%; object-fit: cover; filter: blur(40px) brightness(0.3) saturate(1.4); transform: scale(1.1); }
 .backdrop-scrim { position: absolute; inset: 0; background: linear-gradient(to bottom, rgba(0,0,0,0.2), rgba(14,14,14,0.97)); }
 
-.share-content { position: relative; z-index: 1; min-height: 100vh; }
+.share-content { position: relative; z-index: 1; min-height: 100dvh; }
 .share-inner { display: flex; flex-direction: column; align-items: center; padding: 60px 24px 40px; gap: 12px; }
 
 .share-cover { width: 180px; height: 180px; object-fit: cover; border-radius: 12px; box-shadow: 0 20px 60px rgba(0,0,0,0.8); }

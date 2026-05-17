@@ -1092,7 +1092,7 @@ function queueDragEnd() {
 </script>
 
 <style scoped>
-.player-view { min-height: 100vh; background: #0e0e0e; display: flex; flex-direction: column; }
+.player-view { min-height: 100dvh; background: #0e0e0e; display: flex; flex-direction: column; }
 
 /* ── Empty state ─────────────────────────────────────────────────────────────── */
 .empty-state {
@@ -1104,7 +1104,7 @@ function queueDragEnd() {
 .empty-sub   { font-size: 12px; color: rgba(255,255,255,0.3); margin: 0; text-align: center; }
 
 /* ── Player wrap ─────────────────────────────────────────────────────────────── */
-.player-wrap { flex: 1; position: relative; overflow-x: hidden; overflow-y: auto; min-height: 100vh; scrollbar-width: none; }
+.player-wrap { flex: 1; position: relative; overflow-x: hidden; overflow-y: auto; min-height: 100dvh; scrollbar-width: none; }
 .player-wrap::-webkit-scrollbar { display: none; }
 .player-wrap.scroll-locked { overflow: hidden; touch-action: none; }
 

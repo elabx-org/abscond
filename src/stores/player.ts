@@ -3,7 +3,7 @@ import { ref, computed } from 'vue'
 import { startPlaySession, syncSession, closeSession } from '@/api/player'
 import { getPodcastItem } from '@/api/browse'
 import { getItemsInProgress } from '@/api/items'
-import { api } from '@/api/client'
+import { api, coverUrl } from '@/api/client'
 import { useNotificationStore } from '@/stores/notifications'
 import { useSettingsStore } from '@/stores/settings'
 import { useEqualizerStore } from '@/stores/equalizer'
@@ -153,13 +153,12 @@ export const usePlayerStore = defineStore('player', () => {
   function _updateMediaSession() {
     if (!('mediaSession' in navigator) || !currentItem.value) return
     const meta = currentItem.value.media.metadata
-    const base = localStorage.getItem('abs_base_url') ?? ''
     const token = localStorage.getItem('abs_token') ?? ''
     navigator.mediaSession.metadata = new MediaMetadata({
       title:  session.value?.displayTitle || meta.title,
       artist: session.value?.displayAuthor || (meta.authors ?? []).map((a: { name: string }) => a.name).join(', ') || (meta as Record<string, unknown>).authorName as string || '',
       album:  (meta.series ?? []).map((s: { name: string }) => s.name).join(', ') || '',
-      artwork: [{ src: `${base}/api/items/${currentItem.value.id}/cover?token=${encodeURIComponent(token)}`, sizes: '512x512', type: 'image/jpeg' }],
+      artwork: [{ src: coverUrl(currentItem.value.id, token), sizes: '512x512', type: 'image/jpeg' }],
     })
     navigator.mediaSession.setActionHandler('play',           () => { _userPaused = false; audio?.play() })
     navigator.mediaSession.setActionHandler('pause',          () => { _userPaused = true;  audio?.pause() })

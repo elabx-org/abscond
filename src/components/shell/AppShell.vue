@@ -98,8 +98,8 @@ const contentStyle = computed(() => {
 </script>
 
 <style scoped>
-.app-shell { min-height: 100vh; background: #0e0e0e; }
-.shell-content { min-height: 100vh; }
+.app-shell { min-height: 100dvh; background: #0e0e0e; }
+.shell-content { min-height: 100dvh; }
 
 .offline-banner {
   position: fixed; top: 0; left: 0; right: 0; z-index: 500;

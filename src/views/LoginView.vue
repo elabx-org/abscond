@@ -283,7 +283,7 @@ function goToSlide(n: number) {
 </script>
 
 <style scoped>
-.login-root { display:flex; height:100vh; min-height:560px; background:#060606; }
+.login-root { display:flex; height:100dvh; min-height:560px; background:#060606; }
 
 /* Hero */
 .hero {

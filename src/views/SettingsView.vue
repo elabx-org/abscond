@@ -1202,7 +1202,7 @@ async function doDeleteDownload(id: string) {
 </script>
 
 <style scoped>
-.settings-view { min-height: 100vh; background: #0e0e0e; padding: 16px 12px 60px; }
+.settings-view { min-height: 100dvh; background: #0e0e0e; padding: 16px 12px 60px; }
 
 .screen-title { font-size: 18px; font-weight: 700; color: rgba(255,255,255,0.9); margin: 0 0 20px; }
 

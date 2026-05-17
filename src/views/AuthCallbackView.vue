@@ -87,7 +87,7 @@ onMounted(async () => {
 <style scoped>
 .callback-root {
   display: flex; align-items: center; justify-content: center;
-  height: 100vh; background: #060606;
+  height: 100dvh; background: #060606;
 }
 .callback-error {
   display: flex; flex-direction: column; align-items: center; gap: 16px;

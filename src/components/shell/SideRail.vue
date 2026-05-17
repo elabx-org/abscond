@@ -37,7 +37,7 @@ const navItems = [
 
 <style scoped>
 .side-rail {
-  width: 72px; height: 100vh; position: fixed; left: 0; top: 0; z-index: 100;
+  width: 72px; height: 100dvh; position: fixed; left: 0; top: 0; z-index: 100;
   background: rgba(14,14,14,0.9); border-right: 1px solid rgba(255,255,255,0.05);
   display: flex; flex-direction: column; align-items: center; padding: 8px 0; gap: 4px;
 }

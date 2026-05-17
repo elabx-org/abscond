@@ -177,7 +177,7 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-.reader-view { min-height: 100vh; background: #111; display: flex; flex-direction: column; position: relative; }
+.reader-view { min-height: 100dvh; background: #111; display: flex; flex-direction: column; position: relative; }
 
 .reader-toolbar {
   display: flex; align-items: center; gap: 10px; padding: 12px;
@@ -191,10 +191,10 @@ onUnmounted(() => {
 .tool-actions { display: flex; gap: 4px; }
 
 .reader-frame { flex: 1; position: relative; }
-.epub-viewer { width: 100%; height: calc(100vh - 56px); }
+.epub-viewer { width: 100%; height: calc(100dvh - 56px); }
 .reader-loading { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; color: rgba(255,255,255,0.4); font-size: 13px; }
 
-.pdf-iframe { width: 100%; height: calc(100vh - 56px); border: none; }
+.pdf-iframe { width: 100%; height: calc(100dvh - 56px); border: none; }
 
 .unsupported { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; padding: 40px; text-align: center; }
 .unsupported p { font-size: 14px; color: rgba(255,255,255,0.5); margin: 0; }

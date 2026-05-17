@@ -957,7 +957,7 @@ watch(searchQuery, (q) => {
 </script>
 
 <style scoped>
-.library-view { padding: 12px 12px 80px; min-height: 100vh; background: #0e0e0e; }
+.library-view { padding: 12px 12px 80px; min-height: 100dvh; background: #0e0e0e; }
 .ptr-indicator { display: flex; justify-content: center; padding: 8px 0; margin-top: -8px; margin-bottom: 4px; }
 .ptr-enter-active, .ptr-leave-active { transition: opacity 0.2s; }
 .ptr-enter-from, .ptr-leave-to { opacity: 0; }
