@@ -205,11 +205,21 @@ async function startOidc(provider: { id: string }) {
   const challenge = base64url(new Uint8Array(hashBuf))
   const state     = base64url(crypto.getRandomValues(new Uint8Array(16)))
 
-  sessionStorage.setItem('oidc_verifier', verifier)
-  sessionStorage.setItem('oidc_state',    state)
-  sessionStorage.setItem('oidc_abs_base', absBase)
+  // In Capacitor the WKWebView navigates away from capacitor://localhost during
+  // the OIDC dance, which can evict sessionStorage for that origin. Use
+  // localStorage for native so the PKCE verifier survives the round-trip.
+  const store = isNativeApp() ? localStorage : sessionStorage
+  store.setItem('oidc_verifier', verifier)
+  store.setItem('oidc_state',    state)
+  store.setItem('oidc_abs_base', absBase)
 
-  const redirect_uri = `${window.location.origin}/auth/callback`
+  // ABS rejects capacitor:// redirect URIs. In native mode use the ABS server
+  // URL as the redirect base; a WKNavigationDelegate in the iOS app intercepts
+  // that navigation and rewrites it back to capacitor://localhost/auth/callback.
+  const redirect_uri = isNativeApp()
+    ? `${serverUrl.value}/auth/callback`
+    : `${window.location.origin}/auth/callback`
+
   const params = new URLSearchParams({
     response_type:         'code',
     code_challenge:        challenge,

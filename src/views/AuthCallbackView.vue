@@ -37,13 +37,15 @@ onMounted(async () => {
 
   try {
     if (code && state) {
-      // PKCE mobile flow — exchange code for token via ABS /auth/openid/callback
-      const verifier   = sessionStorage.getItem('oidc_verifier') ?? ''
-      const savedState = sessionStorage.getItem('oidc_state')    ?? ''
-      const absBase    = sessionStorage.getItem('oidc_abs_base') ?? ''
-      sessionStorage.removeItem('oidc_verifier')
-      sessionStorage.removeItem('oidc_state')
-      sessionStorage.removeItem('oidc_abs_base')
+      // PKCE mobile flow — exchange code for token via ABS /auth/openid/callback.
+      // Native app stores PKCE data in localStorage (survives cross-origin nav);
+      // web stores it in sessionStorage. Check both.
+      const verifier   = sessionStorage.getItem('oidc_verifier') || localStorage.getItem('oidc_verifier') || ''
+      const savedState = sessionStorage.getItem('oidc_state')    || localStorage.getItem('oidc_state')    || ''
+      const absBase    = sessionStorage.getItem('oidc_abs_base') || localStorage.getItem('oidc_abs_base') || ''
+      sessionStorage.removeItem('oidc_verifier'); localStorage.removeItem('oidc_verifier')
+      sessionStorage.removeItem('oidc_state');    localStorage.removeItem('oidc_state')
+      sessionStorage.removeItem('oidc_abs_base'); localStorage.removeItem('oidc_abs_base')
 
       if (state !== savedState) throw new Error('State mismatch — possible CSRF.')
 
