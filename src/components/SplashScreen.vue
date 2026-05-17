@@ -2,7 +2,7 @@
   <Transition name="splash">
     <div v-if="visible" class="splash-screen">
       <AppLogo :size="56" animated="flow" />
-      <span class="splash-name">A &nbsp;B &nbsp;S &nbsp;C &nbsp;O &nbsp;N &nbsp;D</span>
+      <span class="splash-name">ABSCOND</span>
       <div class="splash-spinner" />
     </div>
   </Transition>
@@ -39,7 +39,7 @@ const visible = computed(() => auth.isLoggedIn && !progress.initialLoadDone)
 .splash-name {
   font-size: 11px;
   font-weight: 300;
-  letter-spacing: 6px;
+  letter-spacing: 4px;
   color: rgba(255,255,255,0.5);
   text-transform: uppercase;
 }

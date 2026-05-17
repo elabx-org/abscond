@@ -9,8 +9,8 @@
       </div>
 
       <div class="hero-logo">
-        <div class="logo-icon">◉</div>
-        <span class="logo-name">abs<span class="accent">cond</span></span>
+        <AppLogo :size="22" color="rgba(134,59,255,0.7)" />
+        <span class="logo-name">ABSCOND</span>
       </div>
 
       <div class="hero-center">
@@ -36,8 +36,8 @@
     <div class="form-panel">
       <!-- Mobile logo -->
       <div class="mobile-logo d-md-none">
-        <div class="logo-icon logo-icon--lg">◉</div>
-        <span class="logo-name logo-name--lg">abs<span class="accent">cond</span></span>
+        <AppLogo :size="44" color="rgba(134,59,255,0.7)" animated="breathe" />
+        <span class="logo-name logo-name--lg">ABSCOND</span>
         <p class="mobile-tagline">Escape into your library</p>
       </div>
 
@@ -139,6 +139,7 @@
 
 <script setup lang="ts">
 import AppIcon from '@/components/common/AppIcon.vue'
+import AppLogo from '@/components/common/AppLogo.vue'
 import { ref, onMounted, onBeforeUnmount } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
@@ -329,11 +330,8 @@ function goToSlide(n: number) {
 .slide-right-leave-to   { opacity:0; transform:translateX(16px) scale(0.97); }
 
 /* Logo */
-.logo-icon { width:28px; height:28px; border-radius:8px; background:linear-gradient(135deg,#2a1500,#d4a017); display:flex; align-items:center; justify-content:center; font-size:13px; box-shadow:0 4px 12px rgba(212,160,23,0.3); }
-.logo-icon--lg { width:52px; height:52px; border-radius:14px; font-size:24px; }
-.logo-name { font-size:0.95rem; font-weight:800; letter-spacing:-0.3px; }
-.logo-name--lg { font-size:1.5rem; }
-.accent { color:#d4a017; }
+.logo-name { font-size:9px; font-weight:300; letter-spacing:4px; color:rgba(255,255,255,0.3); text-transform:uppercase; }
+.logo-name--lg { font-size:11px; letter-spacing:5px; color:rgba(255,255,255,0.4); }
 
 /* Form panel */
 .form-panel {
