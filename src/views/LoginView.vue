@@ -214,8 +214,8 @@ async function startOidc(provider: { id: string }) {
   store.setItem('oidc_abs_base', absBase)
 
   // audiobookshelf://oauth is ABS's default-whitelisted mobile redirect URI —
-  // no ABS admin config needed. A WKURLSchemeHandler in the iOS app intercepts
-  // navigations to this scheme and rewrites them to capacitor://localhost/auth/callback.
+  // no ABS admin config needed. ASWebAuthenticationSession intercepts this
+  // callback natively before iOS can route it to any other installed app.
   const redirect_uri = isNativeApp()
     ? 'audiobookshelf://oauth'
     : `${window.location.origin}/auth/callback`
@@ -228,7 +228,19 @@ async function startOidc(provider: { id: string }) {
     client_id:             'Abscond',
     state,
   })
-  window.location.href = `${absBase}/auth/${provider.id}?${params}`
+  const authUrl = `${absBase}/auth/${provider.id}?${params}`
+
+  if (isNativeApp()) {
+    try {
+      const result = await (window as any).Capacitor.Plugins.HapticsBridge.openAuth({ url: authUrl })
+      const cbUrl = new URL(result.callbackUrl)
+      router.push({ name: 'auth-callback', query: Object.fromEntries(cbUrl.searchParams) })
+    } catch (e: any) {
+      if (e?.message !== 'cancelled') loginError.value = 'SSO login failed. Please try again.'
+    }
+  } else {
+    window.location.href = authUrl
+  }
 }
 
 /* ─── Login ─── */
