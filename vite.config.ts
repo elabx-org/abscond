@@ -16,34 +16,16 @@ export default defineConfig({
     vuetify({ autoImport: true }),
     VitePWA({
       registerType: 'autoUpdate',
-      workbox: {
-        // Don't intercept /auth/* navigations — these must reach nginx/ABS
-        // for the OIDC flow to work (service worker would return index.html).
-        navigateFallbackDenylist: [/^\/auth\//],
-        runtimeCaching: [
-          {
-            // Cover images — CacheFirst for instant repeat views, invalidated explicitly on write
-            urlPattern: /\/api\/items\/[^/]+\/cover/,
-            handler: 'CacheFirst',
-            options: {
-              cacheName: 'covers-cache',
-              expiration: { maxEntries: 500, maxAgeSeconds: 7 * 24 * 60 * 60 },
-              cacheableResponse: { statuses: [0, 200] },
-            },
-          },
-          {
-            // Key API reads — stale-while-revalidate for instant render with background refresh
-            urlPattern: /\/api\/(me\/items-in-progress|me$|libraries\/[^/]+\/items|me\/progress)/,
-            handler: 'StaleWhileRevalidate',
-            options: {
-              cacheName: 'api-cache',
-              expiration: { maxEntries: 100, maxAgeSeconds: 24 * 60 * 60 },
-              cacheableResponse: { statuses: [0, 200] },
-            },
-          },
-        ],
+      strategies: 'injectManifest',
+      srcDir: 'src',
+      filename: 'sw.ts',
+      injectManifest: {
+        injectionPoint: 'self.__WB_MANIFEST',
       },
       manifest: {
+        id: '/',
+        start_url: '/',
+        scope: '/',
         name: 'Abscond',
         short_name: 'Abscond',
         description: 'Escape into your library',
