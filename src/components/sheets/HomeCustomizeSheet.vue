@@ -1,7 +1,20 @@
 <template>
   <v-bottom-sheet v-model="show" :scrim="true" max-height="85vh">
-    <v-card class="customize-sheet" rounded="t-xl">
-      <div class="drag-handle" />
+    <v-card
+      class="customize-sheet"
+      rounded="t-xl"
+      :style="{
+        transform: `translateY(${dragY}px)`,
+        transition: active ? 'none' : 'transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)'
+      }"
+    >
+      <div
+        class="drag-handle"
+        @pointerdown="onPointerDown"
+        @pointermove="onPointerMove"
+        @pointerup="onPointerUp"
+        @pointercancel="onPointerUp"
+      />
       <div class="sheet-header">
         <span class="sheet-title">Customize Home</span>
         <v-spacer />
@@ -37,6 +50,7 @@
 <script setup lang="ts">
 import AppIcon from '@/components/common/AppIcon.vue'
 import { ref, computed, watch } from 'vue'
+import { useSwipeToDismiss } from '@/composables/useSwipeToDismiss'
 
 export interface HomeSection {
   id: string
@@ -52,10 +66,14 @@ const emit = defineEmits<{
 
 const show = computed({ get: () => props.modelValue, set: v => emit('update:modelValue', v) })
 
+function close() { emit('update:modelValue', false) }
+const { dragY, active, onPointerDown, onPointerMove, onPointerUp } = useSwipeToDismiss(close)
+
 const localOrder = ref<HomeSection[]>([])
 const hiddenIds  = ref(new Set<string>())
 
 watch(() => props.modelValue, v => {
+  if (v && 'vibrate' in navigator) navigator.vibrate(30)
   if (v) {
     const savedOrder: string[] = JSON.parse(localStorage.getItem('abs_home_section_order') ?? '[]')
     const savedHidden: string[] = JSON.parse(localStorage.getItem('abs_home_hidden_sections') ?? '[]')
@@ -119,7 +137,21 @@ function onDrop(targetIdx: number) {
 
 <style scoped>
 .customize-sheet { background: #1a1a2e; }
-.drag-handle { width: 36px; height: 4px; background: rgba(255,255,255,0.15); border-radius: 2px; margin: 10px auto 0; }
+.drag-handle {
+  width: 100%;
+  padding: 12px 0 8px;
+  display: flex;
+  justify-content: center;
+  cursor: grab;
+  touch-action: none;
+}
+.drag-handle::after {
+  content: '';
+  width: 32px;
+  height: 4px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.18);
+}
 .sheet-header { display: flex; align-items: center; padding: 12px 16px 10px; }
 .sheet-title { font-size: 15px; font-weight: 600; }
 .hint { font-size: 11px; color: rgba(255,255,255,0.3); padding: 6px 16px 8px; }

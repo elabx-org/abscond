@@ -2,11 +2,23 @@
   <Teleport to="body">
     <Transition name="sheet">
       <div v-if="modelValue" class="ch-overlay" @click.self="close">
-        <div class="ch-sheet">
+        <div
+          class="ch-sheet"
+          :style="{
+            transform: `translateY(${dragY}px)`,
+            transition: active ? 'none' : 'transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)'
+          }"
+        >
 
           <!-- Header -->
           <div class="ch-header">
-            <div class="ch-drag-handle" />
+            <div
+              class="ch-drag-handle"
+              @pointerdown="onPointerDown"
+              @pointermove="onPointerMove"
+              @pointerup="onPointerUp"
+              @pointercancel="onPointerUp"
+            />
             <div class="ch-header-row">
               <div class="ch-header-left">
                 <span class="ch-title">Chapters</span>
@@ -106,6 +118,7 @@ import { ref, watch } from 'vue'
 import { api } from '@/api/client'
 import { useNotificationStore } from '@/stores/notifications'
 import type { Chapter } from '@/api/types'
+import { useSwipeToDismiss } from '@/composables/useSwipeToDismiss'
 
 const props = defineProps<{
   modelValue: boolean
@@ -164,7 +177,10 @@ async function loadChapters() {
 
 watch(
   () => props.modelValue,
-  (v) => { if (v) loadChapters() },
+  (v) => {
+    if (v && 'vibrate' in navigator) navigator.vibrate(30)
+    if (v) loadChapters()
+  },
   { immediate: true },
 )
 
@@ -231,6 +247,8 @@ async function save() {
 function close() {
   emit('update:modelValue', false)
 }
+
+const { dragY, active, onPointerDown, onPointerMove, onPointerUp } = useSwipeToDismiss(close)
 </script>
 
 <style scoped>
@@ -265,13 +283,24 @@ function close() {
 
 /* ── Drag handle (mobile only) ─────────────────────────────────────────────── */
 .ch-drag-handle {
-  width: 36px; height: 4px; border-radius: 2px;
+  width: 100%;
+  padding: 12px 0 8px;
+  display: flex;
+  justify-content: center;
+  cursor: grab;
+  touch-action: none;
+}
+.ch-drag-handle::after {
+  content: '';
+  width: 32px;
+  height: 4px;
+  border-radius: 2px;
   background: rgba(255, 255, 255, 0.18);
-  margin: 10px auto 0;
 }
 
 @media (min-width: 520px) {
   .ch-drag-handle { display: none; }
+  .ch-sheet { transform: none !important; }
 }
 
 /* ── Header ────────────────────────────────────────────────────────────────── */

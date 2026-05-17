@@ -1,9 +1,21 @@
 <template>
   <Teleport to="body">
     <Transition name="sheet">
-      <div v-if="modelValue" class="more-overlay" @click.self="$emit('update:modelValue', false)">
-        <div class="more-sheet">
-          <div class="more-drag-row">
+      <div v-if="modelValue" class="more-overlay" @click.self="close">
+        <div
+          class="more-sheet"
+          :style="{
+            transform: `translateY(${dragY}px)`,
+            transition: active ? 'none' : 'transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)'
+          }"
+        >
+          <div
+            class="more-drag-row"
+            @pointerdown="onPointerDown"
+            @pointermove="onPointerMove"
+            @pointerup="onPointerUp"
+            @pointercancel="onPointerUp"
+          >
             <div class="more-drag-handle" />
             <button class="more-edit-btn" @click="editing = true" title="Edit layout">
               <AppIcon icon="mdi-pencil-outline" :size="15" color="rgba(255,255,255,0.4)" />
@@ -77,6 +89,7 @@
 <script setup lang="ts">
 import AppIcon from '@/components/common/AppIcon.vue'
 import { ref, watch } from 'vue'
+import { useSwipeToDismiss } from '@/composables/useSwipeToDismiss'
 
 const props = defineProps<{
   modelValue: boolean
@@ -91,7 +104,13 @@ const editing    = ref(false)
 const iconsOnly  = ref(localStorage.getItem('abs_player_icons_only')  === 'true')
 const moreInGrid = ref(localStorage.getItem('abs_player_more_in_grid') === 'true')
 
-watch(() => props.modelValue, (v) => { if (!v) editing.value = false })
+function close() { emit('update:modelValue', false) }
+const { dragY, active, onPointerDown, onPointerMove, onPointerUp } = useSwipeToDismiss(close)
+
+watch(() => props.modelValue, (v) => {
+  if (v && 'vibrate' in navigator) navigator.vibrate(30)
+  if (!v) editing.value = false
+})
 
 function saveLayout() {
   localStorage.setItem('abs_player_icons_only', String(iconsOnly.value))
@@ -139,7 +158,7 @@ function handleItem(id: string) {
 
 @media (min-width: 520px) {
   .more-overlay { align-items: center; justify-content: center; }
-  .more-sheet { width: 480px; border-radius: 20px; border-top: none; max-height: 80vh; }
+  .more-sheet { width: 480px; border-radius: 20px; border-top: none; max-height: 80vh; transform: none !important; }
   .sheet-enter-from .more-sheet, .sheet-leave-to .more-sheet { transform: scale(0.96) translateY(8px); }
   .more-drag-row { display: none; }
 }
@@ -147,9 +166,13 @@ function handleItem(id: string) {
 .more-drag-row {
   display: flex; align-items: center; justify-content: center;
   position: relative; margin-bottom: 12px;
+  width: 100%;
+  padding: 12px 0 8px;
+  cursor: grab;
+  touch-action: none;
 }
 .more-drag-handle {
-  width: 36px; height: 4px; border-radius: 2px; background: rgba(255,255,255,0.2);
+  width: 32px; height: 4px; border-radius: 2px; background: rgba(255,255,255,0.18);
 }
 .more-edit-btn {
   position: absolute; right: 0; top: -6px;

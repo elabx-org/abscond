@@ -2,8 +2,20 @@
   <Teleport to="body">
     <Transition name="sheet">
       <div v-if="modelValue" class="cover-sheet-overlay" @click.self="close">
-        <div class="cover-sheet">
-          <div class="sheet-handle" />
+        <div
+          class="cover-sheet"
+          :style="{
+            transform: `translateY(${dragY}px)`,
+            transition: active ? 'none' : 'transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)'
+          }"
+        >
+          <div
+            class="sheet-handle drag-handle"
+            @pointerdown="onPointerDown"
+            @pointermove="onPointerMove"
+            @pointerup="onPointerUp"
+            @pointercancel="onPointerUp"
+          />
 
           <div class="sheet-header">
             <p class="sheet-title">Update Cover</p>
@@ -129,6 +141,7 @@ import { ref, watch } from 'vue'
 import { api } from '@/api/client'
 import { useNotificationStore } from '@/stores/notifications'
 import { invalidateCovers } from '@/utils/cache'
+import { useSwipeToDismiss } from '@/composables/useSwipeToDismiss'
 
 const props = defineProps<{ modelValue: boolean; itemId: string; itemTitle?: string; itemAuthor?: string }>()
 const emit = defineEmits<{ 'update:modelValue': [val: boolean]; updated: [] }>()
@@ -150,6 +163,7 @@ const coverResults   = ref<Array<{ title: string; cover: string }>>([])
 
 watch(() => props.modelValue, (opened) => {
   if (opened) {
+    if ('vibrate' in navigator) navigator.vibrate(30)
     urlInput.value      = ''
     pickedFile.value    = null
     saving.value        = false
@@ -270,6 +284,8 @@ async function removeCover() {
 function close() {
   emit('update:modelValue', false)
 }
+
+const { dragY, active, onPointerDown, onPointerMove, onPointerUp } = useSwipeToDismiss(close)
 </script>
 
 <style scoped>
@@ -288,12 +304,24 @@ function close() {
 }
 .cover-sheet::-webkit-scrollbar { display: none; }
 
-.sheet-handle {
-  width: 36px; height: 4px; border-radius: 2px;
-  background: rgba(255,255,255,0.18); margin: 10px auto 0;
+.drag-handle {
+  width: 100%;
+  padding: 12px 0 8px;
+  display: flex;
+  justify-content: center;
+  cursor: grab;
+  touch-action: none;
+}
+.drag-handle::after {
+  content: '';
+  width: 32px;
+  height: 4px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.18);
 }
 @media (min-width: 520px) {
-  .sheet-handle { display: none; }
+  .drag-handle { display: none; }
+  .cover-sheet { transform: none !important; }
 }
 
 .sheet-header {

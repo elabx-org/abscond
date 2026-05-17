@@ -1,9 +1,21 @@
 <template>
   <Teleport to="body">
     <Transition name="sheet">
-      <div v-if="show" class="sheet-backdrop" @click.self="$emit('close')">
-        <div class="sheet-panel">
-          <div class="drag-handle" />
+      <div v-if="show" class="sheet-backdrop" @click.self="close">
+        <div
+          class="sheet-panel"
+          :style="{
+            transform: `translateY(${dragY}px)`,
+            transition: active ? 'none' : 'transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)'
+          }"
+        >
+          <div
+            class="drag-handle"
+            @pointerdown="onPointerDown"
+            @pointermove="onPointerMove"
+            @pointerup="onPointerUp"
+            @pointercancel="onPointerUp"
+          />
 
           <div class="sheet-header">
             <div class="narrator-avatar">
@@ -33,7 +45,7 @@
               :author="getAuthorDisplay(item) || 'Unknown'"
               :cover-src="coverUrl(item.id, auth.token ?? '')"
               :progress="item.userMediaProgress?.progress ?? 0"
-              @click="$emit('open-book', item)"
+              @click="emit('open-book', item)"
             />
           </div>
 
@@ -56,13 +68,14 @@ import { coverUrl, api } from '@/api/client'
 import PortraitCard from '@/components/cards/PortraitCard.vue'
 import type { LibraryItem } from '@/api/types'
 import { getAuthorDisplay } from '@/utils/metadata'
+import { useSwipeToDismiss } from '@/composables/useSwipeToDismiss'
 
 const props = defineProps<{
   show: boolean
   narratorName: string
 }>()
 
-defineEmits<{
+const emit = defineEmits<{
   (e: 'close'): void
   (e: 'open-book', item: LibraryItem): void
 }>()
@@ -71,6 +84,9 @@ const auth    = useAuthStore()
 const lib     = useLibraryStore()
 const loading = ref(false)
 const items   = ref<LibraryItem[]>([])
+
+function close() { emit('close') }
+const { dragY, active, onPointerDown, onPointerMove, onPointerUp } = useSwipeToDismiss(close)
 
 async function load() {
   if (!props.narratorName || !lib.activeLibraryId) return
@@ -87,7 +103,10 @@ async function load() {
   }
 }
 
-watch(() => props.show, (v) => { if (v) load() })
+watch(() => props.show, (v) => {
+  if (v && 'vibrate' in navigator) navigator.vibrate(30)
+  if (v) load()
+})
 </script>
 
 <style scoped>
@@ -103,8 +122,19 @@ watch(() => props.show, (v) => { if (v) load() })
   padding: 0 16px 48px;
 }
 .drag-handle {
-  width: 36px; height: 4px; border-radius: 2px;
-  background: rgba(255,255,255,0.15); margin: 12px auto 20px;
+  width: 100%;
+  padding: 12px 0 8px;
+  display: flex;
+  justify-content: center;
+  cursor: grab;
+  touch-action: none;
+}
+.drag-handle::after {
+  content: '';
+  width: 32px;
+  height: 4px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.18);
 }
 .sheet-header {
   display: flex; align-items: center; gap: 16px; margin-bottom: 24px;
@@ -137,6 +167,7 @@ watch(() => props.show, (v) => { if (v) load() })
   .sheet-panel {
     width: min(480px, 100%); max-height: 100% !important;
     border-radius: 0; border-top: none; border-left: 1px solid rgba(255,255,255,0.08);
+    transform: none !important;
   }
   .drag-handle { display: none; }
   .sheet-enter-from, .sheet-leave-to { transform: translateY(0); }

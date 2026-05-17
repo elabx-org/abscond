@@ -1,18 +1,30 @@
 <template>
   <Teleport to="body">
     <Transition name="sheet">
-      <div v-if="show" class="sheet-backdrop" @click.self="$emit('close')">
-        <div class="ep-detail-sheet">
+      <div v-if="show" class="sheet-backdrop" @click.self="close">
+        <div
+          class="ep-detail-sheet"
+          :style="{
+            transform: `translateY(${dragY}px)`,
+            transition: active ? 'none' : 'transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)'
+          }"
+        >
           <!-- Blurred cover bleed -->
           <div class="sheet-bleed">
             <img v-if="coverSrc" :src="coverSrc" class="bleed-img" aria-hidden="true" />
             <div class="bleed-scrim" />
           </div>
 
-          <div class="drag-handle-area"><div class="drag-handle" /></div>
+          <div
+            class="drag-handle-area"
+            @pointerdown="onPointerDown"
+            @pointermove="onPointerMove"
+            @pointerup="onPointerUp"
+            @pointercancel="onPointerUp"
+          ><div class="drag-handle" /></div>
 
           <div class="sheet-content">
-            <button class="sheet-close" @click="$emit('close')">
+            <button class="sheet-close" @click="close">
               <AppIcon icon="mdi-close" :size="20" />
             </button>
 
@@ -80,7 +92,7 @@
 
 <script setup lang="ts">
 import AppIcon from '@/components/common/AppIcon.vue'
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { usePlayerStore } from '@/stores/player'
 import { useAuthStore } from '@/stores/auth'
@@ -88,6 +100,7 @@ import { useNotificationStore } from '@/stores/notifications'
 import { getBaseUrl, api } from '@/api/client'
 import type { LibraryItem } from '@/api/types'
 import type { PodcastEpisode } from '@/api/browse'
+import { useSwipeToDismiss } from '@/composables/useSwipeToDismiss'
 
 const props = defineProps<{
   show: boolean
@@ -96,7 +109,7 @@ const props = defineProps<{
   coverSrc: string
 }>()
 
-defineEmits<{ close: [] }>()
+const emit = defineEmits<{ close: [] }>()
 
 const router = useRouter()
 const player = usePlayerStore()
@@ -105,6 +118,13 @@ const notify = useNotificationStore()
 
 const descExpanded     = ref(false)
 const togglingFinished = ref(false)
+
+function close() { emit('close') }
+const { dragY, active, onPointerDown, onPointerMove, onPointerUp } = useSwipeToDismiss(close)
+
+watch(() => props.show, (v) => {
+  if (v && 'vibrate' in navigator) navigator.vibrate(30)
+})
 
 const epProgress = computed(() => props.episode.userEpisodeProgress?.progress ?? 0)
 const epFinished = computed(() => props.episode.userEpisodeProgress?.isFinished ?? false)
@@ -187,8 +207,23 @@ function stripHtml(html: string): string {
 .sheet-bleed { position: absolute; top: 0; left: 0; right: 0; height: 35%; overflow: hidden; z-index: 0; }
 .bleed-img { width: 100%; height: 100%; object-fit: cover; filter: blur(28px) brightness(0.5) saturate(1.2); transform: scale(1.1); }
 .bleed-scrim { position: absolute; inset: 0; background: linear-gradient(to bottom, rgba(0,0,0,0.1), rgba(17,17,17,1)); }
-.drag-handle-area { position: relative; z-index: 1; padding: 10px 0 4px; flex-shrink: 0; }
-.drag-handle { width: 40px; height: 4px; border-radius: 2px; background: rgba(255,255,255,0.25); margin: 0 auto; }
+.drag-handle-area {
+  position: relative; z-index: 1; flex-shrink: 0;
+  width: 100%;
+  padding: 12px 0 8px;
+  display: flex;
+  justify-content: center;
+  cursor: grab;
+  touch-action: none;
+}
+.drag-handle-area::after {
+  content: '';
+  width: 32px;
+  height: 4px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.18);
+}
+.drag-handle { display: none; }
 .sheet-content { position: relative; z-index: 1; flex: 1; overflow-y: auto; scrollbar-width: none; padding: 4px 16px 40px; }
 .sheet-close { background: transparent; border: none; cursor: pointer; color: rgba(255,255,255,0.5); padding: 4px; float: right; margin-bottom: 4px; }
 
@@ -236,6 +271,7 @@ function stripHtml(html: string): string {
   .ep-detail-sheet {
     top: 0; bottom: 0 !important; height: 100% !important;
     border-radius: 0; border-top: none; border-left: 1px solid rgba(255,255,255,0.08);
+    transform: none !important;
   }
   .drag-handle-area { display: none; }
 }

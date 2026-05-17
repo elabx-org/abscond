@@ -2,12 +2,25 @@
   <Teleport to="body">
     <Transition name="sheet">
       <div v-if="show" class="sheet-backdrop" @click.self="emit('close')">
-        <div class="book-sheet" :style="{ height: `${sheet.heightPct.value}vh` }">
+        <div
+          class="book-sheet"
+          :style="{
+            height: `${sheet.heightPct.value}vh`,
+            transform: `translateY(${dragY}px)`,
+            transition: swipeActive ? 'none' : 'transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)'
+          }"
+        >
           <!-- Full-width bleed cover -->
           <div class="cover-bleed">
             <img ref="coverImgRef" :src="coverSrc" :alt="item.media.metadata.title" class="cover-bleed-img" crossorigin="anonymous" />
             <div class="cover-bleed-scrim" />
-            <div class="cover-drag-area" @pointerdown="sheet.onPointerDown">
+            <div
+              class="cover-drag-area"
+              @pointerdown="sheet.onPointerDown; swipeDown($event)"
+              @pointermove="swipeMove"
+              @pointerup="swipeUp"
+              @pointercancel="swipeUp"
+            >
               <div class="cover-drag-pill" />
             </div>
           </div>
@@ -389,6 +402,7 @@ import { computed, ref, watch, onBeforeUnmount } from 'vue'
 import { useRouter } from 'vue-router'
 import { useDraggableSheet } from '@/composables/useDraggableSheet'
 import { useColorThief } from '@/composables/useColorThief'
+import { useSwipeToDismiss } from '@/composables/useSwipeToDismiss'
 import { usePlayerStore } from '@/stores/player'
 import { useNotificationStore } from '@/stores/notifications'
 import { useAuthStore } from '@/stores/auth'
@@ -448,6 +462,7 @@ function addToQueue() {
 }
 const auth   = useAuthStore()
 const sheet  = useDraggableSheet({ initial: 85, min: 30, max: 95, onClose: () => emit('close') })
+const { dragY, active: swipeActive, onPointerDown: swipeDown, onPointerMove: swipeMove, onPointerUp: swipeUp } = useSwipeToDismiss(() => emit('close'))
 
 const coverImgRef = ref<HTMLImageElement | null>(null)
 const { accent } = useColorThief(coverImgRef)
@@ -810,6 +825,7 @@ const finishedDateLabel = computed(() => {
 onBeforeUnmount(() => { document.body.style.overflow = '' })
 
 watch(() => props.show, async (v) => {
+  if (v && 'vibrate' in navigator) navigator.vibrate(30)
   document.body.style.overflow = v ? 'hidden' : ''
   if (v) {
     descExpanded.value    = false

@@ -1,9 +1,21 @@
 <template>
   <Teleport to="body">
     <Transition name="sheet">
-      <div v-if="show" class="sheet-backdrop" @click.self="$emit('close')">
-        <div class="qa-sheet">
-          <div class="drag-handle" />
+      <div v-if="show" class="sheet-backdrop" @click.self="close">
+        <div
+          class="qa-sheet"
+          :style="{
+            transform: `translateY(${dragY}px)`,
+            transition: active ? 'none' : 'transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)'
+          }"
+        >
+          <div
+            class="drag-handle"
+            @pointerdown="onPointerDown"
+            @pointermove="onPointerMove"
+            @pointerup="onPointerUp"
+            @pointercancel="onPointerUp"
+          />
 
           <!-- Book header -->
           <div class="qa-header">
@@ -16,32 +28,32 @@
 
           <!-- Actions -->
           <div class="qa-actions">
-            <button class="qa-action" @click="$emit('play'); $emit('close')">
+            <button class="qa-action" @click="emit('play'); close()">
               <div class="qa-icon"><AppIcon icon="mdi-play-circle-outline" :size="20" color="#d4a017" /></div>
               <span>{{ progress > 0 && progress < 1 ? 'Continue' : 'Play' }}</span>
             </button>
 
-            <button class="qa-action" @click="$emit('mark-finished'); $emit('close')">
+            <button class="qa-action" @click="emit('mark-finished'); close()">
               <div class="qa-icon"><AppIcon icon="mdi-check-circle-outline" :size="20" color="rgba(255,255,255,0.6)" /></div>
               <span>{{ progress >= 1 ? 'Mark unfinished' : 'Mark finished' }}</span>
             </button>
 
-            <button v-if="progress > 0" class="qa-action" @click="$emit('clear-progress'); $emit('close')">
+            <button v-if="progress > 0" class="qa-action" @click="emit('clear-progress'); close()">
               <div class="qa-icon"><AppIcon icon="mdi-restore" :size="20" color="rgba(255,255,255,0.6)" /></div>
               <span>Clear progress</span>
             </button>
 
-            <button class="qa-action" @click="$emit('play-next'); $emit('close')">
+            <button class="qa-action" @click="emit('play-next'); close()">
               <div class="qa-icon"><AppIcon icon="mdi-skip-next-circle-outline" :size="20" color="rgba(255,255,255,0.6)" /></div>
               <span>Play next</span>
             </button>
 
-            <button class="qa-action" @click="$emit('add-to-queue'); $emit('close')">
+            <button class="qa-action" @click="emit('add-to-queue'); close()">
               <div class="qa-icon"><AppIcon icon="mdi-playlist-play" :size="20" color="rgba(255,255,255,0.6)" /></div>
               <span>Add to queue</span>
             </button>
 
-            <button class="qa-action" @click="$emit('add-to-playlist'); $emit('close')">
+            <button class="qa-action" @click="emit('add-to-playlist'); close()">
               <div class="qa-icon"><AppIcon icon="mdi-playlist-plus" :size="20" color="rgba(255,255,255,0.6)" /></div>
               <span>Add to playlist</span>
             </button>
@@ -68,7 +80,7 @@
               <button class="collection-cancel" @click="showCollectionPicker = false">Cancel</button>
             </div>
 
-            <button class="qa-action" @click="$emit('view-detail'); $emit('close')">
+            <button class="qa-action" @click="emit('view-detail'); close()">
               <div class="qa-icon"><AppIcon icon="mdi-information-outline" :size="20" color="rgba(255,255,255,0.6)" /></div>
               <span>Book details</span>
             </button>
@@ -85,6 +97,7 @@ import { ref, watch } from 'vue'
 import { getCollections, addBookToCollection } from '@/api/collections'
 import type { Collection } from '@/api/collections'
 import { useNotificationStore } from '@/stores/notifications'
+import { useSwipeToDismiss } from '@/composables/useSwipeToDismiss'
 
 const props = defineProps<{
   show: boolean
@@ -95,7 +108,7 @@ const props = defineProps<{
   itemId: string
 }>()
 
-defineEmits<{
+const emit = defineEmits<{
   (e: 'close'): void
   (e: 'play'): void
   (e: 'mark-finished'): void
@@ -111,7 +124,13 @@ const showCollectionPicker = ref(false)
 const collections          = ref<Collection[]>([])
 const collectionsLoading   = ref(false)
 
-watch(() => props.show, (v) => { if (!v) showCollectionPicker.value = false })
+function close() { emit('close') }
+const { dragY, active, onPointerDown, onPointerMove, onPointerUp } = useSwipeToDismiss(close)
+
+watch(() => props.show, (v) => {
+  if (v && 'vibrate' in navigator) navigator.vibrate(30)
+  if (!v) showCollectionPicker.value = false
+})
 
 async function openCollectionPicker() {
   showCollectionPicker.value = true
@@ -141,8 +160,19 @@ async function addToCollection(collectionId: string) {
   padding: 0 16px 48px;
 }
 .drag-handle {
-  width: 36px; height: 4px; background: rgba(255,255,255,0.15);
-  border-radius: 2px; margin: 12px auto 16px;
+  width: 100%;
+  padding: 12px 0 8px;
+  display: flex;
+  justify-content: center;
+  cursor: grab;
+  touch-action: none;
+}
+.drag-handle::after {
+  content: '';
+  width: 32px;
+  height: 4px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.18);
 }
 .qa-header {
   display: flex; align-items: center; gap: 12px; margin-bottom: 20px;

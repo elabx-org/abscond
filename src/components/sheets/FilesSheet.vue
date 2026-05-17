@@ -2,10 +2,22 @@
   <Teleport to="body">
     <Transition name="sheet">
       <div v-if="modelValue" class="fs-overlay" @click.self="close">
-        <div class="fs-sheet files-sheet">
+        <div
+          class="fs-sheet files-sheet"
+          :style="{
+            transform: `translateY(${dragY}px)`,
+            transition: active ? 'none' : 'transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)'
+          }"
+        >
 
           <!-- Drag handle (mobile only) -->
-          <div class="fs-drag-handle" />
+          <div
+            class="fs-drag-handle drag-handle"
+            @pointerdown="onPointerDown"
+            @pointermove="onPointerMove"
+            @pointerup="onPointerUp"
+            @pointercancel="onPointerUp"
+          />
 
           <!-- Header -->
           <div class="fs-header">
@@ -76,6 +88,7 @@
 import AppIcon from '@/components/common/AppIcon.vue'
 import { ref, watch } from 'vue'
 import { api } from '@/api/client'
+import { useSwipeToDismiss } from '@/composables/useSwipeToDismiss'
 
 interface LibraryFile {
   ino: string
@@ -122,7 +135,10 @@ async function loadFiles() {
 
 watch(
   () => props.modelValue,
-  (v) => { if (v) loadFiles() },
+  (v) => {
+    if (v && 'vibrate' in navigator) navigator.vibrate(30)
+    if (v) loadFiles()
+  },
   { immediate: true },
 )
 
@@ -166,6 +182,8 @@ function fmtSize(bytes: number): string {
 function close() {
   emit('update:modelValue', false)
 }
+
+const { dragY, active, onPointerDown, onPointerMove, onPointerUp } = useSwipeToDismiss(close)
 </script>
 
 <style scoped>
@@ -200,15 +218,26 @@ function close() {
 }
 
 /* ── Drag handle (mobile only) ─────────────────────────────────────────────── */
-.fs-drag-handle {
-  width: 36px; height: 4px; border-radius: 2px;
-  background: rgba(255, 255, 255, 0.18);
-  margin: 10px auto 0;
+.drag-handle {
+  width: 100%;
+  padding: 12px 0 8px;
+  display: flex;
+  justify-content: center;
+  cursor: grab;
+  touch-action: none;
   flex-shrink: 0;
+}
+.drag-handle::after {
+  content: '';
+  width: 32px;
+  height: 4px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.18);
 }
 
 @media (min-width: 520px) {
-  .fs-drag-handle { display: none; }
+  .drag-handle { display: none; }
+  .fs-sheet { transform: none !important; }
 }
 
 /* ── Header ────────────────────────────────────────────────────────────────── */

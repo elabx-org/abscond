@@ -1,7 +1,20 @@
 <template>
   <v-bottom-sheet v-model="show" :scrim="true" max-height="92vh">
-    <v-card class="eq-sheet" rounded="t-xl">
-      <div class="drag-handle" />
+    <v-card
+      class="eq-sheet"
+      rounded="t-xl"
+      :style="{
+        transform: `translateY(${dragY}px)`,
+        transition: active ? 'none' : 'transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)'
+      }"
+    >
+      <div
+        class="drag-handle"
+        @pointerdown="onPointerDown"
+        @pointermove="onPointerMove"
+        @pointerup="onPointerUp"
+        @pointercancel="onPointerUp"
+      />
 
       <!-- Header -->
       <div class="eq-header">
@@ -120,13 +133,21 @@
 
 <script setup lang="ts">
 import AppIcon from '@/components/common/AppIcon.vue'
-import { computed } from 'vue'
+import { computed, watch } from 'vue'
 import { useEqualizerStore, EQ_BANDS, PRESETS } from '@/stores/equalizer'
+import { useSwipeToDismiss } from '@/composables/useSwipeToDismiss'
 
 const props = defineProps<{ modelValue: boolean; accent?: string }>()
 const emit = defineEmits<{ 'update:modelValue': [v: boolean] }>()
 
 const show = computed({ get: () => props.modelValue, set: v => emit('update:modelValue', v) })
+
+function close() { emit('update:modelValue', false) }
+const { dragY, active, onPointerDown, onPointerMove, onPointerUp } = useSwipeToDismiss(close)
+
+watch(() => props.modelValue, (v) => {
+  if (v && 'vibrate' in navigator) navigator.vibrate(30)
+})
 const accent = computed(() => props.accent ?? '#7c9ef0')
 const accentAlpha = computed(() => `${accent.value}22`)
 
@@ -148,7 +169,21 @@ function presetLabel(name: string) { return PRESET_LABELS[name] ?? name }
 
 <style scoped>
 .eq-sheet { background: #1a1a2e; display: flex; flex-direction: column; max-height: 92vh; }
-.drag-handle { width: 36px; height: 4px; background: rgba(255,255,255,0.15); border-radius: 2px; margin: 10px auto 0; }
+.drag-handle {
+  width: 100%;
+  padding: 12px 0 8px;
+  display: flex;
+  justify-content: center;
+  cursor: grab;
+  touch-action: none;
+}
+.drag-handle::after {
+  content: '';
+  width: 32px;
+  height: 4px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.18);
+}
 .eq-header { display: flex; align-items: center; gap: 10px; padding: 12px 16px 10px; }
 .eq-title { font-size: 15px; font-weight: 600; }
 .eq-body { overflow-y: auto; padding: 16px 20px; }

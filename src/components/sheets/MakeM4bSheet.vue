@@ -2,10 +2,22 @@
   <Teleport to="body">
     <Transition name="sheet">
       <div v-if="modelValue" class="m4b-overlay" @click.self="close">
-        <div class="m4b-sheet">
+        <div
+          class="m4b-sheet"
+          :style="{
+            transform: `translateY(${dragY}px)`,
+            transition: active ? 'none' : 'transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)'
+          }"
+        >
 
           <!-- Header -->
-          <div class="m4b-drag-handle" />
+          <div
+            class="m4b-drag-handle"
+            @pointerdown="onPointerDown"
+            @pointermove="onPointerMove"
+            @pointerup="onPointerUp"
+            @pointercancel="onPointerUp"
+          />
           <div class="m4b-header">
             <div class="m4b-header-left">
               <AppIcon icon="mdi-music-box-outline" :size="16" color="rgba(212,160,23,0.8)" />
@@ -134,6 +146,7 @@ import { ref, computed, watch } from 'vue'
 import { api } from '@/api/client'
 import { useNotificationStore } from '@/stores/notifications'
 import type { Chapter } from '@/api/types'
+import { useSwipeToDismiss } from '@/composables/useSwipeToDismiss'
 
 const props = defineProps<{ modelValue: boolean; itemId: string }>()
 const emit  = defineEmits<{ 'update:modelValue': [val: boolean] }>()
@@ -197,7 +210,10 @@ async function load() {
   }
 }
 
-watch(() => props.modelValue, (v) => { if (v) load() }, { immediate: true })
+watch(() => props.modelValue, (v) => {
+  if (v && 'vibrate' in navigator) navigator.vibrate(30)
+  if (v) load()
+}, { immediate: true })
 
 // ── Actions ───────────────────────────────────────────────────────────────────
 async function startEncode() {
@@ -217,6 +233,8 @@ async function startEncode() {
 }
 
 function close() { emit('update:modelValue', false) }
+
+const { dragY, active, onPointerDown, onPointerMove, onPointerUp } = useSwipeToDismiss(close)
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 function secsToStr(s: number): string {
@@ -254,10 +272,24 @@ function fmtSize(bytes: number): string {
 }
 
 .m4b-drag-handle {
-  width: 36px; height: 4px; border-radius: 2px;
-  background: rgba(255,255,255,0.18); margin: 10px auto 0;
+  width: 100%;
+  padding: 12px 0 8px;
+  display: flex;
+  justify-content: center;
+  cursor: grab;
+  touch-action: none;
 }
-@media (min-width: 520px) { .m4b-drag-handle { display: none; } }
+.m4b-drag-handle::after {
+  content: '';
+  width: 32px;
+  height: 4px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.18);
+}
+@media (min-width: 520px) {
+  .m4b-drag-handle { display: none; }
+  .m4b-sheet { transform: none !important; }
+}
 
 .m4b-header {
   display: flex; align-items: center; justify-content: space-between;

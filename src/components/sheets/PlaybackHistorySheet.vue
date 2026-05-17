@@ -1,7 +1,19 @@
 <template>
   <v-bottom-sheet v-model="open" :scrim="true">
-    <div class="hist-sheet">
-      <div class="sheet-handle" />
+    <div
+      class="hist-sheet"
+      :style="{
+        transform: `translateY(${dragY}px)`,
+        transition: active ? 'none' : 'transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)'
+      }"
+    >
+      <div
+        class="drag-handle"
+        @pointerdown="onPointerDown"
+        @pointermove="onPointerMove"
+        @pointerup="onPointerUp"
+        @pointercancel="onPointerUp"
+      />
       <div class="hist-header">
         <p class="hist-title">Playback History</p>
         <p class="hist-sub">{{ itemTitle }}</p>
@@ -32,6 +44,7 @@
 import AppIcon from '@/components/common/AppIcon.vue'
 import { ref, watch } from 'vue'
 import { getItemListeningSessions, type ListeningSession } from '@/api/stats'
+import { useSwipeToDismiss } from '@/composables/useSwipeToDismiss'
 
 const props = defineProps<{
   modelValue: boolean
@@ -42,10 +55,14 @@ const emit = defineEmits<{ 'update:modelValue': [val: boolean] }>()
 const open = ref(props.modelValue)
 watch(open, v => emit('update:modelValue', v))
 
+function close() { emit('update:modelValue', false) }
+const { dragY, active, onPointerDown, onPointerMove, onPointerUp } = useSwipeToDismiss(close)
+
 const sessions = ref<ListeningSession[]>([])
 const loading  = ref(false)
 
 watch(() => props.modelValue, async (v) => {
+  if (v && 'vibrate' in navigator) navigator.vibrate(30)
   open.value = v
   if (!v) return
   loading.value = true
@@ -76,7 +93,21 @@ function formatDuration(secs: number): string {
   background: #1a1a1a; border-radius: 20px 20px 0 0;
   padding: 12px 16px 40px; max-height: 65vh; overflow-y: auto;
 }
-.sheet-handle { width: 36px; height: 4px; border-radius: 2px; background: rgba(255,255,255,0.2); margin: 0 auto 16px; }
+.drag-handle {
+  width: 100%;
+  padding: 12px 0 8px;
+  display: flex;
+  justify-content: center;
+  cursor: grab;
+  touch-action: none;
+}
+.drag-handle::after {
+  content: '';
+  width: 32px;
+  height: 4px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.18);
+}
 .hist-header { margin-bottom: 16px; }
 .hist-title { font-size: 16px; font-weight: 700; color: rgba(255,255,255,0.9); margin: 0 0 2px; }
 .hist-sub { font-size: 11px; color: rgba(255,255,255,0.35); margin: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

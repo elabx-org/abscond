@@ -1,9 +1,21 @@
 <template>
   <Teleport to="body">
     <Transition name="sheet">
-      <div v-if="show" class="sheet-backdrop" @click.self="$emit('close')">
-        <div class="section-sheet">
-          <div class="drag-handle-area"><div class="drag-handle" /></div>
+      <div v-if="show" class="sheet-backdrop" @click.self="close">
+        <div
+          class="section-sheet"
+          :style="{
+            transform: `translateY(${dragY}px)`,
+            transition: active ? 'none' : 'transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)'
+          }"
+        >
+          <div
+            class="drag-handle-area"
+            @pointerdown="onPointerDown"
+            @pointermove="onPointerMove"
+            @pointerup="onPointerUp"
+            @pointercancel="onPointerUp"
+          ><div class="drag-handle" /></div>
 
           <div class="sheet-header">
             <AppIcon :icon="icon" :size="18" color="rgba(255,255,255,0.6)" />
@@ -12,7 +24,7 @@
             <button class="view-toggle" @click="gridView = !gridView">
               <AppIcon :icon="gridView ? 'mdi-view-list' : 'mdi-view-grid'" :size="18" color="rgba(255,255,255,0.5)" />
             </button>
-            <button class="sheet-close-btn" @click="$emit('close')">
+            <button class="sheet-close-btn" @click="close">
               <AppIcon icon="mdi-close" :size="18" color="rgba(255,255,255,0.4)" />
             </button>
           </div>
@@ -23,7 +35,7 @@
               v-for="item in items"
               :key="item.id"
               class="grid-item"
-              @click="$emit('item-click', item)"
+              @click="emit('item-click', item)"
             >
               <div class="grid-cover-wrap">
                 <img :src="getCover(item)" class="grid-cover" :alt="getTitle(item)" />
@@ -42,7 +54,7 @@
               v-for="item in items"
               :key="item.id"
               class="list-item"
-              @click="$emit('item-click', item)"
+              @click="emit('item-click', item)"
             >
               <div class="list-cover-wrap">
                 <img :src="getCover(item)" class="list-cover" :alt="getTitle(item)" />
@@ -65,10 +77,11 @@
 
 <script setup lang="ts">
 import AppIcon from '@/components/common/AppIcon.vue'
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import { coverUrl } from '@/api/client'
 import { getAuthorDisplay } from '@/utils/metadata'
 import type { LibraryItem } from '@/api/types'
+import { useSwipeToDismiss } from '@/composables/useSwipeToDismiss'
 
 const props = defineProps<{
   show: boolean
@@ -78,9 +91,16 @@ const props = defineProps<{
   token: string
 }>()
 
-defineEmits<{ close: []; 'item-click': [item: LibraryItem] }>()
+const emit = defineEmits<{ close: []; 'item-click': [item: LibraryItem] }>()
 
 const gridView = ref(false)
+
+function close() { emit('close') }
+const { dragY, active, onPointerDown, onPointerMove, onPointerUp } = useSwipeToDismiss(close)
+
+watch(() => props.show, (v) => {
+  if (v && 'vibrate' in navigator) navigator.vibrate(30)
+})
 
 function getCover(item: LibraryItem) {
   return coverUrl(item.id, props.token)
@@ -108,8 +128,23 @@ function getProgress(item: LibraryItem): number {
   border-radius: 24px 24px 0 0; border-top: 1px solid rgba(255,255,255,0.08);
   background: #111; display: flex; flex-direction: column; overflow: hidden;
 }
-.drag-handle-area { padding: 10px 0 4px; flex-shrink: 0; }
-.drag-handle { width: 40px; height: 4px; border-radius: 2px; background: rgba(255,255,255,0.2); margin: 0 auto; }
+.drag-handle-area {
+  width: 100%;
+  padding: 12px 0 8px;
+  display: flex;
+  justify-content: center;
+  cursor: grab;
+  touch-action: none;
+  flex-shrink: 0;
+}
+.drag-handle-area::after {
+  content: '';
+  width: 32px;
+  height: 4px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.18);
+}
+.drag-handle { display: none; }
 
 .sheet-header {
   display: flex; align-items: center; gap: 8px;
@@ -156,6 +191,7 @@ function getProgress(item: LibraryItem): number {
   .section-sheet {
     top: 0; bottom: 0 !important; height: 100% !important;
     border-radius: 0; border-top: none; border-left: 1px solid rgba(255,255,255,0.08);
+    transform: none !important;
   }
   .drag-handle-area { display: none; }
 }

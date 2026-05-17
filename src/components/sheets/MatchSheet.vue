@@ -2,8 +2,20 @@
   <Teleport to="body">
     <Transition name="sheet">
     <div v-if="modelValue" class="match-sheet-overlay" @click.self="close">
-      <div class="match-sheet">
-        <div class="sheet-handle" />
+      <div
+        class="match-sheet"
+        :style="{
+          transform: `translateY(${dragY}px)`,
+          transition: active ? 'none' : 'transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)'
+        }"
+      >
+        <div
+          class="sheet-handle drag-handle"
+          @pointerdown="onPointerDown"
+          @pointermove="onPointerMove"
+          @pointerup="onPointerUp"
+          @pointercancel="onPointerUp"
+        />
 
         <!-- Step 1: Search -->
         <template v-if="step === 'search'">
@@ -164,6 +176,7 @@ import { api, coverUrl } from '@/api/client'
 import { useAuthStore } from '@/stores/auth'
 import type { LibraryItem } from '@/api/types'
 import { invalidateCovers, invalidateApiEntries } from '@/utils/cache'
+import { useSwipeToDismiss } from '@/composables/useSwipeToDismiss'
 
 const props  = defineProps<{ modelValue: boolean; item: LibraryItem }>()
 const emit   = defineEmits<{ 'update:modelValue': [val: boolean]; matched: [item: LibraryItem] }>()
@@ -193,6 +206,7 @@ const error        = ref<string | null>(null)
 
 watch(() => props.modelValue, v => {
   if (v) {
+    if ('vibrate' in navigator) navigator.vibrate(30)
     searchTitle.value  = props.item.media.metadata.title ?? ''
     searchAuthor.value = props.item.media.metadata.authorName ?? ''
   } else {
@@ -305,6 +319,8 @@ async function doApply() {
 function close() {
   emit('update:modelValue', false)
 }
+
+const { dragY, active, onPointerDown, onPointerMove, onPointerUp } = useSwipeToDismiss(close)
 </script>
 
 <style scoped>
@@ -318,9 +334,20 @@ function close() {
   padding: 0 0 40px; max-height: 90vh; overflow-y: auto; scrollbar-width: none;
 }
 .match-sheet::-webkit-scrollbar { display: none; }
-.sheet-handle {
-  width: 36px; height: 4px; border-radius: 2px;
-  background: rgba(255,255,255,0.18); margin: 10px auto 0;
+.drag-handle {
+  width: 100%;
+  padding: 12px 0 8px;
+  display: flex;
+  justify-content: center;
+  cursor: grab;
+  touch-action: none;
+}
+.drag-handle::after {
+  content: '';
+  width: 32px;
+  height: 4px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.18);
 }
 .sheet-header {
   display: flex; align-items: center; gap: 8px;
@@ -421,8 +448,9 @@ function close() {
   .match-sheet-overlay { align-items: center; justify-content: center; }
   .match-sheet {
     width: 480px; max-width: 90vw; border-radius: 20px; max-height: 80vh; border-top: none;
+    transform: none !important;
   }
-  .sheet-handle { display: none; }
+  .drag-handle { display: none; }
   .sheet-enter-from .match-sheet, .sheet-leave-to .match-sheet { transform: scale(0.96) translateY(8px); }
 }
 </style>

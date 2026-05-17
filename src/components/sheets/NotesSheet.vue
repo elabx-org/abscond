@@ -1,7 +1,20 @@
 <template>
   <v-bottom-sheet v-model="show" :scrim="true" max-height="90vh">
-    <v-card class="notes-sheet" rounded="t-xl">
-      <div class="drag-handle" />
+    <v-card
+      class="notes-sheet"
+      rounded="t-xl"
+      :style="{
+        transform: `translateY(${dragY}px)`,
+        transition: active ? 'none' : 'transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)'
+      }"
+    >
+      <div
+        class="drag-handle"
+        @pointerdown="onPointerDown"
+        @pointermove="onPointerMove"
+        @pointerup="onPointerUp"
+        @pointercancel="onPointerUp"
+      />
 
       <!-- Header -->
       <div class="sheet-header">
@@ -107,11 +120,15 @@ import AppIcon from '@/components/common/AppIcon.vue'
 import { ref, computed, watch } from 'vue'
 import { getNotes, addNote, updateNote, deleteNote } from '@/api/notes'
 import type { Note } from '@/api/notes'
+import { useSwipeToDismiss } from '@/composables/useSwipeToDismiss'
 
 const props = defineProps<{ modelValue: boolean; itemId: string; itemTitle: string; accent?: string }>()
 const emit = defineEmits<{ 'update:modelValue': [v: boolean] }>()
 
 const show = computed({ get: () => props.modelValue, set: v => emit('update:modelValue', v) })
+
+function close() { emit('update:modelValue', false) }
+const { dragY, active, onPointerDown, onPointerMove, onPointerUp } = useSwipeToDismiss(close)
 const accent = computed(() => props.accent ?? '#7c9ef0')
 
 const notes = ref<Note[]>([])
@@ -124,7 +141,10 @@ const deleteDialog = ref(false)
 const deleteIndex = ref<number | null>(null)
 const deleteTargetTitle = ref('')
 
-watch(() => props.modelValue, v => { if (v) notes.value = getNotes(props.itemId) })
+watch(() => props.modelValue, v => {
+  if (v && 'vibrate' in navigator) navigator.vibrate(30)
+  if (v) notes.value = getNotes(props.itemId)
+})
 
 function openEditor(index?: number) {
   if (index !== undefined) {
@@ -216,7 +236,21 @@ function exportNotes() {
 
 <style scoped>
 .notes-sheet { background: #1a1a2e; min-height: 60vh; display: flex; flex-direction: column; }
-.drag-handle { width: 36px; height: 4px; background: rgba(255,255,255,0.15); border-radius: 2px; margin: 10px auto 0; }
+.drag-handle {
+  width: 100%;
+  padding: 12px 0 8px;
+  display: flex;
+  justify-content: center;
+  cursor: grab;
+  touch-action: none;
+}
+.drag-handle::after {
+  content: '';
+  width: 32px;
+  height: 4px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.18);
+}
 .sheet-header { display: flex; align-items: center; gap: 10px; padding: 12px 16px 10px; }
 .header-meta { flex: 1; display: flex; flex-direction: column; gap: 1px; }
 .header-title { font-size: 15px; font-weight: 600; }

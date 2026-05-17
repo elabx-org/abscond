@@ -2,8 +2,20 @@
   <Teleport to="body">
     <Transition name="sheet">
       <div v-if="modelValue" class="book-actions-overlay" @click.self="close">
-        <div class="book-actions-sheet">
-          <div class="actions-handle" />
+        <div
+          class="book-actions-sheet"
+          :style="{
+            transform: `translateY(${dragY}px)`,
+            transition: active ? 'none' : 'transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)'
+          }"
+        >
+          <div
+            class="actions-handle drag-handle"
+            @pointerdown="onPointerDown"
+            @pointermove="onPointerMove"
+            @pointerup="onPointerUp"
+            @pointercancel="onPointerUp"
+          />
 
           <button
             v-for="item in visibleItems"
@@ -25,7 +37,8 @@
 
 <script setup lang="ts">
 import AppIcon from '@/components/common/AppIcon.vue'
-import { computed } from 'vue'
+import { computed, watch } from 'vue'
+import { useSwipeToDismiss } from '@/composables/useSwipeToDismiss'
 
 const props = defineProps<{
   modelValue: boolean
@@ -85,6 +98,12 @@ function pick(id: string) {
 function close() {
   emit('update:modelValue', false)
 }
+
+const { dragY, active, onPointerDown, onPointerMove, onPointerUp } = useSwipeToDismiss(close)
+
+watch(() => props.modelValue, (v) => {
+  if (v && 'vibrate' in navigator) navigator.vibrate(30)
+})
 </script>
 
 <style scoped>

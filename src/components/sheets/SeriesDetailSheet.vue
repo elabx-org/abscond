@@ -1,12 +1,24 @@
 <template>
   <Teleport to="body">
     <Transition name="sheet">
-      <div v-if="show" class="sheet-backdrop" @click.self="$emit('close')">
-        <div class="series-sheet">
-          <div class="drag-handle-area"><div class="drag-handle" /></div>
+      <div v-if="show" class="sheet-backdrop" @click.self="close">
+        <div
+          class="series-sheet"
+          :style="{
+            transform: `translateY(${dragY}px)`,
+            transition: active ? 'none' : 'transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)'
+          }"
+        >
+          <div
+            class="drag-handle-area"
+            @pointerdown="onPointerDown"
+            @pointermove="onPointerMove"
+            @pointerup="onPointerUp"
+            @pointercancel="onPointerUp"
+          ><div class="drag-handle" /></div>
           <div class="sheet-content">
             <div class="sheet-head">
-              <button class="sheet-close" @click="$emit('close')">
+              <button class="sheet-close" @click="close">
                 <AppIcon icon="mdi-close" :size="20" />
               </button>
               <div class="series-cover-head">
@@ -45,7 +57,7 @@
                 :author="getAuthorDisplay(b) || 'Unknown'"
                 :cover-src="coverUrl(b.id, auth.token ?? '')"
                 :progress="b.userMediaProgress?.progress ?? 0"
-                @click="$emit('open-book', b)"
+                @click="emit('open-book', b)"
               />
             </div>
           </div>
@@ -66,6 +78,7 @@ import { getSeriesBooks } from '@/api/browse'
 import PortraitCard from '@/components/cards/PortraitCard.vue'
 import type { LibraryItem } from '@/api/types'
 import { getAuthorDisplay } from '@/utils/metadata'
+import { useSwipeToDismiss } from '@/composables/useSwipeToDismiss'
 
 const props = defineProps<{
   show: boolean
@@ -73,7 +86,7 @@ const props = defineProps<{
   seriesName: string
 }>()
 
-defineEmits<{
+const emit = defineEmits<{
   close: []
   'open-book': [item: LibraryItem]
 }>()
@@ -83,6 +96,9 @@ const lib    = useLibraryStore()
 const player = usePlayerStore()
 const loading = ref(false)
 const books   = ref<LibraryItem[]>([])
+
+function close() { emit('close') }
+const { dragY, active, onPointerDown, onPointerMove, onPointerUp } = useSwipeToDismiss(close)
 
 const sortedBooks = computed(() => books.value)
 
@@ -105,6 +121,7 @@ const finishedPct = computed(() =>
 )
 
 watch(() => props.show, async (v) => {
+  if (v && 'vibrate' in navigator) navigator.vibrate(30)
   if (!v || !props.seriesId || !lib.activeLibraryId) return
   loading.value = true
   try {
@@ -122,8 +139,23 @@ watch(() => props.show, async (v) => {
   border-radius: 24px 24px 0 0; border-top: 1px solid rgba(255,255,255,0.08);
   background: #111; display: flex; flex-direction: column; overflow: hidden;
 }
-.drag-handle-area { padding: 10px 0 4px; cursor: grab; flex-shrink: 0; }
-.drag-handle { width: 40px; height: 4px; border-radius: 2px; background: rgba(255,255,255,0.25); margin: 0 auto; }
+.drag-handle-area {
+  width: 100%;
+  padding: 12px 0 8px;
+  display: flex;
+  justify-content: center;
+  cursor: grab;
+  touch-action: none;
+  flex-shrink: 0;
+}
+.drag-handle-area::after {
+  content: '';
+  width: 32px;
+  height: 4px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.18);
+}
+.drag-handle { display: none; }
 .sheet-content { flex: 1; overflow-y: auto; scrollbar-width: none; padding: 8px 16px 40px; }
 .sheet-close { background: transparent; border: none; cursor: pointer; color: rgba(255,255,255,0.5); padding: 4px; float: right; }
 .sheet-head { margin-bottom: 20px; text-align: center; padding-top: 8px; }
@@ -155,6 +187,7 @@ watch(() => props.show, async (v) => {
   .series-sheet {
     top: 0; bottom: 0 !important; height: 100% !important;
     border-radius: 0; border-top: none; border-left: 1px solid rgba(255,255,255,0.08);
+    transform: none !important;
   }
   .drag-handle-area { display: none; }
 }
