@@ -213,11 +213,11 @@ async function startOidc(provider: { id: string }) {
   store.setItem('oidc_state',    state)
   store.setItem('oidc_abs_base', absBase)
 
-  // ABS rejects capacitor:// redirect URIs. In native mode use the ABS server
-  // URL as the redirect base; a WKNavigationDelegate in the iOS app intercepts
-  // that navigation and rewrites it back to capacitor://localhost/auth/callback.
+  // audiobookshelf://oauth is ABS's default-whitelisted mobile redirect URI —
+  // no ABS admin config needed. A WKURLSchemeHandler in the iOS app intercepts
+  // navigations to this scheme and rewrites them to capacitor://localhost/auth/callback.
   const redirect_uri = isNativeApp()
-    ? `${serverUrl.value}/auth/callback`
+    ? 'audiobookshelf://oauth'
     : `${window.location.origin}/auth/callback`
 
   const params = new URLSearchParams({
