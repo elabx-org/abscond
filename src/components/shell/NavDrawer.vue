@@ -2,7 +2,7 @@
   <nav class="nav-drawer">
     <div class="drawer-brand">
       <AppLogo :size="18" color="rgba(134,59,255,0.6)" />
-      <span class="drawer-brand-name">ABSCOND</span>
+      <span class="drawer-brand-name">A &nbsp;B &nbsp;S &nbsp;C &nbsp;O &nbsp;N &nbsp;D</span>
       <ConnectionStatus />
     </div>
 
@@ -83,7 +83,7 @@ const bottomItems = [
 .drawer-brand-name {
   font-size: 9px;
   font-weight: 300;
-  letter-spacing: 4px;
+  letter-spacing: 5px;
   color: rgba(255,255,255,0.25);
   text-transform: uppercase;
   flex: 1;

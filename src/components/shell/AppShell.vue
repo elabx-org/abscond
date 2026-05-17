@@ -11,7 +11,7 @@
     <!-- Mobile top header (brand row) -->
     <header v-if="isMobile" class="mobile-header">
       <AppLogo :size="14" color="rgba(134,59,255,0.5)" />
-      <span class="mobile-brand-name">ABSCOND</span>
+      <span class="mobile-brand-name">A &nbsp;B &nbsp;S &nbsp;C &nbsp;O &nbsp;N &nbsp;D</span>
       <ConnectionStatus />
     </header>
 
@@ -122,7 +122,7 @@ const contentStyle = computed(() => {
   border-bottom: 1px solid rgba(255,255,255,0.05);
 }
 .mobile-brand-name {
-  font-size: 9px; font-weight: 300; letter-spacing: 4px;
+  font-size: 9px; font-weight: 300; letter-spacing: 5px;
   color: rgba(255,255,255,0.25); text-transform: uppercase;
   flex: 1;
 }

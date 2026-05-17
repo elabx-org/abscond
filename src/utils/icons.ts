@@ -58,6 +58,8 @@ export {
   mdiClockStart,
   mdiClose,
   mdiCloseCircleOutline,
+  mdiCloudCheckOutline,
+  mdiCloudOffOutline,
   mdiCloudOutline,
   mdiCloudUploadOutline,
   mdiCodeJson,

@@ -1128,7 +1128,7 @@ function queueDragEnd() {
   display: flex; align-items: center; justify-content: space-between;
   width: 100%; margin-bottom: 4px; padding: 0 2px;
 }
-.player-topbar-actions { display: flex; align-items: center; gap: 4px; }
+.player-topbar-actions { display: flex; align-items: center; gap: 4px; margin-left: auto; }
 .topbar-action-btn {
   display: flex; align-items: center; justify-content: center; position: relative;
   background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.09);
