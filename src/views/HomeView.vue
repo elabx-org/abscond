@@ -559,10 +559,22 @@ onMounted(async () => {
   loadingFinished.value = true
   loadingDiscover.value = true
 
-  if (!lib.libraries.length) await lib.fetchLibraries().catch(() => {})
+  // Fetch libraries and in-progress items concurrently. In-progress doesn't need
+  // activeLibraryId, and we can extract a fallback libraryId from those items if
+  // the /libraries call fails for any reason.
+  await Promise.allSettled([
+    lib.libraries.length ? Promise.resolve() : lib.fetchLibraries().catch(() => {}),
+    progress.fetchInProgress().finally(() => { loadingProgress.value = false }),
+  ])
+
+  // Fallback: if /libraries failed or returned empty, derive the active library
+  // from whichever library the first in-progress item belongs to.
+  if (!lib.activeLibraryId && progress.inProgress.length > 0) {
+    const fallbackId = progress.inProgress[0]?.libraryId
+    if (fallbackId) lib.setActiveLibrary(fallbackId)
+  }
 
   await Promise.allSettled([
-    progress.fetchInProgress(lib.activeLibraryId || undefined).finally(() => { loadingProgress.value = false }),
     lib.activeLibraryId
       ? progress.fetchRecentlyAdded(lib.activeLibraryId).finally(() => { loadingRecent.value = false })
       : Promise.resolve().then(() => { loadingRecent.value = false }),
