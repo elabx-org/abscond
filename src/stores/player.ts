@@ -3,7 +3,15 @@ import { ref, computed } from 'vue'
 import { startPlaySession, syncSession, closeSession } from '@/api/player'
 import { getPodcastItem } from '@/api/browse'
 import { getItemsInProgress } from '@/api/items'
-import { api, coverUrl } from '@/api/client'
+import { api, coverUrl, isNativeApp } from '@/api/client'
+import {
+  onRemoteCommand,
+  updateNowPlaying as nativeUpdateNowPlaying,
+  clearNowPlaying,
+  startLiveActivity,
+  updateLiveActivity,
+  endLiveActivity,
+} from '@/plugins/media-bridge'
 import { useNotificationStore } from '@/stores/notifications'
 import { useSettingsStore } from '@/stores/settings'
 import { useEqualizerStore } from '@/stores/equalizer'
@@ -65,6 +73,36 @@ export const usePlayerStore = defineStore('player', () => {
   let _userPaused = false
 
   const _isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)
+  let _liveActivityStarted = false
+  let _nativeTimeTimer = 0
+
+  function _buildNowPlayingPayload(playing: boolean) {
+    if (!currentItem.value || !session.value) return null
+    const meta = currentItem.value.media.metadata
+    return {
+      title:       session.value.displayTitle || meta.title,
+      author:      session.value.displayAuthor || (meta.authors ?? []).map((a: { name: string }) => a.name).join(', ') || (meta as Record<string, unknown>).authorName as string || '',
+      series:      (meta.series ?? []).map((s: { name: string }) => s.name).join(', ') || '',
+      currentTime: currentTime.value,
+      duration:    duration.value,
+      isPlaying:   playing,
+      playbackRate: playbackRate.value,
+      itemId:      currentItem.value.id,
+    }
+  }
+
+  function _syncNativeNowPlaying(playing: boolean) {
+    if (!isNativeApp()) return
+    const payload = _buildNowPlayingPayload(playing)
+    if (!payload) return
+    nativeUpdateNowPlaying(payload)
+    if (playing && !_liveActivityStarted) {
+      _liveActivityStarted = true
+      startLiveActivity(payload)
+    } else if (_liveActivityStarted) {
+      updateLiveActivity(payload)
+    }
+  }
 
   function _ensureAudioGraph() {
     if (!audio) return
@@ -175,6 +213,7 @@ export const usePlayerStore = defineStore('player', () => {
     audio.addEventListener('play', () => {
       isPlaying.value = true
       if ('mediaSession' in navigator) navigator.mediaSession.playbackState = 'playing'
+      _syncNativeNowPlaying(true)
       if (pausedAt !== null) {
         const pausedSecs = (Date.now() - pausedAt) / 1000
         pausedAt = null
@@ -195,6 +234,7 @@ export const usePlayerStore = defineStore('player', () => {
       isPlaying.value = false
       pausedAt = Date.now()
       if ('mediaSession' in navigator) navigator.mediaSession.playbackState = 'paused'
+      _syncNativeNowPlaying(false)
       // Pause sleep countdown while audio is paused
       if (localStorage.getItem('abs_sleep_reset_on_pause') === 'true' && sleepCountdown) {
         clearInterval(sleepCountdown)
@@ -219,6 +259,10 @@ export const usePlayerStore = defineStore('player', () => {
           playbackRate: playbackRate.value,
         })
       } catch {}
+    }
+    if (isNativeApp() && now - _nativeTimeTimer > 5000 && _liveActivityStarted) {
+      _nativeTimeTimer = now
+      _syncNativeNowPlaying(isPlaying.value)
     }
     if (sleepEndOfChapter.value) {
       const ch = currentChapter.value
@@ -405,6 +449,7 @@ export const usePlayerStore = defineStore('player', () => {
 
       _userPaused = false
       _updateMediaSession()
+      _syncNativeNowPlaying(true)
       if ('mediaSession' in navigator && duration.value > 0) {
         try {
           navigator.mediaSession.setPositionState({
@@ -635,6 +680,11 @@ export const usePlayerStore = defineStore('player', () => {
     _stopSync()
     _clearSleepTimers()
     if (session.value) { await _doSync(); await closeSession(session.value.id).catch(() => {}) }
+    if (isNativeApp() && _liveActivityStarted) {
+      _liveActivityStarted = false
+      endLiveActivity()
+      clearNowPlaying()
+    }
     _userPaused = false
     audio?.pause()
     audio = null
@@ -660,6 +710,18 @@ export const usePlayerStore = defineStore('player', () => {
       }
     } catch { /* silent — localStorage state is used as-is */ }
   }
+
+  // Route iOS lock screen / Control Center commands to player actions
+  const _offRemoteCommand = onRemoteCommand((cmd) => {
+    switch (cmd.action) {
+      case 'remotePlay':         audio?.play(); break
+      case 'remotePause':        audio?.pause(); break
+      case 'remoteToggle':       togglePlay(); break
+      case 'remoteSkipBack':     skipBack(10); break
+      case 'remoteSkipForward':  skipForward(30); break
+      case 'remoteSeek':         if (cmd.position != null) seek(cmd.position); break
+    }
+  })
 
   return {
     currentItem, session, isPlaying, currentTime, duration, queue, recentItems,
