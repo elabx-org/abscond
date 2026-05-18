@@ -28,10 +28,10 @@ const socket = useSocketStore()
   top: 0;
   z-index: 50;
   padding: 8px 16px 10px;
-  background: rgba(20, 20, 16, 0.88);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
-  border-bottom: 1px solid rgba(255,255,255,0.08);
+  background: rgba(32, 32, 24, 0.96);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border-bottom: 1px solid rgba(255,255,255,0.1);
 }
 .page-header-brand-row {
   display: flex; align-items: center; gap: 6px; margin-bottom: 3px;
