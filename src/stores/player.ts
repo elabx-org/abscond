@@ -712,7 +712,7 @@ export const usePlayerStore = defineStore('player', () => {
   }
 
   // Route iOS lock screen / Control Center commands to player actions
-  const _offRemoteCommand = onRemoteCommand((cmd) => {
+  void onRemoteCommand((cmd) => {
     switch (cmd.action) {
       case 'remotePlay':         audio?.play(); break
       case 'remotePause':        audio?.pause(); break
