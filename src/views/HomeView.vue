@@ -632,6 +632,9 @@ watch(() => lib.activeLibraryId, async (id) => {
   border-bottom: 1px solid rgba(255,255,255,0.1);
 }
 .home-brand-row { display: flex; align-items: center; gap: 6px; }
+@media (min-width: 768px) {
+  .home-brand-row { display: none; }
+}
 .home-brand {
   font-size: 8px; font-weight: 300; letter-spacing: 5px;
   color: rgba(255,255,255,0.25); text-transform: uppercase;

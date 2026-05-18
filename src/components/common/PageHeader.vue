@@ -36,6 +36,9 @@ const socket = useSocketStore()
 .page-header-brand-row {
   display: flex; align-items: center; gap: 6px; margin-bottom: 3px;
 }
+@media (min-width: 768px) {
+  .page-header-brand-row { display: none; }
+}
 .page-header-brand {
   font-size: 8px; font-weight: 300; letter-spacing: 5px;
   color: rgba(255,255,255,0.25); text-transform: uppercase; margin: 0;
