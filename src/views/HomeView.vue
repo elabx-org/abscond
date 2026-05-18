@@ -614,9 +614,9 @@ watch(() => lib.activeLibraryId, async (id) => {
 .ptr-enter-active, .ptr-leave-active { transition: opacity 0.2s; }
 .ptr-enter-from, .ptr-leave-to { opacity: 0; }
 
-.greeting { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
-.greeting-time { font-size: 12px; color: rgba(255,255,255,0.4); margin: 0 0 2px; }
-.greeting-name { font-size: 22px; font-weight: 800; color: rgba(255,255,255,0.95); margin: 0; }
+.greeting { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+.greeting-time { font-size: 11px; color: rgba(255,255,255,0.35); margin: 0 0 1px; }
+.greeting-name { font-size: 17px; font-weight: 700; color: rgba(255,255,255,0.9); margin: 0; }
 .search-icon-btn { background: transparent; border: none; cursor: pointer; padding: 6px; }
 
 .install-banner {
@@ -642,7 +642,11 @@ watch(() => lib.activeLibraryId, async (id) => {
 .spin { animation: spin 0.8s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
-.h-scroll { display: flex; gap: 10px; overflow-x: auto; scrollbar-width: none; padding-bottom: 4px; }
+.h-scroll {
+  display: flex; gap: 10px; overflow-x: auto; scrollbar-width: none;
+  padding-bottom: 4px; -webkit-overflow-scrolling: touch;
+  scroll-snap-type: x proximity;
+}
 .h-scroll::-webkit-scrollbar { display: none; }
 .h-card { width: 120px; flex-shrink: 0; }
 .h-card-skeleton { width: 120px; flex-shrink: 0; display: flex; flex-direction: column; gap: 6px; }

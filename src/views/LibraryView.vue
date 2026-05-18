@@ -13,132 +13,55 @@
       </div>
     </Transition>
 
-    <!-- Header -->
-    <div class="view-header">
-      <div>
-        <h2 class="screen-title">{{ activeLibrary?.name ?? 'Library' }}</h2>
-        <p v-if="!lib.loading && items.length" class="lib-count">{{ filteredItems.length.toLocaleString() }} items</p>
-      </div>
-      <button class="header-search-btn" @click="router.push({ name: 'search' })">
-        <AppIcon icon="mdi-magnify" :size="20" color="rgba(255,255,255,0.6)" />
-      </button>
-    </div>
-
-    <!-- Library switcher (multi-lib) -->
-    <div v-if="lib.libraries.length > 1" class="lib-chips">
-      <button
-        v-for="l in lib.libraries"
-        :key="l.id"
-        class="lib-chip"
-        :class="{ active: lib.activeLibraryId === l.id }"
-        @click="switchLibrary(l.id)"
-      >{{ l.name }}</button>
-    </div>
-
-    <!-- Tab bar -->
-    <div class="view-tab-bar">
-      <button class="view-tab" :class="{ active: viewMode === 'library' }" @click="setViewMode('library')">Library</button>
-      <template v-if="!isPodcast">
-        <button class="view-tab" :class="{ active: viewMode === 'series' }" @click="setViewMode('series')">Series</button>
-        <button class="view-tab" :class="{ active: viewMode === 'authors' }" @click="setViewMode('authors')">Authors</button>
-        <button class="view-tab" :class="{ active: viewMode === 'narrators' }" @click="setViewMode('narrators')">Narrators</button>
-      </template>
-    </div>
-
-    <!-- Library controls -->
-    <div v-if="viewMode === 'library'" class="lib-controls">
-      <div class="sort-chips">
-        <button class="sort-chip" :class="{ active: sortField === 'title' }" @click="setSort('title')">
-          <AppIcon icon="mdi-sort-alphabetical-ascending" :size="12" /> Title
-        </button>
-        <button class="sort-chip" :class="{ active: sortField === 'author' }" @click="setSort('author')">
-          <AppIcon icon="mdi-account-outline" :size="12" /> Author
-        </button>
-        <button class="sort-chip" :class="{ active: sortField === 'addedAt' }" @click="setSort('addedAt')">
-          <AppIcon icon="mdi-clock-outline" :size="12" /> Added
-        </button>
-        <button class="sort-chip" :class="{ active: sortField === 'duration' }" @click="setSort('duration')">
-          <AppIcon icon="mdi-timer-outline" :size="12" /> Duration
-        </button>
-        <button class="sort-chip" :class="{ active: sortField === 'progress' }" @click="setSort('progress')">
-          <AppIcon icon="mdi-progress-check" :size="12" /> Progress
-        </button>
-        <button class="sort-chip" :class="{ active: sortField === 'lastPlayed' }" @click="setSort('lastPlayed')">
-          <AppIcon icon="mdi-history" :size="12" /> Played
-        </button>
-        <button class="sort-chip" :class="{ active: sortField === 'publishedYear' }" @click="setSort('publishedYear')">
-          <AppIcon icon="mdi-calendar-outline" :size="12" /> Year
-        </button>
-        <button class="sort-chip" :class="{ active: sortField === 'random' }" @click="setSort('random')">
-          <AppIcon icon="mdi-shuffle-variant" :size="12" /> Shuffle
-        </button>
-        <button class="sort-chip sort-chip--dir" v-if="sortField !== 'random'" @click="toggleDir">
-          <AppIcon :icon="sortDesc ? 'mdi-sort-descending' : 'mdi-sort-ascending'" :size="14" />
-        </button>
+    <!-- Sticky tab bar + search controls -->
+    <div class="sticky-controls">
+      <!-- Library switcher (multi-lib) -->
+      <div v-if="lib.libraries.length > 1" class="lib-chips">
+        <button
+          v-for="l in lib.libraries"
+          :key="l.id"
+          class="lib-chip"
+          :class="{ active: lib.activeLibraryId === l.id }"
+          @click="switchLibrary(l.id)"
+        >{{ l.name }}</button>
       </div>
 
-      <div class="filter-chips">
-        <button
-          v-for="f in progressFilters"
-          :key="f.key"
-          class="filter-chip"
-          :class="{ active: progressFilter === f.key }"
-          @click="progressFilter = f.key; page = 1"
-        >{{ f.label }}</button>
+      <!-- Tab bar: Library | Series | Authors -->
+      <div class="view-tab-bar">
+        <button class="view-tab" :class="{ active: viewMode === 'library' }" @click="setViewMode('library')">Library</button>
+        <template v-if="!isPodcast">
+          <button class="view-tab" :class="{ active: viewMode === 'series' }" @click="setViewMode('series')">Series</button>
+          <button class="view-tab" :class="{ active: viewMode === 'authors' }" @click="setViewMode('authors')">Authors</button>
+        </template>
+        <div class="tab-spacer" />
+        <span v-if="!lib.loading && items.length && viewMode === 'library'" class="lib-count-inline">{{ filteredItems.length.toLocaleString() }}</span>
       </div>
 
-      <div v-if="availableTags.length" class="filter-chips">
-        <button
-          class="filter-chip"
-          :class="{ active: !tagFilter }"
-          @click="tagFilter = ''; page = 1"
-        >All tags</button>
-        <button
-          v-for="t in availableTags"
-          :key="t"
-          class="filter-chip"
-          :class="{ active: tagFilter === t }"
-          @click="tagFilter = t; page = 1"
-        >{{ t }}</button>
-      </div>
-
-      <div v-if="availableGenres.length" class="filter-chips">
-        <button
-          class="filter-chip"
-          :class="{ active: !genreFilter }"
-          @click="genreFilter = ''; page = 1"
-        >All genres</button>
-        <button
-          v-for="g in availableGenres"
-          :key="g"
-          class="filter-chip"
-          :class="{ active: genreFilter === g }"
-          @click="genreFilter = g; page = 1"
-        >{{ g }}</button>
-      </div>
-
-      <div class="lib-search-row">
-        <div class="lib-search-wrap">
-          <AppIcon icon="mdi-magnify" :size="14" color="rgba(255,255,255,0.3)" />
-          <input
-            v-model="searchQuery"
-            class="lib-search-input"
-            placeholder="Filter by title or author…"
-            @input="page = 1"
-          />
-          <button v-if="searchQuery" class="lib-search-clear" @click="searchQuery = ''; page = 1">
-            <AppIcon icon="mdi-close" :size="12" />
+      <!-- Search + controls (library mode only) -->
+      <div v-if="viewMode === 'library'" class="lib-controls">
+        <div class="lib-search-row">
+          <div class="lib-search-wrap">
+            <AppIcon icon="mdi-magnify" :size="14" color="rgba(255,255,255,0.3)" />
+            <input
+              v-model="searchQuery"
+              class="lib-search-input"
+              placeholder="Filter by title or author…"
+              @input="page = 1"
+            />
+            <button v-if="searchQuery" class="lib-search-clear" @click="searchQuery = ''; page = 1">
+              <AppIcon icon="mdi-close" :size="12" />
+            </button>
+          </div>
+          <button class="grid-density-btn" :class="{ active: hasActiveFilters }" @click="showFilterSheet = true" title="Sort & Filter">
+            <AppIcon icon="mdi-tune-variant" :size="16" :color="hasActiveFilters ? '#d4a017' : 'rgba(255,255,255,0.5)'" />
+          </button>
+          <button class="grid-density-btn" @click="toggleRectangle" :title="rectangleCovers ? 'Square covers' : 'Portrait covers'">
+            <AppIcon :icon="rectangleCovers ? 'mdi-image-outline' : 'mdi-image-frame'" :size="16" color="rgba(255,255,255,0.5)" />
+          </button>
+          <button class="grid-density-btn" @click="toggleGridDensity" :title="gridDense ? 'Comfortable grid' : 'Compact grid'">
+            <AppIcon :icon="gridDense ? 'mdi-view-grid' : 'mdi-view-comfy'" :size="16" color="rgba(255,255,255,0.5)" />
           </button>
         </div>
-        <button class="grid-density-btn" :class="{ active: hideEbookOnly }" @click="toggleHideEbook" title="Hide ebook-only items">
-          <AppIcon icon="mdi-headphones" :size="16" :color="hideEbookOnly ? '#d4a017' : 'rgba(255,255,255,0.5)'" />
-        </button>
-        <button class="grid-density-btn" @click="toggleRectangle" :title="rectangleCovers ? 'Square covers' : 'Portrait covers'">
-          <AppIcon :icon="rectangleCovers ? 'mdi-image-outline' : 'mdi-image-frame'" :size="16" color="rgba(255,255,255,0.5)" />
-        </button>
-        <button class="grid-density-btn" @click="toggleGridDensity" :title="gridDense ? 'Comfortable grid' : 'Compact grid'">
-          <AppIcon :icon="gridDense ? 'mdi-view-grid' : 'mdi-view-comfy'" :size="16" color="rgba(255,255,255,0.5)" />
-        </button>
       </div>
     </div>
 
@@ -412,6 +335,106 @@
       </Transition>
     </Teleport>
 
+    <!-- Sort & Filter sheet -->
+    <Teleport to="body">
+      <Transition name="filter-sheet">
+        <div v-if="showFilterSheet" class="filter-backdrop" @click.self="showFilterSheet = false">
+          <div class="filter-sheet">
+            <div class="drag-handle" />
+
+            <p class="filter-section-title">Sort by</p>
+            <div class="sort-chips">
+              <button class="sort-chip" :class="{ active: sortField === 'title' }" @click="setSort('title')">
+                <AppIcon icon="mdi-sort-alphabetical-ascending" :size="12" /> Title
+              </button>
+              <button class="sort-chip" :class="{ active: sortField === 'author' }" @click="setSort('author')">
+                <AppIcon icon="mdi-account-outline" :size="12" /> Author
+              </button>
+              <button class="sort-chip" :class="{ active: sortField === 'addedAt' }" @click="setSort('addedAt')">
+                <AppIcon icon="mdi-clock-outline" :size="12" /> Added
+              </button>
+              <button class="sort-chip" :class="{ active: sortField === 'duration' }" @click="setSort('duration')">
+                <AppIcon icon="mdi-timer-outline" :size="12" /> Duration
+              </button>
+              <button class="sort-chip" :class="{ active: sortField === 'progress' }" @click="setSort('progress')">
+                <AppIcon icon="mdi-progress-check" :size="12" /> Progress
+              </button>
+              <button class="sort-chip" :class="{ active: sortField === 'lastPlayed' }" @click="setSort('lastPlayed')">
+                <AppIcon icon="mdi-history" :size="12" /> Played
+              </button>
+              <button class="sort-chip" :class="{ active: sortField === 'publishedYear' }" @click="setSort('publishedYear')">
+                <AppIcon icon="mdi-calendar-outline" :size="12" /> Year
+              </button>
+              <button class="sort-chip" :class="{ active: sortField === 'random' }" @click="setSort('random')">
+                <AppIcon icon="mdi-shuffle-variant" :size="12" /> Shuffle
+              </button>
+              <button class="sort-chip sort-chip--dir" v-if="sortField !== 'random'" @click="toggleDir">
+                <AppIcon :icon="sortDesc ? 'mdi-sort-descending' : 'mdi-sort-ascending'" :size="14" />
+              </button>
+            </div>
+
+            <p class="filter-section-title">Progress</p>
+            <div class="filter-chips-row">
+              <button
+                v-for="f in progressFilters"
+                :key="f.key"
+                class="filter-chip"
+                :class="{ active: progressFilter === f.key }"
+                @click="progressFilter = f.key; page = 1"
+              >{{ f.label }}</button>
+            </div>
+
+            <template v-if="availableTags.length">
+              <p class="filter-section-title">Tags</p>
+              <div class="filter-chips-row">
+                <button class="filter-chip" :class="{ active: !tagFilter }" @click="tagFilter = ''; page = 1">All</button>
+                <button
+                  v-for="t in availableTags"
+                  :key="t"
+                  class="filter-chip"
+                  :class="{ active: tagFilter === t }"
+                  @click="tagFilter = t; page = 1"
+                >{{ t }}</button>
+              </div>
+            </template>
+
+            <template v-if="availableGenres.length">
+              <p class="filter-section-title">Genres</p>
+              <div class="filter-chips-row">
+                <button class="filter-chip" :class="{ active: !genreFilter }" @click="genreFilter = ''; page = 1">All</button>
+                <button
+                  v-for="g in availableGenres"
+                  :key="g"
+                  class="filter-chip"
+                  :class="{ active: genreFilter === g }"
+                  @click="genreFilter = g; page = 1"
+                >{{ g }}</button>
+              </div>
+            </template>
+
+            <div class="filter-toggle-row">
+              <span class="filter-toggle-label">Audiobooks only</span>
+              <button class="grid-density-btn" :class="{ active: hideEbookOnly }" @click="toggleHideEbook">
+                <AppIcon icon="mdi-headphones" :size="16" :color="hideEbookOnly ? '#d4a017' : 'rgba(255,255,255,0.5)'" />
+              </button>
+            </div>
+
+            <template v-if="!isPodcast">
+              <p class="filter-section-title">Narrators</p>
+              <button class="narrator-browse-btn" @click="showFilterSheet = false; setViewMode('narrators')">
+                Browse all narrators
+                <AppIcon icon="mdi-chevron-right" :size="14" color="rgba(255,255,255,0.4)" />
+              </button>
+            </template>
+
+            <button v-if="hasActiveFilters" class="filter-reset-btn" @click="resetFilters">
+              Reset all filters
+            </button>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
+
     <!-- Quick actions sheet (long-press) -->
     <QuickActionsSheet
       v-if="quickItem"
@@ -476,7 +499,6 @@
 <script setup lang="ts">
 import AppIcon from '@/components/common/AppIcon.vue'
 import { computed, onMounted, onBeforeUnmount, ref, watch } from 'vue'
-import { useRouter } from 'vue-router'
 import { useLibraryStore } from '@/stores/library'
 import { useAuthStore } from '@/stores/auth'
 import { coverUrl, api } from '@/api/client'
@@ -504,7 +526,6 @@ const lib    = useLibraryStore()
 const auth   = useAuthStore()
 const player = usePlayerStore()
 const notify = useNotificationStore()
-const router = useRouter()
 
 const activeLibrary  = computed(() => lib.libraries.find(l => l.id === lib.activeLibraryId))
 const isPodcast      = computed(() => activeLibrary.value?.mediaType === 'podcast')
@@ -575,6 +596,26 @@ async function setViewMode(mode: ViewMode) {
     catch { narratorsList.value = [] }
     finally { loadingNarrators.value = false }
   }
+}
+
+const showFilterSheet = ref(false)
+
+const hasActiveFilters = computed(() =>
+  sortField.value !== 'title' || sortDesc.value || progressFilter.value !== 'all' ||
+  !!genreFilter.value || !!tagFilter.value || hideEbookOnly.value
+)
+
+function resetFilters() {
+  sortField.value    = 'title'
+  sortDesc.value     = false
+  progressFilter.value = 'all'
+  genreFilter.value  = ''
+  tagFilter.value    = ''
+  hideEbookOnly.value = false
+  page.value         = 1
+  localStorage.setItem('abs_lib_sort', 'title')
+  localStorage.setItem('abs_lib_sort_desc', 'false')
+  localStorage.setItem('abs_lib_hide_ebook', 'false')
 }
 
 const ptr = ref({ pulling: false, refreshing: false, startY: 0 })
@@ -957,20 +998,28 @@ watch(searchQuery, (q) => {
 </script>
 
 <style scoped>
-.library-view { padding: 12px 12px 80px; min-height: 100dvh; background: #0e0e0e; }
-.ptr-indicator { display: flex; justify-content: center; padding: 8px 0; margin-top: -8px; margin-bottom: 4px; }
+.library-view { padding: 0 0 80px; min-height: 100dvh; background: #0e0e0e; }
+.ptr-indicator { display: flex; justify-content: center; padding: 8px 0; }
 .ptr-enter-active, .ptr-leave-active { transition: opacity 0.2s; }
 .ptr-enter-from, .ptr-leave-to { opacity: 0; }
 .spin { animation: spin 0.8s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
-.view-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 12px; }
-.screen-title { font-size: 18px; font-weight: 700; color: rgba(255,255,255,0.9); margin: 0; }
-.lib-count { font-size: 10px; color: rgba(255,255,255,0.3); margin: 2px 0 0; }
-.header-search-btn { background: transparent; border: none; cursor: pointer; padding: 4px; border-radius: 8px; display: flex; align-items: center; justify-content: center; }
-.lib-chips { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+/* Sticky tab bar + controls */
+.sticky-controls {
+  position: sticky;
+  top: var(--header-h, calc(40px + env(safe-area-inset-top)));
+  z-index: 10;
+  background: rgba(14,14,14,0.97);
+  backdrop-filter: blur(20px);
+  padding: 0 12px;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+
+.lib-chips { display: flex; gap: 8px; flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; padding: 8px 0 0; -webkit-overflow-scrolling: touch; }
+.lib-chips::-webkit-scrollbar { display: none; }
 .lib-chip {
-  font-size: 12px; padding: 5px 14px; border-radius: 20px; cursor: pointer;
+  flex-shrink: 0; font-size: 12px; padding: 5px 14px; border-radius: 20px; cursor: pointer;
   background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.08);
   color: rgba(255,255,255,0.5); transition: all 0.15s;
 }
@@ -986,8 +1035,8 @@ watch(searchQuery, (q) => {
 .sort-chip.active { background: rgba(212,160,23,0.12); border-color: rgba(212,160,23,0.4); color: #d4a017; }
 .sort-chip--dir { padding: 4px 8px; }
 
-.filter-chips { display: flex; gap: 6px; flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; margin-top: 8px; padding-bottom: 2px; }
-.filter-chips::-webkit-scrollbar { display: none; }
+.filter-chips-row { display: flex; gap: 6px; flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; padding-bottom: 2px; -webkit-overflow-scrolling: touch; }
+.filter-chips-row::-webkit-scrollbar { display: none; }
 .filter-chip {
   flex-shrink: 0; font-size: 11px; padding: 4px 10px; border-radius: 20px; cursor: pointer;
   background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08);
@@ -995,7 +1044,8 @@ watch(searchQuery, (q) => {
 }
 .filter-chip.active { background: rgba(212,160,23,0.12); border-color: rgba(212,160,23,0.4); color: #d4a017; }
 
-.lib-search-row { display: flex; align-items: center; gap: 6px; margin-top: 8px; }
+.lib-controls { padding: 8px 0; }
+.lib-search-row { display: flex; align-items: center; gap: 6px; }
 .lib-search-wrap {
   display: flex; align-items: center; gap: 6px; flex: 1;
   background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08);
@@ -1013,9 +1063,11 @@ watch(searchQuery, (q) => {
 .lib-search-input::placeholder { color: rgba(255,255,255,0.25); }
 .lib-search-clear { background: transparent; border: none; cursor: pointer; color: rgba(255,255,255,0.3); padding: 0; }
 
+.lib-count-inline { font-size: 10px; color: rgba(255,255,255,0.25); margin-left: auto; align-self: center; padding-right: 4px; }
+
 .scroll-sentinel { height: 1px; }
 
-.search-group { margin-top: 16px; }
+.search-group { margin-top: 16px; padding: 0 12px; }
 .search-group-label {
   font-size: 10px; font-weight: 600; color: rgba(255,255,255,0.3);
   text-transform: uppercase; letter-spacing: 0.5px; margin: 0 0 8px;
@@ -1041,10 +1093,12 @@ watch(searchQuery, (q) => {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
   gap: 12px 10px;
+  padding: 12px 12px 0;
 }
 .grid--dense {
   grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
   gap: 8px 6px;
+  padding: 8px 8px 0;
 }
 
 .skeleton-card { display: flex; flex-direction: column; gap: 6px; }
@@ -1065,6 +1119,10 @@ watch(searchQuery, (q) => {
   display: flex; flex-direction: column; align-items: center;
   gap: 12px; padding: 80px 0; color: rgba(255,255,255,0.4); font-size: 13px;
 }
+
+/* Series/Authors/Narrators grids need horizontal padding */
+.library-view > template > .grid,
+.library-view .series-grid { padding: 12px 12px 0; }
 
 .batch-bar {
   position: fixed; bottom: 60px; left: 0; right: 0; z-index: 150;
@@ -1107,8 +1165,9 @@ watch(searchQuery, (q) => {
 .picker-empty { font-size: 12px; color: rgba(255,255,255,0.3); padding: 16px 0; text-align: center; }
 
 .view-tab-bar {
-  display: flex; overflow-x: auto; scrollbar-width: none;
-  border-bottom: 1px solid rgba(255,255,255,0.06); margin-bottom: 14px;
+  display: flex; align-items: center; overflow-x: auto; scrollbar-width: none;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  -webkit-overflow-scrolling: touch;
 }
 .view-tab-bar::-webkit-scrollbar { display: none; }
 .view-tab {
@@ -1117,13 +1176,47 @@ watch(searchQuery, (q) => {
   cursor: pointer; color: rgba(255,255,255,0.4); transition: all 0.15s; white-space: nowrap;
 }
 .view-tab.active { color: #d4a017; border-bottom-color: #d4a017; }
+.tab-spacer { flex: 1; }
 
-.lib-controls { margin-bottom: 12px; }
+/* Filter sheet */
+.filter-backdrop {
+  position: fixed; inset: 0; z-index: 300;
+  background: rgba(0,0,0,0.55); display: flex; align-items: flex-end;
+}
+.filter-sheet {
+  width: 100%; background: #131313;
+  border-radius: 20px 20px 0 0; border-top: 1px solid rgba(255,255,255,0.08);
+  padding: 0 16px calc(env(safe-area-inset-bottom) + 24px);
+  max-height: 80vh; overflow-y: auto; -webkit-overflow-scrolling: touch;
+}
+.filter-section-title {
+  font-size: 10px; font-weight: 700; color: rgba(255,255,255,0.3);
+  text-transform: uppercase; letter-spacing: 0.8px; margin: 16px 0 8px;
+}
+.filter-toggle-row {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-top: 16px; padding: 4px 0;
+}
+.filter-toggle-label { font-size: 13px; color: rgba(255,255,255,0.7); }
+.narrator-browse-btn {
+  display: flex; align-items: center; justify-content: space-between;
+  width: 100%; padding: 10px 0; background: transparent; border: none;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  font-size: 13px; color: rgba(255,255,255,0.65); cursor: pointer;
+}
+.filter-reset-btn {
+  width: 100%; margin-top: 20px; padding: 12px;
+  background: rgba(220,80,80,0.08); border: 1px solid rgba(220,80,80,0.2);
+  border-radius: 12px; font-size: 13px; font-weight: 600;
+  color: #e05555; cursor: pointer;
+}
+.filter-sheet-enter-active, .filter-sheet-leave-active { transition: transform 0.25s cubic-bezier(0.32, 0.72, 0, 1), opacity 0.2s; }
+.filter-sheet-enter-from, .filter-sheet-leave-to { transform: translateY(100%); opacity: 0; }
 
 .sub-search-wrap {
   display: flex; align-items: center; gap: 6px;
   background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08);
-  border-radius: 10px; padding: 6px 10px; margin-bottom: 14px;
+  border-radius: 10px; padding: 6px 10px; margin: 12px 12px 4px;
 }
 
 .series-card { display: flex; flex-direction: column; gap: 5px; cursor: pointer; }

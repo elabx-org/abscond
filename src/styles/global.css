@@ -18,6 +18,7 @@
   --bg-card: #1a1a1a;
   --bg-sheet: #111;
   --bg-panel: #1e1e1e;
+  --header-h: calc(40px + env(safe-area-inset-top));
 }
 
 .theme-oled {

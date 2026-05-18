@@ -8,10 +8,10 @@
       </div>
     </Transition>
 
-    <!-- Mobile top header (brand row) -->
+    <!-- Mobile top header -->
     <header v-if="isMobile" class="mobile-header">
       <AppLogo :size="18" color="rgba(134,59,255,0.65)" />
-      <span class="mobile-brand-name">A &nbsp;B &nbsp;S &nbsp;C &nbsp;O &nbsp;N &nbsp;D</span>
+      <span class="mobile-page-title">{{ pageTitle }}</span>
       <ConnectionStatus />
     </header>
 
@@ -36,6 +36,7 @@ import AppIcon from '@/components/common/AppIcon.vue'
 import AppLogo from '@/components/common/AppLogo.vue'
 import ConnectionStatus from '@/components/common/ConnectionStatus.vue'
 import { computed, ref, onMounted, onBeforeUnmount, watch } from 'vue'
+import { useRoute } from 'vue-router'
 import BottomNav  from './BottomNav.vue'
 import SideRail   from './SideRail.vue'
 import NavDrawer  from './NavDrawer.vue'
@@ -46,6 +47,15 @@ import { useAuthStore } from '@/stores/auth'
 const player = usePlayerStore()
 const socket = useSocketStore()
 const auth   = useAuthStore()
+const route  = useRoute()
+
+const pageTitleMap: Record<string, string> = {
+  home: 'Abscond', library: 'Library', player: 'Player',
+  search: 'Search', settings: 'Settings', stats: 'Stats',
+  bookmarks: 'Bookmarks', collections: 'Collections', playlists: 'Playlists',
+  browse: 'Browse', 'car': 'Car Mode', 'upcoming': 'Upcoming',
+}
+const pageTitle = computed(() => pageTitleMap[String(route.name)] ?? 'Abscond')
 
 const showOfflineBanner = ref(false)
 let offlineTimer: ReturnType<typeof setTimeout> | null = null
@@ -122,10 +132,13 @@ const contentStyle = computed(() => {
   background: rgba(14,14,14,0.85); backdrop-filter: blur(20px);
   border-bottom: 1px solid rgba(255,255,255,0.05);
 }
-.mobile-brand-name {
-  font-size: 9px; font-weight: 300; letter-spacing: 5px;
-  color: rgba(255,255,255,0.25); text-transform: uppercase;
+.mobile-page-title {
   flex: 1;
+  font-size: 16px;
+  font-weight: 700;
+  color: rgba(255,255,255,0.9);
+  padding-left: 8px;
+  letter-spacing: -0.2px;
 }
 
 .offline-banner {
