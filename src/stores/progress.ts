@@ -42,7 +42,7 @@ export const useProgressStore = defineStore('progress', () => {
 
   async function fetchRecentlyAdded(libraryId: string) {
     const res = await getLibraryItems(libraryId, { limit: 20, sort: 'addedAt', desc: true })
-    recentlyAdded.value = res.results
+    recentlyAdded.value = res.results ?? []
   }
 
   async function fetchRecentlyFinished(libraryId: string) {

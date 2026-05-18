@@ -3,7 +3,9 @@ import type { Library, LibraryItemsResponse } from './types'
 
 export async function getLibraries(): Promise<Library[]> {
   const res = await api.get('/libraries')
-  return res.data.libraries
+  const data = res.data
+  if (Array.isArray(data)) return data
+  return data?.libraries ?? []
 }
 
 export interface GetLibraryItemsParams {
@@ -22,5 +24,10 @@ export async function getLibraryItems(
   const res = await api.get(`/libraries/${libraryId}/items`, {
     params: { ...rest, ...(desc !== undefined ? { desc: desc ? 1 : 0 } : {}) },
   })
-  return res.data
+  const data = res.data
+  return {
+    ...data,
+    results: data.results ?? data.libraryItems ?? [],
+    total: data.total ?? 0,
+  }
 }
