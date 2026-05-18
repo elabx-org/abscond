@@ -15,6 +15,8 @@ export interface ScanProgress {
   pct: number
 }
 
+let _notifPermRequested = false
+
 export const useSocketStore = defineStore('socket', () => {
   const connected    = ref(false)
   const scanProgress = ref<Record<string, ScanProgress>>({})
@@ -25,8 +27,7 @@ export const useSocketStore = defineStore('socket', () => {
     const host  = base.replace(/\/api$/, '')
     const sock  = connectSocket(host, token)
 
-    let _notifPermRequested = false
-    sock.on('connect', () => {
+    const onConnect = () => {
       connected.value = true
       if (!_notifPermRequested) {
         _notifPermRequested = true
@@ -34,8 +35,12 @@ export const useSocketStore = defineStore('socket', () => {
           requestNotificationPermission()
         })
       }
-    })
-    sock.on('disconnect', () => { connected.value = false })
+    }
+    const onDisconnect = () => { connected.value = false }
+    sock.on('connect',    onConnect)
+    sock.on('disconnect', onDisconnect)
+    cleanups.push(() => sock.off('connect',    onConnect))
+    cleanups.push(() => sock.off('disconnect', onDisconnect))
 
     cleanups.push(onSocketEvent('user_stream_progress_update', (data: unknown) => {
       if (!data || typeof data !== 'object') return
