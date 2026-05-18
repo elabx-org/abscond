@@ -16,6 +16,18 @@
 
 ---
 
+## Bug Fixes (implemented before plan execution — already committed)
+
+### Bug: No data loads after app update / progress sync silently failing
+
+**Root cause:** `loadConfig()` in `src/api/client.ts` always tried `fetch('/config.json')`, which doesn't exist in the Capacitor native app. The catch block returned `'/api'`, making every API call (including the 15-second progress sync) target `capacitor://localhost/api` instead of the real ABS server. On a fresh install the user goes through the login screen so `resetBaseUrl()` is called. On an update the auth token is preserved in localStorage so the router skips login — `resetBaseUrl()` never runs — baseURL stays broken for the lifetime of the app.
+
+**Fix:** `loadConfig()` now checks `isNativeApp()` first and reads `abs_host` from localStorage (set by `resetBaseUrl()` during login) as the resolved base URL, bypassing the network fetch entirely.
+
+**File changed:** `src/api/client.ts` — committed `fix(api): restore baseURL from localStorage on native app restart`
+
+---
+
 ## File Map
 
 **`abscond-mobile` — new files:**
