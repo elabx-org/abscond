@@ -347,18 +347,20 @@ function onTouchEnd() {
 async function refresh() {
   if (ptr.value.refreshing) return
   ptr.value.refreshing = true
-  try {
-    const [uStats, sess] = await Promise.all([
-      getUserStats(),
-      getListeningSessions(0),
-    ])
-    userStats.value = uStats
-    sessions.value  = sess.sessions
-    sessionTotal.value = sess.total
+  const [uStatsResult, sessResult] = await Promise.allSettled([
+    getUserStats(),
+    getListeningSessions(0),
+  ])
+  if (uStatsResult.status === 'fulfilled') userStats.value = uStatsResult.value
+  if (sessResult.status === 'fulfilled') {
+    sessions.value = sessResult.value.sessions ?? []
+    sessionTotal.value = sessResult.value.total ?? 0
     sessionPage.value = 0
-    if (lib.activeLibraryId) libStats.value = await getLibraryStats(lib.activeLibraryId)
-  } catch { /* ignore */ }
-  finally { ptr.value.refreshing = false }
+  }
+  if (lib.activeLibraryId) {
+    try { libStats.value = await getLibraryStats(lib.activeLibraryId) } catch { /* ignore */ }
+  }
+  ptr.value.refreshing = false
 }
 const loadingMore = ref(false)
 const sessionPage = ref(0)
@@ -698,22 +700,20 @@ onMounted(async () => {
   }, { rootMargin: '200px' })
   if (!lib.libraries.length) await lib.fetchLibraries()
   loading.value = true
-  try {
-    const [uStats, sess] = await Promise.all([
-      getUserStats(),
-      getListeningSessions(0),
-    ])
-    userStats.value = uStats
-    sessions.value  = sess.sessions
-    sessionTotal.value = sess.total
-    if (lib.activeLibraryId) {
-      libStats.value = await getLibraryStats(lib.activeLibraryId)
-    }
-  } catch { /* silently ignore */ }
-  finally {
-    loading.value = false
-    if (sessionSentinel.value) sessionObserver?.observe(sessionSentinel.value)
+  const [uStatsResult, sessResult] = await Promise.allSettled([
+    getUserStats(),
+    getListeningSessions(0),
+  ])
+  if (uStatsResult.status === 'fulfilled') userStats.value = uStatsResult.value
+  if (sessResult.status === 'fulfilled') {
+    sessions.value = sessResult.value.sessions ?? []
+    sessionTotal.value = sessResult.value.total ?? 0
   }
+  if (lib.activeLibraryId) {
+    try { libStats.value = await getLibraryStats(lib.activeLibraryId) } catch { /* ignore */ }
+  }
+  loading.value = false
+  if (sessionSentinel.value) sessionObserver?.observe(sessionSentinel.value)
 })
 </script>
 
