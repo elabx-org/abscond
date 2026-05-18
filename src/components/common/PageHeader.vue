@@ -1,6 +1,7 @@
 <template>
   <div class="page-header">
     <div class="page-header-brand-row">
+      <AppLogo :size="14" color="rgba(134,59,255,0.6)" />
       <p class="page-header-brand">A &nbsp;B &nbsp;S &nbsp;C &nbsp;O &nbsp;N &nbsp;D</p>
       <AppIcon
         :icon="socket.connected ? 'mdi-cloud-check-outline' : 'mdi-cloud-off-outline'"
@@ -17,6 +18,7 @@
 
 <script setup lang="ts">
 import AppIcon from '@/components/common/AppIcon.vue'
+import AppLogo from '@/components/common/AppLogo.vue'
 import { useSocketStore } from '@/stores/socket'
 defineProps<{ title: string }>()
 const socket = useSocketStore()

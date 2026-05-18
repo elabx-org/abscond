@@ -15,6 +15,7 @@
     <!-- Brand header (scrollable, Absorb-style) -->
     <div class="home-header">
       <div class="home-brand-row">
+        <AppLogo :size="14" color="rgba(134,59,255,0.6)" />
         <p class="home-brand">A &nbsp;B &nbsp;S &nbsp;C &nbsp;O &nbsp;N &nbsp;D</p>
         <AppIcon
           :icon="socket.connected ? 'mdi-cloud-check-outline' : 'mdi-cloud-off-outline'"
@@ -290,6 +291,7 @@
 
 <script setup lang="ts">
 import AppIcon from '@/components/common/AppIcon.vue'
+import AppLogo from '@/components/common/AppLogo.vue'
 import { onMounted, ref, computed, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useProgressStore } from '@/stores/progress'

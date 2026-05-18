@@ -34,6 +34,12 @@
 
     <!-- ── RIGHT FORM ── -->
     <div class="form-panel">
+      <!-- Desktop logo (form panel, right side) -->
+      <div class="desktop-form-logo d-none d-md-flex">
+        <AppLogo :size="24" color="rgba(134,59,255,0.7)" />
+        <span class="logo-name">ABSCOND</span>
+      </div>
+
       <!-- Mobile logo -->
       <div class="mobile-logo d-md-none">
         <AppLogo :size="44" color="rgba(134,59,255,0.7)" animated="breathe" />
@@ -410,6 +416,10 @@ function goToSlide(n: number) {
   display:flex; flex-direction:column; align-items:center; justify-content:center;
   padding:2.5rem; overflow-y:auto;
   position:relative; z-index:1;
+}
+.desktop-form-logo {
+  align-items: center; gap: 10px;
+  margin-bottom: 2.5rem;
 }
 .mobile-logo {
   width:100%; display:flex; flex-direction:column; align-items:center; gap:8px;
