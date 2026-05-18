@@ -21,7 +21,7 @@ export async function startPlaySession(itemId: string, episodeId?: string): Prom
 }
 
 export async function syncSession(sessionId: string, body: SyncSessionBody): Promise<void> {
-  await api.patch(`/session/${sessionId}/sync`, body)
+  await api.post(`/session/${sessionId}/sync`, body)
 }
 
 export async function closeSession(sessionId: string): Promise<void> {
