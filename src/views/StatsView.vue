@@ -21,8 +21,9 @@
 
     <div v-else-if="!userStats" class="empty-state">
       <AppIcon icon="mdi-chart-bar" :size="40" color="rgba(255,255,255,0.1)" />
-      <p class="empty-title">No listening data yet</p>
-      <p class="empty-sub">Start listening to track your stats</p>
+      <p class="empty-title">Could not load stats</p>
+      <p class="empty-sub">{{ statsError || 'No data returned from server' }}</p>
+      <button class="empty-retry" @click="loadStats">Retry</button>
     </div>
 
     <template v-else>
@@ -344,22 +345,36 @@ function onTouchEnd() {
   ptr.value.startY = 0
 }
 
-async function refresh() {
-  if (ptr.value.refreshing) return
-  ptr.value.refreshing = true
+async function loadStats() {
+  loading.value = true
+  statsError.value = ''
   const [uStatsResult, sessResult] = await Promise.allSettled([
     getUserStats(),
     getListeningSessions(0),
   ])
-  if (uStatsResult.status === 'fulfilled') userStats.value = uStatsResult.value
+  if (uStatsResult.status === 'fulfilled') {
+    userStats.value = uStatsResult.value
+  } else {
+    const err = uStatsResult.reason
+    statsError.value = err?.response
+      ? `HTTP ${err.response.status}: ${err.response.data?.error ?? err.response.statusText}`
+      : (err?.message ?? String(err))
+  }
   if (sessResult.status === 'fulfilled') {
     sessions.value = sessResult.value.sessions ?? []
     sessionTotal.value = sessResult.value.total ?? 0
-    sessionPage.value = 0
   }
   if (lib.activeLibraryId) {
     try { libStats.value = await getLibraryStats(lib.activeLibraryId) } catch { /* ignore */ }
   }
+  loading.value = false
+}
+
+async function refresh() {
+  if (ptr.value.refreshing) return
+  ptr.value.refreshing = true
+  sessionPage.value = 0
+  await loadStats()
   ptr.value.refreshing = false
 }
 const loadingMore = ref(false)
@@ -373,6 +388,7 @@ const sessions     = ref<ListeningSession[]>([])
 const sessionTotal = ref(0)
 const sessionSheet = ref(false)
 const activeSession = ref<ListeningSession | null>(null)
+const statsError   = ref('')
 
 const totalHoursDecimal = computed(() => {
   const secs = userStats.value?.totalTime ?? userStats.value?.totalListeningTime ?? 0
@@ -699,20 +715,7 @@ onMounted(async () => {
     }
   }, { rootMargin: '200px' })
   if (!lib.libraries.length) await lib.fetchLibraries()
-  loading.value = true
-  const [uStatsResult, sessResult] = await Promise.allSettled([
-    getUserStats(),
-    getListeningSessions(0),
-  ])
-  if (uStatsResult.status === 'fulfilled') userStats.value = uStatsResult.value
-  if (sessResult.status === 'fulfilled') {
-    sessions.value = sessResult.value.sessions ?? []
-    sessionTotal.value = sessResult.value.total ?? 0
-  }
-  if (lib.activeLibraryId) {
-    try { libStats.value = await getLibraryStats(lib.activeLibraryId) } catch { /* ignore */ }
-  }
-  loading.value = false
+  await loadStats()
   if (sessionSentinel.value) sessionObserver?.observe(sessionSentinel.value)
 })
 </script>
@@ -736,7 +739,12 @@ onMounted(async () => {
   padding: 80px 20px; text-align: center;
 }
 .empty-title { font-size: 15px; font-weight: 600; color: rgba(255,255,255,0.4); margin: 0; }
-.empty-sub { font-size: 12px; color: rgba(255,255,255,0.2); margin: 0; }
+.empty-sub { font-size: 11px; color: rgba(255,255,255,0.2); margin: 0; max-width: 280px; word-break: break-all; }
+.empty-retry {
+  margin-top: 8px; padding: 8px 20px; border-radius: 20px;
+  background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.1);
+  color: rgba(255,255,255,0.5); font-size: 12px; cursor: pointer;
+}
 .loading-wrap { display: flex; flex-wrap: wrap; gap: 10px; }
 .stat-skeleton {
   flex: 1; min-width: 140px; height: 80px; border-radius: 12px;

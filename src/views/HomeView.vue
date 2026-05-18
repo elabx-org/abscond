@@ -622,12 +622,14 @@ watch(() => lib.activeLibraryId, async (id) => {
 .home-view { padding: 0 0 80px; min-height: 100dvh; background: #0e0e0e; }
 
 .home-header {
-  padding: 10px 16px 10px;
-  background: rgba(10, 10, 8, 0.94);
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  padding: 8px 16px;
+  background: rgba(20, 20, 16, 0.88);
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
-  border-bottom: 1px solid rgba(255,255,255,0.05);
-  margin-bottom: 0;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
 }
 .home-brand-row { display: flex; align-items: center; gap: 6px; }
 .home-brand {

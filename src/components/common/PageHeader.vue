@@ -24,11 +24,14 @@ const socket = useSocketStore()
 
 <style scoped>
 .page-header {
-  padding: 10px 16px 10px;
-  background: rgba(10, 10, 8, 0.94);
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  padding: 8px 16px 10px;
+  background: rgba(20, 20, 16, 0.88);
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
-  border-bottom: 1px solid rgba(255,255,255,0.05);
+  border-bottom: 1px solid rgba(255,255,255,0.08);
 }
 .page-header-brand-row {
   display: flex; align-items: center; gap: 6px; margin-bottom: 3px;
