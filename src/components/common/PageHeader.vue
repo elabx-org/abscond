@@ -1,6 +1,13 @@
 <template>
   <div class="page-header">
-    <p class="page-header-brand">A &nbsp;B &nbsp;S &nbsp;C &nbsp;O &nbsp;N &nbsp;D</p>
+    <div class="page-header-brand-row">
+      <p class="page-header-brand">A &nbsp;B &nbsp;S &nbsp;C &nbsp;O &nbsp;N &nbsp;D</p>
+      <AppIcon
+        :icon="socket.connected ? 'mdi-cloud-check-outline' : 'mdi-cloud-off-outline'"
+        :size="13"
+        :color="socket.connected ? 'rgba(74,222,128,0.75)' : 'rgba(255,255,255,0.18)'"
+      />
+    </div>
     <div class="page-header-row">
       <h1 class="page-header-title">{{ title }}</h1>
       <slot name="actions" />
@@ -9,14 +16,26 @@
 </template>
 
 <script setup lang="ts">
+import AppIcon from '@/components/common/AppIcon.vue'
+import { useSocketStore } from '@/stores/socket'
 defineProps<{ title: string }>()
+const socket = useSocketStore()
 </script>
 
 <style scoped>
-.page-header { padding: 10px 16px 6px; }
+.page-header {
+  padding: 10px 16px 10px;
+  background: rgba(10, 10, 8, 0.94);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+.page-header-brand-row {
+  display: flex; align-items: center; gap: 6px; margin-bottom: 3px;
+}
 .page-header-brand {
   font-size: 8px; font-weight: 300; letter-spacing: 5px;
-  color: rgba(255,255,255,0.25); text-transform: uppercase; margin: 0 0 3px;
+  color: rgba(255,255,255,0.25); text-transform: uppercase; margin: 0;
 }
 .page-header-row { display: flex; align-items: center; justify-content: space-between; }
 .page-header-title {

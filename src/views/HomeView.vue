@@ -13,7 +13,16 @@
     </Transition>
 
     <!-- Brand header (scrollable, Absorb-style) -->
-    <p class="home-brand">A &nbsp;B &nbsp;S &nbsp;C &nbsp;O &nbsp;N &nbsp;D</p>
+    <div class="home-header">
+      <div class="home-brand-row">
+        <p class="home-brand">A &nbsp;B &nbsp;S &nbsp;C &nbsp;O &nbsp;N &nbsp;D</p>
+        <AppIcon
+          :icon="socket.connected ? 'mdi-cloud-check-outline' : 'mdi-cloud-off-outline'"
+          :size="13"
+          :color="socket.connected ? 'rgba(74,222,128,0.75)' : 'rgba(255,255,255,0.18)'"
+        />
+      </div>
+    </div>
 
     <!-- Greeting -->
     <div class="greeting">
@@ -287,6 +296,7 @@ import { useProgressStore } from '@/stores/progress'
 import { useLibraryStore } from '@/stores/library'
 import { useAuthStore } from '@/stores/auth'
 import { usePlayerStore } from '@/stores/player'
+import { useSocketStore } from '@/stores/socket'
 import { useNotificationStore } from '@/stores/notifications'
 import { coverUrl, api } from '@/api/client'
 import { getPersonalizedShelves } from '@/api/browse'
@@ -307,6 +317,7 @@ import { getPlaylists, addItemToPlaylist } from '@/api/playlists'
 import type { Playlist } from '@/api/playlists'
 
 const progress = useProgressStore()
+const socket   = useSocketStore()
 const router   = useRouter()
 const lib      = useLibraryStore()
 const auth     = useAuthStore()
@@ -610,10 +621,19 @@ watch(() => lib.activeLibraryId, async (id) => {
 <style scoped>
 .home-view { padding: 0 0 80px; min-height: 100dvh; background: #0e0e0e; }
 
+.home-header {
+  padding: 10px 16px 10px;
+  background: rgba(10, 10, 8, 0.94);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  margin-bottom: 0;
+}
+.home-brand-row { display: flex; align-items: center; gap: 6px; }
 .home-brand {
   font-size: 8px; font-weight: 300; letter-spacing: 5px;
   color: rgba(255,255,255,0.25); text-transform: uppercase;
-  margin: 0 0 0; padding: 10px 16px 0;
+  margin: 0;
 }
 .sections-wrap { display: flex; flex-direction: column; padding: 0 12px; }
 

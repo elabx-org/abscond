@@ -19,6 +19,12 @@
       <div v-for="n in 4" :key="n" class="stat-skeleton" />
     </div>
 
+    <div v-else-if="!userStats" class="empty-state">
+      <AppIcon icon="mdi-chart-bar" :size="40" color="rgba(255,255,255,0.1)" />
+      <p class="empty-title">No listening data yet</p>
+      <p class="empty-sub">Start listening to track your stats</p>
+    </div>
+
     <template v-else>
       <!-- Hero stat -->
       <div class="hero-stat">
@@ -725,6 +731,12 @@ onMounted(async () => {
 @keyframes spin { to { transform: rotate(360deg); } }
 
 .stats-inner { padding: 0 12px; }
+.empty-state {
+  display: flex; flex-direction: column; align-items: center; gap: 10px;
+  padding: 80px 20px; text-align: center;
+}
+.empty-title { font-size: 15px; font-weight: 600; color: rgba(255,255,255,0.4); margin: 0; }
+.empty-sub { font-size: 12px; color: rgba(255,255,255,0.2); margin: 0; }
 .loading-wrap { display: flex; flex-wrap: wrap; gap: 10px; }
 .stat-skeleton {
   flex: 1; min-width: 140px; height: 80px; border-radius: 12px;

@@ -38,7 +38,7 @@ const navItems = [
   { route: 'home',     label: 'Home',     icon: 'mdi-home-outline',  iconActive: 'mdi-home' },
   { route: 'library',  label: 'Library',  icon: 'mdi-bookshelf',     iconActive: 'mdi-bookshelf' },
   { route: 'player',   label: 'Player',   icon: 'mdi-headphones',    iconActive: 'mdi-headphones' },
-  { route: 'stats',    label: 'Stats',    icon: 'mdi-chart-bar-stacked', iconActive: 'mdi-chart-bar-stacked' },
+  { route: 'stats',    label: 'Stats',    icon: 'mdi-chart-bar',         iconActive: 'mdi-chart-bar' },
   { route: 'settings', label: 'Settings', icon: 'mdi-cog-outline',   iconActive: 'mdi-cog' },
 ]
 
