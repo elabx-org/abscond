@@ -26,14 +26,7 @@ const socket = useSocketStore()
 
 <style scoped>
 .page-header {
-  position: sticky;
-  top: 0;
-  z-index: 50;
-  padding: calc(env(safe-area-inset-top) + 8px) 16px 10px;
-  background: rgba(32, 32, 24, 0.96);
-  backdrop-filter: blur(24px) saturate(180%);
-  -webkit-backdrop-filter: blur(24px) saturate(180%);
-  border-bottom: 1px solid rgba(255,255,255,0.1);
+  padding: 12px 20px 0;
 }
 .page-header-brand-row {
   display: flex; align-items: center; gap: 6px; margin-bottom: 3px;

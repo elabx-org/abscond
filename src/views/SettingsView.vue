@@ -1203,7 +1203,7 @@ async function doDeleteDownload(id: string) {
 </script>
 
 <style scoped>
-.settings-view { min-height: 100dvh; background: #0e0e0e; padding: 0 0 60px; }
+.settings-view { min-height: 100dvh; padding: 0 0 60px; }
 
 .settings-section { margin-bottom: 24px; padding: 0 12px; }
 

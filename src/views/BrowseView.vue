@@ -382,7 +382,7 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-.browse-view { min-height: 100dvh; background: #0e0e0e; padding: calc(env(safe-area-inset-top) + 16px) 12px 60px; }
+.browse-view { min-height: 100dvh; padding: 16px 12px 60px; }
 .ptr-indicator { display: flex; justify-content: center; padding: 8px 0; margin-top: -16px; margin-bottom: 4px; }
 .ptr-enter-active, .ptr-leave-active { transition: opacity 0.2s; }
 .ptr-enter-from, .ptr-leave-to { opacity: 0; }

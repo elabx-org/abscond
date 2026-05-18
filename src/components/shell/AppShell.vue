@@ -91,7 +91,7 @@ const shellClass = computed(() => ({
 const contentStyle = computed(() => {
   if (isMobile.value) {
     return {
-      paddingTop: '0',
+      paddingTop: 'env(safe-area-inset-top)',
       paddingBottom: `calc(56px + env(safe-area-inset-bottom))`,
     }
   }
@@ -101,7 +101,7 @@ const contentStyle = computed(() => {
 </script>
 
 <style scoped>
-.app-shell { min-height: 100dvh; background: #0e0e0e; }
+.app-shell { min-height: 100dvh; background: linear-gradient(180deg, rgba(134,59,255,0.06) 0%, #0e0e0e 22%); }
 .shell-content { min-height: 100dvh; }
 
 .offline-banner {
