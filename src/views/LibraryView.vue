@@ -761,7 +761,7 @@ function toggleDir() {
 }
 
 async function init() {
-  if (!lib.libraries.length) await lib.fetchLibraries()
+  if (!lib.libraries.length) await lib.fetchLibraries().catch(() => {})
   if (lib.activeLibraryId && !items.value.length) {
     await lib.fetchItems(lib.activeLibraryId)
   }
