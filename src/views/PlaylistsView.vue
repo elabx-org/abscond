@@ -315,7 +315,7 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-.playlists-view { min-height: 100dvh; background: #0e0e0e; padding: calc(env(safe-area-inset-top) + 16px) 12px 60px; }
+.playlists-view { min-height: 100dvh; background: #0e0e0e; padding: 16px 12px 60px; }
 
 .ptr-indicator { position: fixed; top: 0; left: 0; right: 0; z-index: 100; display: flex; align-items: center; justify-content: center; padding: 8px; background: rgba(14,14,14,0.85); backdrop-filter: blur(4px); }
 .ptr-enter-active, .ptr-leave-active { transition: opacity 0.2s, transform 0.2s; }

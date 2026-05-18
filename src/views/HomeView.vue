@@ -625,9 +625,9 @@ watch(() => lib.activeLibraryId, async (id) => {
 
 .home-header {
   position: sticky;
-  top: 0;
+  top: env(safe-area-inset-top);
   z-index: 50;
-  padding: calc(env(safe-area-inset-top) + 8px) 16px 8px;
+  padding: 8px 16px;
   background: rgba(32, 32, 24, 0.96);
   backdrop-filter: blur(24px) saturate(180%);
   -webkit-backdrop-filter: blur(24px) saturate(180%);

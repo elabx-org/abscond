@@ -304,7 +304,7 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-.podcast-view { min-height: 100dvh; background: #0e0e0e; padding: calc(env(safe-area-inset-top) + 16px) 12px 80px; }
+.podcast-view { min-height: 100dvh; background: #0e0e0e; padding: 16px 12px 80px; }
 .view-header { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
 .back-btn { background: transparent; border: none; cursor: pointer; padding: 4px; flex-shrink: 0; }
 .header-meta { flex: 1; min-width: 0; }

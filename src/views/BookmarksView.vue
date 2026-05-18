@@ -365,7 +365,7 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-.bookmarks-view { min-height: 100dvh; background: #0e0e0e; padding: calc(env(safe-area-inset-top) + 16px) 12px 120px; }
+.bookmarks-view { min-height: 100dvh; background: #0e0e0e; padding: 16px 12px 120px; }
 
 .ptr-indicator {
   position: fixed; top: 0; left: 0; right: 0; z-index: 100;
