@@ -33,6 +33,7 @@ function _post(msg: Record<string, unknown>): void {
 }
 
 export function setupMediaBridge(): void {
+  if ((window as any).__mediaBridge) return
   ;(window as any).__mediaBridge = {
     _onRemoteCommand(cmd: RemoteCommand) {
       _handlers.forEach(h => h(cmd))
@@ -40,8 +41,12 @@ export function setupMediaBridge(): void {
   }
 }
 
-export function onRemoteCommand(handler: RemoteCommandHandler): void {
+export function onRemoteCommand(handler: RemoteCommandHandler): () => void {
   _handlers.push(handler)
+  return () => {
+    const i = _handlers.indexOf(handler)
+    if (i !== -1) _handlers.splice(i, 1)
+  }
 }
 
 export function storeCredentials(token: string, host: string): void {

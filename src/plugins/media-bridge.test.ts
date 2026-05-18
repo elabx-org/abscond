@@ -57,6 +57,16 @@ describe('media-bridge', () => {
     expect(handler).toHaveBeenCalledWith({ action: 'remotePlay' })
   })
 
+  it('onRemoteCommand returns an unsubscribe function that removes the handler', async () => {
+    const { setupMediaBridge, onRemoteCommand } = await import('./media-bridge')
+    setupMediaBridge()
+    const handler = vi.fn()
+    const off = onRemoteCommand(handler)
+    off()
+    ;(window as any).__mediaBridge._onRemoteCommand({ action: 'remotePlay' })
+    expect(handler).not.toHaveBeenCalled()
+  })
+
   it('does nothing when webkit bridge is absent (browser)', async () => {
     delete (window as any).webkit
     const { setupMediaBridge, storeCredentials } = await import('./media-bridge')
