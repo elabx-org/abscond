@@ -13,57 +13,61 @@
       </div>
     </Transition>
 
-    <!-- Sticky tab bar + search controls -->
-    <div class="sticky-controls">
-      <!-- Library switcher (multi-lib) -->
-      <div v-if="lib.libraries.length > 1" class="lib-chips">
-        <button
-          v-for="l in lib.libraries"
-          :key="l.id"
-          class="lib-chip"
-          :class="{ active: lib.activeLibraryId === l.id }"
-          @click="switchLibrary(l.id)"
-        >{{ l.name }}</button>
-      </div>
+    <!-- Page header (Absorb-style, scrollable) -->
+    <PageHeader title="Library">
+      <template #actions>
+        <span v-if="!lib.loading && items.length && viewMode === 'library'" class="lib-count-badge">
+          {{ filteredItems.length.toLocaleString() }}
+        </span>
+      </template>
+    </PageHeader>
 
-      <!-- Tab bar: Library | Series | Authors -->
-      <div class="view-tab-bar">
-        <button class="view-tab" :class="{ active: viewMode === 'library' }" @click="setViewMode('library')">Library</button>
-        <template v-if="!isPodcast">
-          <button class="view-tab" :class="{ active: viewMode === 'series' }" @click="setViewMode('series')">Series</button>
-          <button class="view-tab" :class="{ active: viewMode === 'authors' }" @click="setViewMode('authors')">Authors</button>
-        </template>
-        <div class="tab-spacer" />
-        <span v-if="!lib.loading && items.length && viewMode === 'library'" class="lib-count-inline">{{ filteredItems.length.toLocaleString() }}</span>
-      </div>
+    <!-- Library switcher (multi-lib) -->
+    <div v-if="lib.libraries.length > 1" class="lib-chips">
+      <button
+        v-for="l in lib.libraries"
+        :key="l.id"
+        class="lib-chip"
+        :class="{ active: lib.activeLibraryId === l.id }"
+        @click="switchLibrary(l.id)"
+      >{{ l.name }}</button>
+    </div>
 
-      <!-- Search + controls (library mode only) -->
-      <div v-if="viewMode === 'library'" class="lib-controls">
-        <div class="lib-search-row">
-          <div class="lib-search-wrap">
-            <AppIcon icon="mdi-magnify" :size="14" color="rgba(255,255,255,0.3)" />
-            <input
-              v-model="searchQuery"
-              class="lib-search-input"
-              placeholder="Filter by title or author…"
-              @input="page = 1"
-            />
-            <button v-if="searchQuery" class="lib-search-clear" @click="searchQuery = ''; page = 1">
-              <AppIcon icon="mdi-close" :size="12" />
-            </button>
-          </div>
-          <button class="grid-density-btn" :class="{ active: hasActiveFilters }" @click="showFilterSheet = true" title="Sort & Filter">
-            <AppIcon icon="mdi-tune-variant" :size="16" :color="hasActiveFilters ? '#d4a017' : 'rgba(255,255,255,0.5)'" />
-          </button>
-          <button class="grid-density-btn" @click="toggleRectangle" :title="rectangleCovers ? 'Square covers' : 'Portrait covers'">
-            <AppIcon :icon="rectangleCovers ? 'mdi-image-outline' : 'mdi-image-frame'" :size="16" color="rgba(255,255,255,0.5)" />
-          </button>
-          <button class="grid-density-btn" @click="toggleGridDensity" :title="gridDense ? 'Comfortable grid' : 'Compact grid'">
-            <AppIcon :icon="gridDense ? 'mdi-view-grid' : 'mdi-view-comfy'" :size="16" color="rgba(255,255,255,0.5)" />
+    <!-- Search + controls (library mode only) -->
+    <div v-if="viewMode === 'library'" class="lib-controls">
+      <div class="lib-search-row">
+        <div class="lib-search-wrap">
+          <AppIcon icon="mdi-magnify" :size="14" color="rgba(255,255,255,0.3)" />
+          <input
+            v-model="searchQuery"
+            class="lib-search-input"
+            placeholder="Filter by title or author…"
+            @input="page = 1"
+          />
+          <button v-if="searchQuery" class="lib-search-clear" @click="searchQuery = ''; page = 1">
+            <AppIcon icon="mdi-close" :size="12" />
           </button>
         </div>
+        <button class="grid-density-btn" :class="{ active: hasActiveFilters }" @click="showFilterSheet = true" title="Sort & Filter">
+          <AppIcon icon="mdi-tune-variant" :size="16" :color="hasActiveFilters ? '#d4a017' : 'rgba(255,255,255,0.5)'" />
+        </button>
+        <button class="grid-density-btn" @click="toggleRectangle" :title="rectangleCovers ? 'Square covers' : 'Portrait covers'">
+          <AppIcon :icon="rectangleCovers ? 'mdi-image-outline' : 'mdi-image-frame'" :size="16" color="rgba(255,255,255,0.5)" />
+        </button>
+        <button class="grid-density-btn" @click="toggleGridDensity" :title="gridDense ? 'Comfortable grid' : 'Compact grid'">
+          <AppIcon :icon="gridDense ? 'mdi-view-grid' : 'mdi-view-comfy'" :size="16" color="rgba(255,255,255,0.5)" />
+        </button>
       </div>
     </div>
+
+    <!-- Floating Library/Series/Authors tab bar -->
+    <Teleport to="body">
+      <div v-if="!isPodcast" class="floating-lib-tabs" :class="{ 'floating-lib-tabs--hidden': floatingTabsHidden }">
+        <button class="floating-lib-tab" :class="{ active: viewMode === 'library' }" @click="setViewMode('library')">Library</button>
+        <button class="floating-lib-tab" :class="{ active: viewMode === 'series' }" @click="setViewMode('series')">Series</button>
+        <button class="floating-lib-tab" :class="{ active: viewMode === 'authors' }" @click="setViewMode('authors')">Authors</button>
+      </div>
+    </Teleport>
 
     <!-- Library view -->
     <template v-if="viewMode === 'library'">
@@ -145,6 +149,7 @@
 
     <!-- Series view -->
     <template v-else-if="viewMode === 'series'">
+      <div class="sub-view-wrap">
       <div class="sub-search-wrap">
         <AppIcon icon="mdi-magnify" :size="14" color="rgba(255,255,255,0.3)" />
         <input v-model="seriesSearch" class="lib-search-input" placeholder="Search series…" />
@@ -171,10 +176,12 @@
           @click="activeSeries = s"
         />
       </div>
+      </div><!-- end sub-view-wrap -->
     </template>
 
     <!-- Authors view -->
     <template v-else-if="viewMode === 'authors'">
+      <div class="sub-view-wrap">
       <div class="sub-search-wrap">
         <AppIcon icon="mdi-magnify" :size="14" color="rgba(255,255,255,0.3)" />
         <input v-model="authorSearch" class="lib-search-input" placeholder="Search authors…" />
@@ -213,10 +220,12 @@
           <p class="card-sub">{{ a.numBooks ?? a.libraryItems?.length ?? 0 }} books</p>
         </div>
       </div>
+      </div><!-- end sub-view-wrap -->
     </template>
 
     <!-- Narrators view -->
     <template v-else-if="viewMode === 'narrators'">
+      <div class="sub-view-wrap">
       <div class="sub-search-wrap">
         <AppIcon icon="mdi-magnify" :size="14" color="rgba(255,255,255,0.3)" />
         <input v-model="narratorSearch" class="lib-search-input" placeholder="Search narrators…" />
@@ -248,6 +257,7 @@
           <p class="card-title">{{ name }}</p>
         </div>
       </div>
+      </div><!-- end sub-view-wrap -->
     </template>
 
     <!-- Batch select bar -->
@@ -498,6 +508,7 @@
 
 <script setup lang="ts">
 import AppIcon from '@/components/common/AppIcon.vue'
+import PageHeader from '@/components/common/PageHeader.vue'
 import { computed, onMounted, onBeforeUnmount, ref, watch } from 'vue'
 import { useLibraryStore } from '@/stores/library'
 import { useAuthStore } from '@/stores/auth'
@@ -953,15 +964,32 @@ async function addBatchToCollection(collectionId: string) {
 const sentinelEl = ref<HTMLElement | null>(null)
 let observer: IntersectionObserver | null = null
 
+const floatingTabsHidden = ref(false)
+let _fltLastY = 0
+
+function _onLibScroll() {
+  const y = window.scrollY
+  if (y > _fltLastY + 8 && y > 80) {
+    floatingTabsHidden.value = true
+  } else if (y < _fltLastY - 8) {
+    floatingTabsHidden.value = false
+  }
+  _fltLastY = y
+}
+
 onMounted(() => {
   init()
   observer = new IntersectionObserver((entries) => {
     if (entries[0]?.isIntersecting && hasMore.value && !lib.loading) page.value++
   }, { rootMargin: '200px' })
   if (sentinelEl.value) observer.observe(sentinelEl.value)
+  window.addEventListener('scroll', _onLibScroll, { passive: true })
 })
 
-onBeforeUnmount(() => { observer?.disconnect() })
+onBeforeUnmount(() => {
+  observer?.disconnect()
+  window.removeEventListener('scroll', _onLibScroll)
+})
 
 watch(sentinelEl, (el) => {
   if (el && observer) observer.observe(el)
@@ -998,25 +1026,14 @@ watch(searchQuery, (q) => {
 </script>
 
 <style scoped>
-.library-view { padding: 0 0 80px; min-height: 100dvh; background: #0e0e0e; }
+.library-view { padding: 0 0 130px; min-height: 100dvh; background: #0e0e0e; }
 .ptr-indicator { display: flex; justify-content: center; padding: 8px 0; }
 .ptr-enter-active, .ptr-leave-active { transition: opacity 0.2s; }
 .ptr-enter-from, .ptr-leave-to { opacity: 0; }
 .spin { animation: spin 0.8s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
-/* Sticky tab bar + controls */
-.sticky-controls {
-  position: sticky;
-  top: var(--header-h, calc(40px + env(safe-area-inset-top)));
-  z-index: 10;
-  background: rgba(14,14,14,0.97);
-  backdrop-filter: blur(20px);
-  padding: 0 12px;
-  border-bottom: 1px solid rgba(255,255,255,0.05);
-}
-
-.lib-chips { display: flex; gap: 8px; flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; padding: 8px 0 0; -webkit-overflow-scrolling: touch; }
+.lib-chips { display: flex; gap: 8px; flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; padding: 8px 12px 0; -webkit-overflow-scrolling: touch; }
 .lib-chips::-webkit-scrollbar { display: none; }
 .lib-chip {
   flex-shrink: 0; font-size: 12px; padding: 5px 14px; border-radius: 20px; cursor: pointer;
@@ -1044,7 +1061,7 @@ watch(searchQuery, (q) => {
 }
 .filter-chip.active { background: rgba(212,160,23,0.12); border-color: rgba(212,160,23,0.4); color: #d4a017; }
 
-.lib-controls { padding: 8px 0; }
+.lib-controls { padding: 0 12px 12px; }
 .lib-search-row { display: flex; align-items: center; gap: 6px; }
 .lib-search-wrap {
   display: flex; align-items: center; gap: 6px; flex: 1;
@@ -1063,7 +1080,7 @@ watch(searchQuery, (q) => {
 .lib-search-input::placeholder { color: rgba(255,255,255,0.25); }
 .lib-search-clear { background: transparent; border: none; cursor: pointer; color: rgba(255,255,255,0.3); padding: 0; }
 
-.lib-count-inline { font-size: 10px; color: rgba(255,255,255,0.25); margin-left: auto; align-self: center; padding-right: 4px; }
+.lib-count-badge { font-size: 11px; color: rgba(255,255,255,0.35); background: rgba(255,255,255,0.07); border-radius: 8px; padding: 2px 7px; }
 
 .scroll-sentinel { height: 1px; }
 
@@ -1120,9 +1137,7 @@ watch(searchQuery, (q) => {
   gap: 12px; padding: 80px 0; color: rgba(255,255,255,0.4); font-size: 13px;
 }
 
-/* Series/Authors/Narrators grids need horizontal padding */
-.library-view > template > .grid,
-.library-view .series-grid { padding: 12px 12px 0; }
+.sub-view-wrap { padding: 0 12px; }
 
 .batch-bar {
   position: fixed; bottom: 60px; left: 0; right: 0; z-index: 150;
@@ -1164,19 +1179,44 @@ watch(searchQuery, (q) => {
 .picker-count { font-size: 11px; color: rgba(255,255,255,0.3); }
 .picker-empty { font-size: 12px; color: rgba(255,255,255,0.3); padding: 16px 0; text-align: center; }
 
-.view-tab-bar {
-  display: flex; align-items: center; overflow-x: auto; scrollbar-width: none;
-  border-bottom: 1px solid rgba(255,255,255,0.06);
-  -webkit-overflow-scrolling: touch;
+.floating-lib-tabs {
+  position: fixed;
+  bottom: calc(56px + env(safe-area-inset-bottom) + 12px);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 95;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  background: rgba(22,22,22,0.92);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 28px;
+  padding: 4px;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s;
+  white-space: nowrap;
 }
-.view-tab-bar::-webkit-scrollbar { display: none; }
-.view-tab {
-  flex-shrink: 0; padding: 10px 18px; font-size: 13px; font-weight: 600;
-  background: transparent; border: none; border-bottom: 2px solid transparent;
-  cursor: pointer; color: rgba(255,255,255,0.4); transition: all 0.15s; white-space: nowrap;
+.floating-lib-tabs--hidden {
+  transform: translateX(-50%) translateY(calc(100% + 20px));
+  opacity: 0;
+  pointer-events: none;
 }
-.view-tab.active { color: #d4a017; border-bottom-color: #d4a017; }
-.tab-spacer { flex: 1; }
+.floating-lib-tab {
+  padding: 7px 20px;
+  border-radius: 22px;
+  font-size: 13px;
+  font-weight: 600;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: rgba(255,255,255,0.4);
+  transition: all 0.15s;
+}
+.floating-lib-tab.active {
+  background: rgba(255,255,255,0.1);
+  color: rgba(255,255,255,0.92);
+}
 
 /* Filter sheet */
 .filter-backdrop {
@@ -1216,7 +1256,7 @@ watch(searchQuery, (q) => {
 .sub-search-wrap {
   display: flex; align-items: center; gap: 6px;
   background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08);
-  border-radius: 10px; padding: 6px 10px; margin: 12px 12px 4px;
+  border-radius: 10px; padding: 6px 10px; margin: 12px 0 4px;
 }
 
 .series-card { display: flex; flex-direction: column; gap: 5px; cursor: pointer; }

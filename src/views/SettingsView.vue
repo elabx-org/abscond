@@ -1,6 +1,6 @@
 <template>
   <div class="settings-view">
-    <h2 class="screen-title">Settings</h2>
+    <PageHeader title="Settings" />
 
     <!-- Account -->
     <section class="settings-section">
@@ -834,6 +834,7 @@
 
 <script setup lang="ts">
 import AppIcon from '@/components/common/AppIcon.vue'
+import PageHeader from '@/components/common/PageHeader.vue'
 import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
@@ -1202,11 +1203,9 @@ async function doDeleteDownload(id: string) {
 </script>
 
 <style scoped>
-.settings-view { min-height: 100dvh; background: #0e0e0e; padding: 16px 12px 60px; }
+.settings-view { min-height: 100dvh; background: #0e0e0e; padding: 0 0 60px; }
 
-.screen-title { font-size: 18px; font-weight: 700; color: rgba(255,255,255,0.9); margin: 0 0 20px; }
-
-.settings-section { margin-bottom: 24px; }
+.settings-section { margin-bottom: 24px; padding: 0 12px; }
 
 .section-toggle {
   width: 100%; display: flex; align-items: center; justify-content: space-between;

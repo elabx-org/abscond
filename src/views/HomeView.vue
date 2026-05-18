@@ -12,6 +12,9 @@
       </div>
     </Transition>
 
+    <!-- Brand header (scrollable, Absorb-style) -->
+    <p class="home-brand">A &nbsp;B &nbsp;S &nbsp;C &nbsp;O &nbsp;N &nbsp;D</p>
+
     <!-- Greeting -->
     <div class="greeting">
       <div>
@@ -605,8 +608,14 @@ watch(() => lib.activeLibraryId, async (id) => {
 </script>
 
 <style scoped>
-.home-view { padding: 16px 12px 80px; min-height: 100dvh; background: #0e0e0e; }
-.sections-wrap { display: flex; flex-direction: column; }
+.home-view { padding: 0 0 80px; min-height: 100dvh; background: #0e0e0e; }
+
+.home-brand {
+  font-size: 8px; font-weight: 300; letter-spacing: 5px;
+  color: rgba(255,255,255,0.25); text-transform: uppercase;
+  margin: 0 0 0; padding: 10px 16px 0;
+}
+.sections-wrap { display: flex; flex-direction: column; padding: 0 12px; }
 
 .ptr-indicator {
   display: flex; justify-content: center; padding: 8px 0; margin-top: -8px; margin-bottom: 4px;
@@ -614,7 +623,7 @@ watch(() => lib.activeLibraryId, async (id) => {
 .ptr-enter-active, .ptr-leave-active { transition: opacity 0.2s; }
 .ptr-enter-from, .ptr-leave-to { opacity: 0; }
 
-.greeting { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+.greeting { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; padding: 8px 12px 0; }
 .greeting-time { font-size: 11px; color: rgba(255,255,255,0.35); margin: 0 0 1px; }
 .greeting-name { font-size: 17px; font-weight: 700; color: rgba(255,255,255,0.9); margin: 0; }
 .search-icon-btn { background: transparent; border: none; cursor: pointer; padding: 6px; }
@@ -622,7 +631,7 @@ watch(() => lib.activeLibraryId, async (id) => {
 .install-banner {
   display: flex; align-items: center; gap: 8px; padding: 12px 14px;
   background: rgba(212,160,23,0.08); border: 1px solid rgba(212,160,23,0.2);
-  border-radius: 12px; margin-bottom: 20px;
+  border-radius: 12px; margin: 0 12px 20px;
 }
 .install-text { flex: 1; font-size: 12px; color: rgba(255,255,255,0.7); margin: 0; }
 .install-btn {

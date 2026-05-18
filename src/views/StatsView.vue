@@ -12,8 +12,9 @@
       </div>
     </Transition>
 
-    <h2 class="screen-title">Stats</h2>
+    <PageHeader title="Your Stats" />
 
+    <div class="stats-inner">
     <div v-if="loading" class="loading-wrap">
       <div v-for="n in 4" :key="n" class="stat-skeleton" />
     </div>
@@ -227,6 +228,7 @@
         <div ref="sessionSentinel" class="session-sentinel" />
       </section>
     </template>
+    </div><!-- end stats-inner -->
   </div>
 
   <!-- Session detail sheet -->
@@ -300,6 +302,7 @@
 
 <script setup lang="ts">
 import AppIcon from '@/components/common/AppIcon.vue'
+import PageHeader from '@/components/common/PageHeader.vue'
 import { onMounted, onBeforeUnmount, ref, computed, watch } from 'vue'
 import { getUserStats, getLibraryStats, getListeningSessions } from '@/api/stats'
 import { useLibraryStore } from '@/stores/library'
@@ -709,7 +712,7 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-.stats-view { min-height: 100dvh; background: #0e0e0e; padding: 16px 12px 60px; }
+.stats-view { min-height: 100dvh; background: #0e0e0e; padding: 0 0 60px; }
 
 .ptr-indicator {
   position: fixed; top: 0; left: 0; right: 0; z-index: 100;
@@ -721,8 +724,7 @@ onMounted(async () => {
 .spin { animation: spin 0.8s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
-.screen-title { font-size: 18px; font-weight: 700; color: rgba(255,255,255,0.9); margin: 0 0 20px; }
-
+.stats-inner { padding: 0 12px; }
 .loading-wrap { display: flex; flex-wrap: wrap; gap: 10px; }
 .stat-skeleton {
   flex: 1; min-width: 140px; height: 80px; border-radius: 12px;
