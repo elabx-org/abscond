@@ -359,7 +359,7 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.search-view { min-height: 100dvh; background: #0e0e0e; padding: 12px; }
+.search-view { min-height: 100dvh; background: #0e0e0e; padding: calc(env(safe-area-inset-top) + 12px) 12px 12px; }
 
 .search-bar-wrap { margin-bottom: 16px; }
 .search-bar {

@@ -1090,7 +1090,7 @@ function queueDragEnd() {
 </script>
 
 <style scoped>
-.player-view { min-height: 100dvh; background: #0e0e0e; display: flex; flex-direction: column; }
+.player-view { min-height: 100dvh; background: #0e0e0e; display: flex; flex-direction: column; padding-top: env(safe-area-inset-top); }
 
 /* ── Empty state ─────────────────────────────────────────────────────────────── */
 .empty-state {

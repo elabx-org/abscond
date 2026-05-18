@@ -91,7 +91,7 @@ const shellClass = computed(() => ({
 const contentStyle = computed(() => {
   if (isMobile.value) {
     return {
-      paddingTop: 'env(safe-area-inset-top)',
+      paddingTop: '0',
       paddingBottom: `calc(56px + env(safe-area-inset-bottom))`,
     }
   }
