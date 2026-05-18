@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
+import { storeCredentials } from '@/plugins/media-bridge'
 
 export interface AbsUser {
   id: string
@@ -32,6 +33,7 @@ export const useAuthStore = defineStore('auth', () => {
     user.value = newUser
     localStorage.setItem(STORAGE_KEY, JSON.stringify({ token: newToken, user: newUser }))
     localStorage.setItem('abs_token', newToken)
+    storeCredentials(newToken, localStorage.getItem('abs_host') ?? '')
   }
 
   function logout() {
@@ -39,6 +41,7 @@ export const useAuthStore = defineStore('auth', () => {
     user.value = null
     localStorage.removeItem(STORAGE_KEY)
     localStorage.removeItem('abs_token')
+    storeCredentials('', '')
   }
 
   // Sync token for player on store init

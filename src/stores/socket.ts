@@ -25,7 +25,16 @@ export const useSocketStore = defineStore('socket', () => {
     const host  = base.replace(/\/api$/, '')
     const sock  = connectSocket(host, token)
 
-    sock.on('connect',    () => { connected.value = true })
+    let _notifPermRequested = false
+    sock.on('connect', () => {
+      connected.value = true
+      if (!_notifPermRequested) {
+        _notifPermRequested = true
+        import('@/plugins/media-bridge').then(({ requestNotificationPermission }) => {
+          requestNotificationPermission()
+        })
+      }
+    })
     sock.on('disconnect', () => { connected.value = false })
 
     cleanups.push(onSocketEvent('user_stream_progress_update', (data: unknown) => {
