@@ -27,7 +27,7 @@ const socket = useSocketStore()
   position: sticky;
   top: 0;
   z-index: 50;
-  padding: 8px 16px 10px;
+  padding: calc(env(safe-area-inset-top) + 8px) 16px 10px;
   background: rgba(32, 32, 24, 0.96);
   backdrop-filter: blur(24px) saturate(180%);
   -webkit-backdrop-filter: blur(24px) saturate(180%);
