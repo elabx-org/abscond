@@ -10,7 +10,9 @@ vi.mock('@/api/socket', () => ({
 }))
 
 vi.mock('@/api/client', () => ({
-  getBaseUrl: vi.fn().mockResolvedValue('https://abs.example.com/api'),
+  getBaseUrl:   vi.fn().mockResolvedValue('https://abs.example.com/api'),
+  isNativeApp:  vi.fn().mockReturnValue(false),
+  resetBaseUrl: vi.fn(),
 }))
 
 vi.mock('@/api/auth', () => ({

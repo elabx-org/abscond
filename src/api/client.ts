@@ -30,6 +30,13 @@ export function getExternalUrl(): string {
 }
 
 async function loadConfig(): Promise<string> {
+  // Native Capacitor app: no /config.json exists. Use the host stored by resetBaseUrl()
+  // on the previous login so API calls work on restart without showing the login screen again.
+  if (isNativeApp()) {
+    const savedHost = localStorage.getItem('abs_host')
+    if (savedHost) return resolveBaseUrl(savedHost)
+    return '/api'
+  }
   try {
     const res = await fetch('/config.json')
     const cfg = await res.json()
