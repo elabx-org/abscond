@@ -100,7 +100,7 @@ const shellClass = computed(() => ({
 const contentStyle = computed(() => {
   if (isMobile.value) {
     return {
-      paddingTop: '40px',
+      paddingTop: 'calc(40px + env(safe-area-inset-top))',
       paddingBottom: `calc(56px + env(safe-area-inset-bottom))`,
     }
   }
@@ -115,9 +115,10 @@ const contentStyle = computed(() => {
 
 .mobile-header {
   position: fixed; top: 0; left: 0; right: 0; z-index: 200;
-  height: 40px;
+  height: calc(40px + env(safe-area-inset-top));
+  padding-top: env(safe-area-inset-top);
   display: flex; align-items: center; gap: 7px;
-  padding: 0 14px;
+  padding-left: 14px; padding-right: 14px;
   background: rgba(14,14,14,0.85); backdrop-filter: blur(20px);
   border-bottom: 1px solid rgba(255,255,255,0.05);
 }
