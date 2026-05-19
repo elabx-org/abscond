@@ -1193,10 +1193,10 @@ watch(searchQuery, (q) => {
 
 .floating-lib-tabs {
   position: fixed;
-  bottom: calc(56px + env(safe-area-inset-bottom) + 12px);
+  bottom: calc(80px + env(safe-area-inset-bottom) + 12px);
   left: 50%;
   transform: translateX(-50%);
-  z-index: 95;
+  z-index: 110;
   display: flex;
   align-items: center;
   gap: 2px;
@@ -1210,7 +1210,7 @@ watch(searchQuery, (q) => {
   white-space: nowrap;
 }
 .floating-lib-tabs--hidden {
-  transform: translateX(-50%) translateY(calc(100% + 20px));
+  transform: translateX(-50%) translateY(calc(100% + 80px));
   opacity: 0;
   pointer-events: none;
 }

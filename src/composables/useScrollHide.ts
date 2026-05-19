@@ -13,7 +13,7 @@ let lastY = 0
 
 function resetNav() {
   accumulated = 0
-  navVisible.value = true
+  if (!navVisible.value) navVisible.value = true
 }
 
 /**
@@ -38,12 +38,14 @@ export function useScrollHide(scrollEl: Ref<HTMLElement | null>) {
     const delta = currentY - lastY
     lastY = currentY
 
+    if (Math.abs(delta) < 0.5) return
+
     if (delta > 0) {
       accumulated += delta
-      if (accumulated >= 60) navVisible.value = false
+      if (accumulated >= 60 && navVisible.value) navVisible.value = false
     } else if (delta < 0) {
       accumulated = 0
-      navVisible.value = true
+      if (!navVisible.value) navVisible.value = true
     }
   }
 

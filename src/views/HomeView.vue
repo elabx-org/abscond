@@ -676,7 +676,6 @@ watch(() => lib.activeLibraryId, async (id) => {
   padding-bottom: 4px; -webkit-overflow-scrolling: touch;
   scroll-snap-type: x proximity;
   overscroll-behavior-x: contain;
-  touch-action: pan-x;
 }
 .h-scroll::-webkit-scrollbar { display: none; }
 .h-card { width: 120px; flex-shrink: 0; }
