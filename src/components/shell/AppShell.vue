@@ -117,7 +117,7 @@ const contentStyle = computed(() => {
 
 <style scoped>
 .app-shell { min-height: 100dvh; background: linear-gradient(180deg, #2e1055 0%, #180830 15%, #0e0e0e 28%); }
-.shell-content { min-height: 100dvh; touch-action: pan-y; overscroll-behavior: contain; }
+.shell-content { min-height: 100dvh; overscroll-behavior: contain; }
 
 .offline-banner {
   position: fixed; top: 0; left: 0; right: 0; z-index: 500;

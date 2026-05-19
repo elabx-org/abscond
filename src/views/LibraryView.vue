@@ -62,7 +62,7 @@
 
     <!-- Floating Library/Series/Authors tab bar -->
     <Teleport to="body">
-      <div v-if="!isPodcast" class="floating-lib-tabs" :class="{ 'floating-lib-tabs--hidden': floatingTabsHidden }">
+      <div v-if="isViewActive && !isPodcast" class="floating-lib-tabs" :class="{ 'floating-lib-tabs--hidden': floatingTabsHidden }">
         <button class="floating-lib-tab" :class="{ active: viewMode === 'library' }" @click="setViewMode('library')">Library</button>
         <button class="floating-lib-tab" :class="{ active: viewMode === 'series' }" @click="setViewMode('series')">Series</button>
         <button class="floating-lib-tab" :class="{ active: viewMode === 'authors' }" @click="setViewMode('authors')">Authors</button>
@@ -509,7 +509,7 @@
 <script setup lang="ts">
 import AppIcon from '@/components/common/AppIcon.vue'
 import PageHeader from '@/components/common/PageHeader.vue'
-import { computed, onMounted, onBeforeUnmount, ref, watch } from 'vue'
+import { computed, onMounted, onBeforeUnmount, onActivated, onDeactivated, ref, watch } from 'vue'
 import { useLibraryStore } from '@/stores/library'
 import { useAuthStore } from '@/stores/auth'
 import { coverUrl, api } from '@/api/client'
@@ -964,6 +964,7 @@ async function addBatchToCollection(collectionId: string) {
 const sentinelEl = ref<HTMLElement | null>(null)
 let observer: IntersectionObserver | null = null
 
+const isViewActive    = ref(false)
 const floatingTabsHidden = ref(false)
 let _fltLastY = 0
 
@@ -983,7 +984,18 @@ onMounted(() => {
     if (entries[0]?.isIntersecting && hasMore.value && !lib.loading) page.value++
   }, { rootMargin: '200px' })
   if (sentinelEl.value) observer.observe(sentinelEl.value)
+})
+
+onActivated(() => {
+  isViewActive.value = true
+  floatingTabsHidden.value = false
+  _fltLastY = 0
   window.addEventListener('scroll', _onLibScroll, { passive: true })
+})
+
+onDeactivated(() => {
+  isViewActive.value = false
+  window.removeEventListener('scroll', _onLibScroll)
 })
 
 onBeforeUnmount(() => {
