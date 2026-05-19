@@ -721,7 +721,7 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-.stats-view { min-height: 100dvh; padding: 0 0 60px; }
+.stats-view { min-height: 100dvh; padding: 0 0 60px; overscroll-behavior: contain; }
 
 .ptr-indicator {
   position: fixed; top: 0; left: 0; right: 0; z-index: 100;

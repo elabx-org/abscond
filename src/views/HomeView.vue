@@ -621,7 +621,7 @@ watch(() => lib.activeLibraryId, async (id) => {
 </script>
 
 <style scoped>
-.home-view { padding: 0 0 80px; min-height: 100dvh; }
+.home-view { padding: 0 0 80px; min-height: 100dvh; overscroll-behavior: contain; }
 
 .home-header {
   padding: 12px 20px 0;
@@ -675,6 +675,8 @@ watch(() => lib.activeLibraryId, async (id) => {
   display: flex; gap: 10px; overflow-x: auto; scrollbar-width: none;
   padding-bottom: 4px; -webkit-overflow-scrolling: touch;
   scroll-snap-type: x proximity;
+  overscroll-behavior-x: contain;
+  touch-action: pan-x;
 }
 .h-scroll::-webkit-scrollbar { display: none; }
 .h-card { width: 120px; flex-shrink: 0; }

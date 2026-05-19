@@ -9,7 +9,7 @@
     </Transition>
 
     <!-- Mobile bottom nav -->
-    <BottomNav v-if="isMobile" :is-playing="player.isPlaying" />
+    <BottomNav v-if="isMobile" :is-playing="player.isPlaying" :nav-visible="navVisible" />
 
     <!-- Tablet side rail -->
     <SideRail v-else-if="isTablet" />
@@ -38,11 +38,19 @@ import NavDrawer  from './NavDrawer.vue'
 import { usePlayerStore } from '@/stores/player'
 import { useSocketStore } from '@/stores/socket'
 import { useAuthStore } from '@/stores/auth'
+import { useScrollHide } from '@/composables/useScrollHide'
 
 const player = usePlayerStore()
 const socket = useSocketStore()
 const auth   = useAuthStore()
 const route  = useRoute()
+
+// Register window scroll listener — drives nav show/hide for all views
+const scrollElNull = ref<HTMLElement | null>(null)
+const { visible: navVisible } = useScrollHide(scrollElNull)
+
+// Reset nav visibility on every route change so it's always shown when switching tabs
+watch(() => route.name, () => { navVisible.value = true })
 
 const showOfflineBanner = ref(false)
 let offlineTimer: ReturnType<typeof setTimeout> | null = null
@@ -109,7 +117,7 @@ const contentStyle = computed(() => {
 
 <style scoped>
 .app-shell { min-height: 100dvh; background: linear-gradient(180deg, #2e1055 0%, #180830 15%, #0e0e0e 28%); }
-.shell-content { min-height: 100dvh; }
+.shell-content { min-height: 100dvh; touch-action: pan-y; overscroll-behavior: contain; }
 
 .offline-banner {
   position: fixed; top: 0; left: 0; right: 0; z-index: 500;

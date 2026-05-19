@@ -13,6 +13,7 @@
         :src="coverSrc"
         :alt="title"
         class="cover-img"
+        decoding="async"
         @load="onImgLoad"
         @error="imgError = true"
       />
@@ -111,7 +112,7 @@ function cancelLongPress() {
 </script>
 
 <style scoped>
-.portrait-card { cursor: pointer; display: flex; flex-direction: column; gap: 4px; }
+.portrait-card { cursor: pointer; display: flex; flex-direction: column; gap: 4px; contain: layout style paint; }
 .portrait-card.selected .cover-wrap { outline: 2px solid #d4a017; outline-offset: 1px; }
 .cover-wrap { position: relative; width: 100%; aspect-ratio: 1 / 1; border-radius: 8px; overflow: hidden; background: #141414; }
 .rectangle .cover-wrap { aspect-ratio: 2 / 3; }

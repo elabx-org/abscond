@@ -15,6 +15,7 @@
           :src="coverSrc"
           :alt="title"
           class="cl-cover-img"
+          decoding="async"
           @load="onImgLoad"
           @error="imgError = true"
         />
@@ -156,6 +157,7 @@ function cancelLongPress() {
   flex-direction: column;
   cursor: pointer;
   overflow: hidden;
+  contain: layout style paint;
 }
 
 .cl-cover-wrap {

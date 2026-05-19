@@ -1,5 +1,5 @@
 <template>
-  <nav class="bottom-nav">
+  <nav class="bottom-nav" :class="{ 'nav-hidden': !navVisible }">
     <button
       v-for="item in navItems"
       :key="item.route"
@@ -26,8 +26,9 @@
 import AppIcon from '@/components/common/AppIcon.vue'
 import AppLogo from '@/components/common/AppLogo.vue'
 import { useRoute, useRouter } from 'vue-router'
+import { haptics } from '@/utils/haptics'
 
-const props = defineProps<{ isPlaying: boolean }>()
+const props = defineProps<{ isPlaying: boolean; navVisible?: boolean }>()
 const emit  = defineEmits<{ navigate: [route: string] }>()
 
 const route  = useRoute()
@@ -44,6 +45,7 @@ const navItems = [
 const isActive = (name: string) => route.name === name
 
 function navigate(name: string) {
+  haptics.light()
   emit('navigate', name)
   router.push({ name })
 }
@@ -58,6 +60,13 @@ function navigate(name: string) {
   background: #0e0e0e;
   border-top: 1px solid rgba(255,255,255,0.06);
   display: flex; align-items: flex-start; justify-content: space-around;
+  transform: translateY(0);
+  transition: transform 250ms ease;
+  will-change: transform;
+}
+.nav-hidden {
+  transform: translateY(100%);
+  pointer-events: none;
 }
 .nav-item {
   display: flex; flex-direction: column; align-items: center; gap: 4px;

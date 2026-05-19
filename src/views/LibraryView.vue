@@ -1026,7 +1026,7 @@ watch(searchQuery, (q) => {
 </script>
 
 <style scoped>
-.library-view { padding: 0 0 130px; min-height: 100dvh; }
+.library-view { padding: 0 0 130px; min-height: 100dvh; overscroll-behavior: contain; }
 .ptr-indicator { display: flex; justify-content: center; padding: 8px 0; }
 .ptr-enter-active, .ptr-leave-active { transition: opacity 0.2s; }
 .ptr-enter-from, .ptr-leave-to { opacity: 0; }
