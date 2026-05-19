@@ -19,7 +19,11 @@
 
     <!-- Page content -->
     <main class="shell-content" :style="contentStyle">
-      <router-view />
+      <router-view v-slot="{ Component }">
+        <Transition name="tab-fade" mode="out-in">
+          <component :is="Component" :key="$route.name" />
+        </Transition>
+      </router-view>
     </main>
   </div>
 </template>
@@ -95,7 +99,7 @@ const contentStyle = computed(() => {
     const isPlayer = route.name === 'player'
     return {
       paddingTop: isPlayer ? '0px' : 'env(safe-area-inset-top)',
-      paddingBottom: `calc(56px + env(safe-area-inset-bottom))`,
+      paddingBottom: `calc(80px + env(safe-area-inset-bottom))`,
     }
   }
   if (isTablet.value)  return { paddingLeft: '72px' }
@@ -104,8 +108,10 @@ const contentStyle = computed(() => {
 </script>
 
 <style scoped>
-.app-shell { min-height: 100dvh; background: linear-gradient(180deg, rgba(134,59,255,0.22) 0%, rgba(134,59,255,0.10) 15%, #0e0e0e 28%); }
+.app-shell { min-height: 100dvh; background: linear-gradient(180deg, #2e1055 0%, #180830 15%, #0e0e0e 28%); }
 .shell-content { min-height: 100dvh; }
+.tab-fade-enter-active, .tab-fade-leave-active { transition: opacity 0.18s ease; }
+.tab-fade-enter-from, .tab-fade-leave-to { opacity: 0; }
 
 .offline-banner {
   position: fixed; top: 0; left: 0; right: 0; z-index: 500;

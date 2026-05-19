@@ -335,7 +335,7 @@
               :key="item.id"
               class="cover-slide"
             >
-              <div class="cover-card">
+              <div class="cover-card" :style="getCardStyle(i)">
                 <!-- Blurred cover background -->
                 <img
                   :src="coverUrl(item.id, auth.token ?? '')"
@@ -366,7 +366,7 @@
                   </div>
 
                   <!-- Cover image -->
-                  <div class="cover-img-wrap" :class="{ 'cover-inactive': i !== currentIndex && player.currentItem }">
+                  <div class="cover-img-wrap">
                     <img
                       :src="coverUrl(item.id, auth.token ?? '')"
                       :alt="item.media.metadata.title"
@@ -819,9 +819,37 @@ const trackStyle = computed(() => {
   const offset = `calc(${-currentIndex.value} * ${slideWidthPx.value}px + ${swipeDx.value}px)`
   return {
     transform: `translateX(${offset})`,
-    transition: swipeDx.value !== 0 ? 'none' : 'transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+    transition: swipeDx.value !== 0 ? 'none' : 'transform 0.32s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
   }
 })
+
+// Absorb-style dynamic scale: active card 1.0→0.85 as you drag, adjacent 0.85→1.0
+function getCardStyle(index: number): Record<string, string> {
+  const active = currentIndex.value
+  const w = slideWidthPx.value || 1
+  const progress = Math.max(-1, Math.min(1, -swipeDx.value / w))
+  const isDragging = swipeDx.value !== 0
+
+  let scale = 0.85
+  let opacity = 0.55
+  if (index === active) {
+    scale   = 1.0 - 0.15 * Math.abs(progress)
+    opacity = 1.0
+  } else if (index === active + 1 && progress > 0) {
+    scale   = 0.85 + 0.15 * Math.min(1, progress)
+    opacity = 0.55 + 0.45 * Math.min(1, progress)
+  } else if (index === active - 1 && progress < 0) {
+    scale   = 0.85 + 0.15 * Math.min(1, -progress)
+    opacity = 0.55 + 0.45 * Math.min(1, -progress)
+  }
+
+  const transition = isDragging ? 'none' : 'transform 0.32s cubic-bezier(0.25,0.46,0.45,0.94), opacity 0.32s ease'
+  return {
+    transform: `scale(${scale.toFixed(3)})`,
+    opacity: String(opacity.toFixed(3)),
+    transition,
+  }
+}
 
 function onSwipeStart(e: TouchEvent) {
   swipeStartX = e.touches[0].clientX
@@ -1181,7 +1209,7 @@ function queueDragEnd() {
   overflow: hidden; margin-bottom: 8px;
   touch-action: pan-y; flex-shrink: 0;
 }
-.cover-track { display: flex; }
+.cover-track { display: flex; will-change: transform; }
 .cover-slide {
   width: 100vw; flex-shrink: 0;
   display: flex; justify-content: center; align-items: center;
@@ -1192,8 +1220,10 @@ function queueDragEnd() {
 .cover-card {
   position: relative; width: 100%; max-width: 380px;
   border-radius: 24px; overflow: hidden;
-  border: 1px solid rgba(255,255,255,0.08);
+  border: 1px solid rgba(134,59,255,0.15);
   box-shadow: 0 16px 48px rgba(0,0,0,0.7);
+  will-change: transform;
+  transform-origin: center center;
 }
 .cover-card-bg {
   position: absolute; inset: -20px;
@@ -1246,10 +1276,8 @@ function queueDragEnd() {
   width: 75%; aspect-ratio: 1 / 1;
   border-radius: 14px; overflow: hidden;
   box-shadow: 0 8px 28px rgba(0,0,0,0.65), 0 0 42px rgba(185,115,20,0.18);
-  transition: transform 0.2s, opacity 0.2s;
   margin-bottom: 14px;
 }
-.cover-inactive { transform: scale(0.88); opacity: 0.55; }
 .cover-img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .cover-active-tap { cursor: pointer; }
 .cover-flash-overlay {

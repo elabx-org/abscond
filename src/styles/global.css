@@ -32,9 +32,9 @@ html {
   --bg-panel: #0d0d0d;
 }
 
-/* OLED: force pure black backgrounds across the app */
+/* OLED: force pure black backgrounds — intentionally excludes .app-shell so the
+   top gradient always shows behind the status bar / Dynamic Island */
 .theme-oled body,
-.theme-oled .app-shell,
 .theme-oled .shell-content,
 .theme-oled .bottom-nav,
 .theme-oled .home-view,
@@ -51,6 +51,11 @@ html {
 .theme-oled .car-mode,
 .theme-oled .car-mode::before {
   background-color: #000 !important;
+}
+
+/* OLED variant of the gradient — same warm tint, ends at pure black */
+.theme-oled .app-shell {
+  background: linear-gradient(180deg, #2e1055 0%, #180830 15%, #000 28%) !important;
 }
 
 /* Scrollbar */
