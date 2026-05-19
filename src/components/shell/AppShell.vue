@@ -20,9 +20,9 @@
     <!-- Page content -->
     <main class="shell-content" :style="contentStyle">
       <router-view v-slot="{ Component }">
-        <Transition name="tab-fade" mode="out-in">
-          <component :is="Component" :key="$route.name" />
-        </Transition>
+        <keep-alive :max="6">
+          <component :is="Component" />
+        </keep-alive>
       </router-view>
     </main>
   </div>
@@ -110,8 +110,6 @@ const contentStyle = computed(() => {
 <style scoped>
 .app-shell { min-height: 100dvh; background: linear-gradient(180deg, #2e1055 0%, #180830 15%, #0e0e0e 28%); }
 .shell-content { min-height: 100dvh; }
-.tab-fade-enter-active, .tab-fade-leave-active { transition: opacity 0.18s ease; }
-.tab-fade-enter-from, .tab-fade-leave-to { opacity: 0; }
 
 .offline-banner {
   position: fixed; top: 0; left: 0; right: 0; z-index: 500;
