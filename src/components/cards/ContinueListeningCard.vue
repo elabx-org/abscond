@@ -150,7 +150,7 @@ function cancelLongPress() {
 
 <style scoped>
 .cl-card {
-  width: 150px;
+  width: 164px;
   flex-shrink: 0;
   border-radius: 14px;
   display: flex;

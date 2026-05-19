@@ -1045,7 +1045,7 @@ watch(searchQuery, (q) => {
 .spin { animation: spin 0.8s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
-.lib-chips { display: flex; gap: 8px; flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; padding: 8px 12px 0; -webkit-overflow-scrolling: touch; }
+.lib-chips { display: flex; gap: 8px; flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; padding: 8px 16px 0; -webkit-overflow-scrolling: touch; }
 .lib-chips::-webkit-scrollbar { display: none; }
 .lib-chip {
   flex-shrink: 0; font-size: 12px; padding: 5px 14px; border-radius: 20px; cursor: pointer;
@@ -1073,30 +1073,30 @@ watch(searchQuery, (q) => {
 }
 .filter-chip.active { background: rgba(212,160,23,0.12); border-color: rgba(212,160,23,0.4); color: #d4a017; }
 
-.lib-controls { padding: 0 12px 12px; }
-.lib-search-row { display: flex; align-items: center; gap: 6px; }
+.lib-controls { padding: 12px 16px 16px; }
+.lib-search-row { display: flex; align-items: center; gap: 8px; }
 .lib-search-wrap {
-  display: flex; align-items: center; gap: 6px; flex: 1;
+  display: flex; align-items: center; gap: 8px; flex: 1;
   background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08);
-  border-radius: 10px; padding: 6px 10px;
+  border-radius: 12px; padding: 10px 14px;
 }
 .grid-density-btn {
   flex-shrink: 0; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08);
-  border-radius: 10px; padding: 6px 10px; cursor: pointer; display: flex; align-items: center;
+  border-radius: 12px; padding: 10px 12px; cursor: pointer; display: flex; align-items: center;
 }
 .grid-density-btn.active { background: rgba(212,160,23,0.1); border-color: rgba(212,160,23,0.3); }
 .lib-search-input {
   flex: 1; background: transparent; border: none; outline: none;
-  color: rgba(255,255,255,0.85); font-size: 12px;
+  color: rgba(255,255,255,0.85); font-size: 14px;
 }
-.lib-search-input::placeholder { color: rgba(255,255,255,0.25); }
+.lib-search-input::placeholder { color: rgba(255,255,255,0.25); font-size: 14px; }
 .lib-search-clear { background: transparent; border: none; cursor: pointer; color: rgba(255,255,255,0.3); padding: 0; }
 
 .lib-count-badge { font-size: 11px; color: rgba(255,255,255,0.35); background: rgba(255,255,255,0.07); border-radius: 8px; padding: 2px 7px; }
 
 .scroll-sentinel { height: 1px; }
 
-.search-group { margin-top: 16px; padding: 0 12px; }
+.search-group { margin-top: 16px; padding: 0 16px; }
 .search-group-label {
   font-size: 10px; font-weight: 600; color: rgba(255,255,255,0.3);
   text-transform: uppercase; letter-spacing: 0.5px; margin: 0 0 8px;
@@ -1121,13 +1121,13 @@ watch(searchQuery, (q) => {
 .grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
-  gap: 12px 10px;
-  padding: 12px 12px 0;
+  gap: 16px 12px;
+  padding: 0 16px 0;
 }
 .grid--dense {
   grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
-  gap: 8px 6px;
-  padding: 8px 8px 0;
+  gap: 10px 8px;
+  padding: 0 10px 0;
 }
 
 .skeleton-card { display: flex; flex-direction: column; gap: 6px; }
@@ -1149,7 +1149,7 @@ watch(searchQuery, (q) => {
   gap: 12px; padding: 80px 0; color: rgba(255,255,255,0.4); font-size: 13px;
 }
 
-.sub-view-wrap { padding: 0 12px; }
+.sub-view-wrap { padding: 0 16px; }
 
 .batch-bar {
   position: fixed; bottom: 60px; left: 0; right: 0; z-index: 150;
@@ -1266,9 +1266,9 @@ watch(searchQuery, (q) => {
 .filter-sheet-enter-from, .filter-sheet-leave-to { transform: translateY(100%); opacity: 0; }
 
 .sub-search-wrap {
-  display: flex; align-items: center; gap: 6px;
+  display: flex; align-items: center; gap: 8px;
   background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08);
-  border-radius: 10px; padding: 6px 10px; margin: 12px 0 4px;
+  border-radius: 12px; padding: 10px 14px; margin: 0 0 16px;
 }
 
 .series-card { display: flex; flex-direction: column; gap: 5px; cursor: pointer; }

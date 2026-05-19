@@ -26,10 +26,10 @@ const socket = useSocketStore()
 
 <style scoped>
 .page-header {
-  padding: 12px 20px 0;
+  padding: 16px 20px 0;
 }
 .page-header-brand-row {
-  display: flex; align-items: center; gap: 6px; margin-bottom: 3px;
+  display: flex; align-items: center; gap: 6px; margin-bottom: 10px;
 }
 @media (min-width: 768px) {
   .page-header-brand-row { display: none; }

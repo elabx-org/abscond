@@ -145,7 +145,7 @@ function cancelLongPress() {
 }
 .check-enter-active, .check-leave-active { transition: opacity 0.15s; }
 .check-enter-from, .check-leave-to { opacity: 0; }
-.card-title { font-size: 11px; font-weight: 700; color: rgba(255,255,255,0.9); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.3; margin: 0; }
-.card-author { font-size: 10px; color: rgba(255,255,255,0.4); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin: 0; }
-.card-progress-label { font-size: 9px; color: rgba(255,255,255,0.5); margin: 1px 0 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.card-title { font-size: 12px; font-weight: 700; color: rgba(255,255,255,0.9); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.3; margin: 0; }
+.card-author { font-size: 11px; color: rgba(255,255,255,0.4); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin: 0; }
+.card-progress-label { font-size: 10px; color: rgba(255,255,255,0.5); margin: 1px 0 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 </style>
