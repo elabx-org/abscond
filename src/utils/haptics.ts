@@ -1,15 +1,25 @@
-import { Haptics, ImpactStyle, NotificationType } from '@capacitor/haptics'
+// Uses the existing HapticsBridgePlugin WKScriptMessageHandler.
+// Falls back silently on web/desktop where the handler is absent.
+declare global {
+  interface Window {
+    webkit?: {
+      messageHandlers?: {
+        hapticsBridge?: { postMessage: (msg: string) => void }
+      }
+    }
+  }
+}
 
-async function safe<T>(fn: () => Promise<T>): Promise<void> {
-  try { await fn() } catch { /* not available on web/desktop */ }
+function impact(style: 'light' | 'medium' | 'heavy'): void {
+  try {
+    window.webkit?.messageHandlers?.hapticsBridge?.postMessage(
+      JSON.stringify({ action: 'impact', style })
+    )
+  } catch { /* non-iOS */ }
 }
 
 export const haptics = {
-  light:   () => safe(() => Haptics.impact({ style: ImpactStyle.Light })),
-  medium:  () => safe(() => Haptics.impact({ style: ImpactStyle.Medium })),
-  heavy:   () => safe(() => Haptics.impact({ style: ImpactStyle.Heavy })),
-  success: () => safe(() => Haptics.notification({ type: NotificationType.Success })),
-  warning: () => safe(() => Haptics.notification({ type: NotificationType.Warning })),
-  error:   () => safe(() => Haptics.notification({ type: NotificationType.Error })),
-  select:  () => safe(() => Haptics.selectionStart()),
+  light:  () => impact('light'),
+  medium: () => impact('medium'),
+  heavy:  () => impact('heavy'),
 }
