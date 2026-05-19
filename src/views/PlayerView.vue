@@ -25,6 +25,15 @@
 
         <!-- Screen title bar (mobile) -->
         <div class="player-topbar">
+          <div class="player-brand-row">
+            <AppLogo :size="18" color="rgba(134,59,255,0.6)" />
+            <p class="player-brand">ABSCOND</p>
+            <AppIcon
+              :icon="socket.connected ? 'mdi-cloud-check-outline' : 'mdi-cloud-off-outline'"
+              :size="13"
+              :color="socket.connected ? 'rgba(74,222,128,0.75)' : 'rgba(255,255,255,0.18)'"
+            />
+          </div>
           <div class="player-topbar-actions">
             <button
               v-if="player.currentItem"
@@ -627,10 +636,12 @@
 
 <script setup lang="ts">
 import AppIcon from '@/components/common/AppIcon.vue'
+import AppLogo from '@/components/common/AppLogo.vue'
 import { computed, ref, watch, nextTick, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { usePlayerStore } from '@/stores/player'
 import { useAuthStore } from '@/stores/auth'
+import { useSocketStore } from '@/stores/socket'
 import { useSettingsStore } from '@/stores/settings'
 import { coverUrl, api } from '@/api/client'
 import { createBookmark, deleteBookmark } from '@/api/bookmarks'
@@ -648,6 +659,7 @@ import type { QueueEntry } from '@/stores/player'
 const player   = usePlayerStore()
 const auth     = useAuthStore()
 const settings = useSettingsStore()
+const socket   = useSocketStore()
 const notify = useNotificationStore()
 const router = useRouter()
 
@@ -1127,6 +1139,11 @@ function queueDragEnd() {
 .player-topbar {
   display: flex; align-items: center; justify-content: space-between;
   width: 100%; margin-bottom: 4px; padding: 0 2px;
+}
+.player-brand-row { display: flex; align-items: center; gap: 6px; }
+.player-brand {
+  font-size: 11px; font-weight: 300; letter-spacing: 4px;
+  color: rgba(255,255,255,0.3); text-transform: uppercase; margin: 0;
 }
 .player-topbar-actions { display: flex; align-items: center; gap: 4px; margin-left: auto; }
 .topbar-action-btn {

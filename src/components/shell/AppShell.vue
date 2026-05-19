@@ -104,7 +104,7 @@ const contentStyle = computed(() => {
 </script>
 
 <style scoped>
-.app-shell { min-height: 100dvh; background: linear-gradient(180deg, rgba(134,59,255,0.12) 0%, #0e0e0e 22%); }
+.app-shell { min-height: 100dvh; background: linear-gradient(180deg, rgba(134,59,255,0.22) 0%, rgba(134,59,255,0.10) 15%, #0e0e0e 28%); }
 .shell-content { min-height: 100dvh; }
 
 .offline-banner {
