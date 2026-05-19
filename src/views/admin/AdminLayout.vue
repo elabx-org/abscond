@@ -20,9 +20,7 @@
               :class="{ active: isActive(tab.name) }"
               @click="router.push({ name: tab.name })"
             >
-              <div class="sidebar-item-icon" :style="{ background: tab.color }">
-                <AppIcon :icon="tab.icon" :size="14" color="white" />
-              </div>
+              <AppIcon :icon="tab.icon" :size="16" :color="isActive(tab.name) ? '#a78bfa' : 'rgba(255,255,255,0.45)'" />
               <span>{{ tab.label }}</span>
             </button>
           </div>
@@ -81,10 +79,7 @@ watch(() => route.name, (name) => {
 
 .admin-topbar {
   display: flex; align-items: center; gap: 12px;
-  padding: 14px 16px; border-bottom: 1px solid rgba(255,255,255,0.06);
-  position: sticky; top: env(safe-area-inset-top); z-index: 10;
-  background: rgba(14,14,14,0.92); backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  padding: 14px 16px;
 }
 .back-btn {
   background: transparent; border: none; cursor: pointer;
@@ -97,19 +92,19 @@ watch(() => route.name, (name) => {
 /* Sidebar hidden on mobile */
 .admin-sidebar { display: none; }
 
-.admin-content { flex: 1; padding: 16px 16px 80px; min-width: 0; }
+.admin-content { flex: 1; padding: 0 16px 80px; min-width: 0; }
 
 @media (min-width: 768px) {
   .admin-topbar { padding: 14px 24px; }
 
   .admin-sidebar {
     display: flex; flex-direction: column;
-    width: 220px; flex-shrink: 0;
+    width: 200px; flex-shrink: 0;
     border-right: 1px solid rgba(255,255,255,0.06);
-    background: rgba(8,8,8,0.5);
+    background: rgba(8,8,8,0.4);
     position: sticky;
-    top: calc(env(safe-area-inset-top) + 49px);
-    height: calc(100dvh - env(safe-area-inset-top) - 49px);
+    top: env(safe-area-inset-top);
+    height: calc(100dvh - env(safe-area-inset-top));
     overflow-y: auto; scrollbar-width: none;
   }
   .admin-sidebar::-webkit-scrollbar { display: none; }
@@ -128,16 +123,12 @@ watch(() => route.name, (name) => {
   }
   .sidebar-item:hover { background: rgba(255,255,255,0.05); color: rgba(255,255,255,0.8); }
   .sidebar-item.active { background: rgba(134,59,255,0.13); color: #a78bfa; }
-  .sidebar-item-icon {
-    width: 24px; height: 24px; border-radius: 6px; flex-shrink: 0;
-    display: flex; align-items: center; justify-content: center;
-  }
 
-  .admin-content { padding: 24px 32px 80px; max-width: 960px; }
+  .admin-content { padding: 0 32px 80px; max-width: 960px; }
 }
 
 @media (min-width: 1280px) {
-  .admin-sidebar { width: 240px; }
+  .admin-sidebar { width: 220px; }
   .admin-content { max-width: 1100px; }
 }
 </style>

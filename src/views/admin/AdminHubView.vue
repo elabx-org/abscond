@@ -10,11 +10,9 @@
           :class="{ 'hub-item--last': i === group.tabs.length - 1 }"
           @click="router.push({ name: tab.name })"
         >
-          <div class="hub-item-icon" :style="{ background: tab.color }">
-            <AppIcon :icon="tab.icon" :size="15" color="white" />
-          </div>
+          <AppIcon :icon="tab.icon" :size="18" color="rgba(255,255,255,0.45)" />
           <span class="hub-item-label">{{ tab.label }}</span>
-          <AppIcon icon="mdi-chevron-right" :size="16" color="rgba(255,255,255,0.2)" />
+          <AppIcon icon="mdi-chevron-right" :size="16" color="rgba(255,255,255,0.18)" />
         </button>
       </div>
     </div>
@@ -30,7 +28,7 @@ const router = useRouter()
 </script>
 
 <style scoped>
-.admin-hub { padding: 8px 0 32px; }
+.admin-hub { padding: 4px 0 32px; }
 
 .hub-group { margin-bottom: 28px; }
 .hub-group-label {
@@ -54,11 +52,6 @@ const router = useRouter()
 .hub-item:last-child,
 .hub-item--last { border-bottom: none; }
 .hub-item:active { background: rgba(255,255,255,0.05); }
-
-.hub-item-icon {
-  width: 30px; height: 30px; border-radius: 8px; flex-shrink: 0;
-  display: flex; align-items: center; justify-content: center;
-}
 
 .hub-item-label {
   flex: 1; font-size: 14px; color: rgba(255,255,255,0.82); font-weight: 500;
