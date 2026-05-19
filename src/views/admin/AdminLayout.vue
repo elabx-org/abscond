@@ -57,7 +57,7 @@ const tabs = [
 </script>
 
 <style scoped>
-.admin-layout { min-height: 100dvh; background: #0e0e0e; }
+.admin-layout { min-height: 100dvh; }
 
 .admin-topbar {
   display: flex; align-items: center; gap: 12px;
