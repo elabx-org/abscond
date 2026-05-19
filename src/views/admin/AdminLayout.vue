@@ -1,63 +1,83 @@
 <template>
   <div class="admin-layout">
     <div class="admin-topbar">
-      <button class="back-btn" @click="router.push({ name: 'settings' })">
+      <button class="back-btn" @click="handleBack">
         <AppIcon icon="mdi-arrow-left" :size="20" />
       </button>
-      <span class="admin-title">Admin Panel</span>
+      <span class="admin-title">{{ pageTitle }}</span>
     </div>
 
-    <div class="admin-subnav">
-      <button
-        v-for="tab in tabs"
-        :key="tab.name"
-        class="subnav-tab"
-        :class="{ active: route.name === tab.name || DETAIL_PARENT[route.name as string] === tab.name }"
-        @click="router.push({ name: tab.name })"
-      >
-        <AppIcon :icon="tab.icon" :size="16" />
-        <span>{{ tab.label }}</span>
-      </button>
-    </div>
+    <div class="admin-body">
+      <!-- Sidebar (desktop only) -->
+      <aside class="admin-sidebar">
+        <nav class="sidebar-nav">
+          <div v-for="group in NAV_GROUPS" :key="group.label" class="sidebar-group">
+            <p class="sidebar-group-label">{{ group.label }}</p>
+            <button
+              v-for="tab in group.tabs"
+              :key="tab.name"
+              class="sidebar-item"
+              :class="{ active: isActive(tab.name) }"
+              @click="router.push({ name: tab.name })"
+            >
+              <div class="sidebar-item-icon" :style="{ background: tab.color }">
+                <AppIcon :icon="tab.icon" :size="14" color="white" />
+              </div>
+              <span>{{ tab.label }}</span>
+            </button>
+          </div>
+        </nav>
+      </aside>
 
-    <div class="admin-content">
-      <router-view />
+      <div class="admin-content">
+        <router-view />
+      </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import AppIcon from '@/components/common/AppIcon.vue'
+import { computed, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { NAV_GROUPS, ADMIN_DETAIL_PARENT } from './adminNav'
 
 const route  = useRoute()
 const router = useRouter()
 
-const DETAIL_PARENT: Record<string, string> = {
-  'admin-user-detail':    'admin-users',
-  'admin-podcast-detail': 'admin-libraries',
+const allTabs = NAV_GROUPS.flatMap(g => g.tabs)
+
+function isMobile() { return window.innerWidth < 768 }
+
+function isActive(name: string): boolean {
+  return route.name === name || ADMIN_DETAIL_PARENT[route.name as string] === name
 }
 
-const tabs = [
-  { name: 'admin-overview',       label: 'Overview',       icon: 'mdi-view-dashboard-outline' },
-  { name: 'admin-libraries',      label: 'Libraries',      icon: 'mdi-bookshelf' },
-  { name: 'admin-users',          label: 'Users',          icon: 'mdi-account-group' },
-  { name: 'admin-settings',       label: 'Settings',       icon: 'mdi-cog' },
-  { name: 'admin-backups',        label: 'Backups',        icon: 'mdi-backup-restore' },
-  { name: 'admin-notifications',  label: 'Notifications',  icon: 'mdi-bell-outline' },
-  { name: 'admin-logs',           label: 'Logs',           icon: 'mdi-text-box-outline' },
-  { name: 'admin-upload',         label: 'Upload',         icon: 'mdi-upload' },
-  { name: 'admin-api-keys',  label: 'API Keys',  icon: 'mdi-key-outline' },
-  { name: 'admin-sessions',  label: 'Sessions',  icon: 'mdi-headphones' },
-  { name: 'admin-email',     label: 'Email',     icon: 'mdi-email-outline' },
-  { name: 'admin-metadata',  label: 'Metadata',  icon: 'mdi-tag-search-outline' },
-  { name: 'admin-feeds',     label: 'RSS Feeds', icon: 'mdi-rss' },
-  { name: 'admin-auth',      label: 'Auth',      icon: 'mdi-shield-lock-outline' },
-]
+const pageTitle = computed(() => {
+  if (route.name === 'admin-hub') return 'Admin Panel'
+  const parentName = ADMIN_DETAIL_PARENT[route.name as string]
+  const lookupName = parentName ?? (route.name as string)
+  return allTabs.find(t => t.name === lookupName)?.label ?? 'Admin Panel'
+})
+
+function handleBack() {
+  if (route.name === 'admin-hub' || !isMobile()) {
+    router.push({ name: 'settings' })
+  } else {
+    router.push({ name: 'admin-hub' })
+  }
+}
+
+// On desktop, skip the hub and go straight to overview
+watch(() => route.name, (name) => {
+  if (name === 'admin-hub' && !isMobile()) {
+    router.replace({ name: 'admin-overview' })
+  }
+}, { immediate: true })
 </script>
 
 <style scoped>
-.admin-layout { min-height: 100dvh; }
+.admin-layout { min-height: 100dvh; display: flex; flex-direction: column; }
 
 .admin-topbar {
   display: flex; align-items: center; gap: 12px;
@@ -72,33 +92,52 @@ const tabs = [
 }
 .admin-title { font-size: 16px; font-weight: 700; color: rgba(255,255,255,0.9); }
 
-.admin-subnav {
-  display: flex; overflow-x: auto; scrollbar-width: none;
-  border-bottom: 1px solid rgba(255,255,255,0.06);
-  padding: 0 16px;
-  position: sticky; top: calc(env(safe-area-inset-top) + 48px); z-index: 9;
-  background: rgba(14,14,14,0.92); backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-}
-.admin-subnav::-webkit-scrollbar { display: none; }
-.subnav-tab {
-  display: flex; align-items: center; gap: 5px; flex-shrink: 0;
-  padding: 10px 14px; background: transparent; border: none;
-  border-bottom: 2px solid transparent; cursor: pointer;
-  font-size: 12px; color: rgba(255,255,255,0.4); transition: all 0.15s;
-}
-.subnav-tab.active { color: #d4a017; border-bottom-color: #d4a017; }
+.admin-body { display: flex; flex: 1; min-height: 0; }
 
-.admin-content { padding: 16px 16px 80px; }
+/* Sidebar hidden on mobile */
+.admin-sidebar { display: none; }
+
+.admin-content { flex: 1; padding: 16px 16px 80px; min-width: 0; }
 
 @media (min-width: 768px) {
-  .admin-topbar { padding: 14px 32px; }
-  .admin-subnav { padding: 0 32px; }
-  .admin-content { padding: 24px 32px 80px; max-width: 1100px; margin: 0 auto; }
-  .subnav-tab { padding: 12px 18px; font-size: 13px; }
+  .admin-topbar { padding: 14px 24px; }
+
+  .admin-sidebar {
+    display: flex; flex-direction: column;
+    width: 220px; flex-shrink: 0;
+    border-right: 1px solid rgba(255,255,255,0.06);
+    background: rgba(8,8,8,0.5);
+    position: sticky;
+    top: calc(env(safe-area-inset-top) + 49px);
+    height: calc(100dvh - env(safe-area-inset-top) - 49px);
+    overflow-y: auto; scrollbar-width: none;
+  }
+  .admin-sidebar::-webkit-scrollbar { display: none; }
+
+  .sidebar-nav { padding: 12px 10px 24px; }
+  .sidebar-group { margin-bottom: 20px; }
+  .sidebar-group-label {
+    font-size: 10px; font-weight: 700; letter-spacing: 0.8px; text-transform: uppercase;
+    color: rgba(255,255,255,0.3); padding: 0 8px; margin: 0 0 4px;
+  }
+  .sidebar-item {
+    display: flex; align-items: center; gap: 10px; width: 100%;
+    padding: 8px 10px; border-radius: 8px; border: none; cursor: pointer;
+    background: transparent; color: rgba(255,255,255,0.55);
+    font-size: 13px; font-weight: 500; text-align: left; transition: all 0.15s;
+  }
+  .sidebar-item:hover { background: rgba(255,255,255,0.05); color: rgba(255,255,255,0.8); }
+  .sidebar-item.active { background: rgba(134,59,255,0.13); color: #a78bfa; }
+  .sidebar-item-icon {
+    width: 24px; height: 24px; border-radius: 6px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+  }
+
+  .admin-content { padding: 24px 32px 80px; max-width: 960px; }
 }
 
 @media (min-width: 1280px) {
-  .admin-content { max-width: 1200px; }
+  .admin-sidebar { width: 240px; }
+  .admin-content { max-width: 1100px; }
 }
 </style>

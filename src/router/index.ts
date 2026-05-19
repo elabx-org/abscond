@@ -49,7 +49,8 @@ const router = createRouter({
           component: () => import('@/views/admin/AdminLayout.vue'),
           meta: { requiresAdmin: true },
           children: [
-            { path: '',              redirect: 'overview' },
+            { path: '',    redirect: 'hub' },
+            { path: 'hub', name: 'admin-hub', component: () => import('@/views/admin/AdminHubView.vue') },
             { path: 'overview',      name: 'admin-overview',       component: () => import('@/views/admin/OverviewView.vue') },
             { path: 'libraries',     name: 'admin-libraries',      component: () => import('@/views/admin/LibrariesView.vue') },
             { path: 'users',         name: 'admin-users',          component: () => import('@/views/admin/UsersView.vue') },
