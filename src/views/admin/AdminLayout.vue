@@ -62,8 +62,9 @@ const tabs = [
 .admin-topbar {
   display: flex; align-items: center; gap: 12px;
   padding: 14px 16px; border-bottom: 1px solid rgba(255,255,255,0.06);
-  position: sticky; top: 0; z-index: 10;
+  position: sticky; top: env(safe-area-inset-top); z-index: 10;
   background: rgba(14,14,14,0.92); backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
 }
 .back-btn {
   background: transparent; border: none; cursor: pointer;
@@ -75,6 +76,9 @@ const tabs = [
   display: flex; overflow-x: auto; scrollbar-width: none;
   border-bottom: 1px solid rgba(255,255,255,0.06);
   padding: 0 16px;
+  position: sticky; top: calc(env(safe-area-inset-top) + 48px); z-index: 9;
+  background: rgba(14,14,14,0.92); backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
 }
 .admin-subnav::-webkit-scrollbar { display: none; }
 .subnav-tab {
