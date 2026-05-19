@@ -1120,7 +1120,7 @@ function queueDragEnd() {
 .player-content {
   position: relative;
   display: flex; flex-direction: column; align-items: center;
-  padding: 20px 20px 48px;
+  padding: calc(env(safe-area-inset-top) + 20px) 20px 48px;
 }
 
 /* ── Top bar ─────────────────────────────────────────────────────────────────── */

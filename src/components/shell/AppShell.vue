@@ -27,6 +27,7 @@
 <script setup lang="ts">
 import AppIcon from '@/components/common/AppIcon.vue'
 import { computed, ref, onMounted, onBeforeUnmount, watch } from 'vue'
+import { useRoute } from 'vue-router'
 import BottomNav  from './BottomNav.vue'
 import SideRail   from './SideRail.vue'
 import NavDrawer  from './NavDrawer.vue'
@@ -37,6 +38,7 @@ import { useAuthStore } from '@/stores/auth'
 const player = usePlayerStore()
 const socket = useSocketStore()
 const auth   = useAuthStore()
+const route  = useRoute()
 
 const showOfflineBanner = ref(false)
 let offlineTimer: ReturnType<typeof setTimeout> | null = null
@@ -90,8 +92,9 @@ const shellClass = computed(() => ({
 
 const contentStyle = computed(() => {
   if (isMobile.value) {
+    const isPlayer = route.name === 'player'
     return {
-      paddingTop: 'env(safe-area-inset-top)',
+      paddingTop: isPlayer ? '0px' : 'env(safe-area-inset-top)',
       paddingBottom: `calc(56px + env(safe-area-inset-bottom))`,
     }
   }
@@ -101,7 +104,7 @@ const contentStyle = computed(() => {
 </script>
 
 <style scoped>
-.app-shell { min-height: 100dvh; background: linear-gradient(180deg, rgba(134,59,255,0.06) 0%, #0e0e0e 22%); }
+.app-shell { min-height: 100dvh; background: linear-gradient(180deg, rgba(134,59,255,0.12) 0%, #0e0e0e 22%); }
 .shell-content { min-height: 100dvh; }
 
 .offline-banner {

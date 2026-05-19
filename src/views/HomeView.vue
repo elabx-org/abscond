@@ -15,8 +15,8 @@
     <!-- Brand header (scrollable, Absorb-style) -->
     <div class="home-header">
       <div class="home-brand-row">
-        <AppLogo :size="14" color="rgba(134,59,255,0.6)" />
-        <p class="home-brand">A &nbsp;B &nbsp;S &nbsp;C &nbsp;O &nbsp;N &nbsp;D</p>
+        <AppLogo :size="18" color="rgba(134,59,255,0.6)" />
+        <p class="home-brand">ABSCOND</p>
         <AppIcon
           :icon="socket.connected ? 'mdi-cloud-check-outline' : 'mdi-cloud-off-outline'"
           :size="13"
@@ -631,8 +631,8 @@ watch(() => lib.activeLibraryId, async (id) => {
   .home-brand-row { display: none; }
 }
 .home-brand {
-  font-size: 8px; font-weight: 300; letter-spacing: 5px;
-  color: rgba(255,255,255,0.25); text-transform: uppercase;
+  font-size: 11px; font-weight: 300; letter-spacing: 4px;
+  color: rgba(255,255,255,0.3); text-transform: uppercase;
   margin: 0;
 }
 .sections-wrap { display: flex; flex-direction: column; padding: 0 12px; }
