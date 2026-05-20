@@ -502,7 +502,11 @@ async function loadLibraries() {
       } catch { /* stats optional */ }
     }))
   } catch (e: unknown) {
-    loadError.value = (e instanceof Error ? e.message : null) ?? 'Failed to load libraries'
+    const ax = e as any
+    const detail = ax?.response
+      ? `${ax.response.status} ${ax.response.statusText}`
+      : ax?.code || ax?.message || 'Unknown error'
+    loadError.value = `Failed to load libraries: ${detail}`
   } finally {
     loading.value = false
   }

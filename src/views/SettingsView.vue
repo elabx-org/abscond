@@ -720,7 +720,7 @@
 
     <!-- Admin link -->
     <div v-if="auth.isAdmin" class="admin-link-wrap">
-      <button class="admin-link" @click="router.push({ name: 'admin-hub' })">
+      <button class="admin-link" @click="router.push({ name: 'admin-libraries' })">
         <AppIcon icon="mdi-shield-crown-outline" :size="18" />
         Admin Panel
         <AppIcon icon="mdi-chevron-right" :size="16" color="rgba(255,255,255,0.3)" />
