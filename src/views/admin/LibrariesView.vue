@@ -248,7 +248,7 @@
 
 <script setup lang="ts">
 import AppIcon from '@/components/common/AppIcon.vue'
-import { onMounted, onActivated, onUnmounted, ref } from 'vue'
+import { nextTick, onMounted, onActivated, onUnmounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { getAdminLibraries, scanLibrary, matchLibraryBooks, reorderLibraries, getLibraryStats, getPodcastFeed, addPodcast, createLibrary, updateLibrary, deleteLibrary, checkNewPodcastEpisodes, getLibraryPodcastItems } from '@/api/admin'
 import type { AdminLibrary, PodcastFeedInfo } from '@/api/admin'
@@ -512,12 +512,10 @@ async function loadLibraries() {
   }
 }
 
-onMounted(loadLibraries)
-// onActivated fires for LibrariesView when AdminLayout reactivates from keep-alive cache,
-// even if the current route is admin-hub (LibrariesView was the last active child when cached).
-// Guard prevents a spurious in-flight request that conflicts with the onMounted call on the
-// fresh LibrariesView instance that mounts milliseconds later, causing "Network Error" on iOS.
-onActivated(() => { if (route.name === 'admin-libraries') loadLibraries() })
+// nextTick defers the API call past Vue's render cycle — fixes iOS WKWebView aborting
+// requests made synchronously during the inner <router-view> component swap.
+onMounted(() => nextTick(loadLibraries))
+onActivated(() => { if (route.name === 'admin-libraries') nextTick(loadLibraries) })
 </script>
 
 <style scoped>
