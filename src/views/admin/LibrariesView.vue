@@ -249,7 +249,7 @@
 <script setup lang="ts">
 import AppIcon from '@/components/common/AppIcon.vue'
 import { onMounted, onActivated, onUnmounted, ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { getAdminLibraries, scanLibrary, matchLibraryBooks, reorderLibraries, getLibraryStats, getPodcastFeed, addPodcast, createLibrary, updateLibrary, deleteLibrary, checkNewPodcastEpisodes, getLibraryPodcastItems } from '@/api/admin'
 import type { AdminLibrary, PodcastFeedInfo } from '@/api/admin'
 import { onSocketEvent } from '@/api/socket'
@@ -258,6 +258,7 @@ import { api } from '@/api/client'
 import AppSelect from '@/components/common/AppSelect.vue'
 
 const socket = useSocketStore()
+const route  = useRoute()
 const router = useRouter()
 const podcastItems = ref<Record<string, Array<{ id: string; media?: { metadata?: { title?: string } } }>>>({})
 const loadingPodcastsId = ref<string | null>(null)
@@ -508,7 +509,11 @@ async function loadLibraries() {
 }
 
 onMounted(loadLibraries)
-onActivated(loadLibraries)
+// onActivated fires for LibrariesView when AdminLayout reactivates from keep-alive cache,
+// even if the current route is admin-hub (LibrariesView was the last active child when cached).
+// Guard prevents a spurious in-flight request that conflicts with the onMounted call on the
+// fresh LibrariesView instance that mounts milliseconds later, causing "Network Error" on iOS.
+onActivated(() => { if (route.name === 'admin-libraries') loadLibraries() })
 </script>
 
 <style scoped>
