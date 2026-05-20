@@ -12,6 +12,12 @@
       <div v-for="n in 3" :key="n" class="skel-row" />
     </div>
 
+    <div v-else-if="loadError" class="empty-state">
+      <AppIcon icon="mdi-alert-circle-outline" :size="36" color="rgba(255,100,100,0.5)" />
+      <p>{{ loadError }}</p>
+      <button class="retry-btn" @click="loadLibraries">Retry</button>
+    </div>
+
     <div v-else-if="!libraries.length" class="empty-state">
       <AppIcon icon="mdi-bookshelf" :size="36" color="rgba(255,255,255,0.15)" />
       <p>No libraries found</p>
@@ -242,7 +248,7 @@
 
 <script setup lang="ts">
 import AppIcon from '@/components/common/AppIcon.vue'
-import { onMounted, onUnmounted, ref } from 'vue'
+import { onMounted, onActivated, onUnmounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { getAdminLibraries, scanLibrary, matchLibraryBooks, reorderLibraries, getLibraryStats, getPodcastFeed, addPodcast, createLibrary, updateLibrary, deleteLibrary, checkNewPodcastEpisodes, getLibraryPodcastItems } from '@/api/admin'
 import type { AdminLibrary, PodcastFeedInfo } from '@/api/admin'
@@ -257,6 +263,7 @@ const podcastItems = ref<Record<string, Array<{ id: string; media?: { metadata?:
 const loadingPodcastsId = ref<string | null>(null)
 
 const loading    = ref(true)
+const loadError  = ref('')
 const libraries  = ref<AdminLibrary[]>([])
 const scanningIds    = ref<Set<string>>(new Set())
 const matchingId     = ref<string | null>(null)
@@ -482,19 +489,26 @@ async function loadPodcastItems(libId: string) {
   finally { loadingPodcastsId.value = null }
 }
 
-onMounted(async () => {
+async function loadLibraries() {
+  loading.value  = true
+  loadError.value = ''
   try {
     libraries.value = await getAdminLibraries()
-    // Load item counts in parallel for all libraries
     await Promise.all(libraries.value.map(async (lib, idx) => {
       try {
         const stats = await getLibraryStats(lib.id)
         libraries.value[idx] = { ...libraries.value[idx], stats }
       } catch { /* stats optional */ }
     }))
-  } catch { /* ignore */ }
-  finally { loading.value = false }
-})
+  } catch (e: unknown) {
+    loadError.value = (e instanceof Error ? e.message : null) ?? 'Failed to load libraries'
+  } finally {
+    loading.value = false
+  }
+}
+
+onMounted(loadLibraries)
+onActivated(loadLibraries)
 </script>
 
 <style scoped>
@@ -511,6 +525,7 @@ onMounted(async () => {
 @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
 
 .empty-state { display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 40px 0; color: rgba(255,255,255,0.4); font-size: 13px; }
+.retry-btn { margin-top: 4px; padding: 6px 16px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.15); background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.7); font-size: 12px; cursor: pointer; }
 
 .lib-list { display: flex; flex-direction: column; gap: 10px; }
 .lib-card { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.06); border-radius: 12px; padding: 14px; }
