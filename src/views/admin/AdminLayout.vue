@@ -75,7 +75,7 @@ watch(() => route.name, (name) => {
 </script>
 
 <style scoped>
-.admin-layout { min-height: 100dvh; display: flex; flex-direction: column; }
+.admin-layout { min-height: 100dvh; }
 
 .admin-topbar {
   display: flex; align-items: center; gap: 12px;
@@ -87,7 +87,7 @@ watch(() => route.name, (name) => {
 }
 .admin-title { font-size: 16px; font-weight: 700; color: rgba(255,255,255,0.9); }
 
-.admin-body { display: flex; flex: 1; min-height: 0; }
+.admin-body { display: flex; }
 
 /* Sidebar hidden on mobile */
 .admin-sidebar { display: none; }
