@@ -18,307 +18,85 @@
       </div>
 
       <div class="player-content">
-        <div class="player-layout">
 
-        <!-- Right column (DOM-first: renders above carousel on mobile; order: 2 on desktop) -->
-        <div class="player-right">
-
-        <!-- Screen title bar (mobile) -->
-        <div class="player-topbar">
-          <div class="player-brand-row">
-            <AppLogo :size="18" color="rgba(134,59,255,0.6)" />
-            <p class="player-brand">ABSCOND</p>
-            <AppIcon
-              :icon="socket.connected ? 'mdi-cloud-check-outline' : 'mdi-cloud-off-outline'"
-              :size="13"
-              :color="socket.connected ? 'rgba(74,222,128,0.75)' : 'rgba(255,255,255,0.18)'"
-            />
-          </div>
-          <div class="player-topbar-actions">
-            <button
-              v-if="player.currentItem"
-              class="topbar-action-btn"
-              title="Stop playback"
-              @click="player.stop()"
-            >
-              <AppIcon icon="mdi-stop" :size="16" />
-            </button>
-            <button
-              class="topbar-action-btn"
-              :class="{ active: showQueue }"
-              title="Queue"
-              @click="showQueue = !showQueue; showChapters = false; showSleepPicker = false; showSpeedPicker = false"
-            >
-              <AppIcon icon="mdi-playlist-play" :size="16" />
-              <span v-if="player.queue.length" class="topbar-queue-badge">{{ player.queue.length }}</span>
-            </button>
-          </div>
-        </div>
-
-        <div v-if="player.currentItem || player.recentItems.length" class="player-screen-title">
-          {{ player.currentItem ? 'Absconding' : 'Recently Played' }}
-        </div>
-
-        <!-- Book title + author (small, below screen title) -->
-        <div v-if="displayItem" class="player-meta-header">
-          <span class="pmh-title">{{ displayTitle }}</span>
-          <span class="pmh-sep">·</span>
-          <span class="pmh-author">{{ displayAuthor }}</span>
-        </div>
-
-        <!-- Desktop controls — hidden on mobile via CSS, shown ≥1280px -->
-        <div v-if="player.currentItem" class="dt-controls">
-          <!-- Stats -->
-          <div class="dt-stats">
-            <span class="card-stat">{{ formatTime(speedAdjustedElapsed) }}</span>
-            <span class="card-stat card-stat--mid">{{ progressPct }}%</span>
-            <span class="card-stat">-{{ formatTime(speedAdjustedRemaining) }}</span>
-          </div>
-
-          <!-- Scrubber -->
-          <div class="dt-scrubber-wrap" ref="dtScrubberEl"
-            @pointerdown="startScrub" @pointermove="moveScrub" @pointerup="endScrub">
-            <div v-if="isScrubbing" class="scrub-tooltip" :style="{ left: `${scrubTooltipPct}%` }">
-              {{ formatTime(scrubTooltipSecs) }}
+        <!-- ── Header ───────────────────────────────────────────── -->
+        <div class="player-header">
+          <!-- Top bar: brand row + stop/queue actions -->
+          <div class="player-topbar">
+            <div class="player-brand-row">
+              <AppLogo :size="18" color="rgba(134,59,255,0.6)" />
+              <p class="player-brand">ABSCOND</p>
+              <AppIcon
+                :icon="socket.connected ? 'mdi-cloud-check-outline' : 'mdi-cloud-off-outline'"
+                :size="13"
+                :color="socket.connected ? 'rgba(74,222,128,0.75)' : 'rgba(255,255,255,0.18)'"
+              />
             </div>
-            <div class="card-scrubber-track">
-              <div class="card-scrubber-fill" :style="{ width: `${player.progress * 100}%` }" />
-              <div v-for="(pct, ci) in chapterMarkers" :key="ci" class="chapter-tick" :style="{ left: `${pct}%` }" />
-              <div class="card-scrubber-thumb" :style="{ left: `${player.progress * 100}%` }" />
+            <div class="player-topbar-actions">
+              <button
+                v-if="player.currentItem"
+                class="topbar-action-btn"
+                title="Stop playback"
+                @click="player.stop()"
+              >
+                <AppIcon icon="mdi-stop" :size="16" />
+              </button>
+              <button
+                class="topbar-action-btn"
+                :class="{ active: showQueue }"
+                title="Queue"
+                @click="showQueue = !showQueue; showChapters = false; showSleepPicker = false; showSpeedPicker = false"
+              >
+                <AppIcon icon="mdi-playlist-play" :size="16" />
+                <span v-if="player.queue.length" class="topbar-queue-badge">{{ player.queue.length }}</span>
+              </button>
             </div>
           </div>
 
-          <!-- Chapter info -->
-          <div v-if="player.currentChapter" class="dt-chapter-row">
-            <span class="card-chapter-name">{{ player.currentChapter.title }}</span>
-            <div class="dt-chapter-times">
-              <span class="card-ch-time">{{ formatTime(player.currentTime - player.currentChapter.start) }}</span>
-              <span class="card-ch-time">-{{ formatTime(Math.max(0, player.currentChapter.end - player.currentTime)) }}</span>
-            </div>
+          <!-- Screen title -->
+          <div v-if="player.currentItem || player.recentItems.length" class="player-screen-title">
+            {{ player.currentItem ? 'Absconding' : 'Recently Played' }}
           </div>
 
-          <!-- Transport controls -->
-          <div class="dt-transport">
-            <button class="card-ctrl-btn" :disabled="!prevChapter" @click="prevChapter && player.seek(prevChapter.start)">
-              <AppIcon icon="mdi-skip-previous" :size="22" :color="prevChapter ? 'rgba(255,255,255,0.55)' : 'rgba(255,255,255,0.18)'" />
-            </button>
-            <button class="card-ctrl-btn" @click="player.skipBack(skipBackSecs)">
-              <span v-if="REWIND_ICONS[skipBackSecs]" class="skip-icon-only">
-                <AppIcon :icon="REWIND_ICONS[skipBackSecs]" :size="28" />
-              </span>
-              <span v-else class="skip-icon-labeled">
-                <AppIcon icon="mdi-rewind" :size="22" />
-                <span class="skip-secs-label">{{ skipBackSecs }}s</span>
-              </span>
-            </button>
-            <button class="card-play-btn" :disabled="player.isLoading" @click="player.togglePlay()">
-              <AppIcon icon="mdi-pause" v-if="player.isPlaying" :size="42" color="#111" />
-              <AppIcon icon="mdi-play" v-else :size="42" color="#111" />
-            </button>
-            <button class="card-ctrl-btn" @click="player.skipForward(skipFwdSecs)">
-              <span v-if="FWD_ICONS[skipFwdSecs]" class="skip-icon-only">
-                <AppIcon :icon="FWD_ICONS[skipFwdSecs]" :size="28" />
-              </span>
-              <span v-else class="skip-icon-labeled">
-                <AppIcon icon="mdi-fast-forward" :size="22" />
-                <span class="skip-secs-label">{{ skipFwdSecs }}s</span>
-              </span>
-            </button>
-            <button class="card-ctrl-btn" :disabled="!nextChapter" @click="nextChapter && player.seek(nextChapter.start)">
-              <AppIcon icon="mdi-skip-next" :size="22" :color="nextChapter ? 'rgba(255,255,255,0.55)' : 'rgba(255,255,255,0.18)'" />
-            </button>
-          </div>
-
-          <!-- Action row -->
-          <div class="dt-action-row">
-            <button class="card-action-btn" :class="{ active: showChapters }"
-              @click="showChapters = !showChapters; if (!showChapters) chapterSearch = ''; showQueue = false; showSleepPicker = false; showSpeedPicker = false">
-              <AppIcon icon="mdi-format-list-bulleted" :size="16" style="opacity:0.6" />
-              <span class="card-action-label">Chapters</span>
-              <span v-if="chapters.length" class="card-action-badge">{{ chapters.length }}</span>
-            </button>
-            <button class="card-action-btn" :class="{ active: showSpeedPicker || player.playbackRate !== 1 }"
-              @click="showSpeedPicker = !showSpeedPicker; showSleepPicker = false; showChapters = false; showQueue = false">
-              <AppIcon icon="mdi-speedometer" :size="16" style="opacity:0.6" />
-              <span class="card-action-label">{{ player.playbackRate }}×</span>
-            </button>
-            <button class="card-action-btn sleep-btn" :class="{ active: player.sleepMinsLeft !== null || player.sleepEndOfChapter }"
-              @click="showSleepPicker = !showSleepPicker; showSpeedPicker = false; showChapters = false; showQueue = false">
-              <div v-if="player.sleepMinsLeft !== null" class="sleep-fill" :style="{ width: `${sleepFillPct}%` }" />
-              <AppIcon icon="mdi-timer-outline" :size="16" style="position:relative;z-index:1;opacity:0.6" />
-              <span class="card-action-label" style="position:relative;z-index:1">
-                <template v-if="player.sleepMinsLeft !== null">{{ sleepCountdownLabel }}</template>
-                <template v-else-if="player.sleepEndOfChapter">End of Ch.</template>
-                <template v-else>Sleep</template>
-              </span>
-            </button>
-            <button class="card-action-btn" @click="showBookmarkSheet = true">
-              <AppIcon icon="mdi-bookmark-plus-outline" :size="16" style="opacity:0.6" />
-              <span class="card-action-label">Bookmarks</span>
-            </button>
-            <button class="card-action-btn" @click="showMore = true">
-              <AppIcon icon="mdi-dots-horizontal" :size="16" style="opacity:0.6" />
-              <span class="card-action-label">More</span>
-            </button>
+          <!-- Book title + author -->
+          <div v-if="displayItem" class="player-meta-header">
+            <span class="pmh-title">{{ displayTitle }}</span>
+            <span class="pmh-sep">·</span>
+            <span class="pmh-author">{{ displayAuthor }}</span>
           </div>
         </div>
 
-          <!-- Speed picker -->
-          <Transition name="panel">
-            <div v-if="showSpeedPicker" class="panel-box" @touchmove.stop>
-              <div class="speed-header">
-                <button class="speed-step" @click="stepSpeed(-0.05)">−</button>
-                <div class="speed-current-wrap">
-                  <span class="speed-current">{{ player.playbackRate.toFixed(2) }}×</span>
-                </div>
-                <button class="speed-step" @click="stepSpeed(+0.05)">+</button>
-              </div>
-              <div class="panel-opts">
-                <button
-                  v-for="s in speedPresets" :key="s"
-                  class="panel-opt" :class="{ active: Math.abs(player.playbackRate - s) < 0.01 }"
-                  @click="setSpeed(s)"
-                  @contextmenu.prevent="removeSpeedPreset(s)"
-                >{{ s }}×</button>
-                <button class="panel-opt speed-add" :title="'Save ' + player.playbackRate.toFixed(2) + '× as preset'" @click="addSpeedPreset">
-                  <AppIcon icon="mdi-plus" :size="13" />
-                </button>
-              </div>
-            </div>
-          </Transition>
-
-          <!-- Sleep picker -->
-          <Transition name="panel">
-            <div v-if="showSleepPicker" class="panel-box" @touchmove.stop>
-              <p class="panel-title">Sleep Timer</p>
-              <div class="panel-opts">
-                <button v-for="m in [5, 10, 15, 20, 30, 45, 60]" :key="m"
-                  class="panel-opt" :class="{ active: player.sleepMinsLeft === m && !sleepCustomActive }"
-                  @click="setSleep(m); sleepCustomActive = false">{{ m }}m</button>
-                <button class="panel-opt" :class="{ active: player.sleepEndOfChapter }" @click="setSleepEoc(); sleepCustomActive = false">End of Ch.</button>
-                <button class="panel-opt cancel" @click="setSleep(null); sleepCustomActive = false">Off</button>
-              </div>
-              <!-- Custom duration slider -->
-              <div class="sleep-custom">
-                <div class="sleep-custom-row">
-                  <span class="sleep-custom-label">Custom: {{ sleepCustomMins }}m</span>
-                  <button class="panel-opt" :class="{ active: sleepCustomActive }" @click="setSleep(sleepCustomMins); sleepCustomActive = true">Set</button>
-                </div>
-                <input
-                  type="range" min="1" max="120" step="1"
-                  v-model.number="sleepCustomMins"
-                  class="sleep-slider"
-                  @change="sleepCustomActive = false"
-                />
-              </div>
-              <!-- Rewind on sleep -->
-              <div class="sleep-rewind-row">
-                <span class="sleep-custom-label">Rewind on sleep</span>
-                <div class="sleep-rewind-opts">
-                  <button
-                    v-for="s in [0, 5, 10, 15, 30]"
-                    :key="s"
-                    class="panel-opt sleep-rewind-opt"
-                    :class="{ active: sleepRewindSecs === s }"
-                    @click="setSleepRewind(s)"
-                  >{{ s === 0 ? 'Off' : `${s}s` }}</button>
-                </div>
-              </div>
-            </div>
-          </Transition>
-
-          <!-- Queue panel -->
-          <Transition name="panel">
-            <div v-if="showQueue" class="panel-box queue-panel" @touchmove.stop>
-              <div class="queue-header">
-                <span class="panel-title" style="margin:0">Up Next</span>
-                <span class="queue-count">{{ player.queue.length }} items</span>
-                <button v-if="player.queue.length" class="queue-clear-btn" @click="player.clearQueue()">Clear all</button>
-              </div>
-              <div v-if="!player.queue.length" class="queue-empty-msg">
-                <AppIcon icon="mdi-playlist-remove" :size="28" color="rgba(255,255,255,0.15)" />
-                <p>Queue is empty</p>
-              </div>
-              <div v-else ref="queueListEl" class="queue-list"
-                @pointermove="queueDragMove" @pointerup="queueDragEnd" @pointercancel="queueDragEnd">
-                <div
-                  v-for="(entry, idx) in player.queue"
-                  :key="entry.episodeId ?? entry.item.id"
-                  class="queue-item-row"
-                  :class="{
-                    'queue-drag-source': queueDragFrom === idx,
-                    'queue-drag-over': queueDragOver === idx && queueDragFrom !== idx && queueDragFrom >= 0
-                  }"
-                >
-                  <div class="queue-drag-handle" @pointerdown.prevent="queueDragStart($event, idx)" touch-action="none">
-                    <AppIcon icon="mdi-drag-vertical" :size="16" color="rgba(255,255,255,0.2)" />
-                  </div>
-                  <img :src="coverUrl(entry.item.id, auth.token ?? '')" class="queue-item-cover" />
-                  <div class="queue-item-meta">
-                    <p class="queue-item-title">{{ entry.episodeId ? (epTitle(entry) || entry.item.media.metadata.title) : entry.item.media.metadata.title }}</p>
-                    <p class="queue-item-author">{{ entry.episodeId ? entry.item.media.metadata.title : (entry.item.media.metadata.authorName || 'Unknown') }}</p>
-                  </div>
-                  <button class="queue-item-del" @click="player.removeFromQueue(idx)">
-                    <AppIcon icon="mdi-close" :size="16" color="rgba(255,255,255,0.4)" />
-                  </button>
-                </div>
-              </div>
-            </div>
-          </Transition>
-
-          <!-- Chapters panel -->
-          <Transition name="panel">
-            <div v-if="showChapters" class="panel-box chapters-panel" @touchmove.stop>
-              <div class="chapters-panel-header">
-                <span class="panel-title" style="margin:0">Chapters</span>
-                <span class="chapters-count">{{ filteredChapters.length }}/{{ chapters.length }}</span>
-              </div>
-              <div v-if="loadingChapters" class="chapters-loading-row">
-                <AppIcon icon="mdi-loading" :size="16" color="rgba(255,255,255,0.3)" class="spin" />
-                <span>Loading chapters…</span>
-              </div>
-              <div v-else-if="!chapters.length" class="chapters-empty-row">No chapters available</div>
-              <div v-if="chapters.length > 8" class="chapter-search-wrap">
-                <AppIcon icon="mdi-magnify" :size="13" color="rgba(255,255,255,0.3)" />
-                <input v-model="chapterSearch" class="chapter-search-input" placeholder="Search chapters…" />
-                <button v-if="chapterSearch" class="chapter-search-clear" @click="chapterSearch = ''">
-                  <AppIcon icon="mdi-close" :size="11" />
-                </button>
-              </div>
-              <div ref="chaptersListEl" class="chapters-list">
-                <div
-                  v-for="ch in filteredChapters" :key="ch.id"
-                  class="chapter-item"
-                  :class="{
-                    active: panelCurrentChapter?.id === ch.id,
-                    finished: player.currentTime > ch.end && panelCurrentChapter?.id !== ch.id
-                  }"
-                  @click="player.seek(ch.start)"
-                >
-                  <span class="chapter-item-num">
-                    <AppIcon icon="mdi-volume-high" v-if="panelCurrentChapter?.id === ch.id" :size="12" color="#d4a017" />
-                    <AppIcon v-else-if="player.currentTime > ch.end && panelCurrentChapter?.id !== ch.id" icon="mdi-check" :size="12" color="rgba(255,255,255,0.2)" />
-                    <span v-else class="ch-num-label">{{ chapters.indexOf(ch) + 1 }}</span>
-                  </span>
-                  <span class="chapter-item-name">{{ ch.title }}</span>
-                  <span class="chapter-item-dur">{{ formatTime(ch.end - ch.start) }}</span>
-                </div>
-                <p v-if="!filteredChapters.length" class="chapters-no-match">No chapters match</p>
-              </div>
-            </div>
-          </Transition>
-
-        <!-- Recent-only play prompt -->
-        <div v-if="!player.currentItem" class="recent-only-prompt">
-          <p class="recent-only-hint">Tap a cover to resume playback</p>
+        <!-- ── Stats row ─────────────────────────────────────────── -->
+        <div v-if="player.currentItem" class="player-stats-row">
+          {{ progressPct }}%
         </div>
 
-        </div><!-- /.player-right -->
+        <!-- ── Book progress bar ─────────────────────────────────── -->
+        <div
+          v-if="player.currentItem"
+          class="player-book-bar"
+          ref="bookBarEl"
+          @pointerdown="startScrub"
+          @pointermove="moveScrub"
+          @pointerup="endScrub"
+        >
+          <div v-if="isScrubbing" class="scrub-tooltip" :style="{ left: `${scrubTooltipPct}%` }">
+            {{ formatTime(scrubTooltipSecs) }}
+          </div>
+          <div class="bar-track">
+            <div class="bar-fill" :style="{ width: `${player.progress * 100}%` }" />
+            <div v-for="(pct, ci) in chapterMarkers" :key="ci" class="chapter-tick" :style="{ left: `${pct}%` }" />
+            <div class="bar-thumb" :style="{ left: `${player.progress * 100}%` }" />
+          </div>
+        </div>
 
-        <!-- Left column: cover + dots (order: 1 on desktop) -->
-        <div class="player-left">
+        <!-- ── Streaming badge ───────────────────────────────────── -->
+        <div v-if="player.currentItem && player.isPlaying" class="player-stream-badge">
+          <span class="stream-dot" />
+          <span class="stream-label">Playing</span>
+        </div>
 
-        <!-- Swipeable cover carousel -->
+        <!-- ── Cover carousel ────────────────────────────────────── -->
         <div
           class="cover-carousel"
           ref="carouselRef"
@@ -326,24 +104,13 @@
           @touchmove.passive="onSwipeMove"
           @touchend.passive="onSwipeEnd"
         >
-          <div
-            class="cover-track"
-            :style="trackStyle"
-          >
+          <div class="cover-track" :style="trackStyle">
             <div
               v-for="(item, i) in carouselItems"
               :key="item.id"
               class="cover-slide"
             >
               <div class="cover-card" :style="getCardStyle(i)">
-                <!-- Blurred cover background -->
-                <img
-                  :src="coverUrl(item.id, auth.token ?? '')"
-                  class="cover-card-bg"
-                  aria-hidden="true"
-                />
-                <div class="cover-card-scrim" />
-
                 <!-- Edge progress strip (only on active slide) -->
                 <div
                   v-if="i === currentIndex && player.currentItem"
@@ -351,147 +118,29 @@
                   :style="{ width: `${player.progress * 100}%` }"
                 />
 
-                <div class="cover-card-inner">
-                  <!-- Stats row -->
-                  <div v-if="i === currentIndex && player.currentItem" class="card-stats-row">
-                    <span class="card-stat">{{ formatTime(speedAdjustedElapsed) }}</span>
-                    <span class="card-stat card-stat--mid">{{ progressPct }}%</span>
-                    <span class="card-stat">-{{ formatTime(speedAdjustedRemaining) }}</span>
-                  </div>
+                <!-- Cover image -->
+                <img
+                  :src="coverUrl(item.id, auth.token ?? '')"
+                  :alt="item.media.metadata.title"
+                  class="cover-img"
+                  :class="{ 'cover-active-tap': i === currentIndex }"
+                  @click="i === currentIndex ? onCoverTap() : null"
+                />
 
-                  <!-- Streaming indicator -->
-                  <div v-if="i === currentIndex && player.currentItem && player.isPlaying" class="card-stream-row">
-                    <span class="card-stream-dot" />
-                    <span class="card-stream-label">Playing</span>
+                <!-- Flash overlay on tap -->
+                <Transition name="cover-flash">
+                  <div v-if="coverFlash && i === currentIndex" class="cover-flash-overlay">
+                    <AppIcon :icon="player.isPlaying ? 'mdi-pause' : 'mdi-play'" :size="56" color="rgba(255,255,255,0.85)" />
                   </div>
+                </Transition>
 
-                  <!-- Cover image -->
-                  <div class="cover-img-wrap">
-                    <img
-                      :src="coverUrl(item.id, auth.token ?? '')"
-                      :alt="item.media.metadata.title"
-                      class="cover-img"
-                      :class="{ 'cover-active-tap': i === currentIndex }"
-                      @click="i === currentIndex ? onCoverTap() : null"
-                    />
-                    <Transition name="cover-flash">
-                      <div v-if="coverFlash && i === currentIndex" class="cover-flash-overlay">
-                        <AppIcon :icon="player.isPlaying ? 'mdi-pause' : 'mdi-play'" :size="56" color="rgba(255,255,255,0.85)" />
-                      </div>
-                    </Transition>
-                    <div v-if="!player.currentItem || i !== currentIndex" class="cover-play-overlay" @click="switchToItem(item)">
-                      <AppIcon icon="mdi-play-circle" :size="40" color="white" />
-                    </div>
-                    <div v-if="player.queue.some(q => q.item.id === item.id) && i !== currentIndex" class="upnext-badge">Up Next</div>
-                  </div>
-
-                  <!-- Scrubber (thin, inside card) — only on active slide -->
-                  <div v-if="i === currentIndex && player.currentItem" class="card-scrubber-wrap" ref="scrubberEl"
-                    @pointerdown="startScrub" @pointermove="moveScrub" @pointerup="endScrub">
-                    <div v-if="isScrubbing" class="scrub-tooltip" :style="{ left: `${scrubTooltipPct}%` }">
-                      {{ formatTime(scrubTooltipSecs) }}
-                    </div>
-                    <div class="card-scrubber-track">
-                      <div class="card-scrubber-fill" :style="{ width: `${player.progress * 100}%` }" />
-                      <div v-for="(pct, ci) in chapterMarkers" :key="ci" class="chapter-tick" :style="{ left: `${pct}%` }" />
-                      <div class="card-scrubber-thumb" :style="{ left: `${player.progress * 100}%` }" />
-                    </div>
-                  </div>
-
-                  <!-- Chapter pill — only on active slide -->
-                  <div v-if="i === currentIndex && player.currentItem && player.currentChapter" class="card-chapter-pill">
-                    <span class="card-chapter-name">{{ player.currentChapter.title }}</span>
-                  </div>
-
-                  <!-- Chapter-relative times — only on active slide -->
-                  <div v-if="i === currentIndex && player.currentItem && player.currentChapter" class="card-chapter-times">
-                    <span class="card-ch-time">{{ formatTime(player.currentTime - player.currentChapter.start) }}</span>
-                    <span class="card-ch-time">-{{ formatTime(Math.max(0, player.currentChapter.end - player.currentTime)) }}</span>
-                  </div>
-
-                  <!-- Transport controls — only on active slide -->
-                  <div v-if="i === currentIndex && player.currentItem" class="card-transport">
-                    <button class="card-ctrl-btn" :disabled="!prevChapter" @click="prevChapter && player.seek(prevChapter.start)">
-                      <AppIcon icon="mdi-skip-previous" :size="20" :color="prevChapter ? 'rgba(255,255,255,0.55)' : 'rgba(255,255,255,0.18)'" />
-                    </button>
-                    <button class="card-ctrl-btn" @click="player.skipBack(skipBackSecs)">
-                      <span v-if="REWIND_ICONS[skipBackSecs]" class="skip-icon-only">
-                        <AppIcon :icon="REWIND_ICONS[skipBackSecs]" :size="26" />
-                      </span>
-                      <span v-else class="skip-icon-labeled">
-                        <AppIcon icon="mdi-rewind" :size="20" />
-                        <span class="skip-secs-label">{{ skipBackSecs }}s</span>
-                      </span>
-                    </button>
-                    <button class="card-play-btn" :disabled="player.isLoading" @click="player.togglePlay()">
-                      <AppIcon icon="mdi-pause" v-if="player.isPlaying" :size="38" color="#111" />
-                      <AppIcon icon="mdi-play" v-else :size="38" color="#111" />
-                    </button>
-                    <button class="card-ctrl-btn" @click="player.skipForward(skipFwdSecs)">
-                      <span v-if="FWD_ICONS[skipFwdSecs]" class="skip-icon-only">
-                        <AppIcon :icon="FWD_ICONS[skipFwdSecs]" :size="26" />
-                      </span>
-                      <span v-else class="skip-icon-labeled">
-                        <AppIcon icon="mdi-fast-forward" :size="20" />
-                        <span class="skip-secs-label">{{ skipFwdSecs }}s</span>
-                      </span>
-                    </button>
-                    <button class="card-ctrl-btn" :disabled="!nextChapter" @click="nextChapter && player.seek(nextChapter.start)">
-                      <AppIcon icon="mdi-skip-next" :size="20" :color="nextChapter ? 'rgba(255,255,255,0.55)' : 'rgba(255,255,255,0.18)'" />
-                    </button>
-                  </div>
-
-                  <!-- 2×2 action grid -->
-                  <div v-if="i === currentIndex && player.currentItem" class="card-action-grid">
-                    <div class="card-action-row">
-                      <button
-                        class="card-action-btn"
-                        :class="{ active: showChapters }"
-                        @click="showChapters = !showChapters; if (!showChapters) chapterSearch = ''; showQueue = false; showSleepPicker = false; showSpeedPicker = false"
-                      >
-                        <AppIcon icon="mdi-format-list-bulleted" :size="16" style="opacity:0.6" />
-                        <span class="card-action-label">Chapters</span>
-                        <span v-if="chapters.length" class="card-action-badge">{{ chapters.length }}</span>
-                      </button>
-                      <button
-                        class="card-action-btn"
-                        :class="{ active: showSpeedPicker || player.playbackRate !== 1 }"
-                        @click="showSpeedPicker = !showSpeedPicker; showSleepPicker = false; showChapters = false; showQueue = false"
-                      >
-                        <AppIcon icon="mdi-speedometer" :size="16" style="opacity:0.6" />
-                        <span class="card-action-label">{{ player.playbackRate }}×</span>
-                      </button>
-                    </div>
-                    <div class="card-action-row">
-                      <button
-                        class="card-action-btn sleep-btn"
-                        :class="{ active: player.sleepMinsLeft !== null || player.sleepEndOfChapter }"
-                        @click="showSleepPicker = !showSleepPicker; showSpeedPicker = false; showChapters = false; showQueue = false"
-                      >
-                        <div v-if="player.sleepMinsLeft !== null" class="sleep-fill" :style="{ width: `${sleepFillPct}%` }" />
-                        <AppIcon icon="mdi-timer-outline" :size="16" style="position:relative;z-index:1;opacity:0.6" />
-                        <span class="card-action-label" style="position:relative;z-index:1">
-                          <template v-if="player.sleepMinsLeft !== null">{{ sleepCountdownLabel }}</template>
-                          <template v-else-if="player.sleepEndOfChapter">End of Ch.</template>
-                          <template v-else>Sleep</template>
-                        </span>
-                      </button>
-                      <button
-                        class="card-action-btn"
-                        @click="showBookmarkSheet = true"
-                      >
-                        <AppIcon icon="mdi-bookmark-plus-outline" :size="16" style="opacity:0.6" />
-                        <span class="card-action-label">Bookmarks</span>
-                      </button>
-                    </div>
-                  </div>
-
-                  <!-- ··· More pill -->
-                  <button v-if="i === currentIndex && player.currentItem" class="card-more-pill" @click="showMore = true">
-                    <span class="card-more-dots">···</span>
-                    <span class="card-more-label">More</span>
-                  </button>
+                <!-- Play overlay for non-current slides -->
+                <div v-if="!player.currentItem || i !== currentIndex" class="cover-play-overlay" @click="switchToItem(item)">
+                  <AppIcon icon="mdi-play-circle" :size="40" color="white" />
                 </div>
+
+                <!-- Up next badge -->
+                <div v-if="player.queue.some(q => q.item.id === item.id) && i !== currentIndex" class="upnext-badge">Up Next</div>
               </div>
             </div>
           </div>
@@ -506,7 +155,7 @@
           </div>
         </Transition>
 
-        <!-- Page dots -->
+        <!-- ── Page dots ──────────────────────────────────────────── -->
         <div v-if="carouselItems.length > 1" class="page-dots">
           <div
             v-for="(_, i) in carouselItems"
@@ -517,7 +166,100 @@
           />
         </div>
 
-        <!-- Desktop thumbnail strip -->
+        <!-- ── Chapter area ───────────────────────────────────────── -->
+        <div v-if="player.currentItem && player.currentChapter" class="player-chapter-area">
+          <p class="player-chapter-name">{{ player.currentChapter.title }}</p>
+          <div class="player-chapter-bar bar-track">
+            <div class="bar-fill" :style="{ width: `${chapterProgress * 100}%` }" />
+          </div>
+          <div class="player-chapter-times">
+            <span class="bar-time">{{ formatTime(player.currentTime - player.currentChapter.start) }}</span>
+            <span class="bar-time">-{{ formatTime(Math.max(0, player.currentChapter.end - player.currentTime)) }}</span>
+          </div>
+        </div>
+
+        <!-- ── Transport controls ─────────────────────────────────── -->
+        <div v-if="player.currentItem" class="player-transport">
+          <button class="ctrl-btn" :disabled="!prevChapter" @click="prevChapter && player.seek(prevChapter.start)">
+            <AppIcon icon="mdi-skip-previous" :size="22" :color="prevChapter ? 'rgba(255,255,255,0.55)' : 'rgba(255,255,255,0.18)'" />
+          </button>
+          <button class="ctrl-btn" @click="player.skipBack(skipBackSecs)">
+            <span v-if="REWIND_ICONS[skipBackSecs]" class="skip-icon-only">
+              <AppIcon :icon="REWIND_ICONS[skipBackSecs]" :size="28" />
+            </span>
+            <span v-else class="skip-icon-labeled">
+              <AppIcon icon="mdi-rewind" :size="22" />
+              <span class="skip-secs-label">{{ skipBackSecs }}s</span>
+            </span>
+          </button>
+          <button class="play-btn" :disabled="player.isLoading" @click="player.togglePlay()">
+            <AppIcon icon="mdi-pause" v-if="player.isPlaying" :size="42" color="#111" />
+            <AppIcon icon="mdi-play" v-else :size="42" color="#111" />
+          </button>
+          <button class="ctrl-btn" @click="player.skipForward(skipFwdSecs)">
+            <span v-if="FWD_ICONS[skipFwdSecs]" class="skip-icon-only">
+              <AppIcon :icon="FWD_ICONS[skipFwdSecs]" :size="28" />
+            </span>
+            <span v-else class="skip-icon-labeled">
+              <AppIcon icon="mdi-fast-forward" :size="22" />
+              <span class="skip-secs-label">{{ skipFwdSecs }}s</span>
+            </span>
+          </button>
+          <button class="ctrl-btn" :disabled="!nextChapter" @click="nextChapter && player.seek(nextChapter.start)">
+            <AppIcon icon="mdi-skip-next" :size="22" :color="nextChapter ? 'rgba(255,255,255,0.55)' : 'rgba(255,255,255,0.18)'" />
+          </button>
+        </div>
+
+        <!-- ── Action row ─────────────────────────────────────────── -->
+        <div v-if="player.currentItem" class="player-action-row">
+          <button
+            class="action-btn"
+            :class="{ active: showChapters }"
+            @click="showChapters = !showChapters; if (!showChapters) chapterSearch = ''; showQueue = false; showSleepPicker = false; showSpeedPicker = false"
+          >
+            <AppIcon icon="mdi-format-list-bulleted" :size="16" style="opacity:0.6" />
+            <span class="action-label">Chapters</span>
+            <span v-if="chapters.length" class="card-action-badge">{{ chapters.length }}</span>
+          </button>
+          <button
+            class="action-btn"
+            :class="{ active: showSpeedPicker || player.playbackRate !== 1 }"
+            @click="showSpeedPicker = !showSpeedPicker; showSleepPicker = false; showChapters = false; showQueue = false"
+          >
+            <AppIcon icon="mdi-speedometer" :size="16" style="opacity:0.6" />
+            <span class="action-label">{{ player.playbackRate }}×</span>
+          </button>
+          <button
+            class="action-btn sleep-btn"
+            :class="{ active: player.sleepMinsLeft !== null || player.sleepEndOfChapter }"
+            @click="showSleepPicker = !showSleepPicker; showSpeedPicker = false; showChapters = false; showQueue = false"
+          >
+            <div v-if="player.sleepMinsLeft !== null" class="sleep-fill" :style="{ width: `${sleepFillPct}%` }" />
+            <AppIcon icon="mdi-timer-outline" :size="16" style="position:relative;z-index:1;opacity:0.6" />
+            <span class="action-label" style="position:relative;z-index:1">
+              <template v-if="player.sleepMinsLeft !== null">{{ sleepCountdownLabel }}</template>
+              <template v-else-if="player.sleepEndOfChapter">End of Ch.</template>
+              <template v-else>Sleep</template>
+            </span>
+          </button>
+          <button class="action-btn" @click="showBookmarkSheet = true">
+            <AppIcon icon="mdi-bookmark-plus-outline" :size="16" style="opacity:0.6" />
+            <span class="action-label">Bookmarks</span>
+          </button>
+        </div>
+
+        <!-- ── More pill ──────────────────────────────────────────── -->
+        <button v-if="player.currentItem" class="player-more-pill" @click="showMore = true">
+          <AppIcon icon="mdi-dots-horizontal" :size="20" color="rgba(255,255,255,0.54)" />
+          <span class="more-label">More</span>
+        </button>
+
+        <!-- ── Recent-only prompt ─────────────────────────────────── -->
+        <div v-if="!player.currentItem" class="recent-only-prompt">
+          <p class="recent-only-hint">Tap a cover to resume playback</p>
+        </div>
+
+        <!-- ── Desktop thumbnail strip ───────────────────────────── -->
         <div v-if="carouselItems.length > 1" class="desktop-thumbs">
           <div
             v-for="(item, i) in carouselItems"
@@ -533,11 +275,247 @@
           {{ carouselItems.length }} books in progress
         </div>
 
-        </div><!-- /.player-left -->
-        </div><!-- /.player-layout -->
+        <!-- ── Desktop controls ───────────────────────────────────── -->
+        <div v-if="player.currentItem" class="dt-controls">
+          <div class="dt-stats">
+            <span class="card-stat">{{ formatTime(speedAdjustedElapsed) }}</span>
+            <span class="card-stat card-stat--mid">{{ progressPct }}%</span>
+            <span class="card-stat">-{{ formatTime(speedAdjustedRemaining) }}</span>
+          </div>
 
-      </div>
-    </div>
+          <div class="dt-scrubber-wrap" ref="dtScrubberEl"
+            @pointerdown="startScrub" @pointermove="moveScrub" @pointerup="endScrub">
+            <div v-if="isScrubbing" class="scrub-tooltip" :style="{ left: `${scrubTooltipPct}%` }">
+              {{ formatTime(scrubTooltipSecs) }}
+            </div>
+            <div class="card-scrubber-track">
+              <div class="card-scrubber-fill" :style="{ width: `${player.progress * 100}%` }" />
+              <div v-for="(pct, ci) in chapterMarkers" :key="ci" class="chapter-tick" :style="{ left: `${pct}%` }" />
+              <div class="card-scrubber-thumb" :style="{ left: `${player.progress * 100}%` }" />
+            </div>
+          </div>
+
+          <div v-if="player.currentChapter" class="dt-chapter-row">
+            <span class="card-chapter-name">{{ player.currentChapter.title }}</span>
+            <div class="dt-chapter-times">
+              <span class="card-ch-time">{{ formatTime(player.currentTime - player.currentChapter.start) }}</span>
+              <span class="card-ch-time">-{{ formatTime(Math.max(0, player.currentChapter.end - player.currentTime)) }}</span>
+            </div>
+          </div>
+
+          <div class="dt-transport">
+            <button class="ctrl-btn" :disabled="!prevChapter" @click="prevChapter && player.seek(prevChapter.start)">
+              <AppIcon icon="mdi-skip-previous" :size="22" :color="prevChapter ? 'rgba(255,255,255,0.55)' : 'rgba(255,255,255,0.18)'" />
+            </button>
+            <button class="ctrl-btn" @click="player.skipBack(skipBackSecs)">
+              <span v-if="REWIND_ICONS[skipBackSecs]" class="skip-icon-only">
+                <AppIcon :icon="REWIND_ICONS[skipBackSecs]" :size="28" />
+              </span>
+              <span v-else class="skip-icon-labeled">
+                <AppIcon icon="mdi-rewind" :size="22" />
+                <span class="skip-secs-label">{{ skipBackSecs }}s</span>
+              </span>
+            </button>
+            <button class="play-btn" :disabled="player.isLoading" @click="player.togglePlay()">
+              <AppIcon icon="mdi-pause" v-if="player.isPlaying" :size="42" color="#111" />
+              <AppIcon icon="mdi-play" v-else :size="42" color="#111" />
+            </button>
+            <button class="ctrl-btn" @click="player.skipForward(skipFwdSecs)">
+              <span v-if="FWD_ICONS[skipFwdSecs]" class="skip-icon-only">
+                <AppIcon :icon="FWD_ICONS[skipFwdSecs]" :size="28" />
+              </span>
+              <span v-else class="skip-icon-labeled">
+                <AppIcon icon="mdi-fast-forward" :size="22" />
+                <span class="skip-secs-label">{{ skipFwdSecs }}s</span>
+              </span>
+            </button>
+            <button class="ctrl-btn" :disabled="!nextChapter" @click="nextChapter && player.seek(nextChapter.start)">
+              <AppIcon icon="mdi-skip-next" :size="22" :color="nextChapter ? 'rgba(255,255,255,0.55)' : 'rgba(255,255,255,0.18)'" />
+            </button>
+          </div>
+
+          <div class="dt-action-row">
+            <button class="action-btn" :class="{ active: showChapters }"
+              @click="showChapters = !showChapters; if (!showChapters) chapterSearch = ''; showQueue = false; showSleepPicker = false; showSpeedPicker = false">
+              <AppIcon icon="mdi-format-list-bulleted" :size="16" style="opacity:0.6" />
+              <span class="action-label">Chapters</span>
+              <span v-if="chapters.length" class="card-action-badge">{{ chapters.length }}</span>
+            </button>
+            <button class="action-btn" :class="{ active: showSpeedPicker || player.playbackRate !== 1 }"
+              @click="showSpeedPicker = !showSpeedPicker; showSleepPicker = false; showChapters = false; showQueue = false">
+              <AppIcon icon="mdi-speedometer" :size="16" style="opacity:0.6" />
+              <span class="action-label">{{ player.playbackRate }}×</span>
+            </button>
+            <button class="action-btn sleep-btn" :class="{ active: player.sleepMinsLeft !== null || player.sleepEndOfChapter }"
+              @click="showSleepPicker = !showSleepPicker; showSpeedPicker = false; showChapters = false; showQueue = false">
+              <div v-if="player.sleepMinsLeft !== null" class="sleep-fill" :style="{ width: `${sleepFillPct}%` }" />
+              <AppIcon icon="mdi-timer-outline" :size="16" style="position:relative;z-index:1;opacity:0.6" />
+              <span class="action-label" style="position:relative;z-index:1">
+                <template v-if="player.sleepMinsLeft !== null">{{ sleepCountdownLabel }}</template>
+                <template v-else-if="player.sleepEndOfChapter">End of Ch.</template>
+                <template v-else>Sleep</template>
+              </span>
+            </button>
+            <button class="action-btn" @click="showBookmarkSheet = true">
+              <AppIcon icon="mdi-bookmark-plus-outline" :size="16" style="opacity:0.6" />
+              <span class="action-label">Bookmarks</span>
+            </button>
+            <button class="action-btn" @click="showMore = true">
+              <AppIcon icon="mdi-dots-horizontal" :size="16" style="opacity:0.6" />
+              <span class="action-label">More</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- ── Panels ─────────────────────────────────────────────── -->
+
+        <!-- Speed picker -->
+        <Transition name="panel">
+          <div v-if="showSpeedPicker" class="panel-box" @touchmove.stop>
+            <div class="speed-header">
+              <button class="speed-step" @click="stepSpeed(-0.05)">−</button>
+              <div class="speed-current-wrap">
+                <span class="speed-current">{{ player.playbackRate.toFixed(2) }}×</span>
+              </div>
+              <button class="speed-step" @click="stepSpeed(+0.05)">+</button>
+            </div>
+            <div class="panel-opts">
+              <button
+                v-for="s in speedPresets" :key="s"
+                class="panel-opt" :class="{ active: Math.abs(player.playbackRate - s) < 0.01 }"
+                @click="setSpeed(s)"
+                @contextmenu.prevent="removeSpeedPreset(s)"
+              >{{ s }}×</button>
+              <button class="panel-opt speed-add" :title="'Save ' + player.playbackRate.toFixed(2) + '× as preset'" @click="addSpeedPreset">
+                <AppIcon icon="mdi-plus" :size="13" />
+              </button>
+            </div>
+          </div>
+        </Transition>
+
+        <!-- Sleep picker -->
+        <Transition name="panel">
+          <div v-if="showSleepPicker" class="panel-box" @touchmove.stop>
+            <p class="panel-title">Sleep Timer</p>
+            <div class="panel-opts">
+              <button v-for="m in [5, 10, 15, 20, 30, 45, 60]" :key="m"
+                class="panel-opt" :class="{ active: player.sleepMinsLeft === m && !sleepCustomActive }"
+                @click="setSleep(m); sleepCustomActive = false">{{ m }}m</button>
+              <button class="panel-opt" :class="{ active: player.sleepEndOfChapter }" @click="setSleepEoc(); sleepCustomActive = false">End of Ch.</button>
+              <button class="panel-opt cancel" @click="setSleep(null); sleepCustomActive = false">Off</button>
+            </div>
+            <!-- Custom duration slider -->
+            <div class="sleep-custom">
+              <div class="sleep-custom-row">
+                <span class="sleep-custom-label">Custom: {{ sleepCustomMins }}m</span>
+                <button class="panel-opt" :class="{ active: sleepCustomActive }" @click="setSleep(sleepCustomMins); sleepCustomActive = true">Set</button>
+              </div>
+              <input
+                type="range" min="1" max="120" step="1"
+                v-model.number="sleepCustomMins"
+                class="sleep-slider"
+                @change="sleepCustomActive = false"
+              />
+            </div>
+            <!-- Rewind on sleep -->
+            <div class="sleep-rewind-row">
+              <span class="sleep-custom-label">Rewind on sleep</span>
+              <div class="sleep-rewind-opts">
+                <button
+                  v-for="s in [0, 5, 10, 15, 30]"
+                  :key="s"
+                  class="panel-opt sleep-rewind-opt"
+                  :class="{ active: sleepRewindSecs === s }"
+                  @click="setSleepRewind(s)"
+                >{{ s === 0 ? 'Off' : `${s}s` }}</button>
+              </div>
+            </div>
+          </div>
+        </Transition>
+
+        <!-- Queue panel -->
+        <Transition name="panel">
+          <div v-if="showQueue" class="panel-box queue-panel" @touchmove.stop>
+            <div class="queue-header">
+              <span class="panel-title" style="margin:0">Up Next</span>
+              <span class="queue-count">{{ player.queue.length }} items</span>
+              <button v-if="player.queue.length" class="queue-clear-btn" @click="player.clearQueue()">Clear all</button>
+            </div>
+            <div v-if="!player.queue.length" class="queue-empty-msg">
+              <AppIcon icon="mdi-playlist-remove" :size="28" color="rgba(255,255,255,0.15)" />
+              <p>Queue is empty</p>
+            </div>
+            <div v-else ref="queueListEl" class="queue-list"
+              @pointermove="queueDragMove" @pointerup="queueDragEnd" @pointercancel="queueDragEnd">
+              <div
+                v-for="(entry, idx) in player.queue"
+                :key="entry.episodeId ?? entry.item.id"
+                class="queue-item-row"
+                :class="{
+                  'queue-drag-source': queueDragFrom === idx,
+                  'queue-drag-over': queueDragOver === idx && queueDragFrom !== idx && queueDragFrom >= 0
+                }"
+              >
+                <div class="queue-drag-handle" @pointerdown.prevent="queueDragStart($event, idx)" touch-action="none">
+                  <AppIcon icon="mdi-drag-vertical" :size="16" color="rgba(255,255,255,0.2)" />
+                </div>
+                <img :src="coverUrl(entry.item.id, auth.token ?? '')" class="queue-item-cover" />
+                <div class="queue-item-meta">
+                  <p class="queue-item-title">{{ entry.episodeId ? (epTitle(entry) || entry.item.media.metadata.title) : entry.item.media.metadata.title }}</p>
+                  <p class="queue-item-author">{{ entry.episodeId ? entry.item.media.metadata.title : (entry.item.media.metadata.authorName || 'Unknown') }}</p>
+                </div>
+                <button class="queue-item-del" @click="player.removeFromQueue(idx)">
+                  <AppIcon icon="mdi-close" :size="16" color="rgba(255,255,255,0.4)" />
+                </button>
+              </div>
+            </div>
+          </div>
+        </Transition>
+
+        <!-- Chapters panel -->
+        <Transition name="panel">
+          <div v-if="showChapters" class="panel-box chapters-panel" @touchmove.stop>
+            <div class="chapters-panel-header">
+              <span class="panel-title" style="margin:0">Chapters</span>
+              <span class="chapters-count">{{ filteredChapters.length }}/{{ chapters.length }}</span>
+            </div>
+            <div v-if="loadingChapters" class="chapters-loading-row">
+              <AppIcon icon="mdi-loading" :size="16" color="rgba(255,255,255,0.3)" class="spin" />
+              <span>Loading chapters…</span>
+            </div>
+            <div v-else-if="!chapters.length" class="chapters-empty-row">No chapters available</div>
+            <div v-if="chapters.length > 8" class="chapter-search-wrap">
+              <AppIcon icon="mdi-magnify" :size="13" color="rgba(255,255,255,0.3)" />
+              <input v-model="chapterSearch" class="chapter-search-input" placeholder="Search chapters…" />
+              <button v-if="chapterSearch" class="chapter-search-clear" @click="chapterSearch = ''">
+                <AppIcon icon="mdi-close" :size="11" />
+              </button>
+            </div>
+            <div ref="chaptersListEl" class="chapters-list">
+              <div
+                v-for="ch in filteredChapters" :key="ch.id"
+                class="chapter-item"
+                :class="{
+                  active: panelCurrentChapter?.id === ch.id,
+                  finished: player.currentTime > ch.end && panelCurrentChapter?.id !== ch.id
+                }"
+                @click="player.seek(ch.start)"
+              >
+                <span class="chapter-item-num">
+                  <AppIcon icon="mdi-volume-high" v-if="panelCurrentChapter?.id === ch.id" :size="12" color="#d4a017" />
+                  <AppIcon v-else-if="player.currentTime > ch.end && panelCurrentChapter?.id !== ch.id" icon="mdi-check" :size="12" color="rgba(255,255,255,0.2)" />
+                  <span v-else class="ch-num-label">{{ chapters.indexOf(ch) + 1 }}</span>
+                </span>
+                <span class="chapter-item-name">{{ ch.title }}</span>
+                <span class="chapter-item-dur">{{ formatTime(ch.end - ch.start) }}</span>
+              </div>
+              <p v-if="!filteredChapters.length" class="chapters-no-match">No chapters match</p>
+            </div>
+          </div>
+        </Transition>
+
+      </div><!-- /.player-content -->
+    </div><!-- /.player-wrap -->
 
     <!-- Panel scrim -->
     <Teleport to="body">
@@ -684,7 +662,6 @@ const itemBookmarks    = ref<Bookmark[]>([])
 const sleepCustomMins   = ref(parseInt(localStorage.getItem('abs_sleep_custom') ?? '45'))
 const sleepCustomActive = ref(false)
 const sleepRewindSecs    = ref(parseInt(localStorage.getItem('abs_sleep_rewind') ?? '0'))
-const scrubberEl      = ref<HTMLElement | null>(null)
 const dtScrubberEl    = ref<HTMLElement | null>(null)
 let scrubbing = false
 const isScrubbing      = ref(false)
@@ -1040,12 +1017,11 @@ function formatTime(secs: number): string {
 }
 
 function activeScrubberEl(): HTMLElement | null {
-  // On desktop the dt scrubber is visible; on mobile the card scrubber is
   if (dtScrubberEl.value) {
     const r = dtScrubberEl.value.getBoundingClientRect()
     if (r.width > 0) return dtScrubberEl.value
   }
-  return scrubberEl.value
+  return bookBarEl.value
 }
 
 function scrubFraction(e: PointerEvent): number {
@@ -1127,6 +1103,16 @@ function queueDragEnd() {
   queueDragFrom.value = -1
   queueDragOver.value = -1
 }
+
+const bookBarEl = ref<HTMLElement | null>(null)
+const chapterBarEl = ref<HTMLElement | null>(null) // reserved for future chapter scrubbing
+void chapterBarEl // suppress unused warning
+
+const chapterProgress = computed(() => {
+  const ch = player.currentChapter
+  if (!ch || ch.end <= ch.start) return 0
+  return Math.max(0, Math.min(1, (player.currentTime - ch.start) / (ch.end - ch.start)))
+})
 </script>
 
 <style scoped>
@@ -1159,9 +1145,14 @@ function queueDragEnd() {
 
 .player-content {
   position: relative;
-  display: flex; flex-direction: column; align-items: center;
-  padding: calc(env(safe-area-inset-top) + 20px) 20px 48px;
+  display: flex; flex-direction: column;
+  min-height: 100dvh;
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: calc(48px + env(safe-area-inset-bottom));
 }
+
+/* ── Header ──────────────────────────────────────────────────────────────────── */
+.player-header { padding: 12px 20px 4px; }
 
 /* ── Top bar ─────────────────────────────────────────────────────────────────── */
 .player-topbar {
@@ -1203,80 +1194,65 @@ function queueDragEnd() {
   flex: 1; min-width: 0;
 }
 
+/* ── Stats row ───────────────────────────────────────────────────────────────── */
+.player-stats-row {
+  text-align: center; padding: 0 20px 4px;
+  font-size: 11px; font-weight: 500; color: rgba(255,255,255,0.55);
+  font-variant-numeric: tabular-nums; letter-spacing: 0.3px;
+}
+
+/* ── Book progress bar ───────────────────────────────────────────────────────── */
+.player-book-bar {
+  padding: 8px 20px 4px; cursor: pointer;
+  touch-action: none; user-select: none; position: relative; margin-bottom: 2px;
+}
+
+/* ── Shared bar track / fill / thumb ─────────────────────────────────────────── */
+.bar-track { height: 3px; background: rgba(255,255,255,0.12); border-radius: 2px; position: relative; }
+.bar-fill  { height: 100%; background: #d4a017; border-radius: 2px; }
+.bar-thumb {
+  position: absolute; top: 50%; transform: translate(-50%, -50%);
+  width: 12px; height: 12px; border-radius: 50%; background: #d4a017;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+}
+
+/* ── Streaming badge ─────────────────────────────────────────────────────────── */
+.player-stream-badge {
+  display: flex; align-items: center; justify-content: center;
+  gap: 5px; height: 18px; margin-bottom: 4px;
+}
+.stream-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: rgba(100,215,100,0.85);
+  box-shadow: 0 0 6px rgba(100,215,100,0.5);
+}
+.stream-label { font-size: 10px; color: rgba(255,255,255,0.45); }
+
 /* ── Carousel ────────────────────────────────────────────────────────────────── */
 .cover-carousel {
+  flex: 1; min-height: 0; overflow: hidden;
   width: calc(100% + 40px); margin-left: -20px;
-  overflow: hidden; margin-bottom: 8px;
-  touch-action: pan-y; flex-shrink: 0;
+  touch-action: pan-y;
 }
-.cover-track { display: flex; will-change: transform; }
+.cover-track { display: flex; will-change: transform; height: 100%; }
 .cover-slide {
-  width: 100vw; flex-shrink: 0;
+  width: 100vw; flex-shrink: 0; height: 100%;
   display: flex; justify-content: center; align-items: center;
-  padding: 0 16px;
+  padding: 0 24px;
 }
 
 /* ── Cover card ──────────────────────────────────────────────────────────────── */
 .cover-card {
-  position: relative; width: 100%; max-width: 380px;
-  border-radius: 24px; overflow: hidden;
-  border: 1px solid rgba(134,59,255,0.15);
-  box-shadow: 0 16px 48px rgba(0,0,0,0.7);
-  will-change: transform;
-  transform-origin: center center;
-}
-.cover-card-bg {
-  position: absolute; inset: -20px;
-  width: calc(100% + 40px); height: calc(100% + 40px);
-  object-fit: cover;
-  filter: blur(28px) brightness(0.35) saturate(1.6);
-  pointer-events: none;
-}
-.cover-card-scrim {
-  position: absolute; inset: 0;
-  background: linear-gradient(180deg, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.4) 50%, rgba(0,0,0,0.75) 100%);
-  pointer-events: none;
+  position: relative; width: 90%; aspect-ratio: 1/1; max-height: 100%;
+  border-radius: 16px; overflow: hidden;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.7), 0 0 42px rgba(185,115,20,0.18);
+  will-change: transform; transform-origin: center center; cursor: pointer;
 }
 .cover-card-edge {
   position: absolute; top: 0; left: 0; z-index: 10;
   height: 3.5px; background: #d4a017;
   border-radius: 0 2px 2px 0;
   transition: width 0.5s linear;
-}
-.cover-card-inner {
-  position: relative; z-index: 2;
-  padding: 12px 16px 16px;
-  display: flex; flex-direction: column; align-items: center;
-}
-
-.card-stats-row {
-  display: flex; justify-content: space-between;
-  width: 100%; margin-bottom: 4px;
-}
-.card-stat {
-  font-size: 11px; font-weight: 500;
-  color: rgba(255,255,255,0.55); font-variant-numeric: tabular-nums;
-  text-shadow: 0 1px 4px rgba(0,0,0,0.8);
-}
-.card-stat--mid { font-weight: 700; color: rgba(255,255,255,0.75); }
-
-.card-stream-row {
-  display: flex; align-items: center; gap: 5px; margin-bottom: 8px; align-self: flex-start;
-}
-.card-stream-dot {
-  width: 6px; height: 6px; border-radius: 50%;
-  background: rgba(100,215,100,0.85);
-  box-shadow: 0 0 6px rgba(100,215,100,0.5);
-}
-.card-stream-label { font-size: 10px; color: rgba(255,255,255,0.45); }
-
-/* Cover image inside card (75% width) */
-.cover-img-wrap {
-  position: relative;
-  width: 75%; aspect-ratio: 1 / 1;
-  border-radius: 14px; overflow: hidden;
-  box-shadow: 0 8px 28px rgba(0,0,0,0.65), 0 0 42px rgba(185,115,20,0.18);
-  margin-bottom: 14px;
 }
 .cover-img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .cover-active-tap { cursor: pointer; }
@@ -1299,71 +1275,72 @@ function queueDragEnd() {
   letter-spacing: 0.04em; padding: 3px 7px; border-radius: 10px;
 }
 
-/* Card scrubber */
-.card-scrubber-wrap {
-  width: 100%; padding: 6px 0; cursor: pointer;
-  touch-action: none; user-select: none; position: relative; margin-bottom: 6px;
+/* Barrier banner */
+.barrier-banner {
+  display: flex; align-items: center; gap: 8px; cursor: pointer;
+  background: rgba(212,160,23,0.12); border: 1px solid rgba(212,160,23,0.25);
+  border-radius: 12px; padding: 10px 14px; margin: 8px 20px 0;
 }
-.card-scrubber-track { height: 3px; background: rgba(255,255,255,0.12); border-radius: 2px; position: relative; }
-.card-scrubber-fill  { height: 100%; background: #d4a017; border-radius: 2px; }
-.card-scrubber-thumb {
-  position: absolute; top: 50%; transform: translate(-50%, -50%);
-  width: 12px; height: 12px; border-radius: 50%; background: #d4a017;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.5);
-}
+.barrier-text { font-size: 13px; font-weight: 600; color: rgba(255,255,255,0.85); flex: 1; }
+.barrier-cta  { font-size: 11px; color: rgba(212,160,23,0.8); }
+.barrier-enter-active, .barrier-leave-active { transition: opacity 0.2s, transform 0.2s; }
+.barrier-enter-from, .barrier-leave-to { opacity: 0; transform: translateY(-6px); }
 
-/* Chapter pill */
-.card-chapter-pill {
-  width: 100%; height: 30px; border-radius: 15px;
-  background: rgba(255,255,255,0.07); border: 0.5px solid rgba(255,255,255,0.12);
-  display: flex; align-items: center; justify-content: center;
-  margin-bottom: 4px; padding: 0 12px;
+/* ── Page dots ───────────────────────────────────────────────────────────────── */
+.page-dots {
+  display: flex; gap: 6px; justify-content: center;
+  padding: 6px 0;
 }
-.card-chapter-name {
-  font-size: 11px; font-weight: 600; color: rgba(255,255,255,0.8);
+.page-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: rgba(255,255,255,0.2); transition: all 0.2s;
+  cursor: pointer;
+}
+.page-dot.active { background: rgba(255,255,255,0.54); width: 20px; height: 6px; border-radius: 3px; }
+
+/* ── Chapter area ────────────────────────────────────────────────────────────── */
+.player-chapter-area { padding: 0 20px; margin-bottom: 10px; }
+.player-chapter-name {
+  font-size: 11px; font-weight: 600; color: rgba(255,255,255,0.7);
+  text-align: center; margin: 0 0 5px;
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
+.player-chapter-bar { padding: 4px 0; cursor: default; }
+.player-chapter-times { display: flex; justify-content: space-between; margin-top: 3px; }
+.bar-time { font-size: 10px; color: rgba(255,255,255,0.35); font-variant-numeric: tabular-nums; }
 
-/* Chapter-relative times */
-.card-chapter-times {
-  display: flex; justify-content: space-between;
-  width: 100%; margin-bottom: 12px;
-}
-.card-ch-time { font-size: 10px; color: rgba(255,255,255,0.35); font-variant-numeric: tabular-nums; }
-
-/* Card transport */
-.card-transport {
+/* ── Transport controls ──────────────────────────────────────────────────────── */
+.player-transport {
   display: flex; align-items: center; justify-content: space-between;
-  width: 100%; margin-bottom: 14px;
+  padding: 0 28px; margin-bottom: 16px;
 }
-.card-ctrl-btn {
+.ctrl-btn {
   background: transparent; border: none; cursor: pointer;
   display: flex; align-items: center; justify-content: center;
-  width: 38px; height: 38px;
+  width: 44px; height: 44px;
 }
-.card-ctrl-btn:disabled { cursor: default; }
-.card-play-btn {
-  width: 62px; height: 62px; border-radius: 50%;
+.ctrl-btn:disabled { cursor: default; }
+.play-btn {
+  width: 70px; height: 70px; border-radius: 50%;
   background: rgba(255,255,255,0.92); border: none; cursor: pointer;
   display: flex; align-items: center; justify-content: center;
   box-shadow: 0 0 0 1px rgba(255,255,255,0.14), 0 4px 22px rgba(185,115,20,0.45), 0 0 40px rgba(185,115,20,0.18);
 }
-.card-play-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.play-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
-/* 2×2 action grid */
-.card-action-grid { display: flex; flex-direction: column; gap: 7px; width: 100%; margin-bottom: 8px; }
-.card-action-row  { display: flex; gap: 7px; }
-.card-action-btn {
-  flex: 1; height: 38px; border-radius: 12px;
+/* ── Action row ──────────────────────────────────────────────────────────────── */
+.player-action-row { display: flex; gap: 8px; padding: 0 20px; margin-bottom: 14px; }
+.action-btn {
+  flex: 1; height: 42px; border-radius: 12px;
   background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.09);
   display: flex; align-items: center; justify-content: center;
   gap: 6px; cursor: pointer; color: rgba(255,255,255,0.7);
   overflow: hidden; position: relative;
 }
-.card-action-btn.active {
+.action-btn.active {
   background: rgba(212,160,23,0.15); border-color: rgba(212,160,23,0.35); color: #d4a017;
 }
-.card-action-label { font-size: 12px; font-weight: 500; }
+.action-label { font-size: 12px; font-weight: 500; }
 .card-action-badge {
   font-size: 9px; background: rgba(255,255,255,0.1);
   padding: 1px 5px; border-radius: 10px; color: rgba(255,255,255,0.5);
@@ -1376,38 +1353,20 @@ function queueDragEnd() {
   background: rgba(212,160,23,0.15); pointer-events: none;
 }
 
-/* More pill */
-.card-more-pill {
-  display: flex; align-items: center; justify-content: center; gap: 5px;
-  background: rgba(255,255,255,0.055); border: none; border-radius: 20px;
-  padding: 6px 24px; cursor: pointer; width: auto; align-self: center;
+/* ── More pill ───────────────────────────────────────────────────────────────── */
+.player-more-pill {
+  display: flex; align-items: center; gap: 6px;
+  padding: 10px 24px; border-radius: 22px;
+  background: rgba(255,255,255,0.08); border: none; cursor: pointer;
+  margin: 0 auto 12px; color: rgba(255,255,255,0.54);
 }
-.card-more-dots { font-size: 13px; color: rgba(255,255,255,0.3); letter-spacing: 2px; }
-.card-more-label { font-size: 12px; color: rgba(255,255,255,0.4); }
+.more-label { font-size: 13px; font-weight: 500; }
 
-.barrier-banner {
-  display: flex; align-items: center; gap: 8px; cursor: pointer;
-  background: rgba(212,160,23,0.12); border: 1px solid rgba(212,160,23,0.25);
-  border-radius: 12px; padding: 10px 14px; margin: 8px 0 0;
-}
-.barrier-text { font-size: 13px; font-weight: 600; color: rgba(255,255,255,0.85); flex: 1; }
-.barrier-cta  { font-size: 11px; color: rgba(212,160,23,0.8); }
-.barrier-enter-active, .barrier-leave-active { transition: opacity 0.2s, transform 0.2s; }
-.barrier-enter-from, .barrier-leave-to { opacity: 0; transform: translateY(-6px); }
+/* ── Recent-only ─────────────────────────────────────────────────────────────── */
+.recent-only-prompt { text-align: center; padding: 8px 0; }
+.recent-only-hint { font-size: 12px; color: rgba(255,255,255,0.3); margin: 0; }
 
-/* ── Page dots ───────────────────────────────────────────────────────────────── */
-.page-dots {
-  display: flex; gap: 6px; justify-content: center;
-  margin-bottom: 16px;
-}
-.page-dot {
-  width: 6px; height: 6px; border-radius: 50%;
-  background: rgba(255,255,255,0.2); transition: all 0.2s;
-  cursor: pointer;
-}
-.page-dot.active { background: #d4a017; width: 18px; border-radius: 3px; }
-
-/* ── Progress ────────────────────────────────────────────────────────────────── */
+/* ── Progress / scrub ────────────────────────────────────────────────────────── */
 .scrub-tooltip {
   position: absolute; bottom: calc(100% - 2px);
   transform: translateX(-50%);
@@ -1547,10 +1506,6 @@ function queueDragEnd() {
 .chapter-item.active .chapter-item-name { color: #d4a017; font-weight: 600; }
 .chapter-item-dur { font-size: 11px; color: rgba(255,255,255,0.3); flex-shrink: 0; font-variant-numeric: tabular-nums; }
 
-/* Recent-only */
-.recent-only-prompt { text-align: center; padding: 8px 0; }
-.recent-only-hint { font-size: 12px; color: rgba(255,255,255,0.3); margin: 0; }
-
 /* Transitions */
 .panel-enter-active, .panel-leave-active { transition: transform 0.25s cubic-bezier(0.32,0.72,0,1), opacity 0.2s; }
 .panel-enter-from, .panel-leave-to { transform: translateY(100%); opacity: 0; }
@@ -1630,39 +1585,127 @@ function queueDragEnd() {
 .expand-bm-enter-from, .expand-bm-leave-to { max-height: 0; opacity: 0; }
 
 /* ── Desktop two-column layout ───────────────────────────────────────────────── */
-.player-layout { display: contents; }
+.desktop-thumbs { display: none; }
+.desktop-thumbs-label { display: none; }
+
+/* Desktop controls — hidden on mobile, shown ≥1280px */
+.dt-controls { display: none; }
 
 @media (min-width: 1280px) {
-  .player-content { padding: 32px 40px; }
-
-  .player-layout {
-    display: flex; align-items: flex-start;
-    gap: 48px; width: 100%; max-width: 1000px;
-  }
-  .player-left {
-    flex-shrink: 0; width: 320px;
-    display: flex; flex-direction: column; align-items: center; gap: 10px;
-  }
-  .player-right {
-    flex: 1; min-width: 0;
-    display: flex; flex-direction: column;
+  .player-content {
+    flex-direction: row; align-items: flex-start;
+    padding: 32px 40px calc(48px + env(safe-area-inset-bottom));
+    gap: 48px; max-width: 1000px; margin: 0 auto; min-height: 100dvh;
   }
 
-  /* DOM order is right-first; use order to put cover left on desktop */
-  .player-left { order: 1; }
-  .player-right { order: 2; }
+  /* Cover carousel as left column */
+  .cover-carousel {
+    width: 320px; flex: none; margin-left: 0;
+    align-self: flex-start; position: sticky; top: 32px;
+  }
+  .cover-slide { width: 320px; padding: 0; }
+  .cover-card { border-radius: 20px; width: 100%; aspect-ratio: 1/1; max-height: none; }
 
-  .player-wordmark { display: none; }
+  /* Everything else stacks in a flex column as right column */
+  .player-header,
+  .player-stats-row,
+  .player-book-bar,
+  .player-stream-badge,
+  .page-dots,
+  .player-chapter-area,
+  .player-transport,
+  .player-action-row,
+  .player-more-pill,
+  .recent-only-prompt,
+  .dt-controls,
+  .barrier-banner {
+    order: 2;
+  }
+  .cover-carousel { order: 1; }
+
+  /* Right column wrapper — use pseudo-column via a nested flex container on content */
+  /* We achieve the two-column by making player-content a flex row and ordering items */
+
+  .player-header { padding: 0 0 4px; width: 100%; }
   .player-topbar { justify-content: flex-end; margin-bottom: 16px; }
 
-  /* On desktop, carousel is fixed-width, not full-vw */
-  .cover-carousel { width: 320px; margin-left: 0; }
-  .cover-slide { width: 320px; padding: 0; }
-  .cover-card { border-radius: 20px; }
+  .player-screen-title {
+    font-size: 10px; font-weight: 600; letter-spacing: 1.5px;
+    text-transform: uppercase; color: rgba(255,255,255,0.3);
+    margin-bottom: 8px;
+  }
+  .player-meta-header {
+    flex-direction: column; gap: 4px; margin-bottom: 24px; align-items: flex-start;
+  }
+  .pmh-title { font-size: 26px; font-weight: 700; color: rgba(255,255,255,0.92); max-width: 100%; }
+  .pmh-sep { display: none; }
+  .pmh-author { font-size: 14px; color: rgba(255,255,255,0.45); }
 
-  /* Thumbnail strip (desktop book switcher) */
+  /* Hide mobile-only elements */
+  .player-stats-row { display: none; }
+  .player-book-bar { display: none; }
+  .player-stream-badge { display: none; }
+  .player-transport { display: none; }
+  .player-action-row { display: none; }
+  .player-more-pill { display: none; }
+  .player-chapter-area { display: none; }
+  .page-dots { display: none; }
+
+  /* Show desktop controls */
+  .dt-controls {
+    display: flex; flex-direction: column; gap: 20px;
+    width: 100%; padding-bottom: 8px; order: 2;
+  }
+
+  /* Desktop stats row */
+  .dt-stats {
+    display: flex; align-items: center; justify-content: space-between; width: 100%;
+  }
+  .card-stat {
+    font-size: 11px; font-weight: 500;
+    color: rgba(255,255,255,0.55); font-variant-numeric: tabular-nums;
+    text-shadow: 0 1px 4px rgba(0,0,0,0.8);
+  }
+  .card-stat--mid { font-weight: 700; color: rgba(255,255,255,0.75); }
+
+  /* Desktop scrubber */
+  .dt-scrubber-wrap {
+    position: relative; padding: 10px 0; cursor: pointer; width: 100%;
+  }
+  .card-scrubber-track { height: 3px; background: rgba(255,255,255,0.12); border-radius: 2px; position: relative; }
+  .card-scrubber-fill  { height: 100%; background: #d4a017; border-radius: 2px; }
+  .card-scrubber-thumb {
+    position: absolute; top: 50%; transform: translate(-50%, -50%);
+    width: 12px; height: 12px; border-radius: 50%; background: #d4a017;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+  }
+
+  /* Desktop chapter row */
+  .dt-chapter-row {
+    display: flex; align-items: center; justify-content: space-between;
+    font-size: 11px; gap: 8px;
+  }
+  .card-chapter-name {
+    font-size: 11px; font-weight: 600; color: rgba(255,255,255,0.8);
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .dt-chapter-times { display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
+  .card-ch-time { font-size: 10px; color: rgba(255,255,255,0.35); font-variant-numeric: tabular-nums; }
+
+  /* Desktop transport */
+  .dt-transport {
+    display: flex; align-items: center; justify-content: center; gap: 12px;
+  }
+
+  /* Desktop action row */
+  .dt-action-row {
+    display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+  }
+
+  /* Desktop thumbnail strip */
   .desktop-thumbs {
     display: flex; gap: 8px; align-items: center; justify-content: center;
+    order: 1; align-self: flex-start;
   }
   .desktop-thumb {
     width: 38px; height: 38px; border-radius: 8px; overflow: hidden;
@@ -1672,76 +1715,8 @@ function queueDragEnd() {
   .desktop-thumb.inactive { opacity: 0.45; }
   .desktop-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
   .desktop-thumbs-label {
-    font-size: 9px; color: rgba(255,255,255,0.28); text-align: center;
+    display: block; font-size: 9px; color: rgba(255,255,255,0.28); text-align: center;
+    order: 1; align-self: flex-start;
   }
-
-  /* Screen title ("Absconding" / "Recently Played") becomes a small eyebrow label */
-  .player-screen-title {
-    font-size: 10px; font-weight: 600; letter-spacing: 1.5px;
-    text-transform: uppercase; color: rgba(255,255,255,0.3);
-    margin-bottom: 8px;
-  }
-
-  /* Meta header — large title + stacked author on desktop */
-  .player-meta-header {
-    flex-direction: column; gap: 4px; margin-bottom: 24px; align-items: flex-start;
-  }
-  .pmh-title { font-size: 26px; font-weight: 700; color: rgba(255,255,255,0.92); max-width: 100%; }
-  .pmh-sep { display: none; }
-  .pmh-author { font-size: 14px; color: rgba(255,255,255,0.45); }
-}
-
-/* Mobile/tablet: layout divs are transparent pass-throughs */
-@media (max-width: 1279px) {
-  .player-left, .player-right { display: contents; }
-  .desktop-thumbs, .desktop-thumbs-label { display: none; }
-  .dt-controls { display: none; }
-}
-
-/* ── Desktop controls (right column) ────────────────────────────────────────── */
-.dt-controls { display: none; } /* shown only in ≥1280px block below */
-
-@media (min-width: 1280px) {
-  .dt-controls {
-    display: flex; flex-direction: column; gap: 20px;
-    width: 100%; padding-bottom: 8px;
-  }
-
-  /* Stats row */
-  .dt-stats {
-    display: flex; align-items: center; justify-content: space-between; width: 100%;
-  }
-
-  /* Scrubber */
-  .dt-scrubber-wrap {
-    position: relative; padding: 10px 0; cursor: pointer; width: 100%;
-  }
-
-  /* Chapter row */
-  .dt-chapter-row {
-    display: flex; align-items: center; justify-content: space-between;
-    font-size: 11px; gap: 8px;
-  }
-  .dt-chapter-times { display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
-
-  /* Transport */
-  .dt-transport {
-    display: flex; align-items: center; justify-content: center; gap: 12px;
-  }
-
-  /* Action row */
-  .dt-action-row {
-    display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
-  }
-
-  /* Hide these from inside the cover card on desktop */
-  .card-stats-row { display: none; }
-  .card-stream-row { display: none; }
-  .card-scrubber-wrap { display: none; }
-  .card-chapter-pill { display: none; }
-  .card-chapter-times { display: none; }
-  .card-transport { display: none; }
-  .card-action-grid { display: none; }
-  .card-more-pill { display: none; }
 }
 </style>
