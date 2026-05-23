@@ -490,30 +490,44 @@ async function loadPodcastItems(libId: string) {
   finally { loadingPodcastsId.value = null }
 }
 
+async function fetchLibraries() {
+  libraries.value = await getAdminLibraries()
+  await Promise.all(libraries.value.map(async (lib, idx) => {
+    try {
+      const stats = await getLibraryStats(lib.id)
+      libraries.value[idx] = { ...libraries.value[idx], stats }
+    } catch { /* stats optional */ }
+  }))
+}
+
 async function loadLibraries() {
-  loading.value  = true
+  loading.value   = true
   loadError.value = ''
   try {
-    libraries.value = await getAdminLibraries()
-    await Promise.all(libraries.value.map(async (lib, idx) => {
-      try {
-        const stats = await getLibraryStats(lib.id)
-        libraries.value[idx] = { ...libraries.value[idx], stats }
-      } catch { /* stats optional */ }
-    }))
+    try {
+      await fetchLibraries()
+    } catch (first: unknown) {
+      // iOS WKWebView drops requests during back-to-back pushState navigations;
+      // wait for the stack to resettle then try once more before surfacing the error.
+      if ((first as any)?.code === 'ERR_NETWORK') {
+        await new Promise(r => setTimeout(r, 350))
+        await fetchLibraries()
+      } else {
+        throw first
+      }
+    }
   } catch (e: unknown) {
     const ax = e as any
+    const url = `${ax?.config?.baseURL ?? ''}${ax?.config?.url ?? ''}`
     const detail = ax?.response
       ? `${ax.response.status} ${ax.response.statusText}`
-      : ax?.code || ax?.message || 'Unknown error'
+      : `${ax?.code || ax?.message || 'Unknown error'}${url ? ` [${url}]` : ''}`
     loadError.value = `Failed to load libraries: ${detail}`
   } finally {
     loading.value = false
   }
 }
 
-// nextTick defers the API call past Vue's render cycle — fixes iOS WKWebView aborting
-// requests made synchronously during the inner <router-view> component swap.
 onMounted(() => nextTick(loadLibraries))
 onActivated(() => { if (route.name === 'admin-libraries') nextTick(loadLibraries) })
 </script>
