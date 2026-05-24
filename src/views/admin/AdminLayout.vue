@@ -38,7 +38,6 @@
 import AppIcon from '@/components/common/AppIcon.vue'
 import { computed, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { isNativeApp } from '@/api/client'
 import { NAV_GROUPS, ADMIN_DETAIL_PARENT } from './adminNav'
 
 const route  = useRoute()
@@ -67,12 +66,9 @@ function handleBack() {
   }
 }
 
-// Skip the hub on desktop and on native iOS — go straight to overview.
-// On iOS WKWebView, two consecutive pushState navigations (settings→hub, hub→libraries)
-// break the XHR stack for any component mounted by the second navigation. Using
-// router.replace() here means only one pushState reaches the WKWebView.
+// On desktop, skip the hub and go straight to overview
 watch(() => route.name, (name) => {
-  if (name === 'admin-hub' && (!isMobile() || isNativeApp())) {
+  if (name === 'admin-hub' && !isMobile()) {
     router.replace({ name: 'admin-overview' })
   }
 }, { immediate: true })

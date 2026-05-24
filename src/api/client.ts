@@ -57,7 +57,9 @@ export function getBaseUrl(): Promise<string> {
 export async function createApiClient() {
   // Don't fix baseURL at creation time — in the native app resetBaseUrl() is called
   // after module load (during probeServer), so we resolve it fresh per-request.
-  const client = axios.create({ timeout: 15000 })
+  // Use fetch adapter on native iOS to avoid WKWebView XHR breakage after navigation
+  const adapter = isNativeApp() ? 'fetch' : 'xhr'
+  const client = axios.create({ timeout: 15000, adapter })
 
   client.interceptors.request.use(async (config) => {
     config.baseURL = await getBaseUrl()
