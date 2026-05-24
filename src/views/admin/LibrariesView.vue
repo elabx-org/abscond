@@ -510,7 +510,7 @@ async function loadLibraries() {
       // iOS WKWebView drops requests during back-to-back pushState navigations;
       // wait for the stack to resettle then try once more before surfacing the error.
       if ((first as any)?.code === 'ERR_NETWORK') {
-        await new Promise(r => setTimeout(r, 350))
+        await new Promise(r => setTimeout(r, 1500))
         await fetchLibraries()
       } else {
         throw first
